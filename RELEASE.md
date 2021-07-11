@@ -45,32 +45,23 @@ Follow these steps:
     ```
     git add CMakeLists.txt
     git commit -m"v5.0.4-beta1 release"
-    git tag -a -m"v5.0.4-beta1 release" v5.0.4-beta1
-    git push --follow-tags
+    git tag -a --force -m"v5.0.4-beta1 release" v5.0.4-beta1
+    git push --atomic --force origin master v5.0.4-beta1
     ```
   
-   Note that `--follow-tags` only sends tags that are not yet known on the server, so if you need to make a 
-   second or third release, change the tag to the new commit and push it using a more complicated push:
-   ```
-   git tag --force -a -m"v5.0.4-beta1 release" v5.0.4-beta1
-   git push origin --tags refs/heads/develop:refs/heads/develop
-   ```
-   You can use the complicated-looking push command in the first push as well. It is needed so that
-   the single push sends both the code commits and tags. If you use other commands like
-   ```
-   git push
-   git push --tags
-   ```
-   you end up with 2 builds, with the first going to Unstable and the 2nd to Beta.
+   Note that the `--force` tag is only needed if this is a 2nd try where the tag already exists locally
+   and/or on the server.
+   We use this complicated version of git push instead of `git push; git push --tags` so that only
+   one CI build is kicked off. If you _want_ to test a build to the `Unstable` repository first,
+   go ahead and use `git push` (and only if that gives what you want, run `git push --tags`.)
 
 4. For Production releases: Add the file, commit, add a commented tag and push both code and tags in 1 step:
     ```
     git add CMakeLists.txt
     git commit -m"v5.0.4 release"
-    git tag -a -m"v5.0.4 release" v5.0.4
-    git push --follow-tags
+    git tag -a --force -m"v5.0.4 release" v5.0.4
+    git push --atomic --force origin master v5.0.4
     ```
-    See the beta section on how to fix up mended builds with a more complicated `push`.
 
 If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor, Drone and Cloud CI. 
 See below for the URLs. You can also follow the links in Github on the commit (there is a small progress
@@ -177,9 +168,3 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
    For stable/master: https://github.com/OpenCPN/plugins/compare/master...opencpn-radar-pi:master?expand=1
    For unstable/Beta: https://github.com/OpenCPN/plugins/compare/Beta...opencpn-radar-pi:Beta?expand=1
 
-
-## Oops
-
-_Wrong commit tagged?_
-
-As long as you haven't done `git push --tags` yet you can move the tag to the correct commit by using `git tag -f <tagname> <commitid>` or if the desired commit is the new HEAD (last commit) then `git tag -f <tagname>`.
