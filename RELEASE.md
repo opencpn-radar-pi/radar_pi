@@ -35,11 +35,9 @@ Follow these steps:
 
 2. Edit the following lines in CMakeLists.txt to reflect the new status:
     ```
-    #SET(CMAKE_BUILD_TYPE Debug)
-    SET(VERSION_MAJOR "5")
-    SET(VERSION_MINOR "0")
-    SET(VERSION_PATCH "4-beta1")
-    SET(VERSION_DATE "2019-09-08")
+    project(radar_pi VERSION 5.2.2)
+    set(PKG_RELEASE "")
+    set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
     ```
 
 3. For Beta releases: Add the file to the git staging area, add a commented tag that includes Beta or beta:

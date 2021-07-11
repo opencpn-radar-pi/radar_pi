@@ -61,9 +61,9 @@ set(OCPN_RELEASE_REPO
 #
 # -------  Plugin setup --------
 #
-project(radar_pi VERSION 5.2.13)
+project(radar_pi VERSION 5.2.2)
 set(PKG_RELEASE "")
-set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
+set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME radar)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME Radar) # As of GetCommonName() in plugin API
