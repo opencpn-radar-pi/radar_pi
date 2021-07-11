@@ -80,7 +80,7 @@ if (_pre_rel MATCHES "^[^-].")
   # Prepend - if pre-release not empty and doesn't start with -
   string(PREPEND _pre_rel "-")
 endif ()
-set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_git_tag}")
+set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_git_hash}")
 
 # pkg_displayname: Used for xml metadata and GUI name
 if (ARCH MATCHES "arm64|aarch64")
