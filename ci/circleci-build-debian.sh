@@ -33,7 +33,7 @@ python3 -m pip install --user --upgrade -q setuptools wheel pip
 python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
 git fetch --all --tags
-git tags
+git log -5
 
 mkdir  build
 cd build
