@@ -47,7 +47,7 @@ extern "C" {
 #include "GL/gl.h"
 #include "GL/glext.h"
 #include "GL/glu.h"
-#elif __WXOSX__
+#elif __WXMAC__
 #include <OpenGL/gl3.h>  // from ..../Frameworks/OpenGL.framework/Headers/gl.h
 #define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #else
