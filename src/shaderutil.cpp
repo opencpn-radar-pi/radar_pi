@@ -35,7 +35,7 @@
 #if defined(WIN32)
 #define SET_FUNCTION_POINTER(name) wglGetProcAddress(name)
 typedef PROC FunctionPointer;
-#elif defined(__WXOSX__)
+#elif defined(__WXMAC__)
 #include <dlfcn.h>
 #define SET_FUNCTION_POINTER(name) dlsym(RTLD_DEFAULT, name)
 typedef void *FunctionPointer;

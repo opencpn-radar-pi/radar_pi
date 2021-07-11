@@ -37,7 +37,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-#if defined(__WXOSX__) || defined(__WXMSW__) || defined(__WXGTK__)
+#if defined(__WXMAC__) || defined(__WXMSW__) || defined(__WXGTK__)
 #define HAS_UNICODE_CHARS
 #endif
 
