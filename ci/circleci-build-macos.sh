@@ -36,7 +36,7 @@ wget -q https://download.opencpn.org/s/rwoCNGzx6G34tbC/download \
     -O /tmp/wx312B_opencpn50_macos109.tar.xz
 tar -C /tmp -xJf /tmp/wx312B_opencpn50_macos109.tar.xz 
 
-git fetch --all --tags
+git log --5
 
 # Build and package
 rm -rf build && mkdir build && cd build

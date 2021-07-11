@@ -48,6 +48,20 @@ Follow these steps:
     git tag -a -m"v5.0.4-beta1 release" v5.0.4-beta1
     git push --follow-tags
     ```
+  
+   Note that `--follow-tags` only sends tags that are not yet known on the server, so if you need to make a 
+   second or third release, change the tag to the new commit and push it using a more complicated push:
+   ```
+   git tag --force -a -m"v5.0.4-beta1 release" v5.0.4-beta1
+   git push origin --tags refs/heads/develop:refs/heads/develop
+   ```
+   You can use the complicated-looking push command in the first push as well. It is needed so that
+   the single push sends both the code commits and tags. If you use other commands like
+   ```
+   git push
+   git push --tags
+   ```
+   you end up with 2 builds, with the first going to Unstable and the 2nd to Beta.
 
 4. For Production releases: Add the file, commit, add a commented tag and push both code and tags in 1 step:
     ```
@@ -56,8 +70,11 @@ Follow these steps:
     git tag -a -m"v5.0.4 release" v5.0.4
     git push --follow-tags
     ```
+    See the beta section on how to fix up mended builds with a more complicated `push`.
 
-If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor, Drone and Cloud CI. See below for the URLs.
+If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor, Drone and Cloud CI. 
+See below for the URLs. You can also follow the links in Github on the commit (there is a small progress
+dot or a checkmark correct/bad nowadays).
 
 The process of adding and pushing the tag will put the releases in the "stable" repository on Cloudsmith.
 
