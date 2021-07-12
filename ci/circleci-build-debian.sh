@@ -32,7 +32,7 @@ sudo apt install -q \
 python3 -m pip install --user --upgrade -q setuptools wheel pip
 python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
-git log -5 --no-pager
+git log -5 | cat
 
 mkdir  build
 cd build

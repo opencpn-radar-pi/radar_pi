@@ -17,7 +17,7 @@ sudo mk-build-deps -ir build-deps/control-raspbian
 sudo apt-get -q --allow-unauthenticated install -f
 
 git fetch --all --tags
-git log -5 --no-pager
+git log -5 | cat
 
 # Temporary fix until 3.19 is available as a pypi package
 # 3.19 is needed: https://gitlab.kitware.com/cmake/cmake/-/issues/20568
