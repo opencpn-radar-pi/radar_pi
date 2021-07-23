@@ -69,7 +69,7 @@ else ()
   set(QT_ANDROID OFF)
   add_definitions(-D__OCPN_USE_CURL__)
 endif ()
-
+#
 #
 # -------  Plugin setup --------
 #
