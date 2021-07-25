@@ -34,7 +34,7 @@ else
             https://flathub.org/repo/flathub.flatpakrepo
         flatpak install --user -y --or-update flathub \
             org.opencpn.OpenCPN >/dev/null
-        flatpak update --user --commit $commit_1808 org.opencpn.OpenCPN
+        flatpak update --user -y --commit $commit_1808 org.opencpn.OpenCPN
         FLATPAK_BRANCH='stable'
 fi
 
