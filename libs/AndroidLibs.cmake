@@ -93,6 +93,6 @@ add_compile_definitions(
   USE_GLSL
   QT_WIDGETS_LINUX
 )
-if (NOT CMAKE_BUILD_TYPE STREQUAL Debug)
+if (NOT CMAKE_BUILD_TYPE MATCHES "Debug|RelWithDebInfo")
   string(APPEND CMAKE_SHARED_LINKER_FLAGS " -s")
 endif ()
