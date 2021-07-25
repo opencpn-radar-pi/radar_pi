@@ -31,11 +31,10 @@ jobs:
     resource_class: arm.medium
     environment:
       - OCPN_TARGET: flatpak-arm64
-      - FLATPAK_BRANCH: beta
     parameters:
       cache-key:
         type: string
-        default: "fp-arm20-v1"
+        default: "fp-arm20-v2"
     <<: *flatpak-steps
 
   build-flatpak-x86-1808:
@@ -43,11 +42,11 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       - OCPN_TARGET: flatpak
-      - FLATPAK_BRANCH: stable
+      - BUILD_1808: "true"
     parameters:
       cache-key:
         type: string
-        default: "fp-x86-18-v1"
+        default: "fp-x86-18-v2"
     <<: *flatpak-steps
 
   build-flatpak-x86-2008:
@@ -55,11 +54,10 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       - OCPN_TARGET: flatpak
-      - FLATPAK_BRANCH: beta
     parameters:
       cache-key:
         type: string
-        default: "fp-x86-20-v1"
+        default: "fp-x86-20-v2"
     <<: *flatpak-steps
  
   build-macos:

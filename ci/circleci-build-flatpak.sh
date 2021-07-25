@@ -60,7 +60,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 flatpak
 
 # Fix upload script if building 18.08:
-test -n "$BUILD_1808" && sed -i 's/20.08/18.08/' build/upload.sh
+test -n "$BUILD_1808" && sed -i 's/20.08/18.08/' upload.sh
 
 # Restore patched file so the cache checksumming is ok.
 git checkout ../flatpak/$MANIFEST
