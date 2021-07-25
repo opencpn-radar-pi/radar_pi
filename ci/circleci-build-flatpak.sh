@@ -31,7 +31,7 @@ if dpkg-architecture --is arm64; then
     flatpak install --user -y --or-update  --noninteractive \
         flathub-beta org.opencpn.OpenCPN
     FLATPAK_BRANCH=beta
-elif [ -n "BUILD_1808" ]; then
+elif [ -n "$BUILD_1808" ]; then
     flatpak install --user -y --noninteractive \
         flathub org.freedesktop.Sdk//18.08
     flatpak install --user -y --or-update --noninteractive \
