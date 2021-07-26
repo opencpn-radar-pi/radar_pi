@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- @pkg_build_info@ -->
 <plugin version="1">
   <name> @PLUGIN_API_NAME@ </name>
   <version> @pkg_semver@ </version>
