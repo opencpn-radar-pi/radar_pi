@@ -32,14 +32,26 @@ execute_process(
 
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
   set(_build_id "$ENV{CIRCLE_BUILD_NUM}")
+  set(_pkg_build_info "$ENV{CIRCLE_BUILD_URL}")
 elseif (NOT "$ENV{TRAVIS_BUILD_NUMBER}" STREQUAL "")
   set(_build_id "$ENV{TRAVIS_BUILD_NUMBER}")
+  set(_pkg_build_info "$ENV{TRAVIS_BUILD_WEB_URL}")
 elseif (NOT "$ENV{APPVEYOR_BUILD_NUMBER}" STREQUAL "")
   set(_build_id "$ENV{APPVEYOR_BUILD_NUMBER}")
+  string(CONCAT _pkg_build_info
+    "https://ci.appveyor.com/project"
+    "/$ENV{APPVEYOR_ACCOUNT_NAME}/$ENV{APPVEYOR_PROJECT_SLUG}"
+    "/builds/$ENV{APPVEYOR_BUILD_ID}"
+  )
 elseif (NOT "$ENV{DRONE_BUILD_NUMBER}" STREQUAL "")
-  string(RANDOM _build_id)
+  set(_build_id "$ENV{DRONE_BUILD_NUMBER}")
+  set(_pkg_build_info
+    "https://cloud.drone.io/$ENV{DRONE_REPO}/$ENV{DRONE_BUILD_NUMBER}"
+  )
 else ()
   string(TIMESTAMP _build_id "%y%m%d%H%M" UTC)
+  cmake_host_system_information(RESULT _hostname QUERY HOSTNAME)
+  set(_pkg_build_info "${_hostname} - ${_build_id}")
 endif ()
 
 if ("${_git_tag}" STREQUAL "")
@@ -53,6 +65,9 @@ if (WIN32)
 else ()
   set(_pkg_arch "${ARCH}")
 endif ()
+
+# pkg_build_info: Info about build host (link to log if available).
+set(pkg_build_info ${_pkg_build_info})
 
 # pkg_repo: Repository to use for upload
 if ("${_git_tag}" STREQUAL "")
@@ -98,10 +113,17 @@ string(CONCAT pkg_displayname
 set(pkg_xmlname ${pkg_displayname}-${_build_id})
 
 # pkg_tarname: Tarball basename
-string(CONCAT pkg_tarname 
-  "${PLUGIN_API_NAME}-${pkg_semver}_"
-  "${plugin_target}-${plugin_target_version}-${_pkg_arch}"
-)
+if (NOT "${_git_tag}" STREQUAL "")
+  string(CONCAT pkg_tarname
+    "${PLUGIN_API_NAME}-${_git_tag}_"
+    "${plugin_target}-${plugin_target_version}-${_pkg_arch}"
+  )
+else ()
+  string(CONCAT pkg_tarname
+    "${PLUGIN_API_NAME}-${pkg_semver}_"
+    "${plugin_target}-${plugin_target_version}-${_pkg_arch}"
+  )
+endif ()
 
 # pkg_tarball_url: Tarball location at cloudsmith
 string(CONCAT pkg_tarball_url
