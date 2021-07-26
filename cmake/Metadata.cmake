@@ -106,8 +106,12 @@ set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_gitversion}")
 if (ARCH MATCHES "arm64|aarch64")
   set(_display_arch "-A64")
 endif()
-string(CONCAT pkg_displayname
-  "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}"
+if ("${_git_tag}" STREQUAL "")
+  set(pkg_displayname "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}")
+else ()
+  set(pkg_displayname "${PLUGIN_API_NAME}-${_git_tag}")
+endif ()
+string(APPEND pkg_displayname
   "-${plugin_target}${_display_arch}-${plugin_target_version}"
 )
 
@@ -115,22 +119,19 @@ string(CONCAT pkg_displayname
 set(pkg_xmlname ${pkg_displayname})
 
 # pkg_tarname: Tarball basename
-if (NOT "${_git_tag}" STREQUAL "")
-  string(CONCAT pkg_tarname
-    "${PLUGIN_API_NAME}-${_git_tag}_"
-    "${plugin_target}-${plugin_target_version}-${_pkg_arch}"
-  )
+if ("${_git_tag}" STREQUAL "")
+  set(pkg_tarname "${PLUGIN_API_NAME}-${pkg_semver}")
 else ()
-  string(CONCAT pkg_tarname
-    "${PLUGIN_API_NAME}-${pkg_semver}_"
-    "${plugin_target}-${plugin_target_version}-${_pkg_arch}"
-  )
+  set(pkg_tarname "${PLUGIN_API_NAME}-${_git_tag}")
 endif ()
+string(APPEND pkg_tarname
+  "_${plugin_target}-${plugin_target_version}-${_pkg_arch}"
+)
 
 # pkg_tarball_url: Tarball location at cloudsmith
 string(CONCAT pkg_tarball_url
   "https://dl.cloudsmith.io/public/${pkg_repo}/raw"
-  "/names/${pkg_displayname}-tarball" "/versions/${pkg_semver}"
+  "/names/${pkg_displayname}-tarball/versions/${pkg_semver}"
   "/${pkg_tarname}.tar.gz"
 )
 
