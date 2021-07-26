@@ -215,7 +215,8 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       10 00 28 00 01 00 00 00 Radar transmit ON. Controlling value at pos 4!
       10 00 28 00 00 00 00 00 Radar transmit OFF
       14 03 28       Mode, harbor 0, coastal 1, offshore 2, weather 3
-                 
+      
+           
       */
 
     case CT_GAIN: {
