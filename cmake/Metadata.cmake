@@ -95,13 +95,14 @@ string(REGEX REPLACE "([a-zA-Z0-9/-])" "\\1 " pkg_repo_display  ${pkg_repo})
 message(STATUS "Selected upload repository: ${pkg_repo_display}")
 
 # pkg_semver: Complete version including pre-release tag and build info
+# for untagged builds.
 set(_pre_rel ${PKG_PRERELEASE})
-if (_pre_rel MATCHES "^[^-]")
+if (NOT "${_pre_rel}" STREQUAL "" AND _pre_rel MATCHES "^[^-]")
   string(PREPEND _pre_rel "-")
 endif ()
 set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_gitversion}")
 
-# pkg_displayname: Used for xml metadata and GUI name
+# pkg_displayname: GUI name
 if (ARCH MATCHES "arm64|aarch64")
   set(_display_arch "-A64")
 endif()
@@ -109,8 +110,9 @@ string(CONCAT pkg_displayname
   "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}"
   "-${plugin_target}${_display_arch}-${plugin_target_version}"
 )
+
 # pkg_xmlname: XML metadata basename
-set(pkg_xmlname ${pkg_displayname}-${_build_id})
+set(pkg_xmlname ${pkg_displayname})
 
 # pkg_tarname: Tarball basename
 if (NOT "${_git_tag}" STREQUAL "")
