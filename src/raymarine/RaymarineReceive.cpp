@@ -473,9 +473,9 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   wxString s;
   //m_pi->logBinaryData(wxT("ProcessQuantumReport"), data, len);  // Remove later
   for (int i = 0; i < len; i++) {
-    /*if (data[i] != previous[i]) {
+    if (data[i] != previous[i]) {
       LOG_INFO(wxT("$$$ not equal hex: i=%i, %0x -> %0x, decimal: %i -> %i"), i, previous[i], data[i], previous[i], data[i]);
-    }*/  //$$$ remove previous when no longer needed
+    }  //$$$ remove previous when no longer needed
     previous[i] = data[i];
   }
   switch (bl_pter->status) {
@@ -497,6 +497,7 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
       break;
     default:
       m_ri->m_state.Update(RADAR_STANDBY);
+      LOG_RECEIVE(wxT("%s radar is unknown state %s, state= %i"), m_ri->m_name.c_str(), bl_pter->status);
       break;
   }
   

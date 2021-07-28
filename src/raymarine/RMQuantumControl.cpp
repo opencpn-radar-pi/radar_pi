@@ -222,7 +222,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_GAIN: {
       uint8_t command_gain_set[] = {0x02, 0x03, 0x28, 0x00, 0x00,
                                     0x28,  // Quantum gain value at pos 5
-                                    0x7e, 0xa3};
+                                    0x00, 0x00};
 
       uint8_t command_gain_auto[] = {0x01, 0x03, 0x28, 0x00, 0x00,
                                      0x01,  // Gain auto - 1, manual - 0 at offset 5

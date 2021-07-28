@@ -1893,7 +1893,7 @@ void ControlsDialog::EnableRadarControls() {
   if (m_range_button) {
     m_range_button->Enable();
   }
-  if (m_power_button) {
+  if (m_power_button) {   // $$$$ copy to enable power button
     m_power_button->Enable();
   }
   if (m_power_sub_button) {
