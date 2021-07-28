@@ -416,7 +416,7 @@ struct QuantumRadarReport {
   uint8_t unknown6[2];   //  40
   uint8_t sea_auto;      //  42  manual == 0, auto == 1
   uint8_t sea;           //  43
-  uint8_t rain_auto;     //  44  auto == 0, manual == 1
+  uint8_t rain_auto;     //  44  auto == 0, manual == 1  // changed $$$
   uint8_t rain;          //  45
   uint8_t unknown8[8];   //  46
   uint8_t target_expansion;  //  54  target expansion off == 0, on == 1
@@ -547,7 +547,8 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   m_ri->m_sea.UpdateState(state);
   LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea, m_ri->m_sea.GetValue(), state);
 
-  state = (bl_pter->rain_auto) ? RCS_MANUAL : RCS_AUTO_1;
+  //state = (bl_pter->rain_auto) ? RCS_MANUAL : RCS_AUTO_1;   $$$
+  state = (RadarControlState)bl_pter->rain_auto;
   LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_auto=%i"), state, bl_pter->rain_auto);
   m_ri->m_rain.Update(bl_pter->rain);
   m_ri->m_rain.UpdateState(state);

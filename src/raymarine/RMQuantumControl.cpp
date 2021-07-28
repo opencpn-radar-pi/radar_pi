@@ -208,7 +208,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       05 03 28 00 00 00 00 00 Sea to manual
       05 03 28 00 00 01 00 00 Sea to auto
       06 03 28 00 00 xx 00 00 Sea
-      0b 03 28 00 00 01 00 00 Rain to manual (different to sea!)
+      0b 03 28 00 00 01 00 00 Rain to manual (different to sea!) // this could be wrong $$$ changed in code for test
       0b 03 28 00 00 00 00 00 Rain to auto
       0c 03 28       Rain
       0f 03 28 00 00 01 00 00 Target expansion on, 00 on 5 == off
@@ -267,7 +267,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
 
     case CT_RAIN: {  // Rain Clutter
       uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00, 0x00,
-                                     0x01,  // Auto on at offset 5, 01 = manual, 00 = auto (different from the others!)
+                                     0x01,  // Auto on at offset 5, 01 = manual, 00 = auto (different from the others!)// changed for test
                                      0x00, 0x00};
 
       uint8_t command_rain_set[] = {0x0c, 0x03, 0x28, 0x00, 0x00,
@@ -275,13 +275,13 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
                                     0x00, 0x00};
 
       if (!autoValue) {
-        command_rain_auto[5] = 1;  // rain manual
+        command_rain_auto[5] = 0;  // rain manual // changed
         r = TransmitCmd(command_rain_auto, sizeof(command_rain_auto));
         command_rain_set[5] = value;
         LOG_TRANSMIT(wxT("rainvalue= %i, transmitted=%i"), value, command_rain_set[5]);
         r = TransmitCmd(command_rain_set, sizeof(command_rain_set));
       } else {
-        command_rain_auto[5] = 0;  // rain auto
+        command_rain_auto[5] = 1;  // rain auto
         r = TransmitCmd(command_rain_auto, sizeof(command_rain_auto));
         LOG_TRANSMIT(wxT("rain state == RCS_AUTO_1, value= %i"), value);
       }
