@@ -471,7 +471,7 @@ static bool s_print_range = true;
 void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   QuantumRadarReport *bl_pter = (QuantumRadarReport *)data;
   wxString s;
-  //m_pi->logBinaryData(wxT("ProcessQuantumReport"), data, len);  // Remove later
+  m_pi->logBinaryData(wxT("ProcessQuantumReport"), data, len);  // $$$ git Remove later
   for (int i = 0; i < len; i++) {
     if (data[i] != previous[i]) {
       LOG_INFO(wxT("$$$ not equal hex: i=%i, %0x -> %0x, decimal: %i -> %i"), i, previous[i], data[i], previous[i], data[i]);
