@@ -68,7 +68,11 @@ When all looks good changes can be committed using something like
 `git commit -m "Update shipdriver templates."`
 
 
+Pin files which should not be updated
+-------------------------------------
 
+The script supports a file named *update-ignored*. This is a list of files,
+one per line, which should not be updated in any case.
 
 
 

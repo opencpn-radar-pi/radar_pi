@@ -10,6 +10,10 @@
 # See UPDATE-TEMPLATES.md for more info
 
 
+# The tip we merge into the plugin, possibly a shipdriver tag or commit.
+source_treeish="shipdriver/master"
+
+
 
 # Refuse to run unless the index is clean:
 clean=$(git status --porcelain | grep -v update-template)
@@ -33,6 +37,7 @@ if git ls-remote --exit-code shipdriver &>/dev/null; then
 fi
 git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
 git remote update shipdriver
+git fetch --tags shipdriver
 
 
 # Determine the branch to be merged with fresh templates
@@ -48,10 +53,9 @@ echo "Merging changes into branch $branch"
 
 
 # Merge all changes in shipdriver remote with current status
-git fetch shipdriver master:shipdriver.master
 git checkout $branch
 git merge --no-ff --no-commit --allow-unrelated-histories -X theirs \
-    shipdriver.master
+    $source_treeish
 
 # Restore all non-template files.
 for f in \
@@ -86,6 +90,13 @@ for f in $(git status --porcelain \
 do
     git rm -f $f
 done
+
+# Revert changes in blacklisted files.
+if [ -e update-ignored ]; then
+    for f in $(cat update-ignored); do
+        git checkout HEAD $f
+    done
+fi
 
 # Create or update version file
 date  "+%Y-%m-%d %H:%M" > cmake/TemplateVersion
