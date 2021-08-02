@@ -14,6 +14,16 @@
 #
 # Possible merge conflicts has to be handled manually
 # before committing.
+#
+# Bootstrapping: get latest version using
+#
+#   $ repo=https://raw.githubusercontent.com/leamas/shipdriver_pi/update-164
+#   $ curl $repo/update-templates --output update-templates
+#
+# Windows (assuming standard installation paths):
+#   > set repo=https://raw.githubusercontent.com/leamas/shipdriver_pi/update-164
+#   > curl %repo%/update-templates --output update-templates
+#   > "C:\Program Files\Git\bin\bash.exe" update-templates
 
 
 
