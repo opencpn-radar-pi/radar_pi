@@ -7,23 +7,7 @@
 # Merge changes from upstream shipdriver repo into a
 # given branch, by default 'main' or 'master'.
 #
-# Script sets up a remote called shipdriver, and updates
-# all files which are deemed as template files. Changes
-# are not committed but are left in the index, user need
-# to review changes before committing.
-#
-# Possible merge conflicts has to be handled manually
-# before committing.
-#
-# Bootstrapping: get latest version using
-#
-#   $ repo=https://raw.githubusercontent.com/leamas/shipdriver_pi/update-164
-#   $ curl $repo/update-templates --output update-templates
-#
-# Windows (assuming standard installation paths):
-#   > set repo=https://raw.githubusercontent.com/leamas/shipdriver_pi/update-164
-#   > curl %repo%/update-templates --output update-templates
-#   > "C:\Program Files\Git\bin\bash.exe" update-templates
+# See UPDATE-TEMPLATES.md for more info
 
 
 
