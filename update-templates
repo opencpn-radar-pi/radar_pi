@@ -1,0 +1,119 @@
+#!/usr/bin/bash
+#
+# Update a plugin with new sipdriver templates.
+#
+# usage: ./update-templates [branch]
+#
+# Merge changes from upstream shipdriver repo into a
+# given branch, by default 'main' or 'master'.
+#
+# Script sets up a remote called shipdriver, and updates
+# all files which are deemed as template files. Changes
+# are not committed but are left in the index, user need
+# to review changes before committing.
+#
+# Possible merge conflicts has to be handled manually
+# before committing.
+
+
+
+# Refuse to run unless the index is clean:
+clean=$(git status --porcelain | grep -v update-template)
+if [ -n "$clean" ]; then 
+    echo "Please commit or stash pending changes. Aborting."
+    exit 1
+fi
+
+# We use the shipdriver.master branch as merging point. Make sure
+# user dont already have anything here.
+if git show-ref --verify --quiet refs/heads/shipdriver.master; then
+    echo "The branch shipdriver.master is in the way, please remove"  >&2
+    exit 1
+fi 
+
+
+# Set up the shipdriver remote
+if git ls-remote --exit-code shipdriver &>/dev/null; then
+    git remote remove shipdriver
+    echo "Removing existing shipdriver remote."
+fi
+git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
+git remote update shipdriver
+
+
+# Determine the branch to be merged with fresh templates
+if git show-ref --verify --quiet refs/heads/${1-:'main'}; then
+    branch="${1-:'main'}"
+elif git show-ref --verify --quiet refs/heads/master; then
+    branch='master'
+else
+    "Cannot determine a usable branch to merge. Giving up."
+fi
+
+echo "Merging changes into branch $branch"
+
+
+# Merge all changes in shipdriver remote with current status
+git fetch shipdriver master:shipdriver.master
+git checkout $branch
+git merge --no-ff --no-commit --allow-unrelated-histories -X theirs \
+    shipdriver.master
+
+# Restore all non-template files.
+for f in \
+    CMakeLists.txt \
+    build-deps \
+    buildosx \
+    buildwin \
+    config.h.in \
+    COPYING \
+    data \
+    flatpak \
+    libs \
+    manual \
+    mingw \
+    po \
+    README.md \
+    src
+do
+    if test -e "$f"; then git checkout HEAD $f; fi
+    # Remove all added files in local directories
+    for ff in $(git status --porcelain $f \
+                | grep -E "A? $f" | awk '{print $2}')
+    do
+        git rm -f $ff
+    done
+done
+
+# Remove miscellaneous added files
+for f in $(git status --porcelain \
+           | grep -E "A.*enc|A.*pub|A.*fbp" \
+           | awk '{print $2}')
+do
+    git rm -f $f
+done
+
+# Create or update version file
+date  "+%Y-%m-%d %H:%M" > cmake/TemplateVersion
+commit=$(git rev-parse --short shipdriver/master)
+echo "commit: $commit" >> cmake/TemplateVersion
+tags=$(git tag --contains $commit)
+echo "tags: $tags" >> cmake/TemplateVersion
+git add cmake/TemplateVersion
+    
+
+cat << EOF
+Shipdriver templates have been updated. To review pending changes:
+
+    $ git status
+    $ git diff --staged
+
+To reset a file to state before merging the templates:
+
+    $ git checkout HEAD <file>
+
+Changes can be committed using
+
+    $ git commit -m "Update shipdriver templates."
+
+EOF
