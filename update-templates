@@ -2,18 +2,14 @@
 #
 # Update a plugin with new sipdriver templates.
 #
-# usage: ./update-templates [branch]
+# usage: ./update-templates [treeish]
 #
-# Merge changes from upstream shipdriver repo into a
-# given branch, by default 'main' or 'master'.
+# Merge changes from upstream shipdriver repo into
+# current branch.
 #
 # See UPDATE-TEMPLATES.md for more info
 
-
-# The tip we merge into the plugin, possibly a shipdriver tag or commit.
-source_treeish="shipdriver/master"
-
-
+source_treeish=${1:-"shipdriver/master"}
 
 # Refuse to run unless the index is clean:
 clean=$(git status --porcelain | grep -v update-template)
@@ -22,14 +18,6 @@ if [ -n "$clean" ]; then
     exit 1
 fi
 
-# We use the shipdriver.master branch as merging point. Make sure
-# user dont already have anything here.
-if git show-ref --verify --quiet refs/heads/shipdriver.master; then
-    echo "The branch shipdriver.master is in the way, please remove"  >&2
-    exit 1
-fi 
-
-
 # Set up the shipdriver remote
 if git ls-remote --exit-code shipdriver &>/dev/null; then
     git remote remove shipdriver
@@ -37,23 +25,8 @@ if git ls-remote --exit-code shipdriver &>/dev/null; then
 fi
 git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
 git remote update shipdriver
-git fetch --tags shipdriver
 
-
-# Determine the branch to be merged with fresh templates
-if git show-ref --verify --quiet refs/heads/${1:-'main'}; then
-    branch="${1:-'main'}"
-elif git show-ref --verify --quiet refs/heads/master; then
-    branch='master'
-else
-    "Cannot determine a usable branch to merge. Giving up."
-fi
-
-echo "Merging changes into branch $branch"
-
-
-# Merge all changes in shipdriver remote with current status
-git checkout $branch
+# Merge all changes in shipdriver remote with current branch
 git merge --no-ff --no-commit --allow-unrelated-histories -X theirs \
     $source_treeish
 
@@ -79,7 +52,7 @@ do
     for ff in $(git status --porcelain $f \
                 | grep -E "A? $f" | awk '{print $2}')
     do
-        git rm -f $ff
+        git rm --quiet -f $ff
     done
 done
 
@@ -88,7 +61,7 @@ for f in $(git status --porcelain \
            | grep -E "A.*enc|A.*pub|A.*fbp" \
            | awk '{print $2}')
 do
-    git rm -f $f
+    git rm -f --quiet $f
 done
 
 # Revert changes in blacklisted files.
@@ -100,12 +73,12 @@ fi
 
 # Create or update version file
 date  "+%Y-%m-%d %H:%M" > cmake/TemplateVersion
-commit=$(git rev-parse --short shipdriver/master)
+commit=$(git rev-parse --short $source_treeish)
 echo "commit: $commit" >> cmake/TemplateVersion
 tags=$(git tag --contains $commit)
 echo "tags: $tags" >> cmake/TemplateVersion
 git add cmake/TemplateVersion
-    
+
 
 cat << EOF
 Shipdriver templates have been updated. To review pending changes:
@@ -113,12 +86,5 @@ Shipdriver templates have been updated. To review pending changes:
     $ git status
     $ git diff --staged
 
-To reset a file to state before merging the templates:
-
-    $ git checkout HEAD <file>
-
-Changes can be committed using
-
-    $ git commit -m "Update shipdriver templates."
-
+See UPDATE_TEMPLATES.md for more.
 EOF

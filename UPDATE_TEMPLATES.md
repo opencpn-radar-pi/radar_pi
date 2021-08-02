@@ -3,7 +3,7 @@ updates-templates README
 
 The script update-templates can be used to update a plugin with
 newer versions of the shipdriver templates. The basic workflow
-is to 
+is to
 
   - Make sure the plugin repo is clean (commit or stash changes)
   - Download the script
@@ -20,7 +20,7 @@ Linux:
     $ repo=https://raw.githubusercontent.com/leamas/shipdriver_pi/update-164
     $ curl $repo/update-templates --output update-templates
 
-It is also possible to use wget instead of curl, like 
+It is also possible to use wget instead of curl, like
 `wget $repo/update-templates`.
 
 
@@ -43,6 +43,15 @@ The script is run from the plugin top directory using
 `bash ./update-templates`. In windows, assuming standard installation paths:
 
     > "C:\Program Files\Git\bin\bash.exe" update-templates
+
+There are two options:
+  - *-t treeish*
+       The source treeish in the shipdriver repository. Defaults to
+       *shipdriver/master*
+  - *-b branch*
+       The destination branch where changes are merged. Defaults to
+       *main* if it exists, otherwise *master*
+
 
 
 Inspecting results and committing
@@ -68,11 +77,9 @@ When all looks good changes can be committed using something like
 `git commit -m "Update shipdriver templates."`
 
 
+
 Pin files which should not be updated
 -------------------------------------
 
 The script supports a file named *update-ignored*. This is a list of files,
 one per line, which should not be updated in any case.
-
-
-
