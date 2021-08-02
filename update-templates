@@ -52,8 +52,8 @@ git remote update shipdriver
 
 
 # Determine the branch to be merged with fresh templates
-if git show-ref --verify --quiet refs/heads/${1-:'main'}; then
-    branch="${1-:'main'}"
+if git show-ref --verify --quiet refs/heads/${1:-'main'}; then
+    branch="${1:-'main'}"
 elif git show-ref --verify --quiet refs/heads/master; then
     branch='master'
 else
