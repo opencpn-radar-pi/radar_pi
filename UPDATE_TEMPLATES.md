@@ -44,13 +44,9 @@ The script is run from the plugin top directory using
 
     > "C:\Program Files\Git\bin\bash.exe" update-templates
 
-There are two options:
-  - *-t treeish*
-       The source treeish in the shipdriver repository. Defaults to
-       *shipdriver/master*
-  - *-b branch*
-       The destination branch where changes are merged. Defaults to
-       *main* if it exists, otherwise *master*
+There is an optional argument, a shipdriver treeish. To merge changes
+from a shipdriver tag, use `bash ./update-templates <tag>`. One can
+also use a shipdriver commit instead of a tag.
 
 
 
