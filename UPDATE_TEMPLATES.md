@@ -6,48 +6,59 @@ newer versions of the shipdriver templates. The basic workflow
 is to
 
   - Make sure the plugin repo is clean (commit or stash changes)
-  - Download the script
-  - Run it
+  - Bootstrap process by downloading script and add it to repo.
+  - Run script
   - Inspect the results, handle possible conflicts and commit the
     changes.
 
 
-Downloading
------------
+Bootstrapping
+-------------
+Only required if the update script is yet not part of the repo. Once
+installed, the script is self-updating.
+
 Linux:
 
     $ cd some_plugin
-    $ repo=https://raw.githubusercontent.com/leamas/shipdriver_pi/update-164
+    $ repo=https://raw.githubusercontent.com/Rasbats/shipdriver_pi/master
     $ curl $repo/update-templates --output update-templates
+    $ chmod 755 update-templates
+    $ git add update-templates
+    $ git commit -m "Add update-templates script"
 
 It is also possible to use wget instead of curl, like
 `wget $repo/update-templates`.
 
 
-Downloading - Windows
----------------------
+Bootstrap - Windows
+-------------------
+
+As in linux, bootstrapping is only required if the script is yet not
+available in the plugin repo. Once installed, it's self-updating.
 
 The script is written in bash, so git-bash is required. Using git-bash, the
-script can be run as in Linux, see above.
+script can be downloaded and installed as in linux, see above.
 
-Using the command CLI goes like:
+Using the Windows command CLI goes like:
 
     > cd some_plugin
-    > set repo=https://raw.githubusercontent.com/leamas/shipdriver_pi/update-164
+    > set repo=https://raw.githubusercontent.com/Rasbats/shipdriver_pi/master
     > curl %repo%/update-templates --output update-templates
+    > git add update-templates
+    > git commit -m "Add update-templates script"
+
 
 Running
 -------
 
 The script is run from the plugin top directory using
-`bash ./update-templates`. In windows, assuming standard installation paths:
+`./update-templates`. In windows, assuming standard installation paths:
 
     > "C:\Program Files\Git\bin\bash.exe" update-templates
 
 There is an optional argument, a shipdriver treeish. To merge changes
-from a shipdriver tag, use `bash ./update-templates <tag>`. One can
+from a shipdriver tag, use `./update-templates <tag>`. One can
 also use a shipdriver commit instead of a tag.
-
 
 
 Inspecting results and committing

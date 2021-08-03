@@ -12,11 +12,12 @@
 source_treeish=${1:-"shipdriver/master"}
 
 # Refuse to run unless the index is clean:
-clean=$(git status --porcelain | grep -v update-template)
+clean=$(git status --porcelain)
 if [ -n "$clean" ]; then 
     echo "Please commit or stash pending changes. Aborting."
     exit 1
 fi
+
 
 # Set up the shipdriver remote
 if git ls-remote --exit-code shipdriver &>/dev/null; then
@@ -27,9 +28,22 @@ git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
 git remote update shipdriver
 git fetch --tags shipdriver
 
+
+# If we need to update this script, do it and exit
+if ! git diff --quiet HEAD $source_treeish -- update-templates; then
+    git checkout $source_treeish update-templates
+    cat << EOT
+update-templates script is updated to latest version. Please commit
+changes and re-run script.
+EOT
+    exit 0
+fi
+
+
 # Merge all changes in shipdriver remote with current branch
 git merge --no-ff --no-commit --allow-unrelated-histories -X theirs \
     $source_treeish
+
 
 # Restore all non-template files.
 for f in \
@@ -57,6 +71,7 @@ do
     fi
 done
 
+
 # Remove miscellaneous added files
 for f in $(git diff --diff-filter=AC --name-only --staged \
            | grep -E "\.enc$|\.pub$|\.fbp$")
@@ -64,12 +79,14 @@ do
     git rm -f --quiet $f
 done
 
+
 # Revert changes in blacklisted files.
 if [ -e update-ignored ]; then
     for f in $(cat update-ignored); do
         git checkout HEAD $f
     done
 fi
+
 
 # Create or update version file
 echo "# Created by update-templates" > cmake/TemplateVersion
