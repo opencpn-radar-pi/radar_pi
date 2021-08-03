@@ -25,6 +25,7 @@ if git ls-remote --exit-code shipdriver &>/dev/null; then
 fi
 git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
 git remote update shipdriver
+git fetch --tags shipdriver
 
 # Merge all changes in shipdriver remote with current branch
 git merge --no-ff --no-commit --allow-unrelated-histories -X theirs \
