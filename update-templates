@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 #
-# Update a plugin with new sipdriver templates.
+# Update a plugin with new shipdriver templates.
 #
 # usage: ./update-templates [treeish]
 #
