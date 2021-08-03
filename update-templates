@@ -48,11 +48,13 @@ for f in \
     README.md \
     src
 do
-    if test -e "$f"; then git checkout HEAD $f; fi
-    # Remove all added files in local directories
-    for ff in $(git diff --diff-filter=AC --name-only --staged $f); do
-        git rm --quiet -f $ff
-    done
+    if test -e "$f"; then
+        git checkout HEAD $f
+        # Remove all added files in local directories
+        for ff in $(git diff --diff-filter=AC --name-only --staged $f); do
+            git rm --quiet -f $ff
+        done
+    fi
 done
 
 # Remove miscellaneous added files
