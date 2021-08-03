@@ -50,17 +50,14 @@ for f in \
 do
     if test -e "$f"; then git checkout HEAD $f; fi
     # Remove all added files in local directories
-    for ff in $(git status --porcelain $f \
-                | grep -E "A? $f" | awk '{print $2}')
-    do
+    for ff in $(git diff --diff-filter=AC --name-only --staged $f); do
         git rm --quiet -f $ff
     done
 done
 
 # Remove miscellaneous added files
-for f in $(git status --porcelain \
-           | grep -E "A.*enc|A.*pub|A.*fbp" \
-           | awk '{print $2}')
+for f in $(git diff --diff-filter=AC --name-only --staged \
+           | grep -E "\.enc$|\.pub$|\.fbp$")
 do
     git rm -f --quiet $f
 done
