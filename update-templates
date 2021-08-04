@@ -2,18 +2,50 @@
 #
 # Update a plugin with new shipdriver templates.
 #
-# usage: ./update-templates [treeish]
+# usage: ./update-templates [-t] [treeish]
 #
 # Merge changes from upstream shipdriver repo into
 # current branch.
 #
 # See UPDATE-TEMPLATES.md for more info
 
+function usage() {
+    cat << EOT
+Usage: update-templates [-t] [-T] [-h] [treeish]
+
+Parameters:
+    treeish:
+         A shipdriver tag, branch or commit, defaults to shipdriver/master
+
+Options:
+    -t   Add a -X theirs to git-merge(1)
+    -T   Test mode, do not auto-update
+    -h   Print this message and exit
+EOT
+}
+
+# Handle options and parameters
+usage="Usage: $0 [-t] [-T] [treeish]"
+merge_opt=""
+while getopts "tTh" opt; do
+    case "${opt}" in
+        t)  merge_opt="-X theirs"
+            ;;
+        T)  test_mode=true
+            ;;
+        h)  usage; exit 0
+            ;;
+        *)  usage >&2; exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
 source_treeish=${1:-"shipdriver/master"}
+
 
 # Refuse to run unless the index is clean:
 clean=$(git status --porcelain)
-if [ -n "$clean" ]; then 
+if [ -n "$clean" ]; then
     echo "Please commit or stash pending changes. Aborting."
     exit 1
 fi
@@ -30,18 +62,20 @@ git fetch --tags shipdriver
 
 
 # If we need to update this script, do it and exit
-if ! git diff --quiet HEAD $source_treeish -- update-templates; then
-    git checkout $source_treeish update-templates
-    cat << EOT
+if [ -z "$test_mode" ]; then
+    if ! git diff --quiet HEAD $source_treeish -- update-templates; then
+        git checkout $source_treeish update-templates
+        cat << EOT
 update-templates script is updated to latest version. Please commit
 changes and re-run script.
 EOT
-    exit 0
+        exit 0
+    fi
 fi
 
 
 # Merge all changes in shipdriver remote with current branch
-git merge --no-ff --no-commit --allow-unrelated-histories -X theirs \
+git merge --no-ff --no-commit --allow-unrelated-histories $merge_opt \
     $source_treeish
 
 

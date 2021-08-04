@@ -56,9 +56,19 @@ The script is run from the plugin top directory using
 
     > "C:\Program Files\Git\bin\bash.exe" update-templates
 
-There is an optional argument, a shipdriver treeish. To merge changes
-from a shipdriver tag, use `./update-templates <tag>`. One can
-also use a shipdriver commit instead of a tag.
+Usage summary:
+
+    update-templates [-t] [treeish]
+
+The *-t* option adds a *-X theirs* to the git merge performed. It will 
+resolve all conflicts by using the upstream shipdriver stuff. By default,
+the conflicts will be unresolved in the results.
+
+The *treeish* option can be used to merge changes from another shipdriver
+state than the default shipdriver/master i. e., a tag or a commit from
+the shipdriver repo.
+
+*update-templates -h* prints the complete help message.
 
 
 Inspecting results and committing
