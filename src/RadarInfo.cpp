@@ -215,6 +215,7 @@ bool RadarInfo::Init() {
   m_verbose = M_SETTINGS.verbose;
   m_name = RadarTypeName[m_radar_type];
   m_spokes = RadarSpokes[m_radar_type];
+  LOG_INFO(wxT("$$$ m_spokes = % i"), m_spokes);
   m_spoke_len_max = RadarSpokeLenMax[m_radar_type];
   m_history = (line_history *)calloc(sizeof(line_history), m_spokes);
   for (size_t i = 0; i < m_spokes; i++) {
