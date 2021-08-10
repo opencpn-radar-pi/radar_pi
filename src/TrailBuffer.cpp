@@ -137,7 +137,6 @@ void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t
 
     uint8_t weak_target = M_SETTINGS.threshold_blue;
     uint8_t strong_target = M_SETTINGS.threshold_red;
-    size_t radius;
 
     for (radius = 0; radius < len - 1; radius++, trail++) {  // len - 1 : no trails on range circle
       if (data[radius] >= strong_target) {
@@ -152,7 +151,8 @@ void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t
     }
   }
 
-  for (; radius < (size_t)m_max_spoke_len; radius++, trail++)  // And clear out empty bit of spoke when spoke_len < max_spoke_len
+  trail = &M_RELATIVE_TRAILS(angle, 0) + len;
+  for (radius = len; radius < (size_t)m_max_spoke_len; radius++, trail++)  // And clear out empty bit of spoke when spoke_len < max_spoke_len
   {
     *trail = 0;
   }
