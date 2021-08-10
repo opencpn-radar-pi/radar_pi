@@ -129,10 +129,10 @@ void TrailBuffer::UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t l
 void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t len) {
   int motion = m_ri->m_trails_motion.GetValue();
   RadarControlState trails = m_ri->m_target_trails.GetState();
-  uint8_t *trail = &M_RELATIVE_TRAILS(angle, 0);
-  size_t radius = 0;
-
   if (trails != RCS_OFF) {
+    uint8_t *trail = &M_RELATIVE_TRAILS(angle, 0);
+    size_t radius = 0;
+
     bool update_relative_motion = motion == TARGET_MOTION_RELATIVE;
 
     uint8_t weak_target = M_SETTINGS.threshold_blue;
@@ -149,12 +149,11 @@ void TrailBuffer::UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t
         data[radius] = m_ri->m_trail_colour[*trail];
       }
     }
-  }
 
-  trail = &M_RELATIVE_TRAILS(angle, 0) + len;
-  for (radius = len; radius < (size_t)m_max_spoke_len; radius++, trail++)  // And clear out empty bit of spoke when spoke_len < max_spoke_len
-  {
-    *trail = 0;
+    for (; radius < (size_t)m_max_spoke_len; radius++, trail++)  // And clear out empty bit of spoke when spoke_len < max_spoke_len
+    {
+      *trail = 0;
+    }
   }
 }
 
