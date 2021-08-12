@@ -326,9 +326,11 @@ void RaymarineReceive::ProcessFrame(const UINT8 *data, size_t len) {  // This is
         m_ri->m_data_timeout = now + DATA_TIMEOUT;
         break;
       case 0x00280001:
+        LOG_BINARY_RECEIVE(wxT("received frame 0x00280001"), data, len);
         //  unknown
         break;
       case 0x00010006:
+        LOG_BINARY_RECEIVE(wxT("received frame 0x00010006"), data, len);
         IF_serial = wxString::FromAscii(data + 4, 7);
         MOD_serial = wxString::FromAscii(data + 20, 7);
         m_info = m_ri->GetRadarLocationInfo();
@@ -341,8 +343,10 @@ void RaymarineReceive::ProcessFrame(const UINT8 *data, size_t len) {  // This is
       case 0x00010008:
       case 0x00010009:
       case 0x00018942:
-        break;
+		  LOG_BINARY_RECEIVE(wxT("received frame other"), data, len);
+        ;
       default:
+        LOG_BINARY_RECEIVE(wxT("received frame default"), data, len);
         break;
     }
   }
