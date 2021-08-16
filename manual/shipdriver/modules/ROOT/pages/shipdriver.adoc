@@ -62,7 +62,7 @@ image::sd5.png[]
 Use right-click to bring up the menu for selecting the vessel start
 position. I have chosen a position close to a waypoint.
 
-image:::sd4.png[]
+image::sd4.png[]
 
 
 Initially nothing happens but when you press the 'Start' button on the
