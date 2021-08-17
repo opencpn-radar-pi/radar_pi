@@ -31,7 +31,6 @@ jobs:
     resource_class: arm.medium
     environment:
       - OCPN_TARGET: flatpak-arm64
-      - FLATPAK_BRANCH: beta
     parameters:
       cache-key:
         type: string
@@ -43,7 +42,7 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       - OCPN_TARGET: flatpak
-      - FLATPAK_BRANCH: stable
+      - BUILD_1808: "true"
     parameters:
       cache-key:
         type: string
@@ -55,7 +54,6 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       - OCPN_TARGET: flatpak
-      - FLATPAK_BRANCH: beta
     parameters:
       cache-key:
         type: string
