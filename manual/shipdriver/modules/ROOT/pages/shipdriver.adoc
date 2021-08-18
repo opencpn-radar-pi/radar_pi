@@ -43,7 +43,7 @@ image::sd1.png[]
 
 
 The AIS Preferences are used later
-link:/opencpn/opencpn_user_manual/plugins/other/shipdriver#ais[(See this section)]. They can be left unchecked.
+xref:shipdriver.adoc#ais[(See this section)]. They can be left unchecked.
 
 image::sd2.png[]
 
@@ -124,6 +124,7 @@ The speed control is not active when the 'Sail' option is in use.
 when 'Sail' is active the button changes colour from green to red. Press
 'Sail' again to stop this mode.
 
+[#ais]
 ==== AIS
 
 In Tools→Plugins the 'Preferences' button for ShipDriver is used to
