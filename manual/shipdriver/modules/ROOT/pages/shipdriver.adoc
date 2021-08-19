@@ -75,10 +75,9 @@ If you have not chosen a start position a warning notice will appear.
 image::sd7.png[]
 
 
-At the same time the Grib plugin form appears. Grib data is used for the
-sail option
-link:/opencpn/opencpn_user_manual/plugins/other/shipdriver#sail[(See
-this section)]. The Grib form can be closed at this point.
+At the same time the Grib plugin form appears. Grib data is used for the sail option
+
+The Grib form can be closed at this point.
 
 The basic controls for using the simulator are shown here:
 
