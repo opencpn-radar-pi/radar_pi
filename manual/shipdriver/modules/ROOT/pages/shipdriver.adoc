@@ -43,7 +43,7 @@ image::sd1.png[]
 
 
 The AIS Preferences are used later
-xref:shipdriver.adoc#ais[(See this section)]. They can be left unchecked.
+They can be left unchecked.
 
 image::sd2.png[]
 
