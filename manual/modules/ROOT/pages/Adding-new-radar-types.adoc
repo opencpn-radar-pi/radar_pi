@@ -55,4 +55,4 @@ etc. This is all generic code that you will just get for `free'.
 Once you’ve started you should start sending us pull requests so that we
 can share your work with others with the same radar.
 
-xref:Home.adoc[Back to overview Plugin radar_pi]
+xref:index.adoc[Back to overview Plugin radar_pi]

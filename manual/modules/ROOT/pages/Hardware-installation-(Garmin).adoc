@@ -128,4 +128,4 @@ additional IP address (aliases) as required. Use IP address
 alias IP addresses may only be set if a static IP addresses are
 enabled, and DHCP auto configuration is not used.
 
-xref:Home.adoc[Back to overview Plugin radar_pi]
+xref:index.adoc[Back to overview Plugin radar_pi]

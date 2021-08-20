@@ -1,7 +1,7 @@
 site:
   title: Radar Plugin Manual
   url:  https://nowhere.net
-  start_page: radar:ROOT:Home.adoc
+  start_page: radar:ROOT:index.adoc
 
 content:
   sources:
