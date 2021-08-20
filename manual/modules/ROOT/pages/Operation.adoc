@@ -203,4 +203,4 @@ radars this is not really useful.
 It allows you to set both the _on_ time and the _standby_ time of
 the radar. When activated the status will be shown at the _Control menu > Start/Stopp_ button.
 
-xref:Home.adoc[Back to overview Plugin radar_pi]
+xref:index.adoc[Back to overview Plugin radar_pi]

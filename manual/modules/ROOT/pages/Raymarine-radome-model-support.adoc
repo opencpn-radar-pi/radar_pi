@@ -60,4 +60,4 @@ Plugin Support:
 * Yes = This is what the original plugin by ab2knovs (https://github.com/ab2nkovs/RMRadar_pi) claimed to support 
 * NY = Not yet, please help if you have such a scanner
 
-xref:Home.adoc[Back to overview Plugin radar_pi]
+xref:index.adoc[Back to overview Plugin radar_pi]

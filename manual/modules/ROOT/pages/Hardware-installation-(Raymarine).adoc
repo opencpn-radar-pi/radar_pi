@@ -23,4 +23,4 @@ display.
 
 xref:Raymarine-radome-model-support.adoc[Supported Raymarine models]
 
-xref:Home.adoc[Back to overview Plugin radar_pi]
+xref:index.adoc[Back to overview Plugin radar_pi]

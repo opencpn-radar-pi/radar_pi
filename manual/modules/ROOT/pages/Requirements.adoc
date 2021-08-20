@@ -41,4 +41,4 @@ overlay is not useful at anchor or other zero/low speed situations.
 Also is the COG affected by leeway and currents and may point sideways 
 leading to a misplaced overlay picture.
 
-xref:Home.adoc[Back to overview Plugin radar_pi]
+xref:index.adoc[Back to overview Plugin radar_pi]
