@@ -130,4 +130,4 @@ from your GNSS as the heading input, but this is not enabled by default.
 (Using compass heading works more securely.) Go to the _Options > Plugins >
 Radar > Preferences_ page to enable it.
 
-xref:Home.adoc[Back to overview Plugin radar_pi]
+xref:index.adoc[Back to overview Plugin radar_pi]

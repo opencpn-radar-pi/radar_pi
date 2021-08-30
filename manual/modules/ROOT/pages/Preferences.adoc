@@ -66,4 +66,4 @@ producing
 
 And lastly, you can re-select your radar types.
 
-xref:Home.adoc[Back to overview Plugin radar_pi]
+xref:index.adoc[Back to overview Plugin radar_pi]
