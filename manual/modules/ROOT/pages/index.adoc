@@ -1,7 +1,6 @@
+= ShipDriver
 
-== ShipDriver
-
-=== Links
+== Links
 
 Test
 
@@ -14,7 +13,7 @@ Forum:
 http://www.cruisersforum.com/forums/f134/shipdriver-another-beta-194030.html[Cruiser's
 Forum ShipDriver Thread]
 
-=== 1. What and Why
+== 1. What and Why
 
 image::sd10.png[]
 
@@ -26,7 +25,7 @@ situations. This could be useful for training purposes.The simulation
 can extend to multiplayer scenarios where AIS data from one simulator is
 sent across a network to another user.
 
-=== 2. Install
+== 2. Install
 
 Download the installer.
 
@@ -34,7 +33,7 @@ https://github.com/Rasbats/ShipDriver_pi/releases
 
 Windows: Run the .exe file.
 
-=== 3. Standard actions
+== 3. Standard actions
 
 Enable the plugin using Tools→Plugins and finding the ShipDriver entry.
 Press the Enable button.
@@ -92,9 +91,9 @@ the rudder position. There is also a digital readout, either side of the
 image::sd11.png[]
 
 
-=== 4. Options
+== 4. Options
 
-==== Auto
+=== Auto
 
 The 'Auto' button directly controls the heading. 'Standby' stops the
 function. Using the tiller while the Auto function is active will
@@ -106,7 +105,7 @@ override and stop 'Auto'.
 image::sd14.png[]
 
 
-==== Sail
+=== Sail
 
 'Sail' uses the wind data from a Grib file to determine the speed of the
 boat. A polar from an 'Open 60' forms the basis for this. Press 'Sail'.
@@ -124,7 +123,7 @@ when 'Sail' is active the button changes colour from green to red. Press
 'Sail' again to stop this mode.
 
 [#ais]
-==== AIS
+=== AIS
 
 In Tools→Plugins the 'Preferences' button for ShipDriver is used to
 select the AIS options.
@@ -161,7 +160,7 @@ target.
 image::sd22.png[]
 
 
-==== AIS Transmission
+=== AIS Transmission
 
 Using Tools→Plugins and 'Preferences' for the plugin select the
 'Transmit' option.
@@ -180,4 +179,4 @@ on a network it is possible to transmit the data to another computer
 running ShipDriver allowing two users to simulate collision avoidance
 situations.
 
-=== 5. FAQ
+== 5. FAQ
