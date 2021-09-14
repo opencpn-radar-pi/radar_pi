@@ -121,6 +121,11 @@ if [ -e update-ignored ]; then
     done
 fi
 
+# Add files which are simple additions
+for f in $(git diff --staged --name-only --diff-filter=A); do
+    git add $f
+done
+
 
 # Create or update version file
 echo "# Created by update-templates" > cmake/TemplateVersion
