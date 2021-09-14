@@ -7,10 +7,11 @@ is to
 
   - Make sure the plugin repo is clean (commit or stash changes)
   - Bootstrap process by downloading script and add it to repo.
+  - Pin files which should not be updated.
   - Run script
   - Inspect the results, handle possible conflicts and commit the
     changes.
-
+  - Upstream local changes to shipdriver templates
 
 Bootstrapping
 -------------
@@ -27,7 +28,8 @@ Linux:
     $ git commit -m "Add update-templates script"
 
 It is also possible to use wget instead of curl, like
-`wget $repo/update-templates`.
+`wget $repo/update-templates`. Windows works the same way, except that
+the `chmod` command does not make sense here and hence is omitted.
 
 
 Bootstrap - Windows
@@ -48,6 +50,14 @@ Using the Windows command CLI goes like:
     > git commit -m "Add update-templates script"
 
 
+Pin files which should not be updated
+-------------------------------------
+
+If there are files which are known to have local modifications, list these
+files (one per line) in a file named *update-ignored*.  This file is not
+present by default, and needs to be created and committed if used.
+
+
 Running
 -------
 
@@ -60,7 +70,7 @@ Usage summary:
 
     update-templates [-t] [treeish]
 
-The *-t* option adds a *-X theirs* to the git merge performed. It will 
+The *-t* option adds a *-X theirs* to the git merge performed. It will
 resolve all conflicts by using the upstream shipdriver stuff. By default,
 the conflicts will be unresolved in the results.
 
@@ -75,8 +85,8 @@ Inspecting results and committing
 ---------------------------------
 
 The basic check is `git status`. This will display a list of modified or
-added files. `git diff --staged <filename>` shows how a specific file is
-modified.
+added files. `git diff --staged <filename>` lists files which are unmerged
+and thus needs handling.
 
 If the template files have local changes there might be conflicts. These
 can be resolved manually by editing the conflicting file.
@@ -88,15 +98,21 @@ Another option is to apply all changes unconditionally, basically dropping
 local changes using `git checkout shipdriver/master <file>` -- this also
 resolves a possible conflict.
 
+`git diff HEAD upstream/master` for file or directory shows the applied
+changes.  A typical sequence is
+
+    $ git diff --stat HEAD upstream/master ci    # list files changed in ci/
+    $ git diff HEAD upstream/master ci           # list the actual diff(s)
+    $ git checkout upstream/master ci            # Accept all changes
+
 Note that changes might be required in other files like CMakeLists.txt.
 
 When all looks good changes can be committed using something like
 `git commit -m "Update shipdriver templates."`
 
 
-
-Pin files which should not be updated
--------------------------------------
-
-The script supports a file named *update-ignored*. This is a list of files,
-one per line, which should not be updated in any case.
+Upstreaming local changes to shipdriver
+---------------------------------------
+After resolving conflicts, please consider upstreaming local changes which
+to the shipdriver templates using a PR so that next update runs
+smoother.
