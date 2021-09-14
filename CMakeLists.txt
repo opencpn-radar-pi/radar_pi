@@ -55,19 +55,7 @@ set(OCPN_RELEASE_REPO
 )
 option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
-set(OCPN_TARGET_TUPLE "" CACHE STRING
-  "Target spec: \"platform;version;arch\""
-)
-
-string(TOLOWER "${OCPN_TARGET_TUPLE}" _lc_target)
-if ("${_lc_target}" MATCHES "android*")
-  set(QT_ANDROID ON)
-  # Until we have a proper toolchain file:
-  set(CMAKE_CROSSCOMPILING ON)
-else ()
-  set(QT_ANDROID OFF)
-  add_definitions(-D__OCPN_USE_CURL__)
-endif ()
+include(PluginOptions)
 #
 #
 # -------  Plugin setup --------
