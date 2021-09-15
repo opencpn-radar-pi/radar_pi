@@ -40,6 +40,8 @@ while getopts "tTh" opt; do
     esac
 done
 shift $((OPTIND-1))
+
+set -x
 source_treeish=${1:-"shipdriver/master"}
 
 
@@ -50,28 +52,34 @@ if [ -n "$clean" ]; then
     exit 1
 fi
 
-
-# Set up the shipdriver remote
-if git ls-remote --exit-code shipdriver &>/dev/null; then
-    git remote remove shipdriver
-    echo "Removing existing shipdriver remote."
-fi
-git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
-git remote update shipdriver
-git fetch --tags shipdriver
-
-
-# If we need to update this script, do it and exit
-if [ -z "$test_mode" ]; then
-    if ! git diff --quiet HEAD $source_treeish -- update-templates; then
-        git checkout $source_treeish update-templates
-        cat << EOT
+if [ -z "$UPDATE_TEST" ]; then
+    # Set up the shipdriver remote
+    if git ls-remote --exit-code shipdriver &>/dev/null; then
+        git remote remove shipdriver
+        echo "Removing existing shipdriver remote."
+    fi
+    git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
+    git remote update shipdriver
+    git fetch --tags shipdriver
+    
+    # Create a new update branch and work on that
+    hash=$(git rev-parse --short  $source_treeish)
+    new_branch="update.$hash"
+    if git rev-parse $new_branch &> /dev/null; then git branch -D $new_branch; fi
+    git branch $new_branch $source_treeish 
+    
+    # If we need to update this script, do it and exit
+    if [ -z "$test_mode" ]; then
+        if ! git diff --quiet HEAD $source_treeish -- update-templates; then
+            git checkout $source_treeish update-templates
+            cat << EOT
 update-templates script is updated to latest version. Please commit
 changes and re-run script.
 EOT
-        exit 0
+            exit 0
+        fi
     fi
-fi
+fi 
 
 
 # Merge all changes in shipdriver remote with current branch
