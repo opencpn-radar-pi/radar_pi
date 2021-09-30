@@ -1634,6 +1634,7 @@ RadarLocationInfo RadarInfo::GetRadarLocationInfo() {
 void RadarInfo::SetRadarLocationInfo(const RadarLocationInfo &info) {
   wxCriticalSectionLocker lock(m_exclusive);
   m_radar_location_info = info;
+  LOG_VERBOSE(wxT("Set radar location info to %s"), info.to_string());
 }
 
 void RadarInfo::SetRadarInterfaceAddress(NetworkAddress &ifaddr, NetworkAddress &addr) {

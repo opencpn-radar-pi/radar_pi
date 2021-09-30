@@ -41,6 +41,7 @@ bool RMQuantumControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, 
   int r;
   int one = 1;
 
+#if 0
   // The radar IP address is not used for Navico BR/Halo radars
   if (radaradr.port != 0) {
     // Null
@@ -74,24 +75,32 @@ bool RMQuantumControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, 
     return false;
   }
   LOG_TRANSMIT(wxT("%s transmit socket open"), m_name.c_str());
+#endif
+
   return true;
 }
 
 
 bool RMQuantumControl::TransmitCmd(const uint8_t *msg, int size) {
-  if (m_send_address.IsNull()) {
+  if (m_ri->m_radar_location_info.send_command_addr.IsNull()) {
     wxLogError(wxT("%s Unable to transmit command to unknown radar"), m_name.c_str());
     IF_LOG_AT(LOGLEVEL_TRANSMIT, m_pi->logBinaryData(wxT("not transmitted"), msg, size));
     return false;
+  } else {
+    m_send_address = m_ri->m_radar_location_info.send_command_addr;
   }
-  if (m_radar_socket == INVALID_SOCKET) {
+  SOCKET tx_sock = INVALID_SOCKET;
+  if (m_ri->m_receive != 0) {
+    tx_sock = m_ri->m_receive->GetCommSocket();
+  }
+  if (tx_sock == INVALID_SOCKET) {
     wxLogError(wxT("%s INVALID_SOCKET, Unable to transmit command to unknown radar"), m_name.c_str());
     return false;
   }
 
   struct sockaddr_in send_sock_addr = m_send_address.GetSockAddrIn();
 
-  int sendlen = sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&send_sock_addr, sizeof(send_sock_addr));
+  int sendlen = sendto(tx_sock, (char *)msg, size, 0, (struct sockaddr *)&send_sock_addr, sizeof(send_sock_addr));
   if (sendlen < size) {
     wxLogError(wxT("%s Unable to transmit command: %s"), m_name.c_str(), SOCKETERRSTR);
     IF_LOG_AT(LOGLEVEL_TRANSMIT, m_pi->logBinaryData(wxT("TransmitCmd"), msg, size));
@@ -127,7 +136,15 @@ static uint8_t rd_msg_5s[] = {0x03, 0x89, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x
                               0x9e, 0x03, 0x00, 0x00, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 bool RMQuantumControl::RadarStayAlive() {
-  TransmitCmd(rd_msg_5s, sizeof(rd_msg_5s));
+  static int counter = 0;
+ 
+  TransmitCmd(stay_alive_1sec, sizeof(stay_alive_1sec));
+
+  if(counter == 0)
+    TransmitCmd(rd_msg_5s, sizeof(rd_msg_5s));
+
+  if(counter++ > 4) counter = 0;
+
   return true;
 }
 

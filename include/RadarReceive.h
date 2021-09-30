@@ -72,6 +72,7 @@ class RadarReceive : public wxThread {
    * It should stop running.
    */
   virtual void Shutdown(void) = 0;
+  virtual SOCKET GetCommSocket() { return INVALID_SOCKET; }
 
  protected:
   radar_pi *m_pi;
