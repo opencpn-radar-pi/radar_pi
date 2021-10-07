@@ -283,7 +283,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     }
 
     case CT_RAIN: {  // Rain Clutter
-      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00, 0x00,
+      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00, 
                                      0x01,  // Auto on at offset 5, 01 = manual, 00 = auto (different from the others!)// changed for test
                                      0x00, 0x00};
 
@@ -291,14 +291,14 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
                                     0x28,  // Quantum value at pos 5
                                     0x00, 0x00};
 
-      if (!autoValue) {
-        command_rain_auto[5] = 0;  // rain manual // changed
+      if (state >= RCS_MANUAL) {
+        command_rain_auto[5] = 1;  // rain enabled
         r = TransmitCmd(command_rain_auto, sizeof(command_rain_auto));
         command_rain_set[5] = value;
         LOG_TRANSMIT(wxT("rainvalue= %i, transmitted=%i"), value, command_rain_set[5]);
         r = TransmitCmd(command_rain_set, sizeof(command_rain_set));
       } else {
-        command_rain_auto[5] = 1;  // rain auto
+        command_rain_auto[5] = 0;  // rain disabled
         r = TransmitCmd(command_rain_auto, sizeof(command_rain_auto));
         LOG_TRANSMIT(wxT("rain state == RCS_AUTO_1, value= %i"), value);
       }
@@ -310,7 +310,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
                                     0x00,  // mode value at pos 5
                                     0x00, 0x00};
       command_mode_set[5] = value;
-      LOG_TRANSMIT(wxT("rainvalue= %i, transmitted=%i"), value, command_mode_set[5]);
+      LOG_TRANSMIT(wxT("mode value= %i, transmitted=%i"), value, command_mode_set[5]);
       r = TransmitCmd(command_mode_set, sizeof(command_mode_set));
       break;
     }
@@ -324,7 +324,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
                                     0x01,  //  0 = manual, 1 = auto
                                     0x00, 0x00};
 
-      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00, 0x00,
+      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00,
                                      0x00,  // Auto on at offset 5, manual == 1, auto == 0 (different from the others!)
                                      0x00, 0x00};
 
@@ -345,15 +345,15 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
-    //case CT_INTERFERENCE_REJECTION: { // $$$
-    //  uint8_t rd_msg_interference_rejection[] = {0x07, 0x83, 0x01, 0x00,
-    //                                             0x01,  // Interference rejection at offset 4, 0 - off, 1 - normal, 2 - high
-    //                                             0x00, 0x00, 0x00};
+    case CT_INTERFERENCE_REJECTION: { // $$$
+      uint8_t rd_msg_interference_rejection[] = {0x11, 0x03, 0x28, 0x00,
+                                                 0x01,  // Interference rejection at offset 4, 0 - off, 1 - normal, 2 - high
+                                                 0x00, 0x00, 0x00};
 
-    //  rd_msg_interference_rejection[4] = value;
-    //  r = TransmitCmd(rd_msg_interference_rejection, sizeof(rd_msg_interference_rejection));
-    //  break;
-    //}
+      rd_msg_interference_rejection[4] = value;
+      r = TransmitCmd(rd_msg_interference_rejection, sizeof(rd_msg_interference_rejection));
+      break;
+    }
 
   
       // case CT_DOPPLER: {

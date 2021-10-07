@@ -426,6 +426,7 @@ struct RMRadarReport {
   uint8_t mbs_enabled;  // Main Bang Suppression enabled if 1
 };
 
+#if 0
 struct QuantumRadarReport {
 
   uint8_t unknown[4];    //   0
@@ -457,10 +458,41 @@ struct QuantumRadarReport {
   uint8_t xx12;          //  56  values modified when target expansion off / on
   uint8_t unknown7[91];  //  57
   uint32_t ranges[20];   // 148
-
-
+};
+#else
+struct QuantumRadarReport {
+	uint32_t type; 				    // @0 0x280002
+	uint8_t status; 			    // @4 0 - standby ; 1 - transmitting
+	uint8_t something_1[9];		// @5
+	int16_t bearing_offset;		// @14
+  uint8_t something_14;     // @16
+  uint8_t interference_rejection; // @17
+	uint8_t something_13[2];	// @18
+	uint8_t range_index;	    // @20
+	uint8_t mode; 				    // @21 harbor - 0, coastal - 1, offshore - 2, weather - 3
+	uint8_t gain_auto;			  // @22
+	uint8_t gain;				      // @23
+	uint8_t something_4[2];		// @24
+	uint8_t sea_auto;			    // @26
+	uint8_t sea;				      // @27
+	uint8_t rain_auto;		    // @28
+	uint8_t rain;				      // @29
+	uint8_t something_8[5];		// @30
+	uint8_t something_5;		  // @35
+	uint8_t something_6[2];		// @36
+	uint8_t something_2;		  // @38
+	uint8_t something_3;		  // @39
+	uint8_t something_7[14];	// @40
+	uint8_t target_expansion; // @54
+	uint8_t something_9;		  // @55
+	uint8_t something_10[3];	// @56
+	uint8_t mbs_enabled;		  // @59
+	uint8_t something_11[88];	// @60
+	uint32_t ranges[20];		  // @148
+	uint32_t something_12[8];	// @228
 };
 
+#endif
 
 struct RMRadarFixedReport {
   uint32_t field01;           // 0x010002
@@ -581,7 +613,7 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea, m_ri->m_sea.GetValue(), state);
 
   //state = (bl_pter->rain_auto) ? RCS_MANUAL : RCS_AUTO_1;   $$$
-  state = (RadarControlState)bl_pter->rain_auto;
+  state = bl_pter->rain_auto == 0 ? RCS_OFF : RCS_MANUAL;
   LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_auto=%i"), state, bl_pter->rain_auto);
   m_ri->m_rain.Update(bl_pter->rain);
   m_ri->m_rain.UpdateState(state);
@@ -600,10 +632,10 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   LOG_RECEIVE(wxT("target_expansion updated received= %i, displayed = %i"), bl_pter->target_expansion,
               m_ri->m_target_expansion.GetValue());
 
-  // m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);
+//  m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);
 
-  /*int ba = (int)bl_pter->bearing_offset;
-  m_ri->m_bearing_alignment.Update(ba);*/
+  int ba = (int)bl_pter->bearing_offset;
+  m_ri->m_bearing_alignment.Update(ba);
 
   /*state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
   m_ri->m_tune_fine.Update(bl_pter->tune, state);*/
@@ -612,8 +644,8 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
 
   /*m_ri->m_tune_coarse.UpdateState(state);*/
 
-  /*state = (bl_pter->mbs_enabled > 0) ? RCS_MANUAL : RCS_OFF;
-  m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, RCS_MANUAL);*/
+  state = (bl_pter->mbs_enabled > 0) ? RCS_MANUAL : RCS_OFF;
+  m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, RCS_MANUAL);
 
   /*m_ri->m_warmup_time.Update(bl_pter->warmup_time);
   m_ri->m_signal_strength.Update(bl_pter->signal_strength);*/
@@ -1134,13 +1166,16 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
         }
       }  // end of while, only one spoke per packet
 
-#if 0
+#if 1
       while (iD < 245) {  // fill with zeros 
         *dData++ = 0;
         iD++;
       }
-#endif
+
+      returns_per_line = iD;
+#else
       returns_per_line = qheader->scan_len;
+#endif
       if (returns_per_line > 245) {
         LOG_INFO(wxT("Error returns_per_line too large %i"), returns_per_line);
         returns_per_line = 245;
