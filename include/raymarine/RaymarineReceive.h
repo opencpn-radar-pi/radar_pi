@@ -49,6 +49,7 @@ class RaymarineReceive : public RadarReceive {
  public:
    RaymarineReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr)
       : RadarReceive(pi, ri)
+      , m_target_expansion(false)
       , m_comm_socket(INVALID_SOCKET) 
   {
     m_info.serialNr = wxT(" ");
@@ -128,6 +129,7 @@ class RaymarineReceive : public RadarReceive {
 
   void ProcessRMReport(const UINT8 *data, int len);
   int m_range_meters, m_updated_range;
+  bool m_target_expansion;
   void ProcessFixedReport(const UINT8 *data, int len);
   void ProcessScanData(const UINT8 *data, int len);
   void ProcessQuantumScanData(const UINT8 *data, int len);

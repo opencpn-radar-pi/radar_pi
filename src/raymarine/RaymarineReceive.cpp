@@ -628,7 +628,8 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
     m_ri->m_all_to_auto.Update(0);
   }
 
-   m_ri->m_target_expansion.Update(bl_pter->target_expansion);
+  m_target_expansion = (bl_pter->target_expansion != 0 ? true : false);
+  m_ri->m_target_expansion.Update(bl_pter->target_expansion);
   LOG_RECEIVE(wxT("target_expansion updated received= %i, displayed = %i"), bl_pter->target_expansion,
               m_ri->m_target_expansion.GetValue());
 
@@ -1166,7 +1167,7 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
         }
       }  // end of while, only one spoke per packet
 
-#if 1
+#if 0
       while (iD < 245) {  // fill with zeros 
         *dData++ = 0;
         iD++;
@@ -1226,7 +1227,7 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
       }
      // LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle,
         // angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
-      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters/*qheader->range * 6*/, nowMillis);
+      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, /*m_range_meters*/qheader->range * (m_target_expansion ? 12 : 6), nowMillis);
   }
 }
 
