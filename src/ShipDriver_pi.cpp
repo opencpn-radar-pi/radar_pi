@@ -261,6 +261,10 @@ void ShipDriver_pi::ShowPreferencesDialog(wxWindow* parent)
 
         SaveConfig();
 
+        delete Pref;
+        Pref = NULL;
+        
+
         RequestRefresh(m_parent_window); // refresh main window
     }
 }
