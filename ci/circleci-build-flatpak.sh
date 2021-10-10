@@ -12,6 +12,9 @@ set -x
 sudo apt update
 
 
+# Avoid using outdated TLS certificates, see #210.
+sudo apt install --reinstall  ca-certificates
+
 # Install flatpak and flatpak-builder
 sudo apt install flatpak flatpak-builder
 flatpak remote-add --user --if-not-exists \
