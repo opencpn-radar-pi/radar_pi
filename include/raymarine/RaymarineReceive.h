@@ -48,7 +48,10 @@ PLUGIN_BEGIN_NAMESPACE
 class RaymarineReceive : public RadarReceive {
  public:
    RaymarineReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr)
-      : RadarReceive(pi, ri) {
+      : RadarReceive(pi, ri)
+      , m_target_expansion(false)
+      , m_comm_socket(INVALID_SOCKET) 
+  {
     m_info.serialNr = wxT(" ");
     m_info.spoke_data_addr = dataAddr;
     m_info.report_addr = reportAddr;
@@ -95,6 +98,7 @@ class RaymarineReceive : public RadarReceive {
   void *Entry(void);
   void Shutdown(void);
   wxString GetInfoStatus();
+  SOCKET GetCommSocket() { return m_comm_socket; }
 
   NetworkAddress m_interface_addr;
   RadarLocationInfo m_info;
@@ -110,6 +114,7 @@ class RaymarineReceive : public RadarReceive {
 
   SOCKET m_receive_socket;  // Where we listen for message from m_send_socket
   SOCKET m_send_socket;     // A message to this socket will interrupt select() and allow immediate shutdown
+  SOCKET m_comm_socket;     // Radar communication socket
 
   struct ifaddrs *m_interface_array;
   struct ifaddrs *m_interface;
@@ -124,6 +129,7 @@ class RaymarineReceive : public RadarReceive {
 
   void ProcessRMReport(const UINT8 *data, int len);
   int m_range_meters, m_updated_range;
+  bool m_target_expansion;
   void ProcessFixedReport(const UINT8 *data, int len);
   void ProcessScanData(const UINT8 *data, int len);
   void ProcessQuantumScanData(const UINT8 *data, int len);

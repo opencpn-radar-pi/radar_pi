@@ -41,6 +41,7 @@ bool RMQuantumControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, 
   int r;
   int one = 1;
 
+#if 0
   // The radar IP address is not used for Navico BR/Halo radars
   if (radaradr.port != 0) {
     // Null
@@ -74,24 +75,32 @@ bool RMQuantumControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, 
     return false;
   }
   LOG_TRANSMIT(wxT("%s transmit socket open"), m_name.c_str());
+#endif
+
   return true;
 }
 
 
 bool RMQuantumControl::TransmitCmd(const uint8_t *msg, int size) {
-  if (m_send_address.IsNull()) {
+  if (m_ri->m_radar_location_info.send_command_addr.IsNull()) {
     wxLogError(wxT("%s Unable to transmit command to unknown radar"), m_name.c_str());
     IF_LOG_AT(LOGLEVEL_TRANSMIT, m_pi->logBinaryData(wxT("not transmitted"), msg, size));
     return false;
+  } else {
+    m_send_address = m_ri->m_radar_location_info.send_command_addr;
   }
-  if (m_radar_socket == INVALID_SOCKET) {
+  SOCKET tx_sock = INVALID_SOCKET;
+  if (m_ri->m_receive != 0) {
+    tx_sock = m_ri->m_receive->GetCommSocket();
+  }
+  if (tx_sock == INVALID_SOCKET) {
     wxLogError(wxT("%s INVALID_SOCKET, Unable to transmit command to unknown radar"), m_name.c_str());
     return false;
   }
 
   struct sockaddr_in send_sock_addr = m_send_address.GetSockAddrIn();
 
-  int sendlen = sendto(m_radar_socket, (char *)msg, size, 0, (struct sockaddr *)&send_sock_addr, sizeof(send_sock_addr));
+  int sendlen = sendto(tx_sock, (char *)msg, size, 0, (struct sockaddr *)&send_sock_addr, sizeof(send_sock_addr));
   if (sendlen < size) {
     wxLogError(wxT("%s Unable to transmit command: %s"), m_name.c_str(), SOCKETERRSTR);
     IF_LOG_AT(LOGLEVEL_TRANSMIT, m_pi->logBinaryData(wxT("TransmitCmd"), msg, size));
@@ -127,7 +136,15 @@ static uint8_t rd_msg_5s[] = {0x03, 0x89, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x
                               0x9e, 0x03, 0x00, 0x00, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 bool RMQuantumControl::RadarStayAlive() {
-  TransmitCmd(rd_msg_5s, sizeof(rd_msg_5s));
+  static int counter = 0;
+ 
+  TransmitCmd(stay_alive_1sec, sizeof(stay_alive_1sec));
+
+  if(counter == 0)
+    TransmitCmd(rd_msg_5s, sizeof(rd_msg_5s));
+
+  if(counter++ > 4) counter = 0;
+
   return true;
 }
 
@@ -266,7 +283,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     }
 
     case CT_RAIN: {  // Rain Clutter
-      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00, 0x00,
+      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00, 
                                      0x01,  // Auto on at offset 5, 01 = manual, 00 = auto (different from the others!)// changed for test
                                      0x00, 0x00};
 
@@ -274,14 +291,14 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
                                     0x28,  // Quantum value at pos 5
                                     0x00, 0x00};
 
-      if (!autoValue) {
-        command_rain_auto[5] = 0;  // rain manual // changed
+      if (state >= RCS_MANUAL) {
+        command_rain_auto[5] = 1;  // rain enabled
         r = TransmitCmd(command_rain_auto, sizeof(command_rain_auto));
         command_rain_set[5] = value;
         LOG_TRANSMIT(wxT("rainvalue= %i, transmitted=%i"), value, command_rain_set[5]);
         r = TransmitCmd(command_rain_set, sizeof(command_rain_set));
       } else {
-        command_rain_auto[5] = 1;  // rain auto
+        command_rain_auto[5] = 0;  // rain disabled
         r = TransmitCmd(command_rain_auto, sizeof(command_rain_auto));
         LOG_TRANSMIT(wxT("rain state == RCS_AUTO_1, value= %i"), value);
       }
@@ -293,7 +310,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
                                     0x00,  // mode value at pos 5
                                     0x00, 0x00};
       command_mode_set[5] = value;
-      LOG_TRANSMIT(wxT("rainvalue= %i, transmitted=%i"), value, command_mode_set[5]);
+      LOG_TRANSMIT(wxT("mode value= %i, transmitted=%i"), value, command_mode_set[5]);
       r = TransmitCmd(command_mode_set, sizeof(command_mode_set));
       break;
     }
@@ -307,7 +324,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
                                     0x01,  //  0 = manual, 1 = auto
                                     0x00, 0x00};
 
-      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00, 0x00,
+      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00,
                                      0x00,  // Auto on at offset 5, manual == 1, auto == 0 (different from the others!)
                                      0x00, 0x00};
 
@@ -328,15 +345,15 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
-    //case CT_INTERFERENCE_REJECTION: { // $$$
-    //  uint8_t rd_msg_interference_rejection[] = {0x07, 0x83, 0x01, 0x00,
-    //                                             0x01,  // Interference rejection at offset 4, 0 - off, 1 - normal, 2 - high
-    //                                             0x00, 0x00, 0x00};
+    case CT_INTERFERENCE_REJECTION: { // $$$
+      uint8_t rd_msg_interference_rejection[] = {0x11, 0x03, 0x28, 0x00,
+                                                 0x01,  // Interference rejection at offset 4, 0 - off, 1 - normal, 2 - high
+                                                 0x00, 0x00, 0x00};
 
-    //  rd_msg_interference_rejection[4] = value;
-    //  r = TransmitCmd(rd_msg_interference_rejection, sizeof(rd_msg_interference_rejection));
-    //  break;
-    //}
+      rd_msg_interference_rejection[4] = value;
+      r = TransmitCmd(rd_msg_interference_rejection, sizeof(rd_msg_interference_rejection));
+      break;
+    }
 
   
       // case CT_DOPPLER: {

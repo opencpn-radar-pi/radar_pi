@@ -33,7 +33,7 @@
  */
 
 #include "raymarine/RaymarineLocate.h"
-
+#include "MessageBox.h"
 #include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -41,7 +41,7 @@ PLUGIN_BEGIN_NAMESPACE
 //
 // Raymarine E120 radars and compatible report their addresses here, (including the version?) #.
 //
-static const NetworkAddress reportRaymarineCommon(224, 0, 0, 1, 5800);
+static const NetworkAddress reportRaymarineCommon(232, 1, 1, 1, 5800);
 
 #define SECONDS_PER_SELECT (1)
 #define PERIOD_UNTIL_CARD_REFRESH (60)
@@ -90,6 +90,7 @@ void RaymarineLocate::UpdateEthernetCards() {
           struct sockaddr_in *sa = (struct sockaddr_in *)addr->ifa_addr;
           m_interface_addr[i].addr = sa->sin_addr;
           m_interface_addr[i].port = 0;
+          wxLogError(wxT("Attempting to start receive socket on  %s"), reportRaymarineCommon.to_string());
           m_socket[i] = startUDPMulticastReceiveSocket(m_interface_addr[i], reportRaymarineCommon, error);
           LOG_VERBOSE(wxT("RaymarineLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
           i++;
@@ -222,12 +223,12 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
     infoA.serialNr = wxT(" ");  // empty
     infoA.spoke_data_addr.addr.s_addr = ntohl(rRec->data_ip);
     infoA.spoke_data_addr.port = ntohs(rRec->data_port);
-    infoA.report_addr.addr.s_addr = ntohl(rRec->data_ip);
-    infoA.report_addr.port = ntohs(rRec->data_port);
+    infoA.report_addr.addr.s_addr = (raymarine_radar_code == 0x28) ? ntohl(rRec->radar_ip) : ntohl(rRec->data_ip);
+    infoA.report_addr.port = (raymarine_radar_code == 0x28) ? ntohs(3456) : ntohs(rRec->data_port);
     infoA.send_command_addr.addr.s_addr = ntohl(rRec->radar_ip);
     infoA.send_command_addr.port = ntohs(rRec->radar_port);
     NetworkAddress radar_ipA = radar_address;
-    radar_ipA.port = htons(RO_PRIMARY);
+    radar_ipA.port = (raymarine_radar_code == 0x28) ? ntohs(rRec->radar_port) : htons(RO_PRIMARY);
     
       LOG_INFO(wxT("Located raymarine radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(),
                interface_address.FormatNetworkAddress(), infoA.to_string());
@@ -247,6 +248,7 @@ void RaymarineLocate::FoundRaymarineLocationInfo(const NetworkAddress &addr, con
 
   // Check if the info is OK
   if (info.report_addr.IsNull() || info.send_command_addr.IsNull()) {
+    LOG_INFO(wxT("RaymarineLocate::FoundRaymarineLocationInfo something is null")); 
     return;
   }
 

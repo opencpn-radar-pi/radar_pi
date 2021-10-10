@@ -132,7 +132,10 @@ END_EVENT_TABLE()
 //
 //---------------------------------------------------------------------------------------------------------
 
-radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr) {
+radar_pi::radar_pi(void *ppimgr) 
+  : opencpn_plugin_116(ppimgr)
+  , m_raymarine_locator(0) 
+{
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
   m_predicted_position_initialised = false;
@@ -368,7 +371,7 @@ void radar_pi::StartRadarLocators(size_t r) {
       wxLogError(wxT("unable to start Navico Radar Locator thread"));
     }
   }
-  if (m_radar[r]->m_radar_type == RM_E120 && m_raymarine_locator == NULL || m_radar[r]->m_radar_type == RM_QUANTUM) {
+  if ((m_radar[r]->m_radar_type == RM_E120 || m_radar[r]->m_radar_type == RM_QUANTUM) && m_raymarine_locator == NULL) {
     m_raymarine_locator = new RaymarineLocate(this);
     if (m_raymarine_locator->Run() != wxTHREAD_NO_ERROR) {
       wxLogError(wxT("unable to start Raymarine Radar Locator thread"));

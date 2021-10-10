@@ -93,7 +93,16 @@ SOCKET RaymarineReceive::PickNextEthernetCard() {
     m_interface_addr.addr = ((struct sockaddr_in *)m_interface->ifa_addr)->sin_addr;
     m_interface_addr.port = 0;
   }
-  socket = GetNewReportSocket();
+
+  if (m_ri->m_radar_type == RM_QUANTUM) {
+    socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (socket != INVALID_SOCKET) {
+      int one = 1;
+      setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
+    }
+  } else {
+    socket = GetNewReportSocket();
+  }
   return socket;
 }
 
@@ -139,7 +148,7 @@ SOCKET RaymarineReceive::GetNewReportSocket() {
     s << _("Scanning interface") << wxT(" ") << addr;
     SetInfoStatus(s);
   } else {
-    s << error;
+    s << _("Interface ") << addr << " error: " << error;
     SetInfoStatus(s);
     wxLogError(wxT("%s Unable to listen to socket: %s"), m_ri->m_name, error.c_str());
     LOG_RECEIVE(wxT("%s invalid socket interface= %s for reportaddr= %s"), m_ri->m_name, addr.c_str(), rep_addr.c_str());
@@ -169,18 +178,30 @@ void *RaymarineReceive::Entry(void) {
   struct sockaddr_in radarFoundAddr;
   sockaddr_in *radar_addr = 0;
 
-  SOCKET reportSocket = INVALID_SOCKET;
+//  SOCKET reportSocket = INVALID_SOCKET;
   LOG_VERBOSE(wxT("RamarineReceive thread %s starting"), m_ri->m_name.c_str());
-  reportSocket = GetNewReportSocket();  // Start using the same interface_addr as previous time
+  if(m_ri->m_radar_type != RM_QUANTUM) {
+    m_comm_socket = GetNewReportSocket();  // Start using the same interface_addr as previous time
+  }
 
   while (m_receive_socket != INVALID_SOCKET) {
-    if (reportSocket == INVALID_SOCKET) {
-      reportSocket = PickNextEthernetCard();
-      if (reportSocket != INVALID_SOCKET) {
-        no_data_timeout = 0;
-        no_spoke_timeout = 0;
+    if (m_comm_socket == INVALID_SOCKET) {
+      if (m_ri->m_radar_type == RM_QUANTUM) {
+        m_comm_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        if (m_comm_socket != INVALID_SOCKET) {
+          int one = 1;
+          setsockopt(m_comm_socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
+        }
+        m_ri->m_control->RadarStayAlive();
+      } else {  
+        m_comm_socket = PickNextEthernetCard();
       }
     }
+    if (m_comm_socket != INVALID_SOCKET) {
+      no_data_timeout = 0;
+      no_spoke_timeout = 0;
+    }
+
     struct timeval tv = {(long)0, (long)(MILLIS_PER_SELECT * 1000)};
 
     fd_set fdin;
@@ -191,9 +212,9 @@ void *RaymarineReceive::Entry(void) {
       FD_SET(m_receive_socket, &fdin);
       maxFd = MAX(m_receive_socket, maxFd);
     }
-    if (reportSocket != INVALID_SOCKET) {
-      FD_SET(reportSocket, &fdin);
-      maxFd = MAX(reportSocket, maxFd);
+    if (m_comm_socket != INVALID_SOCKET) {
+      FD_SET(m_comm_socket, &fdin);
+      maxFd = MAX(m_comm_socket, maxFd);
     }
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
     if (r > 0) {
@@ -206,9 +227,9 @@ void *RaymarineReceive::Entry(void) {
         }
       }
 
-      if (reportSocket != INVALID_SOCKET && FD_ISSET(reportSocket, &fdin)) {
+      if (m_comm_socket != INVALID_SOCKET && FD_ISSET(m_comm_socket, &fdin)) {
         rx_len = sizeof(rx_addr);
-        r = recvfrom(reportSocket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
+        r = recvfrom(m_comm_socket, (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
         if (r > 0) {
           NetworkAddress radar_address;
           radar_address.addr = rx_addr.ipv4.sin_addr;
@@ -236,12 +257,14 @@ void *RaymarineReceive::Entry(void) {
     } else {  // no data received -> select timeout
       if (no_data_timeout >= SECONDS_SELECT(2)) {
         no_data_timeout = 0;
-        if (reportSocket != INVALID_SOCKET) {
-          closesocket(reportSocket);
-          reportSocket = INVALID_SOCKET;
+        if (m_comm_socket != INVALID_SOCKET) {
+          if(m_ri->m_radar_type != RM_QUANTUM) {
+            closesocket(m_comm_socket);
+            m_comm_socket = INVALID_SOCKET;
+            m_interface_addr = NetworkAddress();
+            radar_addr = 0;
+          }
           m_ri->m_state.Update(RADAR_OFF);
-          m_interface_addr = NetworkAddress();
-          radar_addr = 0;
         }
       } else {
         no_data_timeout++;
@@ -256,20 +279,26 @@ void *RaymarineReceive::Entry(void) {
     }
 
     if (!(m_info == m_ri->GetRadarLocationInfo())) {
-      // Navicolocate modified the RadarInfo in settings
-      closesocket(reportSocket);
-      reportSocket = INVALID_SOCKET;
+      if(m_ri->m_radar_type != RM_QUANTUM) {
+        closesocket(m_comm_socket);
+        m_comm_socket = INVALID_SOCKET;
+      }
+      else {
+        m_ri->m_control->RadarStayAlive();
+        no_data_timeout = 0;
+        no_spoke_timeout = 0;
+      }
     };
 
-    if (reportSocket == INVALID_SOCKET) {
-      // If we closed the reportSocket then close the command socket
+    if (m_comm_socket == INVALID_SOCKET) {
+      // If we closed the m_comm_socket then close the command socket
     }
   }  // endless loop until thread destroy
 
   LOG_VERBOSE(wxT("%s received stop instruction, stopping"), m_ri->m_name.c_str());
 
-  if (reportSocket != INVALID_SOCKET) {
-    closesocket(reportSocket);
+  if (m_comm_socket != INVALID_SOCKET) {
+    closesocket(m_comm_socket);
   }
   if (m_send_socket != INVALID_SOCKET) {
     closesocket(m_send_socket);
@@ -397,6 +426,7 @@ struct RMRadarReport {
   uint8_t mbs_enabled;  // Main Bang Suppression enabled if 1
 };
 
+#if 0
 struct QuantumRadarReport {
 
   uint8_t unknown[4];    //   0
@@ -428,10 +458,41 @@ struct QuantumRadarReport {
   uint8_t xx12;          //  56  values modified when target expansion off / on
   uint8_t unknown7[91];  //  57
   uint32_t ranges[20];   // 148
-
-
+};
+#else
+struct QuantumRadarReport {
+	uint32_t type; 				    // @0 0x280002
+	uint8_t status; 			    // @4 0 - standby ; 1 - transmitting
+	uint8_t something_1[9];		// @5
+	int16_t bearing_offset;		// @14
+  uint8_t something_14;     // @16
+  uint8_t interference_rejection; // @17
+	uint8_t something_13[2];	// @18
+	uint8_t range_index;	    // @20
+	uint8_t mode; 				    // @21 harbor - 0, coastal - 1, offshore - 2, weather - 3
+	uint8_t gain_auto;			  // @22
+	uint8_t gain;				      // @23
+	uint8_t something_4[2];		// @24
+	uint8_t sea_auto;			    // @26
+	uint8_t sea;				      // @27
+	uint8_t rain_auto;		    // @28
+	uint8_t rain;				      // @29
+	uint8_t something_8[5];		// @30
+	uint8_t something_5;		  // @35
+	uint8_t something_6[2];		// @36
+	uint8_t something_2;		  // @38
+	uint8_t something_3;		  // @39
+	uint8_t something_7[14];	// @40
+	uint8_t target_expansion; // @54
+	uint8_t something_9;		  // @55
+	uint8_t something_10[3];	// @56
+	uint8_t mbs_enabled;		  // @59
+	uint8_t something_11[88];	// @60
+	uint32_t ranges[20];		  // @148
+	uint32_t something_12[8];	// @228
 };
 
+#endif
 
 struct RMRadarFixedReport {
   uint32_t field01;           // 0x010002
@@ -552,7 +613,7 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea, m_ri->m_sea.GetValue(), state);
 
   //state = (bl_pter->rain_auto) ? RCS_MANUAL : RCS_AUTO_1;   $$$
-  state = (RadarControlState)bl_pter->rain_auto;
+  state = bl_pter->rain_auto == 0 ? RCS_OFF : RCS_MANUAL;
   LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_auto=%i"), state, bl_pter->rain_auto);
   m_ri->m_rain.Update(bl_pter->rain);
   m_ri->m_rain.UpdateState(state);
@@ -567,14 +628,15 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
     m_ri->m_all_to_auto.Update(0);
   }
 
-   m_ri->m_target_expansion.Update(bl_pter->target_expansion);
+  m_target_expansion = (bl_pter->target_expansion != 0 ? true : false);
+  m_ri->m_target_expansion.Update(bl_pter->target_expansion);
   LOG_RECEIVE(wxT("target_expansion updated received= %i, displayed = %i"), bl_pter->target_expansion,
               m_ri->m_target_expansion.GetValue());
 
-  // m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);
+//  m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);
 
-  /*int ba = (int)bl_pter->bearing_offset;
-  m_ri->m_bearing_alignment.Update(ba);*/
+  int ba = (int)bl_pter->bearing_offset;
+  m_ri->m_bearing_alignment.Update(ba);
 
   /*state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
   m_ri->m_tune_fine.Update(bl_pter->tune, state);*/
@@ -583,8 +645,8 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
 
   /*m_ri->m_tune_coarse.UpdateState(state);*/
 
-  /*state = (bl_pter->mbs_enabled > 0) ? RCS_MANUAL : RCS_OFF;
-  m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, RCS_MANUAL);*/
+  state = (bl_pter->mbs_enabled > 0) ? RCS_MANUAL : RCS_OFF;
+  m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, RCS_MANUAL);
 
   /*m_ri->m_warmup_time.Update(bl_pter->warmup_time);
   m_ri->m_signal_strength.Update(bl_pter->signal_strength);*/
@@ -831,16 +893,6 @@ struct Header3 {
   uint32_t fieldx_7;  // 0x00000001
 };
 
-struct QuantumHeader {
-  uint32_t field01;   //
-  uint16_t counter1;  //
-  uint16_t field02;
-  uint32_t field03;
-  uint32_t field04;   //
-  uint16_t counter2;  //
-  uint16_t data_len;
-};
-
 struct Header4 {     // No idea what is in there
   uint32_t field01;  // 0x00000002
   uint32_t length;   // 0x0000001c
@@ -1036,25 +1088,48 @@ void RaymarineReceive::ProcessScanData(const UINT8 *data, int len) {
   }
 }
 
+struct QuantumHeader {
+  uint32_t field01;   //
+  uint16_t counter1;  //
+  uint16_t field02;
+  uint32_t field03;
+  uint32_t field04;   //
+  uint16_t counter2;  //
+  uint16_t data_len;
+};
+
+struct SQuantumScanDataHeader {
+	uint32_t type;			// 0x00280003
+	uint16_t seq_num;
+	uint16_t something_1;	// 0x0101
+	uint16_t scan_len;		// 0x002b
+	uint16_t num_spokes;	// 0x00fa
+	uint16_t something_3;	// 0x0008
+	uint16_t range;	      // 0x1d - 1/16, 0x39 - 1/8
+	uint16_t azimuth;	
+	uint16_t data_len;
+};
+
 void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
   if (m_range_meters == 1) {
     LOG_RECEIVE(wxT("Invalid range"));
     return;
   }
-  QuantumHeader *qheader = (QuantumHeader *)data;
+  SQuantumScanDataHeader *qheader = (SQuantumScanDataHeader *)data;
   //m_pi->logBinaryData(wxT("Scandata_x"), data, len);
-  if (len > (int)(sizeof(Header1) /* + sizeof(Header3)*/)) {
-    Header1 *pHeader = (Header1 *)data;
+  if (len > (int)(sizeof(SQuantumScanDataHeader))) {
+//    Header1 *pHeader = (Header1 *)data;
     bool HDtype = true;
     u_int returns_per_line;
-
-    if (pHeader->field01 == 0x280003) {
+#if 0
+    if (qheader->type == 0x280003) {
     } else if (pHeader->field01 == 0x280002) {
       LOG_INFO(wxT("$$$ counters 0x280002 counter1=%i, 2= %i, 3=%i"), qheader->counter1, qheader->counter2, qheader->data_len);
       m_pi->logBinaryData(wxT("Scandata_x"), data, len);  // $$$ remove
 
       return;
     }
+#endif
 
     time_t now = time(0);
     m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
@@ -1079,25 +1154,29 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
           *dData++ = *sData;
           sData++;
           iS++;
-          iD++;
-          
+          iD++; 
         } else {
           uint8_t nFill = sData[1];  // number to be filled
           uint8_t cFill = sData[2];  // data to be filled
           for (int i = 0; i < nFill; i++) {
             *dData++ = cFill;
-            
           }
           sData += 3;
           iS += 3;
           iD += nFill;
         }
       }  // end of while, only one spoke per packet
+
+#if 0
       while (iD < 245) {  // fill with zeros 
         *dData++ = 0;
         iD++;
       }
+
       returns_per_line = iD;
+#else
+      returns_per_line = qheader->scan_len;
+#endif
       if (returns_per_line > 245) {
         LOG_INFO(wxT("Error returns_per_line too large %i"), returns_per_line);
         returns_per_line = 245;
@@ -1108,7 +1187,7 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
 
       /*nextOffset += pSData->length;*/
       m_ri->m_statistics.spokes++;
-      unsigned int spoke = qheader->counter2;
+      unsigned int spoke = qheader->azimuth;
       if (m_next_spoke >= 0 && (int)spoke != m_next_spoke) {
         if ((int)spoke > m_next_spoke) {
           m_ri->m_statistics.missing_spokes += spoke - m_next_spoke;
@@ -1119,7 +1198,7 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
       m_next_spoke = spoke + 1;
       headerIdx++;
       m_pi->SetRadarHeading();
-      int hdt_raw = 250. * (m_pi->GetHeadingTrue() + m_pi->m_vp_rotation) / 360.;
+      int hdt_raw = qheader->num_spokes * (m_pi->GetHeadingTrue() + m_pi->m_vp_rotation) / 360.;
 
       int angle_raw = spoke;  // Compensate openGL rotation compared to North UP
       int bearing_raw = angle_raw + hdt_raw;
@@ -1148,7 +1227,7 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
       }
      // LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle,
         // angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
-      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters, nowMillis);
+      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, /*m_range_meters*/qheader->range * (m_target_expansion ? 12 : 6), nowMillis);
   }
 }
 

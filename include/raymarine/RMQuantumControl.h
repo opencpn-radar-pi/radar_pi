@@ -43,7 +43,7 @@ PLUGIN_BEGIN_NAMESPACE
 class RMQuantumControl : public RadarControl {
  public:
   RMQuantumControl(radar_pi *pi, RadarInfo *ri) {
-    m_radar_socket = INVALID_SOCKET;
+    // m_radar_socket = INVALID_SOCKET;
     m_pi = pi;
     m_ri = ri;
     m_name = ri->m_name;
@@ -51,10 +51,10 @@ class RMQuantumControl : public RadarControl {
   }
 
   ~RMQuantumControl() {
-    if (m_radar_socket != INVALID_SOCKET) {
-      closesocket(m_radar_socket);
-      LOG_TRANSMIT(wxT("%s transmit socket closed"), m_name.c_str());
-    }
+    // if (m_radar_socket != INVALID_SOCKET) {
+    //   closesocket(m_radar_socket);
+    //   LOG_TRANSMIT(wxT("%s transmit socket closed"), m_name.c_str());
+    // }
   }
 
   bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr);
@@ -74,7 +74,7 @@ class RMQuantumControl : public RadarControl {
  private:
   radar_pi *m_pi;
   RadarInfo *m_ri;
-  SOCKET m_radar_socket;
+  // SOCKET m_radar_socket;
   wxString m_name;
   NetworkAddress m_send_address;
 
