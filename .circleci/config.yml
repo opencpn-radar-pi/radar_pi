@@ -69,10 +69,10 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - macos-cache-v1-{{checksum "ci/circleci-build-macos.sh"}}
+            - macos-cache-v1-{{ arch }}-{{checksum "ci/circleci-build-macos.sh"}}
       - run: ci/circleci-build-macos.sh
       - save_cache:
-          key: macos-cache-v1-{{checksum "ci/circleci-build-macos.sh"}}
+          key: macos-cache-v1-{{ arch }}-{{checksum "ci/circleci-build-macos.sh"}}
           paths:
             - /usr/local/Homebrew
             - /usr/local/Caskroom
