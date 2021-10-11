@@ -67,7 +67,7 @@ jobs:
       - OCPN_TARGET: macos
     steps:
       - checkout
--      - restore_cache:
+      - restore_cache:
           keys:
             - macos-cache-v1-{{checksum "ci/circleci-build-macos.sh"}}
       - run: ci/circleci-build-macos.sh
@@ -78,7 +78,7 @@ jobs:
             - /usr/local/Caskroom
             - /usr/local/Cellar
             - /usr/local/lib
-            - /usr/local/include      
+            - /usr/local/include
       - run: sh -c "otool -L build/app/*/OpenCPN.app/Contents/PlugIns/*.dylib"
       - run: cd build; /bin/bash < upload.sh
       - run: python3 ci/git-push
