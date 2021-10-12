@@ -33,10 +33,6 @@ fi
 
 # Install the pre-built wxWidgets package
 
-#wget -q https://download.opencpn.org/s/rwoCNGzx6G34tbC/download \
-#    -O /tmp/wx312B_opencpn50_macos109.tar.xz
-#tar -C /tmp -xJf /tmp/wx312B_opencpn50_macos109.tar.xz 
-
 wget -q https://download.opencpn.org/s/MCiRiq4fJcKD56r/download \
     -O /tmp/wx315_opencpn50_macos1010.tar.xz
 tar -C /tmp -xJf /tmp/wx315_opencpn50_macos1010.tar.xz
