@@ -50,12 +50,12 @@ cmake \
 if [[ -z "$CI" ]]; then
     echo '$CI not found in environment, assuming local setup'
     echo "Complete build using 'cd build; make tarball' or so."
-    exit 0 
+    exit 0
 fi
 
 make VERBOSE=1 tarball
 
-make pkg    
+make pkg
 
 # Install cloudsmith needed by upload script
 python3 -m pip install --user cloudsmith-cli
