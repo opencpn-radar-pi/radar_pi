@@ -60,7 +60,7 @@ include(PluginOptions)
 #
 # -------  Plugin setup --------
 #
-project(ShipDriver_pi VERSION 2.8.7.0)
+project(ShipDriver_pi VERSION 2.8.7.1)
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
