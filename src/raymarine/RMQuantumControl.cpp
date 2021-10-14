@@ -347,7 +347,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
 
     case CT_INTERFERENCE_REJECTION: { // $$$
       uint8_t rd_msg_interference_rejection[] = {0x11, 0x03, 0x28, 0x00,
-                                                 0x01,  // Interference rejection at offset 4, 0 - off, 1 - normal, 2 - high
+                                                 0x01,  // Interference rejection at offset 4, 0 - off, 1 - 5
                                                  0x00, 0x00, 0x00};
 
       rd_msg_interference_rejection[4] = value;
@@ -355,6 +355,21 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
+    case CT_BEARING_ALIGNMENT: {  // to be consistent with the local bearing alignment of the pi
+                                  // this bearing alignment works opposite to the one an a Lowrance display
+
+      uint8_t rd_msg_bearing_offset[] = {
+	      0x01, 0x04, 0x28, 0x00, 
+	      0x05, 0x00,	// Bearing offset in .1 degrees with .5 resolution [-179.5 - 180] @4
+	      0x00, 0x00
+      };
+
+      rd_msg_bearing_offset[4] = value & 0xff;
+      rd_msg_bearing_offset[5] = (value >> 8) & 0xff;
+      LOG_VERBOSE(wxT("%s Bearing alignment: %d"), m_name.c_str(), value);
+      r = TransmitCmd(rd_msg_bearing_offset, sizeof(rd_msg_bearing_offset));
+      break;
+    }
   
       // case CT_DOPPLER: {
       //  uint8_t cmd[] = {0x23, 0xc1, (uint8_t)value};

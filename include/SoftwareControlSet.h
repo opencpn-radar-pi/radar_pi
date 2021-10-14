@@ -66,6 +66,9 @@
 #ifndef CTD_STEP_2
 #define CTD_STEP_2 2
 #endif
+#ifndef CTD_STEP_5
+#define CTD_STEP_5 5
+#endif
 #ifndef CTD_STEP_10
 #define CTD_STEP_10 10
 #endif

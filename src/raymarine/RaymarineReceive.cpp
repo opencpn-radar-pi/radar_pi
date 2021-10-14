@@ -633,7 +633,7 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   LOG_RECEIVE(wxT("target_expansion updated received= %i, displayed = %i"), bl_pter->target_expansion,
               m_ri->m_target_expansion.GetValue());
 
-//  m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);
+  m_ri->m_interference_rejection.Update(bl_pter->interference_rejection);
 
   int ba = (int)bl_pter->bearing_offset;
   m_ri->m_bearing_alignment.Update(ba);
