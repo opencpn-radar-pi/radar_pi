@@ -20,9 +20,14 @@ git fetch --all --tags
 # Temporary fix until 3.19 is available as a pypi package
 # 3.19 is needed: https://gitlab.kitware.com/cmake/cmake/-/issues/20568
 url='https://dl.cloudsmith.io/public/alec-leamas/opencpn-plugins-stable/deb/debian'
-wget $url/pool/${OCPN_TARGET/-*/}/main/c/cm/cmake-data_3.19.3-0.1_all.deb
-wget $url/pool/${OCPN_TARGET/-*/}/main/c/cm/cmake_3.19.3-0.1_armhf.deb
-sudo apt install ./cmake_3.19.3-0.1_armhf.deb ./cmake-data_3.19.3-0.1_all.deb
+if [[ "$OCPN_TARGET"  =~  stretch.* ]] ; then
+    wget $url/pool/stretch/main/c/cm/cmake-data_3.19.3-0.1_all.deb
+    wget $url/pool/stretch/main/c/cm/cmake_3.19.3-0.1_armhf.deb
+else 
+    wget $url/pool/${OCPN_TARGET%-*}/main/c/cm/cmake-data_3.20.5-0.1/cmake-data_3.20.5-0.1_all.deb
+    wget $url/pool/${OCPN_TARGET%-*}/main/c/cm/cmake_3.20.5-0.1/cmake_3.20.5-0.1_armhf.deb
+fi
+sudo apt install ./cmake_3.*-0.1_armhf.deb ./cmake-data_3.*-0.1_all.deb
 
 rm -rf build; mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
