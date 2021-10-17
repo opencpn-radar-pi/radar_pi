@@ -24,6 +24,14 @@ Options:
 EOT
 }
 
+# Exec on tmpfile to avoid file lock when updating script on Windows.
+# The directory /c exists on git bash on Windows, and hopefully only there.
+if [[ -d /c && "$0" =~ .*update-templates ]]; then
+    tmpfile=$(mktemp)
+    cp $0 $tmpfile
+    exec $tmpfile
+fi
+
 # Handle options and parameters
 usage="Usage: $0 [-t] [-T] [treeish]"
 merge_opt=""
