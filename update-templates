@@ -107,7 +107,6 @@ for f in \
     flatpak \
     libs \
     manual \
-    mingw \
     po \
     README.md \
     src
