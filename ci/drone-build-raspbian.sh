@@ -7,12 +7,6 @@
 
 set -xe
 
-if [[ "$OCPN_TARGET" == bullseye* ]]; then
-    curl http://ftp.de.debian.org/debian/pool/main/libs/libseccomp/libseccomp2_2.5.2-2_armhf.deb  \
-        > libseccomp2_2.5.2-2_armhf.deb
-    dpkg -i libseccomp2_2.5.2-2_armhf.deb
-fi
-
 curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
 curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
 sudo apt-get -q update
@@ -26,14 +20,9 @@ git fetch --all --tags
 # Temporary fix until 3.19 is available as a pypi package
 # 3.19 is needed: https://gitlab.kitware.com/cmake/cmake/-/issues/20568
 url='https://dl.cloudsmith.io/public/alec-leamas/opencpn-plugins-stable/deb/debian'
-if [[ "$OCPN_TARGET"  =~  stretch.* ]] ; then
-    wget $url/pool/stretch/main/c/cm/cmake-data_3.19.3-0.1_all.deb
-    wget $url/pool/stretch/main/c/cm/cmake_3.19.3-0.1_armhf.deb
-else 
-    wget $url/pool/${OCPN_TARGET%-*}/main/c/cm/cmake-data_3.20.5-0.1/cmake-data_3.20.5-0.1_all.deb
-    wget $url/pool/${OCPN_TARGET%-*}/main/c/cm/cmake_3.20.5-0.1/cmake_3.20.5-0.1_armhf.deb
-fi
-sudo apt install ./cmake_3.*-0.1_armhf.deb ./cmake-data_3.*-0.1_all.deb
+wget $url/pool/${OCPN_TARGET/-*/}/main/c/cm/cmake-data_3.19.3-0.1_all.deb
+wget $url/pool/${OCPN_TARGET/-*/}/main/c/cm/cmake_3.19.3-0.1_armhf.deb
+sudo apt install ./cmake_3.19.3-0.1_armhf.deb ./cmake-data_3.19.3-0.1_all.deb
 
 rm -rf build; mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
