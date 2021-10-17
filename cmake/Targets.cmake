@@ -58,13 +58,6 @@ set(_cs_script "
 ")
 file(WRITE "${CMAKE_BINARY_DIR}/checksum.cmake" ${_cs_script})
 
-# Command to build legacy package
-if (APPLE)
-  message(FATAL_ERROR "MacOS pkg generation is not supported.")
-else ()
-  set(_build_pkg_cmd ${_build_target_cmd} package)
-endif ()
-
 function (tarball_target)
 
   # tarball target setup
@@ -180,7 +173,7 @@ function (pkg_target)
   add_custom_command(TARGET pkg-build COMMAND ${_build_cmd})
 
   add_custom_target(pkg-package)
-  add_custom_command(TARGET pkg-package COMMAND ${_build_pkg_cmd})
+  add_custom_command(TARGET pkg-package COMMAND ${_build_target_cmd} package)
 
   add_dependencies(pkg-build pkg-conf)
   add_dependencies(pkg-package pkg-build)
@@ -218,6 +211,9 @@ function (create_targets manifest)
   # with helper targets. Parameters:
   # - manifest: Flatpak build manifest
 
+  if (APPLE AND BUILD_TYPE STREQUAL "pkg")
+    message(FATAL_ERROR "MacOS pkg generation is not supported.")
+  endif ()
   tarball_target()
   flatpak_target(${manifest})
   pkg_target()
