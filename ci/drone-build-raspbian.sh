@@ -7,6 +7,12 @@
 
 set -xe
 
+if [[ "$OCPN_TARGET" == bullseye* ]]; then
+    curl http://ftp.de.debian.org/debian/pool/main/libs/libseccomp/libseccomp2_2.5.2-2_armhf.deb  \
+        > libseccomp2_2.5.2-2_armhf.deb
+    dpkg -i libseccomp2_2.5.2-2_armhf.deb
+fi
+
 curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
 curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
 sudo apt-get -q update
