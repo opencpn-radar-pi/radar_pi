@@ -60,11 +60,10 @@ file(WRITE "${CMAKE_BINARY_DIR}/checksum.cmake" ${_cs_script})
 
 # Command to build legacy package
 if (APPLE)
-    set(_build_pkg_cmd ${_build_target_cmd} create-pkg)
+  message(FATAL_ERROR "MacOS pkg generation is not supported.")
 else ()
-    set(_build_pkg_cmd ${_build_target_cmd} package)
+  set(_build_pkg_cmd ${_build_target_cmd} package)
 endif ()
-
 
 function (tarball_target)
 

@@ -55,8 +55,6 @@ fi
 
 make VERBOSE=1 tarball
 
-make pkg
-
 # Install cloudsmith needed by upload script
 python3 -m pip install --user cloudsmith-cli
 
