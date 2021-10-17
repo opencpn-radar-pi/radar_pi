@@ -63,6 +63,8 @@ PLUGIN_BEGIN_NAMESPACE
 #define HEADING_MASK (SPOKES - 1)
 #define HEADING_VALID(x) (((x) & ~(HEADING_TRUE_FLAG | HEADING_MASK)) == 0)
 
+#define IS_MULTICAST(x) (((x) & 0xf0) == 224)
+
 SOCKET RaymarineReceive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;
   m_interface_addr = NetworkAddress();
@@ -94,7 +96,10 @@ SOCKET RaymarineReceive::PickNextEthernetCard() {
     m_interface_addr.port = 0;
   }
 
-  if (m_ri->m_radar_type == RM_QUANTUM) {
+  if (m_ri->m_radar_type == RM_QUANTUM && !m_info.report_addr.IsNull() && !IS_MULTICAST(m_info.report_addr.addr.s_addr)) {
+    LOG_INFO(wxT("%s Creating unicast socket for radar at IP %s [%s]"), m_ri->m_name, m_ri->m_radar_address.FormatNetworkAddressPort(),
+             m_info.to_string());
+
     socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (socket != INVALID_SOCKET) {
       int one = 1;
@@ -102,6 +107,8 @@ SOCKET RaymarineReceive::PickNextEthernetCard() {
     }
   } else {
     socket = GetNewReportSocket();
+    LOG_INFO(wxT("%s Creating multicast socket for radar at IP %s [%s] - %d"), m_ri->m_name, m_ri->m_radar_address.FormatNetworkAddressPort(),
+             m_info.to_string(), socket);
   }
   return socket;
 }
@@ -177,29 +184,35 @@ void *RaymarineReceive::Entry(void) {
   m_interface = 0;
   struct sockaddr_in radarFoundAddr;
   sockaddr_in *radar_addr = 0;
+  time_t last_keepalive = time(0);
 
-//  SOCKET reportSocket = INVALID_SOCKET;
   LOG_VERBOSE(wxT("RamarineReceive thread %s starting"), m_ri->m_name.c_str());
-  if(m_ri->m_radar_type != RM_QUANTUM) {
+  if(!m_info.report_addr.IsNull() && (m_ri->m_radar_type != RM_QUANTUM || IS_MULTICAST(m_info.report_addr.addr.s_addr))) {
+    LOG_VERBOSE(wxT("%s Creating multicast socket at the beginning %s"), m_ri->m_name.c_str(), m_info.report_addr.FormatNetworkAddressPort());
     m_comm_socket = GetNewReportSocket();  // Start using the same interface_addr as previous time
   }
 
   while (m_receive_socket != INVALID_SOCKET) {
-    if (m_comm_socket == INVALID_SOCKET) {
-      if (m_ri->m_radar_type == RM_QUANTUM) {
+    if (m_comm_socket == INVALID_SOCKET && !m_info.report_addr.IsNull()) {
+      LOG_VERBOSE(wxT("%s Got report_addr %08x"), m_ri->m_name.c_str(), m_info.report_addr.addr.s_addr);
+      if (m_ri->m_radar_type == RM_QUANTUM && !IS_MULTICAST(m_info.report_addr.addr.s_addr)) {
+        LOG_INFO(wxT("Entry %s Creating unicast socket for radar at IP %s [%s]"), m_ri->m_name, m_ri->m_radar_address.FormatNetworkAddressPort(),
+             m_info.to_string());
         m_comm_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         if (m_comm_socket != INVALID_SOCKET) {
           int one = 1;
           setsockopt(m_comm_socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
+          m_ri->m_control->RadarStayAlive();
+          last_keepalive = time(0);
         }
-        m_ri->m_control->RadarStayAlive();
       } else {  
         m_comm_socket = PickNextEthernetCard();
       }
-    }
-    if (m_comm_socket != INVALID_SOCKET) {
-      no_data_timeout = 0;
-      no_spoke_timeout = 0;
+
+      if (m_comm_socket != INVALID_SOCKET) {
+        no_data_timeout = 0;
+        no_spoke_timeout = 0;
+      }
     }
 
     struct timeval tv = {(long)0, (long)(MILLIS_PER_SELECT * 1000)};
@@ -255,10 +268,11 @@ void *RaymarineReceive::Entry(void) {
       }
 
     } else {  // no data received -> select timeout
+      LOG_INFO(wxT("%s RaymarineReceive receive timeout %d"), m_ri->m_name.c_str(), no_data_timeout);
       if (no_data_timeout >= SECONDS_SELECT(2)) {
         no_data_timeout = 0;
         if (m_comm_socket != INVALID_SOCKET) {
-          if(m_ri->m_radar_type != RM_QUANTUM) {
+          if(m_ri->m_radar_type != RM_QUANTUM || IS_MULTICAST(m_info.report_addr.addr.s_addr)) {
             closesocket(m_comm_socket);
             m_comm_socket = INVALID_SOCKET;
             m_interface_addr = NetworkAddress();
@@ -279,7 +293,9 @@ void *RaymarineReceive::Entry(void) {
     }
 
     if (!(m_info == m_ri->GetRadarLocationInfo())) {
-      if(m_ri->m_radar_type != RM_QUANTUM) {
+      m_info = m_ri->GetRadarLocationInfo();
+      LOG_INFO(wxT("%s RaymarineReceive updating radar location %s socket %d"), m_ri->m_name.c_str(), m_info.to_string(), m_comm_socket);
+      if((m_ri->m_radar_type != RM_QUANTUM || IS_MULTICAST(m_info.report_addr.addr.s_addr)) && m_comm_socket != INVALID_SOCKET) {
         closesocket(m_comm_socket);
         m_comm_socket = INVALID_SOCKET;
       }
@@ -288,10 +304,14 @@ void *RaymarineReceive::Entry(void) {
         no_data_timeout = 0;
         no_spoke_timeout = 0;
       }
-    };
+    }
 
-    if (m_comm_socket == INVALID_SOCKET) {
+    if (m_comm_socket != INVALID_SOCKET) {
       // If we closed the m_comm_socket then close the command socket
+      if(time(0) > last_keepalive) {
+        m_ri->m_control->RadarStayAlive();
+        last_keepalive = time(0);
+      }
     }
   }  // endless loop until thread destroy
 
@@ -460,6 +480,16 @@ struct QuantumRadarReport {
   uint32_t ranges[20];   // 148
 };
 #else
+struct QuantumControls {
+	uint8_t gain_auto;			  // @ 0
+	uint8_t gain;				      // @ 1
+	uint8_t something_4[2];		// @ 2
+	uint8_t sea_auto;			    // @ 4
+	uint8_t sea;				      // @ 5
+	uint8_t rain_auto;		    // @ 6
+	uint8_t rain;				      // @ 7
+};
+
 struct QuantumRadarReport {
 	uint32_t type; 				    // @0 0x280002
 	uint8_t status; 			    // @4 0 - standby ; 1 - transmitting
@@ -470,19 +500,7 @@ struct QuantumRadarReport {
 	uint8_t something_13[2];	// @18
 	uint8_t range_index;	    // @20
 	uint8_t mode; 				    // @21 harbor - 0, coastal - 1, offshore - 2, weather - 3
-	uint8_t gain_auto;			  // @22
-	uint8_t gain;				      // @23
-	uint8_t something_4[2];		// @24
-	uint8_t sea_auto;			    // @26
-	uint8_t sea;				      // @27
-	uint8_t rain_auto;		    // @28
-	uint8_t rain;				      // @29
-	uint8_t something_8[5];		// @30
-	uint8_t something_5;		  // @35
-	uint8_t something_6[2];		// @36
-	uint8_t something_2;		  // @38
-	uint8_t something_3;		  // @39
-	uint8_t something_7[14];	// @40
+  QuantumControls controls[4]; // @22 controls indexed by mode
 	uint8_t target_expansion; // @54
 	uint8_t something_9;		  // @55
 	uint8_t something_10[3];	// @56
@@ -601,28 +619,36 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
     }
   }
 
-  RadarControlState state;
-  state = (RadarControlState)bl_pter->gain_auto;
-  m_ri->m_gain.Update(bl_pter->gain);
-  m_ri->m_gain.UpdateState(state);
-  LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i state= %i"), bl_pter->gain, m_ri->m_gain.GetValue(), state);
-
-  state = (RadarControlState)bl_pter->sea_auto;  // we don't know how many auto states there are....
-  m_ri->m_sea.Update(bl_pter->sea);
-  m_ri->m_sea.UpdateState(state);
-  LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->sea, m_ri->m_sea.GetValue(), state);
-
-  //state = (bl_pter->rain_auto) ? RCS_MANUAL : RCS_AUTO_1;   $$$
-  state = bl_pter->rain_auto == 0 ? RCS_OFF : RCS_MANUAL;
-  LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_auto=%i"), state, bl_pter->rain_auto);
-  m_ri->m_rain.Update(bl_pter->rain);
-  m_ri->m_rain.UpdateState(state);
-  LOG_RECEIVE(wxT("rain updated received= %i, displayed = %i state=%i"), bl_pter->rain, m_ri->m_rain.GetValue(), state);
-
+  int mode_idx = bl_pter->mode;
   m_ri->m_mode.Update(bl_pter->mode);
   LOG_RECEIVE(wxT("mode updated received= %i, displayed = %i"), bl_pter->mode, m_ri->m_mode.GetValue());
 
-  if (bl_pter->gain_auto && bl_pter->sea_auto && !bl_pter->rain_auto) { // all to auto
+  if(mode_idx < 0 || mode_idx > 3)
+  {
+    LOG_RECEIVE(wxT("Invalid mode value %d, using 0 for control values"), bl_pter->mode);
+    mode_idx = 0;
+  }
+
+  RadarControlState state;
+  state = (RadarControlState)bl_pter->controls[mode_idx].gain_auto;
+  m_ri->m_gain.Update(bl_pter->controls[mode_idx].gain);
+  m_ri->m_gain.UpdateState(state);
+  LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i state= %i"), bl_pter->controls[mode_idx].gain, m_ri->m_gain.GetValue(), state);
+
+  state = (RadarControlState)bl_pter->controls[mode_idx].sea_auto;  // we don't know how many auto states there are....
+  m_ri->m_sea.Update(bl_pter->controls[mode_idx].sea);
+  m_ri->m_sea.UpdateState(state);
+  LOG_RECEIVE(wxT("sea updated received= %i, displayed = %i, state=%i"), bl_pter->controls[mode_idx].sea, m_ri->m_sea.GetValue(), state);
+
+  //state = (bl_pter->rain_auto) ? RCS_MANUAL : RCS_AUTO_1;   $$$
+  state = bl_pter->controls[mode_idx].rain_auto == 0 ? RCS_OFF : RCS_MANUAL;
+  LOG_RECEIVE(wxT("rain state=%i bl_pter->rain_auto=%i"), state, bl_pter->controls[mode_idx].rain_auto);
+  m_ri->m_rain.Update(bl_pter->controls[mode_idx].rain);
+  m_ri->m_rain.UpdateState(state);
+  LOG_RECEIVE(wxT("rain updated received= %i, displayed = %i state=%i"), bl_pter->controls[mode_idx].rain, m_ri->m_rain.GetValue(), state);
+
+
+  if (bl_pter->controls[mode_idx].gain_auto && bl_pter->controls[mode_idx].sea_auto && !bl_pter->controls[mode_idx].rain_auto) { // all to auto
     m_ri->m_all_to_auto.Update(1);
   } else {
     m_ri->m_all_to_auto.Update(0);

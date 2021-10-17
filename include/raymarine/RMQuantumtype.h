@@ -3,8 +3,8 @@
 PLUGIN_BEGIN_NAMESPACE
 
 // Dummy addresses below to avoid "Unable to listen to socket" when no radar
-static const NetworkAddress quantum_report(236, 6, 7, 9, 1);
-static const NetworkAddress quantum_data(236, 6, 7, 9, 1);
+static const NetworkAddress quantum_report(0, 0, 0, 0, 0);
+static const NetworkAddress quantum_data(0, 0, 0, 0, 0);
 static const NetworkAddress quantum_send(0, 0, 0, 0, 0);
 
 // Ranges below are indicative only, actual ranges are received from the radar
