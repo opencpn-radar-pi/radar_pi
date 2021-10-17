@@ -42,7 +42,8 @@ platform:
 
 steps:
   - name: bullseye
-    image: balenalib/raspberry-pi-debian:bullseye
+    #image: balenalib/raspberry-pi-debian:bullseye
+    image:  leamas/balenalib:latest
     environment: 
       OCPN_TARGET: bullseye-armhf
     environment: 
