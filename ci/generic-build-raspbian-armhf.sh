@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-
 #
-# Build for Raspbian in a docker container
+# Build for Raspbian Bullseye in a docker container
 #
-# Bugs: The buster build is real slow: https://forums.balena.io/t/85743
+# Intended as a temporary work-around for not being able to build on drone.io
+# due to libseccomp problems with both host and guest OS i. e., #217
+#
+# Bugs: The build is real slow: https://forums.balena.io/t/85743
 
 set -xe
 
@@ -22,16 +24,16 @@ curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
 curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
 sudo apt -q update
 
-sudo apt install devscripts equivs
-sudo mk-build-deps -ir /ci-source/build-deps/control-raspbian
+sudo apt install devscripts equivs wget
+sudo mk-build-deps -ir /ci-source/build-deps/control
 sudo apt-get -q --allow-unauthenticated install -f
 
 # Temporary fix until 3.19 is available as a pypi package
 # 3.19 is needed: https://gitlab.kitware.com/cmake/cmake/-/issues/20568
 url='https://dl.cloudsmith.io/public/alec-leamas/opencpn-plugins-stable/deb/debian'
-wget $url/pool/${OCPN_TARGET/-*/}/main/c/cm/cmake-data_3.19.3-0.1_all.deb
-wget $url/pool/${OCPN_TARGET/-*/}/main/c/cm/cmake_3.19.3-0.1_armhf.deb
-sudo apt install ./cmake_3.19.3-0.1_armhf.deb ./cmake-data_3.19.3-0.1_all.deb
+wget $url/pool/bullseye/main/c/cm/cmake-data_3.20.5-0.1/cmake-data_3.20.5-0.1_all.deb
+wget $url/pool/bullseye/main/c/cm/cmake_3.20.5-0.1/cmake_3.20.5-0.1_armhf.deb
+sudo apt install ./cmake_3.*-0.1_armhf.deb ./cmake-data_3.*-0.1_all.deb
 
 cd /ci-source
 rm -rf build; mkdir build; cd build
@@ -43,7 +45,9 @@ EOF
 
 # Run script in docker image
 #
-docker run --rm --privileged multiarch/qemu-user-static:register --reset
+sudo apt -q update
+sudo apt install qemu-user-static
+docker run --rm --privileged multiarch/qemu-user-static:register --reset || :
 docker run --privileged -ti \
     -e "OCPN_TARGET=$OCPN_TARGET" \
     -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
@@ -52,7 +56,7 @@ docker run --privileged -ti \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
-    $DOCKER_IMAGE /bin/bash -xe /ci-source/build.sh
+    balenalib/raspberry-pi-debian:bullseye /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
 
