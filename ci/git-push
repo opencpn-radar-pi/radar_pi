@@ -206,6 +206,8 @@ def main():
         git.push()
 
     os.remove(os.path.join(ci, user))     # Drop the private key
+    print("Pushed metadata to branch " + branch + " at the "
+          +  os.environ.get("GIT_REPO") + " repository")
 
 
 if __name__ == '__main__':
