@@ -195,8 +195,6 @@ function (help_target)
       "   - tarball: Plugin installer tarball for regular builds."
     COMMAND cmake -E echo
       "   - flatpak: Plugin installer tarball for flatpak builds."
-    COMMAND cmake -E echo
-      "   - pkg: Legacy installer package on Windows, Mac and Debian."
     COMMAND cmake -E echo ""
     COMMAND dont-use-plain-make   # will fail
   )
@@ -211,12 +209,8 @@ function (create_targets manifest)
   # with helper targets. Parameters:
   # - manifest: Flatpak build manifest
 
-  if (APPLE AND BUILD_TYPE STREQUAL "pkg")
-    message(FATAL_ERROR "MacOS legacy package generation is not supported.")
-  elseif (UNIX AND BUILD_TYPE STREQUAL "pkg")
-    message(FATAL_ERROR
-      "Debian .deb legacy package generation is not supported."
-    )
+  if (BUILD_TYPE STREQUAL "pkg")
+    message(FATAL_ERROR "Legacy package generation is not supported.")
   endif ()
   tarball_target()
   flatpak_target(${manifest})
