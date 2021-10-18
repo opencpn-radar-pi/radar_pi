@@ -48,23 +48,6 @@ else ()
   set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PACKAGE_NAME})
 endif ()
 
-if (APPLE)
-  set(CPACK_GENERATOR ZIP)   # make sure we don't overwrite 'make tarball''
-
-elseif (UNIX)
-  set(PACKAGE_DEPS opencpn)
-  # autogenerate additional dependency information
-  set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-
-  set(CPACK_GENERATOR "DEB")
-
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS ${PACKAGE_DEPS})
-  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${ARCH})
-  set(CPACK_DEBIAN_PACKAGE_SECTION "misc")
-  set(CPACK_DEBIAN_COMPRESSION_TYPE "xz") # requires my patches to cmake
-
-endif ()
-
 include(CPack)
 
 if (WIN32)

@@ -212,7 +212,11 @@ function (create_targets manifest)
   # - manifest: Flatpak build manifest
 
   if (APPLE AND BUILD_TYPE STREQUAL "pkg")
-    message(FATAL_ERROR "MacOS pkg generation is not supported.")
+    message(FATAL_ERROR "MacOS legacy package generation is not supported.")
+  elseif (UNIX AND BUILD_TYPE STREQUAL "pkg")
+    message(FATAL_ERROR
+      "Debian .deb legacy package generation is not supported."
+    )
   endif ()
   tarball_target()
   flatpak_target(${manifest})
