@@ -289,7 +289,7 @@ void RadarRangeControlButton::SetRangeLabel() {
 void RadarRangeControlButton::AdjustValue(int adjustment) {
   LOG_VERBOSE(wxT("%s Button '%s' adjust by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
   m_item->UpdateState(RCS_MANUAL);
-  LOG_INFO(wxT("$$$ range AdjustValue adjustment=%i"), adjustment);
+  LOG_VERBOSE(wxT("range AdjustValue adjustment=%i"), adjustment);
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
 
@@ -1893,7 +1893,7 @@ void ControlsDialog::EnableRadarControls() {
   if (m_range_button) {
     m_range_button->Enable();
   }
-  if (m_power_button) {   // $$$$ copy to enable power button
+  if (m_power_button) {
     m_power_button->Enable();
   }
   if (m_power_sub_button) {

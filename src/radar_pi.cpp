@@ -7,6 +7,7 @@
  *           Kees Verruijt
  *           Douwe Fokkema
  *           Sean D'Epagnier
+ *           Andrei Bankovs: Raymarine radars
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -274,7 +275,6 @@ int radar_pi::Init(void) {
 
   //    And load the configuration items
   if (LoadConfig()) {
-    m_settings.verbose = 13; //$$$ temoporary fix verbosity in case tester forgets this
     LOG_INFO(wxT("Configuration file values initialised"));
     LOG_INFO(wxT("Log verbosity = %d. To modify, set VerboseLog to sum of:"), m_settings.verbose);
     LOG_INFO(wxT("VERBOSE  = %d"), LOGLEVEL_VERBOSE);
@@ -1183,7 +1183,7 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   }
   
    //// for testing only, simple trick to get position and heading
-   //wxString nmea;   // comment out $$$
+   //wxString nmea;
    //nmea = wxT("$APHDM,000.0,M*33");
    //PushNMEABuffer(nmea);
    //nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");

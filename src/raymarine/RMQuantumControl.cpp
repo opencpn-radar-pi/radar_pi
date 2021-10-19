@@ -164,7 +164,7 @@ bool RMQuantumControl::SetRange(int meters) {
 }
 
 void RMQuantumControl::SetRangeIndex(size_t index) {
-  LOG_INFO(wxT("$$$(verbose) SetRangeIndex index = %i"), index);
+  LOG_VERBOSE(wxT("SetRangeIndex index = %i"), index);
   rd_msg_set_range[5] = index;
   TransmitCmd(rd_msg_set_range, sizeof(rd_msg_set_range));
 }
@@ -225,7 +225,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       05 03 28 00 00 00 00 00 Sea to manual
       05 03 28 00 00 01 00 00 Sea to auto
       06 03 28 00 00 xx 00 00 Sea
-      0b 03 28 00 00 01 00 00 Rain to manual (different to sea!) // this could be wrong $$$ changed in code for test
+      0b 03 28 00 00 00 00 00 Rain to manual
       0b 03 28 00 00 00 00 00 Rain to auto
       0c 03 28       Rain
       0f 03 28 00 00 01 00 00 Target expansion on, 00 on 5 == off
@@ -335,7 +335,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
-    case CT_TARGET_EXPANSION: {  // to be done $$$
+    case CT_TARGET_EXPANSION: {
       uint8_t command_target_expansion[] = {0x0f, 0x03, 0x28, 0x00, 0x00,
                                             0x00,  // 0ff == 00, on == 01
                                             0x00, 0x00};
@@ -345,7 +345,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
-    case CT_INTERFERENCE_REJECTION: { // $$$
+    case CT_INTERFERENCE_REJECTION: {
       uint8_t rd_msg_interference_rejection[] = {0x11, 0x03, 0x28, 0x00,
                                                  0x01,  // Interference rejection at offset 4, 0 - off, 1 - 5
                                                  0x00, 0x00, 0x00};
