@@ -11,6 +11,7 @@ is to
   - Run script
   - Inspect the results, handle possible conflicts and commit the
     changes.
+  - Handle updates to CMakeLists.txt and other plugin-specific files.
   - Upstream local changes to shipdriver templates
 
 Bootstrapping
@@ -109,6 +110,33 @@ Note that changes might be required in other files like CMakeLists.txt.
 
 When all looks good changes can be committed using something like
 `git commit -m "Update shipdriver templates."`
+
+Checking modifications in CMakeLists.txt
+----------------------------------------
+
+Besides the changes in generic files, CMakeLists.txt typically also needs to
+be updated. However, this file is specific for each plugin, and changes must
+be applied manually.
+
+The changes made in shipdriver's CMakeLists.txt is a good starting point to
+check. To display these changes first checkout the shipdriver master branch:
+
+    $ git fetch shipdriver master:shipdriver/master
+    $ git checkout shipdriver/master
+
+The tag used when last updating templates is available in the file 
+_cmake/TemplateVersion_. If this file does not exist, list all tags and
+select one to compare against
+
+    $ git tag -l
+
+See all changes in CMakeLists.txt since selected tag (here v2.6.1.0):
+
+    $ git diff v2.6.1.0 CMakeLists.txt
+
+See list of files changed since selected tag (again, v2.6.1.0):
+
+    $ git diff --stat v2.6.1.0
 
 
 Upstreaming local changes to shipdriver
