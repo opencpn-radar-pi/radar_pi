@@ -32,9 +32,10 @@ else
 fi
 
 # Install the pre-built wxWidgets package
-wget -q https://download.opencpn.org/s/rwoCNGzx6G34tbC/download \
-    -O /tmp/wx312B_opencpn50_macos109.tar.xz
-tar -C /tmp -xJf /tmp/wx312B_opencpn50_macos109.tar.xz 
+curl -k -o /tmp/wx315_opencpn50_macos1010.tar.xz  \
+    https://download.opencpn.org/s/MCiRiq4fJcKD56r/download
+
+tar -C /tmp -xJf /tmp/wx315_opencpn50_macos1010.tar.xz
 
 git log -5 | cat
 
