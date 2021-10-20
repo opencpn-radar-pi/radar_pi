@@ -166,28 +166,6 @@ function (flatpak_target manifest)
   add_dependencies(flatpak flatpak-conf)
 endfunction ()
 
-function (pkg_target)
-
-  # pkg target setup
-  #
-  add_custom_target(pkg-conf)
-  add_custom_command(
-    TARGET pkg-conf
-    COMMAND cmake -DBUILD_TYPE:STRING=pkg ${CMAKE_BINARY_DIR}
-  )
-  add_custom_target(pkg-build)
-  add_custom_command(TARGET pkg-build COMMAND ${_build_cmd})
-
-  add_custom_target(pkg-package)
-  add_custom_command(TARGET pkg-package COMMAND ${_build_target_cmd} package)
-
-  add_dependencies(pkg-build pkg-conf)
-  add_dependencies(pkg-package pkg-build)
-
-  add_custom_target(pkg)
-  add_dependencies(pkg pkg-package)
-endfunction ()
-
 function (help_target)
 
   # Help message for plain 'make' without target
@@ -220,6 +198,5 @@ function (create_targets manifest)
   endif ()
   tarball_target()
   flatpak_target(${manifest})
-  pkg_target()
   help_target()
 endfunction ()
