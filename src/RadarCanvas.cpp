@@ -89,7 +89,7 @@ void RadarCanvas::OnMove(wxMoveEvent &evt) {
 }
 
 wxSize RadarCanvas::GetScaledSize(wxSize size) {
-#ifdef __WXGTK3__
+#if defined(__WXGTK3__) || defined(__WXMAC__)
   return size * GetContentScaleFactor();
 #else
   return size;
@@ -97,7 +97,7 @@ wxSize RadarCanvas::GetScaledSize(wxSize size) {
 }
 
 int RadarCanvas::GetScaledSize(int size) {
-#ifdef __WXGTK3__
+#if defined(__WXGTK3__) || defined(__WXMAC__)
   return size * GetContentScaleFactor();
 #else
   return size;
