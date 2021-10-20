@@ -1,0 +1,71 @@
+:imagesdir: ../images/
+== Plugin radar_pi
+
+radar_pi is a plugin for http://www.opencpn.org[OpenCPN] that allows
+full integration of certain radar scanners.
+
+_This manual is updated to include radar_pi version 5.2.2
+
+The following radar scanners are supported:
+
+* Garmin HD
+* Garmin xHD
+* Navico Broadband Radar BR24
+* Navico Broadband Radar 3G
+* Navico Broadband Radar 4G
+* Navico HALO (20, 20+, 24, 4, 6, 8)
+* xref:Raymarine-radome-model-support.adoc[Raymarine (older) radars]
+* A simple emulator
+* (Not fully verified support for Garmin GMR18 is reported)
+
+The plugin can be operated as the only control station for your radar scanner,
+as it allows access to all setup operations such as antenna direction
+correction and antenna height, as well as cooperate in a multi-station
+setup – whether multiple OpenCPN installations or one or more
+MFDs/plotters. In fact using a mixed setup is what 2 out of 3 developers
+use, and recommend (our laptops and tablets don’t work nearly as well
+outside as the dedicated plotters.)
+
+It supports up to _four_ radars, with the dual-range Navico radars
+counting as two radars, as long as all radars are of a different type.
+So you can connect both a 4G and a HALO radar and enjoy dual range on
+both physical radars, combining to four different scans simultaneously
+on your computer screen.
+
+The plugin has class leading ARPA and MARPA support, supporting 50 ARPA
+and MARPA targets independent of used scanner type. 
+For Navico Halo types also the doppler function is supported.
+_Target trails_ support comparable to commercial level radars as well 
+as _guard zone_ support. It supports two guard zones per radar as well 
+as two _Electronic Bearing Lines_ (EBL) and Variable Range Markers (VRM) per radar.
+
+The following pages document the plugin for end users:
+
+* xref:Requirements.adoc[Requirements]
+
+* xref:Hardware-installation-(Garmin).adoc[Hardware installation (Garmin)]
+* xref:Hardware-installation-(Navico).adoc[Hardware installation (Navico)]
+* xref:Hardware-installation-(Raymarine).adoc[Hardware installation (Raymarine)]
+* xref:Software-installation.adoc[Software installation]
+* xref:Operation.adoc[Operation]
+* xref:Preferences.adoc[Preferences]
+* xref:Adding-new-radar-types.adoc[Adding new radar types]
+
+== Further development
+
+For more insight in what it takes to add a new radar type, such as
+Furuno or more Raymarine, see xref:Adding-new-radar-types.adoc[Adding new radar types].
+
+== Links
+
+* https://github.com/opencpn-radar-pi/radar_pi/[Radar_pi source:]
+* https://www.cruisersforum.com/forums/f134/radar-plugin-v5-0-0-released-216057.html[OpenCPN forum plugin radar_pi:]
+
+== Credits
+
+This plugin was initially developed as a BR24 plugin by Dave Cowell who
+took Dave Register’s Garmin plugin and modified it to work with the
+BR24. Over the years code was contributed by @Hakansv, @douwefokkema,
+@seandepagnier, @nohal, @chucksk, @ab2nkovs and @canboat. After v3.0 was
+released the code was changed again to support multiple radar types, and
+adding Garmin support back in with the help of @trudK45 and @bdbcat.

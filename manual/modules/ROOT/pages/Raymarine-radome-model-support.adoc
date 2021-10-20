@@ -1,0 +1,63 @@
+:imagesdir: ../images/
+Release 5.2.0 contains support for (older) Raymarine radars.
+
+This is based on the Raymarine plugin project originally written by
+ab2nkovs who never contacted us and just cloned the original BR24 code
+and then published it here: https://github.com/ab2nkovs/RMRadar_pi –
+never to be heard from again.
+
+As far as we know this will support the RD4xxD models and possibly the
+older ``Pathfinder'' models attached to E series classic and maybe even
+RL/RC generation displays, but we’ll see.
+
+Note that the common combo of an older Pathfinder analog radome with a
+(first gen) C series Classic or SL display cannot be used; this is an
+analog radome connected directly to the radar/chartplotter and neither
+the display nor scanner has a Seatalk _hs_ port. If your device has a
+*Raynet* connector, there are conversion cables to Seatalk _hs_ and this
+might work. Please let us know which device you have exactly, with the
+exact Ray device type, and which ports it has.
+
+EVERYTHING YOU DO IS AT YOUR OWN RISK!! NOTE THAT THE AUTHORS DO NOT OWN
+OR HAVE ACCESS TO A RAYMARINE RADAR; IF YOU CAN’T FIND IT HERE PLEASE
+FIND OUT YOUR SELF AND INFORM US!!
+
+== List of Raymarine Radome models
+
+[cols=",,,,,",options="header",]
+|===
+|Model |Interface |Type |Size |Features |Plugin Support
+|M92650 |RL/RC |Magnetron |18 | |?
+|M92650S |RL/RC/E |Magnetron |18 | |?
+|M92652 |RL/RC |Magnetron |24 | |?
+|M92652S |RL/RC/E |Magnetron |24 | |?
+|RD218 |E |Magnetron |18 | |Yes
+|RD424 |E |Magnetron |24 | |Yes
+|RD418D |Ethernet |Magnetron + Digital |18 | |?
+|RD424D |Ethernet |Magnetron + Digital |24 | |?
+|RD418HD |Ethernet |Magnetron + Digital |18 |MC/48 |NY
+|RD424HD |Ethernet |Magnetron + Digital |24 |MC/48 |NY
+|Q24C |Eth+WiFi |Full digital |24 | |NY
+|Q24W |WiFi |Full digital |24 | |NY
+|Q24D |Eth+Wifi |Chirp |24 |MC/48/DO |NY
+|===
+
+Interface:
+
+* RL = Electronics is in RL Pathfinder display, which generates Ethernet data via Seatalk _hs_ port 
+* RC = Electronics is in RC Pathfinder display, which generates Ethernet data via Seatalk _hs_ port 
+* E = Electronics is in E Series (Classic) display, which generates Ethernet data via Seatalk _hs_ port
+
+Features: 
+
+* MC = MultiColor, e.g. more bits per ``pixel'' for more information on signal strength 
+* 48 = 48 RPM at closer ranges instead of 24 
+* DO = Doppler, uses different color for targets getting nearer or further away
+
+Plugin Support: 
+
+* ? = We hope that this will work, we just don’t know yet 
+* Yes = This is what the original plugin by ab2knovs (https://github.com/ab2nkovs/RMRadar_pi) claimed to support 
+* NY = Not yet, please help if you have such a scanner
+
+xref:index.adoc[Back to overview Plugin radar_pi]

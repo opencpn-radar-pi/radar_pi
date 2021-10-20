@@ -17,7 +17,7 @@ static const NetworkAddress e120_send(0, 0, 0, 0, 0);
 #define RANGE_MIXED_RM_E120 \
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 #define RANGE_NAUTIC_RM_E120 \
-  {231, 463, 926, 1389, 2778, 5556, 11112, 22224, 44448, 88896, 133344}; // not needed ? $$$
+  {231, 463, 926, 1389, 2778, 5556, 11112, 22224, 44448, 88896, 133344}; // not needed ?
 
 PLUGIN_END_NAMESPACE
 

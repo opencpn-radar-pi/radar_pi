@@ -8,6 +8,7 @@
  *           Hakan Svensson
  *           Douwe Fokkema
  *           Sean D'Epagnier
+ *           Andrei Bankovs: Raymarine radars
  *           Martin Hassellov: testing the Raymarine radar
  *           Matt McShea: testing the Raymarine radar
  ***************************************************************************
