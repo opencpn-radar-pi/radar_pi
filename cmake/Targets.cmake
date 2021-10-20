@@ -10,6 +10,12 @@ endif ()
 
 include(Metadata)
 
+if (UNIX AND NOT APPLE AND NOT QT_ANDROID)
+  set(_LINUX ON)
+else ()
+  set(_LINUX OFF)
+endif ()
+
 if (WIN32)
   if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 16)
     message(WARNING "windows requires cmake version 3.16 or higher")
@@ -200,7 +206,11 @@ function (help_target)
   )
 
   if ("${BUILD_TYPE}" STREQUAL "" )
-    add_dependencies(${PACKAGE_NAME} make-warning)
+    if (_LINUX)
+      add_dependencies(${PACKAGE_NAME} make-warning)
+    else ()
+      add_dependencies(${PACKAGE_NAME} tarball)
+    endif ()
   endif ()
 endfunction ()
 
