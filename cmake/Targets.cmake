@@ -206,11 +206,7 @@ function (help_target)
   )
 
   if ("${BUILD_TYPE}" STREQUAL "" )
-    if (_LINUX)
-      add_dependencies(${PACKAGE_NAME} make-warning)
-    else ()
-      add_dependencies(${PACKAGE_NAME} tarball)
-    endif ()
+    add_dependencies(${PACKAGE_NAME} tarball)
   endif ()
 endfunction ()
 
