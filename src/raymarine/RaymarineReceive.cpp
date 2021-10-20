@@ -348,6 +348,10 @@ void RaymarineReceive::ProcessFrame(const UINT8 *data, size_t len) {  // This is
   time_t now = time(0);
   wxString MOD_serial;
   wxString IF_serial;
+  wxString s;
+  RadarLocationInfo info;
+  int status;
+  wxString stat;
    //LOG_BINARY_RECEIVE(wxT("received frame"), data, len);
   m_ri->resetTimeout(now);
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
@@ -374,10 +378,49 @@ void RaymarineReceive::ProcessFrame(const UINT8 *data, size_t len) {  // This is
         ProcessQuantumReport(data, len);
         m_ri->m_data_timeout = now + DATA_TIMEOUT;
         break;
-      case 0x00280001:
+      case 0x00280001:  // type and serial for Quantum radar
         LOG_BINARY_RECEIVE(wxT("received frame 0x00280001"), data, len);
-        //  unknown
+        IF_serial = wxString::FromAscii(data + 10, 7);
+        MOD_serial = wxString::FromAscii(data + 4, 6);
+        if (MOD_serial == _("E70498")) {
+           m_ri->m_quantum2type = true;
+        }
+        m_ri->m_radar_location_info.serialNr = IF_serial;
+        status = m_ri->m_state.GetValue();
+        
+        switch (status) {
+        case RADAR_OFF:
+          LOG_VERBOSE(wxT("%s reports status RADAR_OFF"), m_ri->m_name.c_str());
+          stat = _("Off");
+          break;
+
+        case RADAR_STANDBY:
+          LOG_VERBOSE(wxT("%s reports status STANDBY"), m_ri->m_name.c_str());
+          stat = _("Standby");
+          break;
+
+        case RADAR_WARMING_UP:
+          LOG_VERBOSE(wxT("%s reports status RADAR_WARMING_UP"), m_ri->m_name.c_str());
+          stat = _("Warming up");
+          break;
+
+        case RADAR_TRANSMIT:
+          LOG_VERBOSE(wxT("%s reports status RADAR_TRANSMIT"), m_ri->m_name.c_str());
+          stat = _("Transmit");
+          break;
+
+        default:
+          // LOG_BINARY_RECEIVE(wxT("received unknown radar status"), report, len);
+          stat = _("Unknown status");
+          break;
+        }
+        
+        s = wxString::Format(wxT("IP %s %s"), m_ri->m_radar_address.FormatNetworkAddress(), stat.c_str());
+        info = m_ri->GetRadarLocationInfo();
+        s << wxT("\n") << _("SKU ") << MOD_serial << _(" Serial #") << info.serialNr;
+        SetInfoStatus(s);
         break;
+
       case 0x00010006:
         LOG_BINARY_RECEIVE(wxT("received frame 0x00010006"), data, len);
         IF_serial = wxString::FromAscii(data + 4, 7);
@@ -569,7 +612,7 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
       m_range_meters = m_ri->m_radar_ranges[range_id] * 2;  // displayed values are half of scanned values
       m_updated_range = true;
       m_ri->m_range.Update(m_range_meters / 2);  // RM MFD shows half of what is received
-      LOG_RECEIVE(wxT("m_range updated to %i"), (m_range_meters / 2));
+      LOG_VERBOSE(wxT("m_range updated to %i"), (m_range_meters / 2));
     } else {
       m_range_meters = 1;  // prevent accidents down the road
       return;
@@ -620,61 +663,14 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   int ba = (int)bl_pter->bearing_offset;
   m_ri->m_bearing_alignment.Update(ba);
 
-  /*state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;
-  m_ri->m_tune_fine.Update(bl_pter->tune, state);*/
-
-  /*state = (bl_pter->auto_tune > 0) ? RCS_AUTO_1 : RCS_MANUAL;*/
-
-  /*m_ri->m_tune_coarse.UpdateState(state);*/
-
   state = (bl_pter->mbs_enabled > 0) ? RCS_MANUAL : RCS_OFF;
   m_ri->m_main_bang_suppression.Update(bl_pter->mbs_enabled, RCS_MANUAL);
-
-  /*m_ri->m_warmup_time.Update(bl_pter->warmup_time);
-  m_ri->m_signal_strength.Update(bl_pter->signal_strength);*/
-
-
-//int status = m_ri->m_state.GetValue();
-// wxString stat;
-// switch (status) {
-//  case RADAR_OFF:
-//    LOG_VERBOSE(wxT("%s reports status RADAR_OFF"), m_ri->m_name.c_str());
-//    stat = _("Off");
-//    break;
-
-//  case RADAR_STANDBY:
-//    LOG_VERBOSE(wxT("%s reports status STANDBY"), m_ri->m_name.c_str());
-//    stat = _("Standby");
-//    break;
-
-//  case RADAR_WARMING_UP:
-//    LOG_VERBOSE(wxT("%s reports status RADAR_WARMING_UP"), m_ri->m_name.c_str());
-//    stat = _("Warming up");
-//    break;
-
-//  case RADAR_TRANSMIT:
-//    LOG_VERBOSE(wxT("%s reports status RADAR_TRANSMIT"), m_ri->m_name.c_str());
-//    stat = _("Transmit");
-//    break;
-
-//  default:
-//    // LOG_BINARY_RECEIVE(wxT("received unknown radar status"), report, len);
-//    stat = _("Unknown status");
-//    break;
-//}
-
-// s = wxString::Format(wxT("IP %s %s"), m_ri->m_radar_address.FormatNetworkAddress(), stat.c_str());
-
-// RadarLocationInfo info = m_ri->GetRadarLocationInfo();
-// s << wxT("\n") << _("IF-Serial #") << info.serialNr;
-// SetInfoStatus(s);
 }
 
 
 void RaymarineReceive::ProcessRMReport(const UINT8 *data, int len) {
   RMRadarReport *bl_pter = (RMRadarReport *)data;
   wxString s;
-  // m_pi->logBinaryData(wxT("RMRadarReport"), data, len);
   bool HDtype = bl_pter->field01 == 0x00018801;
 
   if (bl_pter->field01 == 0x00018801 || bl_pter->field01 == 0x010001) {  // HD radar or analog
@@ -1187,7 +1183,10 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
       }
      // LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle,
         // angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
-      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, /*m_range_meters*/qheader->range * (m_target_expansion ? 12 : 6), nowMillis);
+      // check the difference in ranges: 
+      if (angle == 0) LOG_VERBOSE(wxT("m_range_meters= %i, qheader->range= %i, *12=%i"), m_range_meters, qheader->range, qheader->range * 12);
+      int range = m_ri->m_quantum2type ? m_range_meters : (qheader->range * (m_target_expansion ? 12 : 6));
+      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, range, nowMillis);
   }
 }
 
