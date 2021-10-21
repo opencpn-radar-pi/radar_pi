@@ -99,8 +99,6 @@ git merge --no-ff --no-commit --allow-unrelated-histories $merge_opt \
 for f in \
     CMakeLists.txt \
     build-deps \
-    buildosx \
-    buildwin \
     config.h.in \
     COPYING \
     data \
