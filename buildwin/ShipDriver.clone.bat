@@ -1,5 +1,5 @@
-REM As described here:
-REM wiki](https://github.com/Rasbats/managed_plugins/wiki/Local-Build)
+REM As described in
+REM https://github.com/Rasbats/managed_plugins/wiki/Local-Build
 
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
 set WXWIN=C:\wxWidgets-3.1.2
