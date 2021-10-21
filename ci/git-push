@@ -9,8 +9,9 @@
 #     as entered to new-credentials script.
 #
 # Keys:
-#   Uses keys created by new credentials. These lives in ci/ with names
-#   like  ci/user.enc and ci/user.pub where 'user' is as present in GIT_REPO.
+#   Uses keys created by new credentials. These lives in build-deps/ with
+#   names like  build-deps/user.enc and build-deps/user.pub where 'user'
+#   is as present in GIT_REPO.
 
 
 import base64
@@ -29,7 +30,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-WIKI_BASE="https://github.com/Rasbats/managed_plugins/wiki"
+MANUAL_BASE="https://opencpn-manuals.github.io/main/AlternativeWorkflow"
 
 
 def cipherFernet(password):
@@ -68,22 +69,28 @@ def get_password():
     return pw
 
 
-def private_key_setup(ci, user, password):
+def private_key_setup(ci, build_deps, user, password):
     """ Decrypt ssh key and setup up GIT_SSH_COMMAND in environment. """
 
-    try:
-        with open(os.path.join(ci, user + ".enc"), 'r') as f:
+    key_path = os.path.join(ci, user + ".enc")
+    if (os.path.exists(key_path)):
+        print("WARNING: Using key in deprecated location ci/")
+        print("Please move key to build-deps/")
+    else:    
+        key_path = os.path.join(build_deps, user + ".enc")
+    if (os.path.exists(key_path)):
+        with open(key_path, 'r') as f:
             encrypted = f.read()
-    except FileNotFoundError:
+    else:
         print("No private key found, cannot push metadata to git repo.")
-        print("See %s/OpenCPN-Plugins-Catalog-and-Github-Integration"
-                % WIKI_BASE)
+        print("See %s/Catalog-Github-Integration.html" % MANUAL_BASE)
         sys.exit(0)
     decrypted = decrypt1(encrypted.encode(), password.encode())
-    with open(os.path.join(ci, user ), 'wb') as f:
+    key_path = key_path.replace(".enc", "")
+    with open(key_path, 'wb') as f:
         f.write(decrypted)
-    os.chmod(os.path.join(ci, user ), 0o600)
-    hostpath = os.path.normpath(os.path.join(ci, user))
+    os.chmod(key_path, 0o600)
+    hostpath = os.path.normpath(key_path)
     print("Using identity file: " + hostpath)
     os.environ['GIT_SSH_COMMAND'] = \
         "ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i " \
@@ -177,6 +184,7 @@ def main():
     # Set up (const) variables.
     here = os.path.dirname(sys.argv[0])
     ci = os.path.abspath(os.path.join(here, '..', 'ci'))
+    build_deps = os.path.abspath(os.path.join(here, '..', 'build-deps'))
     top = os.path.abspath(os.path.join(here, '..'))
     user = get_user()
     password = get_password()
@@ -188,7 +196,7 @@ def main():
     git = Git(branch)
     git.configure()
 
-    private_key_setup(ci, user, password)
+    private_key_setup(ci, build_deps, user, password)
 
     # Clone the repo if it does not exist.
     if not os.path.exists(os.path.join(top, 'plugins')):
@@ -204,10 +212,14 @@ def main():
 
     if git.commit(metadata[0]):
         git.push()
+    priv_key = os.path.join(build_deps, user)
+    if (not os.path.exists(priv_key)):
+        priv_key = os.path.join(ci, user)
+    os.remove(priv_key)
 
-    os.remove(os.path.join(ci, user))     # Drop the private key
     print("Pushed metadata to branch " + branch + " at the "
-          +  os.environ.get("GIT_REPO") + " repository")
+            +  os.environ.get("GIT_REPO").replace("git@github.com:", "")
+            + " repository")
 
 
 if __name__ == '__main__':
