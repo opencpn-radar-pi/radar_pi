@@ -1088,13 +1088,15 @@ struct SQuantumScanDataHeader {
 	uint16_t data_len;
 };
 
+static int prevrange, qrange;   // $$$ remove after tests
+
 void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
   if (m_range_meters == 1) {
     LOG_RECEIVE(wxT("Invalid range"));
     return;
   }
   SQuantumScanDataHeader *qheader = (SQuantumScanDataHeader *)data;
-  //m_pi->logBinaryData(wxT("Scandata_x"), data, len);
+  m_pi->logBinaryData(wxT("SQuantumScanDataHeader"), data, len);
   if (len > (int)(sizeof(SQuantumScanDataHeader))) {
 //    Header1 *pHeader = (Header1 *)data;
     bool HDtype = true;
@@ -1184,8 +1186,17 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
      // LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle,
         // angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
       // check the difference in ranges: 
-      if (angle == 0) LOG_VERBOSE(wxT("m_range_meters= %i, qheader->range= %i, *12=%i"), m_range_meters, qheader->range, qheader->range * 12);
-      int range = m_ri->m_quantum2type ? m_range_meters : (qheader->range * (m_target_expansion ? 12 : 6));
+      if (m_range_meters != prevrange || qheader->range != qrange) {
+        prevrange = m_range_meters;
+        qrange = qheader->range;
+        double ratio = m_range_meters / qheader->range;
+        LOG_VERBOSE(wxT("m_range_meters= %i, qheader->range= %i, ratio= %f, m_target_expansion= %i"), m_range_meters, qheader->range, ratio, m_target_expansion);
+      }
+      //int range = m_ri->m_quantum2type ? m_range_meters : (qheader->range * (m_target_expansion ? 12 : 6));
+      int range = m_range_meters;
+      if (/*m_ri->m_quantum2type && */m_target_expansion) {
+        range = range * 1.5;
+      }
       m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, range, nowMillis);
   }
 }
