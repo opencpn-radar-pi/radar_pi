@@ -1083,7 +1083,7 @@ struct SQuantumScanDataHeader {
 	uint16_t scan_len;		// 0x002b
 	uint16_t num_spokes;	// 0x00fa
 	uint16_t something_3;	// 0x0008
-	uint16_t range;	      // 0x1d - 1/16, 0x39 - 1/8
+	uint16_t returns_per_range;	 // number of radar returns per range from the status
 	uint16_t azimuth;	
 	uint16_t data_len;
 };
@@ -1199,7 +1199,7 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
         range = range * 1.5;
       }
 #endif
-      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters * returns_per_line / qheader->range / 2 /* range */, nowMillis);
+      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters * returns_per_line / qheader->returns_per_range / 2 /* range */, nowMillis);
   }
 }
 
