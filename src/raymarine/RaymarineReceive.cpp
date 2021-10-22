@@ -1186,6 +1186,7 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
      // LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle,
         // angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
       // check the difference in ranges: 
+#if 0
       if (m_range_meters != prevrange || qheader->range != qrange) {
         prevrange = m_range_meters;
         qrange = qheader->range;
@@ -1197,7 +1198,8 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
       if (/*m_ri->m_quantum2type && */m_target_expansion) {
         range = range * 1.5;
       }
-      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, range, nowMillis);
+#endif
+      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters * returns_per_line / qheader->range / 2 /* range */, nowMillis);
   }
 }
 
