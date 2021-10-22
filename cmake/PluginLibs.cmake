@@ -54,3 +54,8 @@ if (MSYS)
 endif ()
 include(${wxWidgets_USE_FILE})
 target_link_libraries(${PACKAGE_NAME} ${wxWidgets_LIBRARIES})
+
+if (WIN32)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/libs/WindowsHeaders")
+  target_link_libraries(${PACKAGE_NAME} windows::headers)
+endif ()

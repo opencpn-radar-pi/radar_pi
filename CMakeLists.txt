@@ -144,11 +144,6 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
 
   include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
-  if (WIN32)
-    add_subdirectory("libs/WindowsHeaders")
-    target_link_libraries(${PACKAGE_NAME} windows::headers)
-  endif ()
-
   add_subdirectory("libs/jsoncpp")
   target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
   
