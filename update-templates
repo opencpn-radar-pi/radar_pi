@@ -103,7 +103,6 @@ for f in \
     COPYING \
     data \
     flatpak \
-    libs \
     manual \
     po \
     README.md \
@@ -116,6 +115,17 @@ do
             git rm --quiet -f $ff
         done
     fi
+done
+
+# Restore private libraries in libs, but not the generic ones
+for d in libs/*; do
+    case "$d" in
+      api*|AndroidHeaders)
+          continue
+          ;;
+      *)  git checkout HEAD $d
+          ;;
+    esac
 done
 
 
