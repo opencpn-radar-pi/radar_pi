@@ -120,7 +120,7 @@ done
 # Restore private libraries in libs, but not the generic ones
 for d in libs/*; do
     case "$d" in
-      api*|AndroidHeaders)
+      api*|AndroidHeaders|WindowsHeaders)
           continue
           ;;
       *)  git checkout HEAD $d
