@@ -492,7 +492,8 @@ struct RMRadarReport {
 struct QuantumControls {
 	uint8_t gain_auto;			  // @ 0
 	uint8_t gain;				      // @ 1
-	uint8_t something_4[2];		// @ 2
+	uint8_t color_gain_auto;  // @ 2
+  uint8_t color_gain;		    // @ 3
 	uint8_t sea_auto;			    // @ 4
 	uint8_t sea;				      // @ 5
 	uint8_t rain_auto;		    // @ 6
@@ -634,6 +635,11 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   m_ri->m_gain.Update(bl_pter->controls[mode_idx].gain);
   m_ri->m_gain.UpdateState(state);
   LOG_RECEIVE(wxT("gain updated received1= %i, displayed = %i state= %i"), bl_pter->controls[mode_idx].gain, m_ri->m_gain.GetValue(), state);
+
+  state = (RadarControlState)bl_pter->controls[mode_idx].color_gain_auto == 0 ? RCS_MANUAL : RCS_AUTO_1;
+  m_ri->m_color_gain.Update(bl_pter->controls[mode_idx].color_gain);
+  m_ri->m_color_gain.UpdateState(state);
+  LOG_RECEIVE(wxT("color gain updated received1= %i, displayed = %i state= %i"), bl_pter->controls[mode_idx].color_gain, m_ri->m_color_gain.GetValue(), state);
 
   state = (RadarControlState)bl_pter->controls[mode_idx].sea_auto;  // we don't know how many auto states there are....
   m_ri->m_sea.Update(bl_pter->controls[mode_idx].sea);

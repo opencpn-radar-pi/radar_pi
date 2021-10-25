@@ -259,6 +259,32 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
+    case CT_COLOR_GAIN: {
+      uint8_t command_color_gain_auto[] = {
+        0x03, 0x03, 0x28, 0x00, 0x00, 
+        0x00,	// Color gain auto - 1, manual - 0 @5 
+        0x00, 0x00
+      };
+
+      uint8_t command_color_gain_set[] = {
+        0x04, 0x03, 0x28, 0x00, 0x00, 
+        0x37, 	// Color gain value 0 - 100 @5
+        0x00, 0x00
+      };
+      if (!autoValue) {
+        command_color_gain_auto[5] = 0;
+        r = TransmitCmd(command_color_gain_auto, sizeof(command_color_gain_auto));  // set auto off
+        command_color_gain_set[5] = value;
+        r = TransmitCmd(command_color_gain_set, sizeof(command_color_gain_set));
+        LOG_TRANSMIT(wxT("send color gain command color gain value= %i, transmitted = %i"), value, command_color_gain_set[5]);
+      } else {  // auto on
+        command_color_gain_auto[5] = 1;
+        r = TransmitCmd(command_color_gain_auto, sizeof(command_color_gain_auto));  // set auto on
+      }
+      LOG_VERBOSE(wxT("%s Color Gain: %d auto %d"), m_name.c_str(), value, autoValue);
+      break;
+    }
+
     case CT_SEA: {
       uint8_t command_sea_set[] = {0x06, 0x03, 0x28, 0x00, 0x00,
                                    0x28,  // Quantum, value at pos 5

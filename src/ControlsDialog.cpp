@@ -917,6 +917,12 @@ void ControlsDialog::CreateControls() {
     m_adjust_sizer->Add(m_gain_button, 0, wxALL, BORDER);
   }
 
+  // The COLOR GAIN button
+  if (m_ctrl[CT_COLOR_GAIN].type) {
+    m_color_gain_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Color Gain"), m_ctrl[CT_COLOR_GAIN], &m_ri->m_color_gain);
+    m_adjust_sizer->Add(m_color_gain_button, 0, wxALL, BORDER);
+  }
+
   // The SEA button
   if (m_ctrl[CT_SEA].type) {
     m_sea_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Sea clutter"), m_ctrl[CT_SEA], &m_ri->m_sea);
@@ -1749,6 +1755,9 @@ void ControlsDialog::DisableRadarControls() {
   if (m_gain_button) {
     m_gain_button->Disable();
   }
+  if (m_color_gain_button) {
+    m_color_gain_button->Disable();
+  }
   if (m_rain_button) {
     m_rain_button->Disable();
   }
@@ -1841,6 +1850,9 @@ void ControlsDialog::EnableRadarControls() {
   }
   if (m_gain_button) {
     m_gain_button->Enable();
+  }
+  if (m_color_gain_button) {
+    m_color_gain_button->Enable();
   }
   if (m_rain_button) {
     m_rain_button->Enable();
@@ -1996,6 +2008,11 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   // gain
   if (m_gain_button) {
     m_gain_button->UpdateLabel();
+  }
+
+  // color gain
+  if (m_color_gain_button) {
+    m_color_gain_button->UpdateLabel();
   }
 
   //  rain
