@@ -29,6 +29,7 @@ from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.exceptions import InvalidSignature
 
 MANUAL_BASE="https://opencpn-manuals.github.io/main/AlternativeWorkflow"
 
@@ -85,7 +86,11 @@ def private_key_setup(ci, build_deps, user, password):
         print("No private key found, cannot push metadata to git repo.")
         print("See %s/Catalog-Github-Integration.html" % MANUAL_BASE)
         sys.exit(0)
-    decrypted = decrypt1(encrypted.encode(), password.encode())
+    try:
+        decrypted = decrypt1(encrypted.encode(), password.encode())
+    except (InvalidToken, InvalidSignature):
+        print("ERROR: Cannot decrypt private key (wrong GIT_KEY_PASSWORD?)")
+        sys.exit(1)
     key_path = key_path.replace(".enc", "")
     with open(key_path, 'wb') as f:
         f.write(decrypted)
