@@ -34,10 +34,6 @@
 #include <stdio.h>
 #include <wx/timer.h>
 
-#ifdef __OCPN__ANDROID__
-wxWindow *g_Window;
-#endif
-
 class GribRecordSet;
 
 void assign(char* dest, char* arrTest2) { strcpy(dest, arrTest2); }
@@ -64,12 +60,6 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
     m_bInvalidGribFile = false;
     m_bShipDriverHasStarted = false;
 
-#ifdef __OCPN__ANDROID__
-    g_Window = this;
-    GetHandle()->setStyleSheet( qtStyleSheet);
-    Connect( wxEVT_MOTION, wxMouseEventHandler( pypilotDialog::OnMouseEvent ) );
-#endif
-
     wxFileConfig* pConf = GetOCPNConfigObject();
 
     if (pConf) {
@@ -80,51 +70,6 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
         pConf->Read(_T("shipdriverMMSI"), &m_tMMSI, "12345");
     }
 }
-
-#ifdef __OCPN__ANDROID__ 
-wxPoint g_startPos;
-wxPoint g_startMouse;
-wxPoint g_mouse_pos_screen;
-
-void Dlg::OnMouseEvent( wxMouseEvent& event )
-{
-    g_mouse_pos_screen = ClientToScreen( event.GetPosition() );
-    
-    if(event.Dragging()){
-        int x = wxMax(0, g_startPos.x + (g_mouse_pos_screen.x - g_startMouse.x));
-        int y = wxMax(0, g_startPos.y + (g_mouse_pos_screen.y - g_startMouse.y));
-        int xmax = ::wxGetDisplaySize().x - GetSize().x;
-        x = wxMin(x, xmax);
-        int ymax = ::wxGetDisplaySize().y - (GetSize().y * 2);          // Some fluff at the bottom
-        y = wxMin(y, ymax);
-        
-        g_Window->Move(x, y);
-    }
-}
-
-void Dlg::OnEvtPinchGesture( wxQT_PinchGestureEvent &event)
-{
-}
-
-void Dlg::OnEvtPanGesture( wxQT_PanGestureEvent &event)
-{
-    switch(event.GetState()){
-        case GestureStarted:
-            g_startPos = GetPosition();
-            g_startMouse = event.GetCursorPos(); //g_mouse_pos_screen;
-            break;
-            
-        case GestureFinished:
-            break;
-            
-        case GestureCanceled:
-            break;
-            
-        default:
-            break;
-    }
-}
-#endif
 
 void Dlg::OnTimer(wxTimerEvent& event) { Notify(); }
 
