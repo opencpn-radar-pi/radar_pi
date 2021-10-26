@@ -25,10 +25,6 @@
  ***************************************************************************
  */
 
-#ifdef __OCPN__ANDROID__
-#include <wx/qt/private/wxQtGesture.h>
-#endif
-
 #ifndef _HRGUI_IMPL_H_
 #define _HRGUI_IMPL_H_
 
@@ -109,10 +105,6 @@ public:
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize, long style = SHIPDRIVER_DLG_STYLE);
     ShipDriver_pi* plugin;
-
-#ifdef __OCPN__ANDROID__
-    void OnMouseEvent( wxMouseEvent& event );
-#endif
 
     wxString createVHWSentence(double stw, double hdg);
     wxString createMWVTSentence(
