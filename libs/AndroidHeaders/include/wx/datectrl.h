@@ -1,10 +1,9 @@
 //#include <wx/textctrl.h>
 
-#define wxDatePickerCtrlNameStr wxT("datectrl")
+#define wxDatePickerCtrlNameStr "datectrl"
 
 // wxDatePickerCtrl styles
-enum
-{
+enum {
     // default style on this platform, either wxDP_SPIN or wxDP_DROPDOWN
     wxDP_DEFAULT = 0,
 
@@ -23,29 +22,40 @@ enum
     wxDP_ALLOWNONE = 8
 };
 
-class WXDLLIMPEXP_ADV wxDatePickerCtrl : public wxTextCtrl
-{
+class WXDLLIMPEXP_ADV wxDatePickerCtrl : public wxTextCtrl {
 public:
     // creating the control
-//    wxDatePickerCtrl() { Init(); }
-    virtual ~wxDatePickerCtrl() {}
-    wxDatePickerCtrl(wxWindow *parent,
-                     wxWindowID id,
-                     const wxDateTime& date = wxDefaultDateTime,
-                     const wxPoint& pos = wxDefaultPosition,
-                     const wxSize& size = wxDefaultSize,
-                     long style = wxDP_DEFAULT | wxDP_SHOWCENTURY,
-                     const wxValidator& validator = wxDefaultValidator,
-                     const wxString& name = wxDatePickerCtrlNameStr)
-        : wxTextCtrl(parent, id, date.IsValid() ? date.Format() :"N/A", pos, size, 0, validator, name)
-    {}
+    //    wxDatePickerCtrl() { Init(); }
+    virtual ~wxDatePickerCtrl() { }
+    wxDatePickerCtrl(wxWindow* parent, wxWindowID id,
+        const wxDateTime& date = wxDefaultDateTime,
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxDP_DEFAULT | wxDP_SHOWCENTURY,
+        const wxValidator& validator = wxDefaultValidator,
+        const wxString& name = wxDatePickerCtrlNameStr)
+        : wxTextCtrl(parent, id, date.IsValid() ? date.Format() : "N/A", pos,
+            size, 0, validator, name)
+    {
+    }
     // wxDatePickerCtrl methods
-    void SetValue(const wxDateTime& date) { wxTextCtrl::SetValue(date.FormatISODate()); }
-    wxDateTime GetDateCtrlValue() const { wxDateTime dt; dt.ParseISODate(wxTextCtrl::GetValue()); return dt; }
+    void SetValue(const wxDateTime& date)
+    {
+        wxTextCtrl::SetValue(date.FormatISODate());
+    }
+    wxDateTime GetDateCtrlValue() const
+    {
+        wxDateTime dt;
+        dt.ParseISODate(wxTextCtrl::GetValue());
+        return dt;
+    }
 
-    bool GetRange(wxDateTime *dt1, wxDateTime *dt2) const {return true;}
-    void SetRange(const wxDateTime &dt1, const wxDateTime &dt2) {}
+    bool GetRange(wxDateTime* dt1, wxDateTime* dt2) const { return true; }
+    void SetRange(const wxDateTime& dt1, const wxDateTime& dt2) { }
 
     bool SetDateRange(const wxDateTime& lowerdate = wxDefaultDateTime,
-                      const wxDateTime& upperdate = wxDefaultDateTime) {return true;}
+        const wxDateTime& upperdate = wxDefaultDateTime)
+    {
+        return true;
+    }
 };
