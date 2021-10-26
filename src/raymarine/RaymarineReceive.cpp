@@ -1094,8 +1094,6 @@ struct SQuantumScanDataHeader {
 	uint16_t data_len;
 };
 
-static int prevrange, qrange;   // $$$ remove after tests
-
 void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
   if (m_range_meters == 1) {
     LOG_RECEIVE(wxT("Invalid range"));
@@ -1145,9 +1143,9 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
       }  // end of while, only one spoke per packet
 
       returns_per_line = qheader->scan_len;
-      if (returns_per_line > 245) {
-        LOG_INFO(wxT("Error returns_per_line too large %i"), returns_per_line);
-        returns_per_line = 245;
+      if (returns_per_line > 252) {
+        LOG_VERBOSE(wxT("Error returns_per_line too large %i"), returns_per_line);
+        returns_per_line = 252;
         }
       dataPtr = unpacked_data;
       m_ri->m_statistics.spokes++;
@@ -1189,23 +1187,7 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
         LOG_INFO(wxT("Error range invalid"));
         return;
       }
-     // LOG_INFO(wxT("ProcessRadarSpoke a=%i, angle_raw=%i b=%i, bearing_raw=%i, returns_per_line=%i range=%i spokes=%i"), angle,
-        // angle_raw, bearing, bearing_raw, returns_per_line, m_range_meters, m_ri->m_spokes);
-      // check the difference in ranges: 
-#if 0
-      if (m_range_meters != prevrange || qheader->range != qrange) {
-        prevrange = m_range_meters;
-        qrange = qheader->range;
-        double ratio = m_range_meters / qheader->range;
-        LOG_VERBOSE(wxT("m_range_meters= %i, qheader->range= %i, ratio= %f, m_target_expansion= %i"), m_range_meters, qheader->range, ratio, m_target_expansion);
-      }
-      //int range = m_ri->m_quantum2type ? m_range_meters : (qheader->range * (m_target_expansion ? 12 : 6));
-      int range = m_range_meters;
-      if (/*m_ri->m_quantum2type && */m_target_expansion) {
-        range = range * 1.5;
-      }
-#endif
-      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters * returns_per_line / qheader->returns_per_range / 2 /* range */, nowMillis);
+      m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters * returns_per_line / qheader->returns_per_range / 2, nowMillis);
   }
 }
 

@@ -38,45 +38,6 @@
 PLUGIN_BEGIN_NAMESPACE
 
 bool RMQuantumControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
-  int r;
-  int one = 1;
-
-#if 0
-  // The radar IP address is not used for Navico BR/Halo radars
-  if (radaradr.port != 0) {
-    // Null
-  }
-
-  if (m_radar_socket != INVALID_SOCKET) {
-    closesocket(m_radar_socket);
-  }
-  m_radar_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-  if (m_radar_socket == INVALID_SOCKET) {
-    r = -1;
-  } else {
-    r = setsockopt(m_radar_socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
-  }
-
-  if (!r) {
-    struct sockaddr_in s = ifadr.GetSockAddrIn();
-
-    r = ::bind(m_radar_socket, (struct sockaddr *)&s, sizeof(s));
-  }
-
-  if (r) {
-    wxLogError(wxT("Unable to create UDP sending socket"));
-    LOG_INFO(wxT(" tx socketerror "));
-    // Might as well give up now
-    return false;
-  }
-  if (m_radar_socket == INVALID_SOCKET) {  // just another check...
-    wxLogError(wxT("INVALID_SOCKET Unable to create UDP sending socket"));
-    // Might as well give up now
-    return false;
-  }
-  LOG_TRANSMIT(wxT("%s transmit socket open"), m_name.c_str());
-#endif
-
   return true;
 }
 
@@ -127,7 +88,7 @@ void RMQuantumControl::RadarTxOn() {
   TransmitCmd(rd_msg_tx_control, sizeof(rd_msg_tx_control));
 };
 
-// 1 sec stay alive not used yet. May be required for Quantum
+
 static uint8_t stay_alive_1sec[] = {0x00, 0x00, 0x28, 0x00, 0x52, 0x61, 0x64, 0x61, 0x72, 0x00, 0x00, 0x00}; // Quantum 1 sec stay alive
 
 
@@ -153,7 +114,7 @@ static uint8_t rd_msg_set_range[] = {0x01, 0x01, 0x28, 0x00, 0x00,
                                      0x00, 0x00};
 
 bool RMQuantumControl::SetRange(int meters) {
-  LOG_INFO(wxT(" SetRangeMeters = %i"), meters);
+  LOG_VERBOSE(wxT(" SetRangeMeters = %i"), meters);
   for (int i = 0; i < 20; i++) {
     if (meters <= m_ri->m_radar_ranges[i]) {
       SetRangeIndex(i);
@@ -168,6 +129,28 @@ void RMQuantumControl::SetRangeIndex(size_t index) {
   rd_msg_set_range[5] = index;
   TransmitCmd(rd_msg_set_range, sizeof(rd_msg_set_range));
 }
+
+
+// Overview of Quantum radar conmmands as far as known
+      // Ordering the radar commands by the first byte value.
+      /*
+      00 00 28       Stay alive 1 sec
+      01 01 28       Range
+      01 03 28 00 00 00 00 00 Gain to manual
+      01 03 28 00 00 01 00 00 Gain to auto
+      02 03 28 00 00 xx 7e a3    Gain
+      05 03 28 00 00 00 00 00 Sea to manual
+      05 03 28 00 00 01 00 00 Sea to auto
+      06 03 28 00 00 xx 00 00 Sea
+      0b 03 28 00 00 00 00 00 Rain to manual
+      0b 03 28 00 00 00 00 00 Rain to auto
+      0c 03 28       Rain
+      0f 03 28 00 00 01 00 00 Target expansion on, 00 on 5 == off
+      10 00 28 00 01 00 00 00 Radar transmit ON. Controlling value at pos 4!
+      10 00 28 00 00 00 00 00 Radar transmit OFF
+      14 03 28       Mode, harbor 0, coastal 1, offshore 2, weather 3
+
+      */
 
 bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) {
   bool r = false;
@@ -213,28 +196,6 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       // The above are not settings that are not radar commands or not supported by Navico radar.
       // Made them explicit so the compiler can catch missing control types.
       break;
-
-      // Overview of Quantum radar conmmands as far as known
-      // Ordering the radar commands by the first byte value.
-      /*
-      00 00 28       Stay alive 1 sec
-      01 01 28       Range
-      01 03 28 00 00 00 00 00 Gain to manual
-      01 03 28 00 00 01 00 00 Gain to auto
-      02 03 28 00 00 xx 7e a3    Gain
-      05 03 28 00 00 00 00 00 Sea to manual
-      05 03 28 00 00 01 00 00 Sea to auto
-      06 03 28 00 00 xx 00 00 Sea
-      0b 03 28 00 00 00 00 00 Rain to manual
-      0b 03 28 00 00 00 00 00 Rain to auto
-      0c 03 28       Rain
-      0f 03 28 00 00 01 00 00 Target expansion on, 00 on 5 == off
-      10 00 28 00 01 00 00 00 Radar transmit ON. Controlling value at pos 4!
-      10 00 28 00 00 00 00 00 Radar transmit OFF
-      14 03 28       Mode, harbor 0, coastal 1, offshore 2, weather 3
-      
-           
-      */
 
     case CT_GAIN: {
       uint8_t command_gain_set[] = {0x02, 0x03, 0x28, 0x00, 0x00,
