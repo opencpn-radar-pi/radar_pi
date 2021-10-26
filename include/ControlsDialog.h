@@ -223,6 +223,7 @@ class ControlsDialog : public wxDialog {
     m_stc_curve_button = 0;
     m_display_timing_button = 0;
     m_main_bang_suppression_button = 0;
+    m_color_gain_button = 0;
 
     for (size_t i = 0; i < ARRAY_SIZE(m_ctrl); i++) {
       m_ctrl[i].type = CT_NONE;
@@ -413,6 +414,7 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_ftc_button;
   RadarControlButton *m_mode_button;
   RadarControlButton *m_all_to_auto_button;
+  RadarControlButton *m_color_gain_button;
   wxButton *m_adjust_button;
   wxButton *m_cursor_menu;
 

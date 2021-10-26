@@ -145,6 +145,7 @@ class RadarInfo {
   RadarControlItem m_stc_curve;
   RadarControlItem m_coarse_tune;
   RadarControlItem m_magnetron_current;
+  RadarControlItem m_color_gain;
 
   bool m_showManualValueInAuto;  // Does radar adjust manual value in auto mode? True for Garmin, False for others
   bool m_timed_idle_hardware;    // Does radar handle timed idle itself?
