@@ -24,6 +24,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
  */
+#ifdef __OCPN__ANDROID__
+#include <wx/qt/private/wxQtGesture.h>
+#endif
 
 #ifndef _HRGUI_IMPL_H_
 #define _HRGUI_IMPL_H_
@@ -108,6 +111,8 @@ public:
 
 #ifdef __OCPN__ANDROID__
     void OnMouseEvent( wxMouseEvent& event );
+    void OnEvtPinchGesture( wxQT_PinchGestureEvent &event);
+    void OnEvtPanGesture( wxQT_PanGestureEvent &event);
 #endif
 
     wxString createVHWSentence(double stw, double hdg);
