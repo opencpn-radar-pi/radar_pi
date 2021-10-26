@@ -47,7 +47,6 @@
 #include "ocpn_plugin.h" //Required for OCPN plugin functions
 #include "ShipDrivergui_impl.h"
 #include "GribRecordSet.h"
-#include "plugingl/qtstylesheet.h"
 
 // Define minimum and maximum versions of the grib plugin supported
 #define GRIB_MAX_MAJOR 4
