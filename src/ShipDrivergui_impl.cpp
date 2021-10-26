@@ -67,7 +67,7 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
 #ifdef __OCPN__ANDROID__
     g_Window = this;
     GetHandle()->setStyleSheet( qtStyleSheet);
-    Connect( wxEVT_MOTION, wxMouseEventHandler( pypilotDialog::OnMouseEvent ) );
+    Connect( wxEVT_MOTION, wxMouseEventHandler( Dlg::OnMouseEvent ) );
 #endif
 
     wxFileConfig* pConf = GetOCPNConfigObject();
@@ -99,29 +99,6 @@ void Dlg::OnMouseEvent( wxMouseEvent& event )
         y = wxMin(y, ymax);
         
         g_Window->Move(x, y);
-    }
-}
-
-void Dlg::OnEvtPinchGesture( wxQT_PinchGestureEvent &event)
-{
-}
-
-void Dlg::OnEvtPanGesture( wxQT_PanGestureEvent &event)
-{
-    switch(event.GetState()){
-        case GestureStarted:
-            g_startPos = GetPosition();
-            g_startMouse = event.GetCursorPos(); //g_mouse_pos_screen;
-            break;
-            
-        case GestureFinished:
-            break;
-            
-        case GestureCanceled:
-            break;
-            
-        default:
-            break;
     }
 }
 #endif
