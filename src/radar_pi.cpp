@@ -7,6 +7,7 @@
  *           Kees Verruijt
  *           Douwe Fokkema
  *           Sean D'Epagnier
+ *           Andrei Bankovs: Raymarine radars
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -132,7 +133,10 @@ END_EVENT_TABLE()
 //
 //---------------------------------------------------------------------------------------------------------
 
-radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr) {
+radar_pi::radar_pi(void *ppimgr) 
+  : opencpn_plugin_116(ppimgr)
+  , m_raymarine_locator(0) 
+{
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
   m_predicted_position_initialised = false;
@@ -359,14 +363,15 @@ int radar_pi::Init(void) {
 }
 
 void radar_pi::StartRadarLocators(size_t r) {
-  if ((m_radar[r]->m_radar_type == RT_3G || m_radar[r]->m_radar_type == RT_4GA || m_radar[r]->m_radar_type == RT_HaloA) &&
+  if ((m_radar[r]->m_radar_type == RT_3G || m_radar[r]->m_radar_type == RT_4GA || m_radar[r]->m_radar_type == RT_HaloA ||
+       m_radar[r]->m_radar_type == RT_HaloB) &&
       m_navico_locator == NULL) {
     m_navico_locator = new NavicoLocate(this);
     if (m_navico_locator->Run() != wxTHREAD_NO_ERROR) {
       wxLogError(wxT("unable to start Navico Radar Locator thread"));
     }
   }
-  if (m_radar[r]->m_radar_type == RM_E120 && m_raymarine_locator == NULL) {
+  if ((m_radar[r]->m_radar_type == RM_E120 || m_radar[r]->m_radar_type == RM_QUANTUM) && m_raymarine_locator == NULL) {
     m_raymarine_locator = new RaymarineLocate(this);
     if (m_raymarine_locator->Run() != wxTHREAD_NO_ERROR) {
       wxLogError(wxT("unable to start Raymarine Radar Locator thread"));
@@ -1178,11 +1183,11 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   }
   
    //// for testing only, simple trick to get position and heading
-   /*wxString nmea;   
-   nmea = wxT("$APHDM,000.0,M*33");
-   PushNMEABuffer(nmea);
-   nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-   PushNMEABuffer(nmea);*/
+   //wxString nmea;
+   //nmea = wxT("$APHDM,000.0,M*33");
+   //PushNMEABuffer(nmea);
+   //nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+   //PushNMEABuffer(nmea);
 
   // update own ship position to best estimate
   ExtendedPosition intermediate_pos;
@@ -2090,15 +2095,19 @@ bool radar_pi::MouseEventHook(wxMouseEvent &event) {
 void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size) {
   wxString explain;
   int i = 0;
-
   explain.Alloc(size * 3 + 50);
   explain += wxT("");
   explain += what;
   explain += wxString::Format(wxT(" %d bytes: "), size);
   for (i = 0; i < size; i++) {
+    if (i % 16 == 0) {
+      explain += wxString::Format(wxT(" \n %3d    "), i);
+    } else if (i % 8 == 0) {
+      explain += wxString::Format(wxT("  "), i);
+    }
     explain += wxString::Format(wxT(" %02X"), data[i]);
   }
-  wxLogMessage(explain);
+  LOG_INFO(explain);
 }
 
 bool radar_pi::IsRadarOnScreen(int radar) {

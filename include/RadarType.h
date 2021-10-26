@@ -49,7 +49,9 @@
 #include "pi_common.h"
 #include "raymarine/RME120Control.h"
 #include "raymarine/RME120ControlsDialog.h"
-#include "raymarine/RME120Receive.h"
+#include "raymarine/RMQuantumControl.h"
+#include "raymarine/RMQuantumControlsDialog.h"
+#include "raymarine/RaymarineReceive.h"
 
 #endif /* _RADARTYPE_H_ */
 
@@ -93,6 +95,8 @@
 #include "navico/haloatype.h"
 #include "navico/halobtype.h"
 #include "raymarine/RME120type.h"
+#include "raymarine/RMQuantumtype.h"
+
 
 #undef DEFINE_RADAR  // Prepare for next inclusion
 #undef INITIALIZE_RADAR

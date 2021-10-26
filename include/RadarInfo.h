@@ -68,7 +68,7 @@ class RadarInfo {
   RadarType m_radar_type;  // Which radar type
   size_t m_spokes;         // # of spokes per rotation
   size_t m_spoke_len_max;  // Max # of bytes per spoke
-  int m_radar_ranges[20];  // Ranges actually in use (values displayed). Always in meters, also if units is NM. Currently
+  int m_radar_ranges[21];  // Ranges actually in use (values displayed). Always in meters, also if units is NM. Currently
                            // only used for Raymarine.
 
   // Digital radars cannot produce just any range. When asked for a particular value
@@ -112,6 +112,8 @@ class RadarInfo {
   RadarControlItem m_sea;
   RadarControlItem m_rain;
   RadarControlItem m_ftc;
+  RadarControlItem m_mode;
+  RadarControlItem m_all_to_auto;
   RadarControlItem m_scan_speed;
   RadarControlItem m_bearing_alignment;
   RadarControlItem m_range_adjustment;
@@ -143,9 +145,11 @@ class RadarInfo {
   RadarControlItem m_stc_curve;
   RadarControlItem m_coarse_tune;
   RadarControlItem m_magnetron_current;
+  RadarControlItem m_color_gain;
 
   bool m_showManualValueInAuto;  // Does radar adjust manual value in auto mode? True for Garmin, False for others
   bool m_timed_idle_hardware;    // Does radar handle timed idle itself?
+  bool m_quantum2type;
 
   /* Per radar objects */
 

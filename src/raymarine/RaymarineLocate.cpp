@@ -8,6 +8,7 @@
  *           Hakan Svensson
  *           Douwe Fokkema
  *           Sean D'Epagnier
+ *           Andrei Bankovs: Raymarine radars
  *           Martin Hassellov: testing the Raymarine radar
  *           Matt McShea: testing the Raymarine radar
  ***************************************************************************
@@ -33,7 +34,7 @@
  */
 
 #include "raymarine/RaymarineLocate.h"
-
+#include "MessageBox.h"
 #include "RadarInfo.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -42,6 +43,7 @@ PLUGIN_BEGIN_NAMESPACE
 // Raymarine E120 radars and compatible report their addresses here, (including the version?) #.
 //
 static const NetworkAddress reportRaymarineCommon(224, 0, 0, 1, 5800);
+static const NetworkAddress reportRaymarineQuantumWiFi(232, 1, 1, 1, 5800);
 
 #define SECONDS_PER_SELECT (1)
 #define PERIOD_UNTIL_CARD_REFRESH (60)
@@ -82,15 +84,23 @@ void RaymarineLocate::UpdateEthernetCards() {
 
     // If there are any fill packed array (m_socket, m_interface_addr) with them.
     if (m_interface_count > 0) {
-      m_socket = new SOCKET[m_interface_count];
-      m_interface_addr = new NetworkAddress[m_interface_count];
+      m_socket = new SOCKET[m_interface_count * 2];
+      m_interface_addr = new NetworkAddress[m_interface_count * 2];
 
       for (addr = addr_list; addr; addr = addr->ifa_next) {
         if (VALID_IPV4_ADDRESS(addr)) {
           struct sockaddr_in *sa = (struct sockaddr_in *)addr->ifa_addr;
           m_interface_addr[i].addr = sa->sin_addr;
           m_interface_addr[i].port = 0;
+          wxLogError(wxT("Attempting to start receive socket on  %s"), reportRaymarineCommon.to_string());
           m_socket[i] = startUDPMulticastReceiveSocket(m_interface_addr[i], reportRaymarineCommon, error);
+          LOG_VERBOSE(wxT("RaymarineLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
+          i++;
+
+          m_interface_addr[i].addr = sa->sin_addr;
+          m_interface_addr[i].port = 0;
+          wxLogError(wxT("Attempting to start receive socket on  %s"), reportRaymarineQuantumWiFi.to_string());
+          m_socket[i] = startUDPMulticastReceiveSocket(m_interface_addr[i], reportRaymarineQuantumWiFi, error);
           LOG_VERBOSE(wxT("RaymarineLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
           i++;
         }
@@ -129,14 +139,14 @@ void *RaymarineLocate::Entry(void) {
 
   UpdateEthernetCards();
 
-  while (!success && !m_shutdown) {  // will run until the Raymarine radar location info has been found
+  while (!success && !m_shutdown) {  // will run until the Raymarine radar location info has been found or shutdown
     // after that we stop the Raymarine locate, saves load and prevents that the serial nr gets overwritten
     struct timeval tv = {1, 0};
     fd_set fdin;
     FD_ZERO(&fdin);
 
     int maxFd = INVALID_SOCKET;
-    for (size_t i = 0; i < m_interface_count; i++) {
+    for (size_t i = 0; i < m_interface_count * 2; i++) {
       if (m_socket[i] != INVALID_SOCKET) {
         FD_SET(m_socket[i], &fdin);
         maxFd = MAX(m_socket[i], maxFd);
@@ -149,7 +159,7 @@ void *RaymarineLocate::Entry(void) {
       rescan_network_cards = 0;
     }
     if (r > 0) {
-      for (size_t i = 0; i < m_interface_count; i++) {
+      for (size_t i = 0; i < m_interface_count * 2; i++) {
         if (m_socket[i] != INVALID_SOCKET && FD_ISSET(m_socket[i], &fdin)) {
           rx_len = sizeof(rx_addr);
           r = recvfrom(m_socket[i], (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
@@ -176,22 +186,26 @@ void *RaymarineLocate::Entry(void) {
 
   CleanupCards();
   m_is_shutdown = true;
-  LOG_INFO(wxT("Ramarine locate stopped after success"));
+  if (success) {
+  LOG_INFO(wxT("Raymarine locate stopped after success"));
+  }
   return 0;
 }
 
 #pragma pack(push, 1)
 
 struct LocationInfoBlock {
-  uint32_t field1;
-  uint32_t field2;
-  uint32_t field3;  // 1
-  uint32_t field4;
-  uint32_t field5;
-  uint32_t data_ip;
-  uint32_t data_port;
-  uint32_t radar_ip;
-  uint32_t radar_port;
+  uint32_t field1; // 0
+  uint32_t field2; // 4
+  uint8_t model_id;  // 0x28 byte 8
+  uint8_t field3;    // byte 9
+  uint16_t field4;  // byte 10
+  uint32_t field5;  // 12
+  uint32_t field6;  // 16
+  uint32_t data_ip;  // 20
+  uint32_t data_port;  // 24
+  uint32_t radar_ip;   // 28
+  uint32_t radar_port; // 32
 };
 #pragma pack(pop)
 
@@ -200,26 +214,52 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
   LocationInfoBlock *rRec = (LocationInfoBlock *)report;
   wxCriticalSectionLocker lock(m_exclusive);
 
+  int raymarine_radar_code;
+  for (size_t r = 0; r < m_pi->m_settings.radar_count; r++) {
+    if (m_pi->m_radar[r]->m_radar_type == RM_E120) {  // only one Raymarine radar allowed
+      raymarine_radar_code = 01;
+      break;
+    }
+    if (m_pi->m_radar[r]->m_radar_type == RM_QUANTUM) {
+      raymarine_radar_code = 0x28;
+      break;
+    }
+  }
   if (len == sizeof(LocationInfoBlock) &&
-      rRec->field3 == 1) {  // only length 36 is processed with id==1, others (28, 37, 40, 56) to be investigated
+        rRec->model_id == raymarine_radar_code) {  // only length 36 is used
     if (m_pi->m_settings.verbose >= 2) {
       LOG_BINARY_RECEIVE(wxT("RaymarineLocate received RadarReport"), report, len);
     }
+
     RadarLocationInfo infoA;
-    infoA.serialNr = wxT(" ");  // empty
-    infoA.spoke_data_addr.addr.s_addr = ntohl(rRec->data_ip);
-    infoA.spoke_data_addr.port = ntohs(rRec->data_port);
-    infoA.report_addr.addr.s_addr = ntohl(rRec->data_ip);
-    infoA.report_addr.port = ntohs(rRec->data_port);
+    NetworkAddress radar_ipA = radar_address;
+    if(rRec->data_ip == 0) {
+      if(raymarine_radar_code != 0x28) {
+      // Quantum WiFi is the only one that is all unicast
+        return false;
+      }
+      else {
+        radar_ipA.port = ntohs(rRec->radar_port);
+        infoA.report_addr.addr.s_addr = ntohl(rRec->radar_ip);
+        infoA.report_addr.port = ntohs(rRec->radar_port);
+      }
+    }
+    else {
+      radar_ipA.port = htons(RO_PRIMARY);
+      infoA.report_addr.addr.s_addr = ntohl(rRec->data_ip);
+      infoA.report_addr.port = ntohs(rRec->data_port);
+    }
+
     infoA.send_command_addr.addr.s_addr = ntohl(rRec->radar_ip);
     infoA.send_command_addr.port = ntohs(rRec->radar_port);
-    NetworkAddress radar_ipA = radar_address;
-    radar_ipA.port = htons(RO_PRIMARY);
-    if (m_report_count < MAX_REPORT) {
-      LOG_INFO(wxT("Located raymarine radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(),
+    infoA.spoke_data_addr.addr.s_addr = ntohl(rRec->data_ip); // Unused ???
+    infoA.spoke_data_addr.port = ntohs(rRec->data_port);
+    infoA.serialNr = wxT(" ");  // empty
+    
+    LOG_INFO(wxT("Located raymarine radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(),
                interface_address.FormatNetworkAddress(), infoA.to_string());
       m_report_count++;
-    }
+    
     FoundRaymarineLocationInfo(radar_ipA, interface_address, infoA);
     return true;
   }
@@ -234,6 +274,7 @@ void RaymarineLocate::FoundRaymarineLocationInfo(const NetworkAddress &addr, con
 
   // Check if the info is OK
   if (info.report_addr.IsNull() || info.send_command_addr.IsNull()) {
+    LOG_INFO(wxT("RaymarineLocate::FoundRaymarineLocationInfo something is null")); 
     return;
   }
 
@@ -242,7 +283,7 @@ void RaymarineLocate::FoundRaymarineLocationInfo(const NetworkAddress &addr, con
 
   int ray_nr = -1;
   for (size_t r = 0; r < m_pi->m_settings.radar_count; r++) {
-    if (m_pi->m_radar[r]->m_radar_type == RM_E120) {
+    if (m_pi->m_radar[r]->m_radar_type == RM_E120 || m_pi->m_radar[r]->m_radar_type == RM_QUANTUM) {
       ray_nr = r;
       raymarines++;  // later more Raymarine radars may be covered
       break;         // RM_120 found, there should only be one

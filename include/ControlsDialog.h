@@ -209,6 +209,8 @@ class ControlsDialog : public wxDialog {
     m_refresh_rate_button = 0;  // TODO: Set it on change
     m_gain_button = 0;
     m_sea_button = 0;
+    m_mode_button = 0;
+    m_all_to_auto_button = 0;
     m_rain_button = 0;
     m_ftc_button = 0;
     m_adjust_button = 0;
@@ -221,6 +223,7 @@ class ControlsDialog : public wxDialog {
     m_stc_curve_button = 0;
     m_display_timing_button = 0;
     m_main_bang_suppression_button = 0;
+    m_color_gain_button = 0;
 
     for (size_t i = 0; i < ARRAY_SIZE(m_ctrl); i++) {
       m_ctrl[i].type = CT_NONE;
@@ -409,6 +412,9 @@ class ControlsDialog : public wxDialog {
   RadarControlButton *m_sea_button;
   RadarControlButton *m_rain_button;
   RadarControlButton *m_ftc_button;
+  RadarControlButton *m_mode_button;
+  RadarControlButton *m_all_to_auto_button;
+  RadarControlButton *m_color_gain_button;
   wxButton *m_adjust_button;
   wxButton *m_cursor_menu;
 

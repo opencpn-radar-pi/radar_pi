@@ -7,6 +7,8 @@
  *           Kees Verruijt
  *           Douwe Fokkema
  *           Sean D'Epagnier
+ *           Martin Hassellov: testing the Raymarine radar
+ *           Matt McShea: testing the Raymarine radar
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
@@ -29,56 +31,57 @@
  ***************************************************************************
  */
 
-#ifndef _RADARRECEIVE_H_
-#define _RADARRECEIVE_H_
+#ifndef _RM_QUANTUMCONTROL_H_
+#define _RM_QUANTUMCONTROL_H_
 
-#include "RadarControl.h"
+#include "RadarInfo.h"
+#include "pi_common.h"
+#include "socketutil.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-//
-// The base class for a specific implementation of a thread
-// that receives data from a radar.
-//
-
-class RadarReceive : public wxThread {
+class RMQuantumControl : public RadarControl {
  public:
-  RadarReceive(radar_pi *pi, RadarInfo *ri) : wxThread(wxTHREAD_JOINABLE) {
-    Create(1024 * 1024);  // Stack size, be liberal
-    m_pi = pi;            // This allows you to access the main plugin stuff
-    m_ri = ri;            // and this the per-radar stuff
+  RMQuantumControl(radar_pi *pi, RadarInfo *ri) {
+    // m_radar_socket = INVALID_SOCKET;
+    m_pi = pi;
+    m_ri = ri;
+    m_name = ri->m_name;
+    m_send_address = NetworkAddress();
   }
 
-  virtual ~RadarReceive() {}
+  ~RMQuantumControl() {
+    // if (m_radar_socket != INVALID_SOCKET) {
+    //   closesocket(m_radar_socket);
+    //   LOG_TRANSMIT(wxT("%s transmit socket closed"), m_name.c_str());
+    // }
+  }
 
-  virtual void *Entry(void) = 0;
+  bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr);
+
+  void RadarTxOff();
+  void RadarTxOn();
+  bool RadarStayAlive();
+  bool SetRange(int meters);
+  bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button);
 
   /*
-   * GetInfoStatus
-   *
-   * Return a string that explains whether the radar has been seen,
-   * if interesting at which IP address or whatever, and whether it is functional.
-   *
-   * It can include newlines. It is presented to the end users, so it must be
-   * a translated string.
+   * Update the send address where to send data; this is variable
+   * on Navico and RME radars, we are told where it is using a message.
    */
-  virtual wxString GetInfoStatus() = 0;
-  virtual void SetInfoStatus(wxString s){};
+  void SetSendAddress(NetworkAddress sendSendAddress) { m_send_address = sendSendAddress; }
 
-  /*
-   * Shutdown
-   *
-   * Called when the thread should stop.
-   * It should stop running.
-   */
-  virtual void Shutdown(void) = 0;
-  virtual SOCKET GetCommSocket() { return INVALID_SOCKET; }
-
- protected:
+ private:
   radar_pi *m_pi;
   RadarInfo *m_ri;
+  // SOCKET m_radar_socket;
+  wxString m_name;
+  NetworkAddress m_send_address;
+
+  bool TransmitCmd(const uint8_t *msg, int size);
+  void SetRangeIndex(size_t index);
 };
 
 PLUGIN_END_NAMESPACE
 
-#endif /* _RADARRECEIVE_H_ */
+#endif /* _RM_QUANTUMCONTROL_H_ */

@@ -289,6 +289,7 @@ void RadarRangeControlButton::SetRangeLabel() {
 void RadarRangeControlButton::AdjustValue(int adjustment) {
   LOG_VERBOSE(wxT("%s Button '%s' adjust by %d"), m_parent->m_log_name.c_str(), GetName(), adjustment);
   m_item->UpdateState(RCS_MANUAL);
+  LOG_VERBOSE(wxT("range AdjustValue adjustment=%i"), adjustment);
   m_parent->m_ri->AdjustRange(adjustment);  // send new value to the radar
 }
 
@@ -916,6 +917,12 @@ void ControlsDialog::CreateControls() {
     m_adjust_sizer->Add(m_gain_button, 0, wxALL, BORDER);
   }
 
+  // The COLOR GAIN button
+  if (m_ctrl[CT_COLOR_GAIN].type) {
+    m_color_gain_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Color Gain"), m_ctrl[CT_COLOR_GAIN], &m_ri->m_color_gain);
+    m_adjust_sizer->Add(m_color_gain_button, 0, wxALL, BORDER);
+  }
+
   // The SEA button
   if (m_ctrl[CT_SEA].type) {
     m_sea_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Sea clutter"), m_ctrl[CT_SEA], &m_ri->m_sea);
@@ -932,6 +939,19 @@ void ControlsDialog::CreateControls() {
   if (m_ctrl[CT_FTC].type) {
     m_ftc_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("FTC"), m_ctrl[CT_FTC], &m_ri->m_ftc);
     m_adjust_sizer->Add(m_ftc_button, 0, wxALL, BORDER);
+  }
+
+  // The MODE button (Quantum only)
+  if (m_ctrl[CT_MODE].type) {
+    m_mode_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("MODE"), m_ctrl[CT_MODE], &m_ri->m_mode);
+    m_adjust_sizer->Add(m_mode_button, 0, wxALL, BORDER);
+  }
+
+  // The ALL_TO_AUTO button (Quantum only)
+  if (m_ctrl[CT_ALL_TO_AUTO].type) {
+    m_all_to_auto_button =
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("All_To_Auto"), m_ctrl[CT_ALL_TO_AUTO], &m_ri->m_all_to_auto);
+    m_adjust_sizer->Add(m_all_to_auto_button, 0, wxALL, BORDER);
   }
 
   m_top_sizer->Hide(m_adjust_sizer);
@@ -1735,8 +1755,17 @@ void ControlsDialog::DisableRadarControls() {
   if (m_gain_button) {
     m_gain_button->Disable();
   }
+  if (m_color_gain_button) {
+    m_color_gain_button->Disable();
+  }
   if (m_rain_button) {
     m_rain_button->Disable();
+  }
+  if (m_mode_button) {
+    m_mode_button->Disable();
+  }
+  if (m_all_to_auto_button) {
+    m_all_to_auto_button->Disable();
   }
   if (m_interference_rejection_button) {
     m_interference_rejection_button->Disable();
@@ -1822,8 +1851,17 @@ void ControlsDialog::EnableRadarControls() {
   if (m_gain_button) {
     m_gain_button->Enable();
   }
+  if (m_color_gain_button) {
+    m_color_gain_button->Enable();
+  }
   if (m_rain_button) {
     m_rain_button->Enable();
+  }
+  if (m_mode_button) {
+    m_mode_button->Enable();
+  }
+  if (m_all_to_auto_button) {
+    m_all_to_auto_button->Enable();
   }
   if (m_interference_rejection_button) {
     m_interference_rejection_button->Enable();
@@ -1972,6 +2010,11 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_gain_button->UpdateLabel();
   }
 
+  // color gain
+  if (m_color_gain_button) {
+    m_color_gain_button->UpdateLabel();
+  }
+
   //  rain
   if (m_rain_button) {
     m_rain_button->UpdateLabel();
@@ -1985,6 +2028,16 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   //   sea
   if (m_sea_button) {
     m_sea_button->UpdateLabel();
+  }
+
+  //   mode (RM_Quantum)
+  if (m_mode_button) {
+    m_mode_button->UpdateLabel();
+  }
+
+  //   All to auto (RM_Quantum)
+  if (m_all_to_auto_button) {
+    m_all_to_auto_button->UpdateLabel();
   }
 
   //   target_boost

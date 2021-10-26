@@ -3,9 +3,9 @@
 PLUGIN_BEGIN_NAMESPACE
 
 // Dummy addresses below to avoid "Unable to listen to socket" when no radar
-static const NetworkAddress report(236, 6, 7, 9, 1);
-static const NetworkAddress data(236, 6, 7, 9, 1);
-static const NetworkAddress send(0, 0, 0, 0, 0);
+static const NetworkAddress e120_report(236, 6, 7, 9, 1);
+static const NetworkAddress e120_data(236, 6, 7, 9, 1);
+static const NetworkAddress e120_send(0, 0, 0, 0, 0);
 
 // Ranges below are indicative only, actual ranges are received from the radar
 // ranges are filled in RMEReceive.cpp, from SRadarFeedback
@@ -16,7 +16,8 @@ static const NetworkAddress send(0, 0, 0, 0, 0);
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 #define RANGE_MIXED_RM_E120 \
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-#define RANGE_NAUTIC_RM_E120 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+#define RANGE_NAUTIC_RM_E120 \
+  {231, 463, 926, 1389, 2778, 5556, 11112, 22224, 44448, 88896, 133344}; // not needed ?
 
 PLUGIN_END_NAMESPACE
 
@@ -27,9 +28,9 @@ PLUGIN_END_NAMESPACE
 #endif
 
 #ifndef RM_E120_SPOKE_LEN
-#define RM_E120_SPOKE_LEN \
-  (512)  // BR radars generate 512 separate values per range, at 8 bits each (according to original RMradar_pi)
-#define RETURNS_PER_LINE (512)  // BR radars generate 512 separate values per range, at 8 bits each
+
+#define RM_E120_SPOKE_LEN (1024)  // BR radars generate 512 separate values per range, at 8 bits each (according to original RMradar_pi)
+
 #endif
 
 #if SPOKES_MAX < RAYMARINE_SPOKES
@@ -47,7 +48,7 @@ DEFINE_RADAR(RM_E120,                                   /* Type */
              RM_E120_SPOKES,                            /* Spokes */
              RM_E120_SPOKE_LEN,                         /* Spoke length (max) */
              RME120ControlsDialog(RM_E120),             /* ControlsDialog class constructor */
-             RME120Receive(pi, ri, report, data, send), /* Receive class constructor */
+             RaymarineReceive(pi, ri, e120_report, e120_data, e120_send), /* Receive class constructor */
              RME120Control(pi, ri),                     /* Send/Control class constructor */
              RO_SINGLE                                  /* This type only has a single radar and does not need locating */
 )

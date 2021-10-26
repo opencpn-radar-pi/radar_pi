@@ -31,8 +31,8 @@
  ***************************************************************************
  */
 
-#ifndef _RME120RECEIVE_H_
-#define _RME120RECEIVE_H_
+#ifndef _RAYMARINERECEIVE_H_
+#define _RAYMARINERECEIVE_H_
 
 #include "RadarFactory.h"
 #include "RadarReceive.h"
@@ -45,10 +45,13 @@ PLUGIN_BEGIN_NAMESPACE
 // An intermediary class that implements the common parts of some radars.
 //
 
-class RME120Receive : public RadarReceive {
+class RaymarineReceive : public RadarReceive {
  public:
-  RME120Receive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr)
-      : RadarReceive(pi, ri) {
+   RaymarineReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr)
+      : RadarReceive(pi, ri)
+      , m_target_expansion(false)
+      , m_comm_socket(INVALID_SOCKET) 
+  {
     m_info.serialNr = wxT(" ");
     m_info.spoke_data_addr = dataAddr;
     m_info.report_addr = reportAddr;
@@ -75,7 +78,7 @@ class RME120Receive : public RadarReceive {
       // In this case m_info.spoke_data_addr etc. are correct, these don't really change in the wild according to our data,
       // so write them into the RadarLocationInfo object.
       m_ri->SetRadarLocationInfo(m_info);
-      LOG_INFO(wxT("%s  RME120Receive SetRadarLocationInfo m_info= %s "), m_ri->m_name, m_info.to_string());
+      LOG_INFO(wxT("%s  RaymarineReceive SetRadarLocationInfo m_info= %s "), m_ri->m_name, m_info.to_string());
     } else if (!info.report_addr.IsNull() && ri->m_radar_type != RT_BR24) {
       // Restart, when ini file contains multicast addresses, that are hopefully still correct.
       // This will also overwrite the initial addresses for 3G and 4G with those from the ini file
@@ -83,15 +86,19 @@ class RME120Receive : public RadarReceive {
       m_info = m_ri->GetRadarLocationInfo();
       LOG_INFO(wxT("radar addresses from ini file loaded"));
     }
-    LOG_INFO(wxT("%s using addresses: %s"), m_ri->m_name, m_info.to_string());
-    m_ri->SetRadarLocationInfo(m_info);  //  in case the initial values from constuctor are used, write these to radar_pi
+    LOG_INFO(wxT(" %s using addresses: %s"), m_ri->m_name, m_info.to_string());
+    m_ri->SetRadarLocationInfo(m_info); //  in case the initial values from constuctor are used, write these to radar_pi
+   
+    m_range_meters = 1;  // this will be considered an invalid value.
+    m_previous_angle = 0;
   };
 
-  ~RME120Receive(){};
+  ~RaymarineReceive(){};
 
   void *Entry(void);
   void Shutdown(void);
   wxString GetInfoStatus();
+  SOCKET GetCommSocket() { return m_comm_socket; }
 
   NetworkAddress m_interface_addr;
   RadarLocationInfo m_info;
@@ -107,12 +114,14 @@ class RME120Receive : public RadarReceive {
 
   SOCKET m_receive_socket;  // Where we listen for message from m_send_socket
   SOCKET m_send_socket;     // A message to this socket will interrupt select() and allow immediate shutdown
+  SOCKET m_comm_socket;     // Radar communication socket
 
   struct ifaddrs *m_interface_array;
   struct ifaddrs *m_interface;
 
   int m_next_spoke;
   bool m_first_receive;
+  SpokeBearing m_previous_angle;
 
   wxCriticalSection m_lock;  // Protects m_status
   wxString m_status;         // Userfriendly string
@@ -120,9 +129,11 @@ class RME120Receive : public RadarReceive {
 
   void ProcessRMReport(const UINT8 *data, int len);
   int m_range_meters, m_updated_range;
+  bool m_target_expansion;
   void ProcessFixedReport(const UINT8 *data, int len);
   void ProcessScanData(const UINT8 *data, int len);
-  void logBinaryData(const wxString &what, const uint8_t *data, int size);
+  void ProcessQuantumScanData(const UINT8 *data, int len);
+  void ProcessQuantumReport(const UINT8 *data, int len);
 
   void SetFirmware(wxString s);
   void UpdateSendCommand();
@@ -134,4 +145,4 @@ class RME120Receive : public RadarReceive {
 };
 
 PLUGIN_END_NAMESPACE
-#endif /* _RME120RECEIVE_H_ */
+#endif /* _RAYMARINERECEIVE_H_ */
