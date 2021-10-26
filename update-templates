@@ -49,7 +49,7 @@ while getopts "tTh" opt; do
 done
 shift $((OPTIND-1))
 
-set -x
+test -z "$test_mode" || set -x
 source_treeish=${1:-"shipdriver/master"}
 
 
@@ -60,23 +60,25 @@ if [ -n "$clean" ]; then
     exit 1
 fi
 
-if [ -z "$UPDATE_TEST" ]; then
+if [ -z "$test_mode" ]; then
     # Set up the shipdriver remote
     if git ls-remote --exit-code shipdriver &>/dev/null; then
         git remote remove shipdriver
         echo "Removing existing shipdriver remote."
     fi
+    echo "Adding new shipdriver remote"
     git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
     git remote update shipdriver
     git fetch --tags shipdriver
-    
+
     # Create a new update branch and work on that
     hash=$(git rev-parse --short  $source_treeish)
     new_branch="update.$hash"
     if git rev-parse $new_branch &> /dev/null; then git branch -D $new_branch; fi
-    git branch $new_branch $source_treeish 
-    
-    # If we need to update this script, do it and exit
+    git branch $new_branch $source_treeish
+    echo "Created temporary work branch  $new_branch"
+
+    echo "Checking for updates of updates-templates script"
     if [ -z "$test_mode" ]; then
         if ! git diff --quiet HEAD $source_treeish -- update-templates; then
             git checkout $source_treeish update-templates
@@ -87,15 +89,15 @@ EOT
             exit 0
         fi
     fi
-fi 
+fi
 
 
-# Merge all changes in shipdriver remote with current branch
+echo "Merging shipdriver branch with local plugin"
 git merge --no-ff --no-commit --allow-unrelated-histories $merge_opt \
     $source_treeish
 
 
-# Restore all non-template files.
+echo "Restoring non-template files"
 for f in \
     CMakeLists.txt \
     build-deps \
@@ -109,7 +111,7 @@ for f in \
     src
 do
     if test -e "$f"; then
-        git checkout HEAD $f
+        git checkout -q HEAD $f
         # Remove all added files in local directories
         for ff in $(git diff --diff-filter=AC --name-only --staged $f); do
             git rm --quiet -f $ff
@@ -117,19 +119,19 @@ do
     fi
 done
 
-# Restore private libraries in libs, but not the generic ones
+echo "Restore private libraries in libs/"
 for d in libs/*; do
     case "$d" in
       api*|AndroidHeaders|WindowsHeaders)
           continue
           ;;
-      *)  git checkout HEAD $d
+      *)  git checkout -q HEAD $d
           ;;
     esac
 done
 
 
-# Remove miscellaneous added files
+echo "Remove miscellaneous added files"
 for f in $(git diff --diff-filter=AC --name-only --staged \
            | grep -E "\.enc$|\.pub$|\.fbp$")
 do
@@ -137,19 +139,19 @@ do
 done
 
 
-# Revert changes in blacklisted files.
 if [ -e update-ignored ]; then
+    echo "Revert changes in blacklisted files."
     for f in $(cat update-ignored); do
         git checkout HEAD $f
     done
 fi
 
-# Add files which are simple additions
+echo "Add files which are simple additions"
 for f in $(git diff --staged --name-only --diff-filter=A); do
     git add $f
 done
 
-# Add diff for upstream's CMakeLists.txt as comment here:
+echo "Append shipdriver CMakeLists.txt's log of changes to CMakeLists.txt"
 if [ -f cmake/Templateversion ]; then
     prev_commit=$(sed -n '/commit:/s/.*: *//p' cmake/TemplateVersion)
 else
@@ -161,13 +163,14 @@ git diff $prev_commit $source_treeish CMakeLists.txt | sed 's/^/# /' \
 # Same diff comment for the flatpak manifest:
 src_manifest=flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
 our_manifest=$(echo flatpak/org.opencpn.OpenCPN.Plugin.*.yaml)
+echo "Append shipdriver flatpak manifest's log of changes to $our_manifest"
 git checkout $source_treeish $src_manifest
 git diff $prev_commit $source_treeish $src_manifest | sed 's/^/# /' \
     >> $our_manifest
 git rm -f $src_manifest
 
 
-# Create or update version file
+echo "Create or update cmake/TemplateVersion"
 echo "# Created by update-templates" > cmake/TemplateVersion
 echo "date: $(date -u +'%Y-%m-%d %H:%M UTC')" >> cmake/TemplateVersion
 commit=$(git rev-parse --short $source_treeish)
@@ -178,10 +181,12 @@ git add cmake/TemplateVersion
 
 
 cat << EOF
-Shipdriver templates have been updated. To review pending changes:
+
+
+Shipdriver templates has been updated. To review pending changes:
 
     $ git status
-    $ git diff --staged
+    $ git diff --stat --staged
 
 See UPDATE_TEMPLATES.md for more.
 EOF
