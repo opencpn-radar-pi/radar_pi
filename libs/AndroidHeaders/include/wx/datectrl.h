@@ -1,3 +1,6 @@
+#ifndef _WX_DATECTRL_H_
+#define _WX_DATECTRL_H_
+
 //#include <wx/textctrl.h>
 
 #define wxDatePickerCtrlNameStr "datectrl"
@@ -59,3 +62,6 @@ public:
         return true;
     }
 };
+
+
+#endif   // _WX_DATECTRL_H_
