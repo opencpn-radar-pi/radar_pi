@@ -61,6 +61,7 @@ else ()
 endif ()
 
 include_directories(
+  ${PROJECT_SOURCE_DIR}/libs/AndroidHeaders/include
   ${_qt_include}
   ${_qt_include}/QtWidgets
   ${_qt_include}/QtCore
@@ -96,6 +97,3 @@ add_compile_definitions(
 if (NOT CMAKE_BUILD_TYPE MATCHES "Debug|RelWithDebInfo")
   string(APPEND CMAKE_SHARED_LINKER_FLAGS " -s")
 endif ()
-
-add_subdirectory("${PROJECT_SOURCE_DIR}/libs/AndroidHeaders")
-target_link_libraries(${PACKAGE_NAME} android::headers)
