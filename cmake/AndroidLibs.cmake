@@ -37,6 +37,7 @@ if (NOT EXISTS ${OCPN_ANDROID_CACHEDIR}/master.zip)
   )
 endif ()
 if (NOT EXISTS ${_master_base})
+  message(STATUS "Extracting image (patience, please...)")
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E tar -xzf ${OCPN_ANDROID_CACHEDIR}/master.zip
     WORKING_DIRECTORY "${OCPN_ANDROID_CACHEDIR}"
