@@ -64,6 +64,28 @@ set(_cs_script "
 ")
 file(WRITE "${CMAKE_BINARY_DIR}/checksum.cmake" ${_cs_script})
 
+function (create_finish_script)
+  set(_finish_script "
+    execute_process(
+      COMMAND cmake -E ${_rmdir_cmd} app/${pkg_displayname}
+    )
+     execute_process(
+      COMMAND cmake -E rename app/files app/${pkg_displayname}
+    )
+    execute_process(
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
+      COMMAND
+        cmake -E
+        tar -czf ../${pkg_tarname}.tar.gz --format=gnutar ${pkg_displayname}
+    )
+    message(STATUS \"Creating tarball ${pkg_tarname}.tar.gz\")
+
+    execute_process(COMMAND cmake -P ${CMAKE_BINARY_DIR}/checksum.cmake)
+    message(STATUS \"Computing checksum in ${pkg_xmlname}.xml\")
+  ")
+  file(WRITE "${CMAKE_BINARY_DIR}/finish_tarball.cmake" "${_finish_script}")
+endfunction ()
+
 function (android_aarch64_target)
   include(android-aarch64-toolchain)
   add_custom_target(android-aarch64-conf)
@@ -107,33 +129,13 @@ function (tarball_target)
   add_custom_target(tarball-install)
   add_custom_command(TARGET tarball-install COMMAND ${_install_cmd})
 
-
-  set(_finish_script "
-    execute_process(
-      COMMAND cmake -E ${_rmdir_cmd} app/${pkg_displayname}
-    )
-     execute_process(
-      COMMAND cmake -E rename app/files app/${pkg_displayname}
-    )
-    execute_process(
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/app
-      COMMAND
-        cmake -E
-        tar -czf ../${pkg_tarname}.tar.gz --format=gnutar ${pkg_displayname}
-    )
-    message(STATUS \"Creating tarball ${pkg_tarname}.tar.gz\")
-
-    execute_process(COMMAND cmake -P ${CMAKE_BINARY_DIR}/checksum.cmake)
-    message(STATUS \"Computing checksum in ${pkg_xmlname}.xml\")
-  ")
-  file(WRITE "${CMAKE_BINARY_DIR}/finish_tarball.cmake" "${_finish_script}")
+  create_finish_script()
   add_custom_target(tarball-finish)
   add_custom_command(
     TARGET tarball-finish      # Compute checksum
     COMMAND cmake -P ${CMAKE_BINARY_DIR}/finish_tarball.cmake
     VERBATIM
   )
-
   add_dependencies(tarball-build tarball-conf)
   add_dependencies(tarball-install tarball-build)
   add_dependencies(tarball-finish tarball-install)
