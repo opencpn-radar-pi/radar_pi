@@ -106,6 +106,10 @@ public:
         const wxSize& size = wxDefaultSize, long style = SHIPDRIVER_DLG_STYLE);
     ShipDriver_pi* plugin;
 
+#ifdef __OCPN__ANDROID__
+    void OnMouseEvent( wxMouseEvent& event );
+#endif
+
     wxString createVHWSentence(double stw, double hdg);
     wxString createMWVTSentence(
         double spd, double hdg, double winddirection, double windspeed);
