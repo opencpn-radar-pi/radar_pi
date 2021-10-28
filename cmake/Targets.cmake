@@ -106,8 +106,17 @@ function (android_aarch64_target)
   add_custom_target(android-aarch64-install)
   add_custom_command(TARGET android-aarch64-install COMMAND ${_install_cmd})
 
+  create_finish_script()
+  add_custom_target(android-aarch64-finish)
+  add_custom_command(
+    TARGET android-aarch64-finish      # Compute checksum
+    COMMAND cmake -P ${CMAKE_BINARY_DIR}/finish_tarball.cmake
+    VERBATIM
+  )
+
   add_custom_target(android-aarch64)
-  add_dependencies(android-aarch64 android-aarch64-install)
+  add_dependencies(android-aarch64 android-aarch64-finish)
+  add_dependencies(android-aarch64-finish android-aarch64-install)
   add_dependencies(android-aarch64-install android-aarch64-build)
   add_dependencies(android-aarch64-build android-aarch64-conf)
 endfunction ()
