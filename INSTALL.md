@@ -20,6 +20,11 @@ Historically, it has been possible to build legacy packages like
 an NSIS installer on Windows and .deb packages on Linux. This ability
 has been removed in the 5.6.0 cycle.
 
+To build an android tarball:
+
+    $ cmake -DCMAKE_TOOLCHAIN_FILE=cmake/android-aarch64-toolchain.cmake
+    $ make android-aarch64
+
 #### Building on windows (MSVC)
 On windows, a different workflow is used:
 

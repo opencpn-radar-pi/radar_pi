@@ -64,6 +64,32 @@ set(_cs_script "
 ")
 file(WRITE "${CMAKE_BINARY_DIR}/checksum.cmake" ${_cs_script})
 
+function (android_aarch64_target)
+  include(android-aarch64-toolchain)
+  add_custom_target(android-aarch64-conf)
+  add_custom_command(
+    TARGET android-aarch64-conf
+    COMMAND cmake
+      -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
+      -DBUILD_TYPE:STRING=tarball
+      -DOCPN_TARGET_TUPLE:STRING='android-arm64\;16\;arm64'
+      -DwxQt_Build=build_android_release_64_static_O3
+      -DQt_Build=build_arm64/qtbase
+      --trace-source=CMakeLists.txt --trace-expand
+      ..
+  )
+  add_custom_target(android-aarch64-build)
+  add_custom_command(TARGET android-aarch64-build COMMAND ${_build_cmd})
+
+  add_custom_target(android-aarch64-install)
+  add_custom_command(TARGET android-aarch64-install COMMAND ${_install_cmd})
+
+  add_custom_target(android-aarch64)
+  add_dependencies(android-aarch64 android-aarch64-install)
+  add_dependencies(android-aarch64-install android-aarch64-build)
+  add_dependencies(android-aarch64-build android-aarch64-conf)
+endfunction ()
+
 function (tarball_target)
 
   # tarball target setup
@@ -198,5 +224,6 @@ function (create_targets manifest)
   endif ()
   tarball_target()
   flatpak_target(${manifest})
+  android_aarch64_target()
   help_target()
 endfunction ()
