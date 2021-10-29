@@ -28,12 +28,12 @@ Builds for android requires an ndk installation. By default, the location
 
 To build an android aarch64 tarball:
 
-    $ cmake -DCMAKE_TOOLCHAIN_FILE=cmake/android-aarch64-toolchain.cmake
+    $ cmake -DCMAKE_TOOLCHAIN_FILE=cmake/android-aarch64-toolchain.cmake ..
     $ make android-aarch64
 
 To build an android armhf tarball
 
-    $ cmake -DCMAKE_TOOLCHAIN_FILE=cmake/android-armhf-toolchain.cmake
+    $ cmake -DCMAKE_TOOLCHAIN_FILE=cmake/android-armhf-toolchain.cmake ..
     $ make android-armhf
 
 #### Building on windows (MSVC)
