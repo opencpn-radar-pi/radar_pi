@@ -25,14 +25,16 @@
  ***************************************************************************
  */
 
-#include "ShipDrivergui_impl.h"
-#include "ShipDriver_pi.h"
+#include <stdio.h>
+
 #include <wx/progdlg.h>
+#include <wx/textfile.h>
+#include <wx/timer.h>
 #include <wx/wx.h>
 
-#include "wx/textfile.h"
-#include <stdio.h>
-#include <wx/timer.h>
+#include "qtstylesheet.h"
+#include "ShipDrivergui_impl.h"
+#include "ShipDriver_pi.h"
 
 #ifdef __OCPN__ANDROID__
 wxWindow *g_Window;

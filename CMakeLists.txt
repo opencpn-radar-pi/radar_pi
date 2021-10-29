@@ -152,6 +152,9 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   
   add_subdirectory("libs/wxJSON")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
+
+  add_subdirectory("libs/plugingl")
+  target_link_libraries(${PACKAGE_NAME} ocpn::plugingl)
 endif ()
 
 configure_file(
