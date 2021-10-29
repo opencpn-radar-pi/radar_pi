@@ -22,6 +22,21 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
  **************************************************************************/
+#include "wx/wxprec.h"
+
+#ifndef  WX_PRECOMP
+#include "wx/wx.h"
+#endif
+
+#ifdef __MSVC__
+#include <windows.h>
+#endif
+
+#ifdef ocpnUSE_GL
+#include <wx/glcanvas.h>
+#endif
+
+
 #ifdef USE_ANDROID_GLES2
 #include "GLES2/gl2.h"
 #include "linmath.h"

@@ -26,4 +26,9 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
   set_property(TARGET PLUGINGL PROPERTY COMPILE_FLAGS "-fvisibility=hidden")
 endif ()
 target_link_libraries(PLUGINGL PRIVATE ocpn::api)
+
+if (WIN32)
+target_link_libraries(PLUGINGL PRIVATE windows::headers)
+endif ()
+
 target_include_directories(PLUGINGL PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
