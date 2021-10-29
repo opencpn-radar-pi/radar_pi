@@ -94,8 +94,6 @@ function (android_aarch64_target)
       -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
       -DBUILD_TYPE:STRING=tarball
       -DOCPN_TARGET_TUPLE:STRING='android-arm64\;16\;arm64'
-      -DwxQt_Build=build_android_release_64_static_O3
-      -DQt_Build=build_arm64/qtbase
        ..
   )
   add_custom_target(android-aarch64-build)
@@ -127,8 +125,6 @@ function (android_armhf_target)
       -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
       -DBUILD_TYPE:STRING=tarball
       -DOCPN_TARGET_TUPLE:STRING='android-armhf\;16\;armhf'
-      -DwxQt_Build=build_android_release_19_static_O3
-      -DQt_Build=build_arm32_19_O3/qtbase
        ..
   )
   add_custom_target(android-armhf-build)
