@@ -2,4 +2,3 @@ build
 po/*.pot
 .DS_Store
 thumbs.db
-cache
