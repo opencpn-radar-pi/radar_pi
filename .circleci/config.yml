@@ -130,10 +130,10 @@ jobs:
     docker:
       - image: circleci/android:api-28-ndk
     environment:
-      - OCPN_TARGET: android-arm64
+      - OCPN_TARGET: android-aarch64
     steps:
       - checkout
-      - run: ci/circleci-build-android-arm64.sh
+      - run: ci/circleci-build-android.sh
       - run: cd build; /bin/bash < upload.sh
       - run: python3 ci/git-push
 
@@ -144,7 +144,7 @@ jobs:
       - OCPN_TARGET: android-armhf
     steps:
       - checkout
-      - run: ci/circleci-build-android-armhf.sh
+      - run: ci/circleci-build-android.sh
       - run: cd build; /bin/bash < upload.sh
       - run: python3 ci/git-push
 
