@@ -22,9 +22,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
  **************************************************************************/
-#include <wx/wx.h>
-// #include <GL/gl.h>
-// #include <GL/glu.h>
+#ifdef USE_ANDROID_GLES2
+#include "GLES2/gl2.h"
+#include "linmath.h"
+#include "pi_shaders.h"
+#elif defined (__APPLE__)
+#include "OpenGL/gl.h"
+#else
+#include "GL/gl.h"
+#endif
 
 #ifdef __OCPN__ANDROID__
 #include "qdebug.h"
@@ -33,14 +39,6 @@
 #include "TexFont.h"
 
 #if ocpnUSE_GL
-
-#ifdef USE_ANDROID_GLES2
-#include "GLES2/gl2.h"
-#include "linmath.h"
-#include "pi_shaders.h"
-#else
-#include "GL/gl.h"
-#endif
 
 TexFont::TexFont( )
 {

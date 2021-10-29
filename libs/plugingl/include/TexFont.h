@@ -26,6 +26,10 @@
 #ifndef __TEXFONT_H__
 #define __TEXFONT_H__
 
+#include <wx/colour.h>
+#include <wx/font.h>
+#include <wx/string.h>
+
 /* support ascii plus degree symbol for now pack font in a single texture 16x8 */
 #define DEGREE_GLYPH 127
 #define MIN_GLYPH 32
