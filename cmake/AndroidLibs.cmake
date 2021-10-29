@@ -6,12 +6,23 @@ cmake_minimum_required(VERSION 3.1)
 
 find_package(Gettext REQUIRED)
 
-set(Qt_Build  "build_arm64/qtbase"
-  CACHE STRING "Base directory for QT build"
-)
-set(wxQt_Build "build_android_release_64_static_O3"
-  CACHE STRING "wxWidgets QT build base directory"
-)
+if ("${ARM_ARCH}" STREQUAL "aarch64")
+  set(Qt_Build  "build_arm64/qtbase"
+    CACHE STRING "Base directory for QT build"
+  )
+  set(wxQt_Build "build_android_release_64_static_O3"
+    CACHE STRING "wxWidgets QT build base directory"
+  )
+elseif ("${ARM_ARCH}" STREQUAL "armhf")
+  set(Qt_Build  "build_arm32_19_O3/qtbase"
+    CACHE STRING "Base directory for QT build"
+  )
+  set(wxQt_Build "build_android_release_19_static_O3"
+    CACHE STRING "wxWidgets QT build base directory"
+  )
+else ()
+  message(FATAL_ERROR "No valid arm configuration detected.")
+endif ()
 
 # install() needs to find the cross-compiled library:
 set_property(

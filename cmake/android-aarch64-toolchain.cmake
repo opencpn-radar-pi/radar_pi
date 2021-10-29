@@ -6,3 +6,5 @@ if (DEFINED ENV{NDK_HOME})
 else ()
   set(CMAKE_ANDROID_NDK /opt/android/ndk)
 endif ()
+
+set(ARM_ARCH aarch64 CACHE STRING "Selected arm architecture" FORCE)
