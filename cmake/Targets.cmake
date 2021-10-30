@@ -17,7 +17,7 @@ else ()
 endif ()
 
 if (WIN32)
-  if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 16)
+  if (CMAKE_VERSION VERSION_LESS 3.16)
     message(WARNING "windows requires cmake version 3.16 or higher")
   endif ()
 endif ()
@@ -28,7 +28,7 @@ set(_build_cmd
 )
 
 # Set up _build_target_cmd and _install_cmd
-if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 16)
+if (CMAKE_VERSION VERSION_LESS 3.16)
   set(_build_target_cmd make)
   set(_install_cmd make install)
 else ()
@@ -40,7 +40,7 @@ else ()
 endif ()
 
 # Command to remove directory
-if (${CMAKE_MAJOR_VERSION} LESS 3 OR ${CMAKE_MINOR_VERSION} LESS 17)
+if (CMAKE_VERSION VERSION_LESS 3.17)
   set(_rmdir_cmd "remove_directory")
 else ()
   set(_rmdir_cmd "rm -rf" )
