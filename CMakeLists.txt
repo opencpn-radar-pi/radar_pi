@@ -20,7 +20,11 @@ message(STATUS "Cmake version: ${CMAKE_VERSION}.")
 #
 include(PluginCompiler)
 include(PluginOptions)
-message(STATUS "Building: ${BUILD_TYPE}")
+if (BUILD_TYPE)
+  message(STATUS "Building: ${BUILD_TYPE}")
+else ()
+  message(STATUS "Configuring")
+endif ()
 
 include(CMakePlugin.cmake)
 
@@ -64,7 +68,6 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   # Build package as required (flatpak already dealt with).
   #
   include(PluginInstall)
-  include(PluginPackage)
   if (QT_ANDROID)
     include(AndroidLibs)
   else ()
