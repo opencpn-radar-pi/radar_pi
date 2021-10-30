@@ -16,9 +16,10 @@ include(${CMAKE_SOURCE_DIR}/cmake/CmakeSetup.cmake)
 message(STATUS "Cmake version: ${CMAKE_VERSION}.")
 
 
-# -------- Build setup (mostly in PluginCompiler) --------
+# -------- Build setup  --------
 #
 include(PluginCompiler)
+include(PluginOptions)
 message(STATUS "Building: ${BUILD_TYPE}")
 
 # -------- Options ----------
@@ -29,17 +30,16 @@ set(OCPN_TEST_REPO
 )
 set(OCPN_BETA_REPO
     "opencpn/shipdriver-beta"
-    CACHE STRING 
+    CACHE STRING
     "Default repository for tagged builds matching 'beta'"
 )
 set(OCPN_RELEASE_REPO
     "opencpn/shipdriver-prod"
-    CACHE STRING 
+    CACHE STRING
     "Default repository for tagged builds not matching 'beta'"
 )
 option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
-include(PluginOptions)
 #
 #
 # -------  Plugin setup --------
@@ -79,6 +79,25 @@ set(SRC
     src/GribRecord.h
 )
 
+macro(add_plugin_libraries)
+  add_subdirectory("libs/tinyxml")
+  target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
+
+  add_subdirectory("libs/wxJSON")
+  target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
+
+  add_subdirectory("libs/plugingl")
+  target_link_libraries(${PACKAGE_NAME} ocpn::plugingl)
+endmacro ()
+
+macro(late_init)
+  # Perform initialization after the PACKAGE_NAME library and the api
+  # is available.
+  if (SHIPDRIVER_USE_SVG)
+    add_definitions(-DSHIPDRIVER_USE_SVG)
+  endif ()
+endmacro ()
+
 # -------- Setup completed, build the plugin --------
 #
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
@@ -97,10 +116,7 @@ set(PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 string(REGEX REPLACE "\([0-9]\)\.\([0-9]\).*" "ov\\1\\2"
        OCPN_MIN_VERSION ${API_OCPN_MIN_VERSION})
 
-if (SHIPDRIVER_USE_SVG)
-  add_definitions(-DSHIPDRIVER_USE_SVG)
-endif ()
-
+late_init()
 # Set up targets. Targets sets up a recursive call with BUILD_TYPE set to
 # 'flatpak', 'pkg' or 'tarball'. The initial call without BUILD_TYPE ends
 # here.
@@ -129,15 +145,9 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
 
   add_subdirectory("libs/jsoncpp")
   target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
-  
-  add_subdirectory("libs/tinyxml")
-  target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
-  
-  add_subdirectory("libs/wxJSON")
-  target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
 
-  add_subdirectory("libs/plugingl")
-  target_link_libraries(${PACKAGE_NAME} ocpn::plugingl)
+  add_plugin_libraries()
+
 endif ()
 
 configure_file(
@@ -155,7 +165,6 @@ configure_file(
   ${CMAKE_SOURCE_DIR}/ci/upload.bat.in ${CMAKE_BINARY_DIR}/upload.bat
   @ONLY
 )
-
 
 set(checksum "@checksum@")
 configure_file(
