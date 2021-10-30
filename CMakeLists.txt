@@ -44,7 +44,7 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 #
 # -------  Plugin setup --------
 #
-project(ShipDriver_pi VERSION 2.8.7.2)
+set(PKG_VERSION  2.8.7.2)
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
@@ -100,6 +100,8 @@ endmacro ()
 
 # -------- Setup completed, build the plugin --------
 #
+project(ShipDriver_pi VERSION ${PKG_VERSION})
+
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
 include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
