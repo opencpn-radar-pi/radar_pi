@@ -12,33 +12,13 @@
 # -------- Cmake setup ---------
 #
 cmake_minimum_required(VERSION 3.12.0)
-
-cmake_policy(SET CMP0042 NEW)
-
-if (POLICY CMP0072)
-  cmake_policy(SET CMP0072 NEW)
-endif ()
-
-if (POLICY CMP0077)
-  cmake_policy(SET CMP0077 NEW)
-endif ()
-
-# Locations where cmake looks for cmake modules.
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build ${CMAKE_SOURCE_DIR}/cmake)
-
-if (WIN32)
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/buildwin)
-endif ()
+include(${CMAKE_SOURCE_DIR}/cmake/CmakeSetup.cmake)
 message(STATUS "Cmake version: ${CMAKE_VERSION}.")
 
 
 # -------- Build setup (mostly in PluginCompiler) --------
 #
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+include(PluginCompiler)
 message(STATUS "Building: ${BUILD_TYPE}")
 
 # -------- Options ----------
@@ -136,7 +116,6 @@ endif ()
 if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   # Build package as required (flatpak already dealt with).
   #
-  include(PluginCompiler)
   include(PluginInstall)
   include(PluginPackage)
   if (QT_ANDROID)
