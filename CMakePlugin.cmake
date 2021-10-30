@@ -1,5 +1,5 @@
 # ~~~
-# Summary:      Main plugin build script
+# Summary:      Local, non-generic plugin setup
 # Copyright (c) 2020-2021 Mike Rossiter
 # License:      GPLv3+
 # ~~~
@@ -72,11 +72,12 @@ macro(late_init)
   # Perform initialization after the PACKAGE_NAME library and the api
   # is available.
   if (SHIPDRIVER_USE_SVG)
-    add_definitions(-DSHIPDRIVER_USE_SVG)
+    target_compile_definitions(${PACKAGE_NAME} PRIVATE SHIPDRIVER_USE_SVG)
   endif ()
 endmacro ()
 
 macro(add_plugin_libraries)
+  # Add libraries required by this plugin
   add_subdirectory("libs/tinyxml")
   target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
 
