@@ -204,8 +204,8 @@ function (flatpak_target manifest)
 endfunction ()
 
 function (create_targets manifest)
-  # Add the primary build targets pkg, flatpak and tarball together
-  # with helper targets. Parameters:
+  # Add the primary build targets android, flatpak and tarball together
+  # with support targets. Parameters:
   # - manifest: Flatpak build manifest
 
   if (BUILD_TYPE STREQUAL "pkg")
