@@ -44,7 +44,10 @@ set(PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 string(REGEX REPLACE "\([0-9]\)\.\([0-9]\).*" "ov\\1\\2"
        OCPN_MIN_VERSION ${API_OCPN_MIN_VERSION})
 
-late_init()
+if (COMMAND late_init)
+  late_init()
+endif ()
+
 # Set up targets. Targets sets up a recursive call with BUILD_TYPE set to
 # 'flatpak', 'pkg' or 'tarball'. The initial call without BUILD_TYPE ends
 # here.
@@ -74,7 +77,9 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   add_subdirectory("libs/jsoncpp")
   target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
 
-  add_plugin_libraries()
+  if (COMMAND add_plugin_libraries)
+    add_plugin_libraries()
+  endif ()
 
 endif ()
 
