@@ -110,7 +110,8 @@ function (android_target)
       -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
       -DBUILD_TYPE:STRING=tarball
       -DOCPN_TARGET_TUPLE:STRING=${OCPN_TARGET_TUPLE}
-      ..
+      $ENV{CMAKE_BUILD_OPTS}
+      ${CMAKE_BINARY_DIR}
   )
   add_custom_target(android-build)
   add_custom_command(TARGET android-build COMMAND ${_build_cmd})
@@ -139,8 +140,11 @@ function (tarball_target)
   add_custom_target(tarball-conf)
   add_custom_command(
     TARGET tarball-conf
-    COMMAND cmake -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
-            -DBUILD_TYPE:STRING=tarball ${CMAKE_BINARY_DIR}
+    COMMAND cmake
+      -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
+      -DBUILD_TYPE:STRING=tarball
+      $ENV{CMAKE_BUILD_OPTS}
+      ${CMAKE_BINARY_DIR}
   )
 
   add_custom_target(tarball-build)
@@ -169,8 +173,11 @@ function (flatpak_target manifest)
   add_custom_target(flatpak-conf)
   add_custom_command(
     TARGET flatpak-conf
-    COMMAND
-      cmake -DBUILD_TYPE:STRING=flatpak -Uplugin_target ${CMAKE_BINARY_DIR}
+    COMMAND cmake
+      -DBUILD_TYPE:STRING=flatpak
+      -Uplugin_target
+      $ENV{CMAKE_BUILD_OPTS}
+      ${CMAKE_BINARY_DIR}
   )
   set(_fp_script "
     execute_process(
