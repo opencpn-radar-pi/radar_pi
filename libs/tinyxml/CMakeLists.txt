@@ -1,3 +1,9 @@
+# ~~~
+# Summary:      tinyxml library cmake setup
+# License:      GPLv3+
+# Copyright (c) 2021 Alec Leamas
+# ~~~
+
 cmake_minimum_required(VERSION 3.1.0)
 
 if (TARGET ocpn::tinyxml)

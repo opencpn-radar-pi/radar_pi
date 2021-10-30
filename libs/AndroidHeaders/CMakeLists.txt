@@ -1,3 +1,9 @@
+# ~~~
+# Summary:      Android headers library cmake setup
+# License:      Expat
+# Copyright (c) 2021 Alec Leamas
+# ~~~
+
 cmake_minimum_required(VERSION 3.1)
 
 if (TARGET android::headers)
