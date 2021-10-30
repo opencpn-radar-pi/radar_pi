@@ -86,66 +86,39 @@ function (create_finish_script)
   file(WRITE "${CMAKE_BINARY_DIR}/finish_tarball.cmake" "${_finish_script}")
 endfunction ()
 
-function (android_aarch64_target)
-  add_custom_target(android-aarch64-conf)
+function (android_target)
+  add_custom_target(android-conf)
+  if ("${ARM_ARCH}" STREQUAL "aarch64")
+    set(OCPN_TARGET_TUPLE "'android-arm64\;16\;arm64'")
+  else ()
+    set(OCPN_TARGET_TUPLE "'android-armhf\;16\;armhf'")
+  endif ()
   add_custom_command(
-    TARGET android-aarch64-conf
+    TARGET android-conf
     COMMAND cmake
       -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
       -DBUILD_TYPE:STRING=tarball
-      -DOCPN_TARGET_TUPLE:STRING='android-arm64\;16\;arm64'
-       ..
+      -DOCPN_TARGET_TUPLE:STRING=${OCPN_TARGET_TUPLE}
+      ..
   )
-  add_custom_target(android-aarch64-build)
-  add_custom_command(TARGET android-aarch64-build COMMAND ${_build_cmd})
+  add_custom_target(android-build)
+  add_custom_command(TARGET android-build COMMAND ${_build_cmd})
 
-  add_custom_target(android-aarch64-install)
-  add_custom_command(TARGET android-aarch64-install COMMAND ${_install_cmd})
+  add_custom_target(android-install)
+  add_custom_command(TARGET android-install COMMAND ${_install_cmd})
 
   create_finish_script()
-  add_custom_target(android-aarch64-finish)
+  add_custom_target(android-finish)
   add_custom_command(
-    TARGET android-aarch64-finish      # Compute checksum
+    TARGET android-finish
     COMMAND cmake -P ${CMAKE_BINARY_DIR}/finish_tarball.cmake
     VERBATIM
   )
-
-  add_custom_target(android-aarch64)
-  add_dependencies(android-aarch64 android-aarch64-finish)
-  add_dependencies(android-aarch64-finish android-aarch64-install)
-  add_dependencies(android-aarch64-install android-aarch64-build)
-  add_dependencies(android-aarch64-build android-aarch64-conf)
-endfunction ()
-
-function (android_armhf_target)
-  add_custom_target(android-armhf-conf)
-  add_custom_command(
-    TARGET android-armhf-conf
-    COMMAND cmake
-      -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
-      -DBUILD_TYPE:STRING=tarball
-      -DOCPN_TARGET_TUPLE:STRING='android-armhf\;16\;armhf'
-       ..
-  )
-  add_custom_target(android-armhf-build)
-  add_custom_command(TARGET android-armhf-build COMMAND ${_build_cmd})
-
-  add_custom_target(android-armhf-install)
-  add_custom_command(TARGET android-armhf-install COMMAND ${_install_cmd})
-
-  create_finish_script()
-  add_custom_target(android-armhf-finish)
-  add_custom_command(
-    TARGET android-armhf-finish      # Compute checksum
-    COMMAND cmake -P ${CMAKE_BINARY_DIR}/finish_tarball.cmake
-    VERBATIM
-  )
-
-  add_custom_target(android-armhf)
-  add_dependencies(android-armhf android-armhf-finish)
-  add_dependencies(android-armhf-finish android-armhf-install)
-  add_dependencies(android-armhf-install android-armhf-build)
-  add_dependencies(android-armhf-build android-armhf-conf)
+  add_custom_target(android)
+  add_dependencies(android android-finish)
+  add_dependencies(android-finish android-install)
+  add_dependencies(android-install android-build)
+  add_dependencies(android-build android-conf)
 endfunction ()
 
 function (tarball_target)
@@ -259,16 +232,13 @@ function (create_targets manifest)
   endif ()
   tarball_target()
   flatpak_target(${manifest})
-  android_aarch64_target()
-  android_armhf_target()
+  android_target()
   help_target()
   if ("${BUILD_TYPE}" STREQUAL "" )
-    if ("${ARM_ARCH}" STREQUAL "aarch64")
-      add_dependencies(${PACKAGE_NAME} android-aarch64)
-    elseif ("${ARM_ARCH}" STREQUAL "armhf")
-      add_dependencies(${PACKAGE_NAME} android-armhf)
-    else ()
+    if ("${ARM_ARCH}" STREQUAL "")
       add_dependencies(${PACKAGE_NAME} tarball)
+    else ()
+      add_dependencies(${PACKAGE_NAME} android)
     endif ()
   endif ()
 endfunction ()

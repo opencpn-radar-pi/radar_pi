@@ -24,4 +24,4 @@ cd build && rm -rf *
 
 sudo ln -sf /opt/android/android-ndk-* /opt/android/ndk
 cmake -DCMAKE_TOOLCHAIN_FILE=cmake/$OCPN_TARGET-toolchain.cmake ..
-make VERBOSE=1 $OCPN_TARGET
+make VERBOSE=1
