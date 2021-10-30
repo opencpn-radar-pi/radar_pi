@@ -203,25 +203,6 @@ function (flatpak_target manifest)
   add_dependencies(flatpak flatpak-conf)
 endfunction ()
 
-function (help_target)
-
-  # Help message for plain 'make' without target
-  #
-  add_custom_target(make-warning)
-  add_custom_command(
-    TARGET make-warning
-    COMMAND cmake -E echo
-      "ERROR: plain make is not supported. Supported targets:"
-    COMMAND cmake -E echo
-      "   - tarball: Plugin installer tarball for regular builds."
-    COMMAND cmake -E echo
-      "   - flatpak: Plugin installer tarball for flatpak builds."
-    COMMAND cmake -E echo ""
-    COMMAND dont-use-plain-make   # will fail
-  )
-
-endfunction ()
-
 function (create_targets manifest)
   # Add the primary build targets pkg, flatpak and tarball together
   # with helper targets. Parameters:
@@ -233,7 +214,6 @@ function (create_targets manifest)
   tarball_target()
   flatpak_target(${manifest})
   android_target()
-  help_target()
   if ("${BUILD_TYPE}" STREQUAL "" )
     if ("${ARM_ARCH}" STREQUAL "")
       add_dependencies(${PACKAGE_NAME} tarball)
