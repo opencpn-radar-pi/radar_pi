@@ -3,6 +3,14 @@
 #
 # Build the Debian artifacts
 #
+
+# Copyright (c) 2021 Alec Leamas
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+
 set -xe
 sudo apt -qq update || apt update
 sudo apt-get -qq install devscripts equivs software-properties-common

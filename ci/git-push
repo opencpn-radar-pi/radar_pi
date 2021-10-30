@@ -12,7 +12,14 @@
 #   Uses keys created by new credentials. These lives in build-deps/ with
 #   names like  build-deps/user.enc and build-deps/user.pub where 'user'
 #   is as present in GIT_REPO.
+#
+# Copyright (c) 2021 Alec Leamas
 
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
 
 import base64
 import getpass
