@@ -99,6 +99,7 @@ git merge --no-ff --no-commit --allow-unrelated-histories $merge_opt \
 
 echo "Restoring non-template files"
 for f in \
+    CMakePlugin.cmake \
     CMakeLists.txt \
     build-deps \
     config.h.in \
@@ -151,25 +152,19 @@ for f in $(git diff --staged --name-only --diff-filter=A); do
     git add $f
 done
 
-echo "Append shipdriver CMakeLists.txt's log of changes to CMakeLists.txt"
-if [ -f cmake/Templateversion ]; then
+if [ -f cmake/TemplateVersion ]; then
+    our_manifest=$(echo flatpak/org.opencpn.OpenCPN.Plugin.*.yaml)
+    echo "Append shipdriver flatpak manifest's log of changes to $our_manifest"
+
+    git fetch --tags ${source_treeish%/*}
     prev_commit=$(sed -n '/commit:/s/.*: *//p' cmake/TemplateVersion)
-else
-    prev_commit='v2.6.2.0'
+    src_manifest=flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+    git checkout $source_treeish $src_manifest
+    git diff  $prev_commit $src_manifest | sed 's/^/# /' \
+        >> $our_manifest
+    git rm -f $src_manifest
 fi
-git diff $prev_commit $source_treeish CMakeLists.txt | sed 's/^/# /' \
-    >>  CMakeLists.txt
-
-# Same diff comment for the flatpak manifest:
-src_manifest=flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
-our_manifest=$(echo flatpak/org.opencpn.OpenCPN.Plugin.*.yaml)
-echo "Append shipdriver flatpak manifest's log of changes to $our_manifest"
-git checkout $source_treeish $src_manifest
-git diff $prev_commit $source_treeish $src_manifest | sed 's/^/# /' \
-    >> $our_manifest
-git rm -f $src_manifest
-
-
+    
 echo "Create or update cmake/TemplateVersion"
 echo "# Created by update-templates" > cmake/TemplateVersion
 echo "date: $(date -u +'%Y-%m-%d %H:%M UTC')" >> cmake/TemplateVersion
@@ -178,7 +173,6 @@ echo "commit: $commit" >> cmake/TemplateVersion
 tags=$(git tag --contains $commit)
 echo "tags: $tags" >> cmake/TemplateVersion
 git add cmake/TemplateVersion
-
 
 cat << EOF
 
