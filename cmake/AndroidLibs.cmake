@@ -1,7 +1,19 @@
+# ~~~
+# Summary:      Wraps the master.zip binary Android libs blob
+# License:      GPLv3+
+# Copyright (c) 2021 Alec Leamas
 #
-# For armhf and arm64: Download precompiled libraries and set up
-# linking
-#
+# For android armhf and arm64: Download precompiled libraries and set up
+# linkage
+# ~~~
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+
+
+
 cmake_minimum_required(VERSION 3.1)
 
 find_package(Gettext REQUIRED)

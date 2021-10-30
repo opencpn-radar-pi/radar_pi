@@ -1,10 +1,16 @@
 # ~~~
-# Author:      Pavel Kalian (Based on the work of Sean D'Epagnier)
-# Copyright:   2014
-# License:     GPLv3+
+# Summary:      Set up the compilation environment
+# Author:       Pavel Kalian (Based on the work of Sean D'Epagnier)
+# Copyright (c) 2014 Pavel Kallian
+#               2021 Alec Leamas
 #
 # Set up the compilation environment, compiler options etc.
 # ~~~
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
 
 
 # Set up option NPROC: Number of processors used when compiling.

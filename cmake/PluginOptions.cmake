@@ -1,3 +1,14 @@
+# ~~~
+# Summary:     Set up default plugin build options 
+# License:     GPLv3+
+# Copyright (c) 2020-2021 Alec Leamas
+# ~~~
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+
 if (DEFINED _default_build_type)
   return ()
 endif ()

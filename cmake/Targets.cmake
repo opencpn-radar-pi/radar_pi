@@ -1,8 +1,19 @@
+# ~~~
+# Summary:     Add primary build targets
+# License:     GPLv3+
+# Copyright (c) 2020-2021 Alec Leamas
 #
-# Add the primary build targets pkg, flatpak and tarball together
-# with helper targets.
+# Add the primary build targets android, flatpak and tarball together
+# with helper targets. Also sets up the default target.
+# ~~~
 
-#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+
+
+
 
 if (TARGET tarball-build)
   return()
