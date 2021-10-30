@@ -69,10 +69,10 @@ set(SRC
 )
 
 macro(late_init)
-  # Perform initialization after the PACKAGE_NAME library and the api
+  # Perform initialization after the PACKAGE_NAME library and ocpn::api
   # is available.
   if (SHIPDRIVER_USE_SVG)
-    target_compile_definitions(${PACKAGE_NAME} PRIVATE SHIPDRIVER_USE_SVG)
+    target_compile_definitions(${PACKAGE_NAME} PUBLIC SHIPDRIVER_USE_SVG)
   endif ()
 endmacro ()
 
