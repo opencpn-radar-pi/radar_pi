@@ -12,35 +12,19 @@
 # -------- Cmake setup ---------
 #
 cmake_minimum_required(VERSION 3.12.0)
-
-cmake_policy(SET CMP0042 NEW)
-
-if (POLICY CMP0072)
-  cmake_policy(SET CMP0072 NEW)
-endif ()
-
-if (POLICY CMP0077)
-  cmake_policy(SET CMP0077 NEW)
-endif ()
-
-# Locations where cmake looks for cmake modules.
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build ${CMAKE_SOURCE_DIR}/cmake)
-
-if (WIN32)
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/buildwin)
-endif ()
+include(${CMAKE_SOURCE_DIR}/cmake/CmakeSetup.cmake NO_POLICY_SCOPE)
 message(STATUS "Cmake version: ${CMAKE_VERSION}.")
 
 
-# -------- Build setup (mostly in PluginCompiler) --------
+# -------- Build setup  --------
 #
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+include(PluginCompiler)
+include(PluginOptions)
 message(STATUS "Building: ${BUILD_TYPE}")
 
+<<<<<<< HEAD
+include(CMakePlugin.cmake)
+=======
 # -------- Options ----------
 
 set(OCPN_TEST_REPO
@@ -98,9 +82,12 @@ set(SRC
     src/GribRecordSet.h
     src/GribRecord.h
 )
+>>>>>>> 57e898e (sd2.9.0)
 
 # -------- Setup completed, build the plugin --------
 #
+project(ShipDriver_pi VERSION ${PKG_VERSION})
+
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
 include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
@@ -117,10 +104,7 @@ set(PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 string(REGEX REPLACE "\([0-9]\)\.\([0-9]\).*" "ov\\1\\2"
        OCPN_MIN_VERSION ${API_OCPN_MIN_VERSION})
 
-if (SHIPDRIVER_USE_SVG)
-  add_definitions(-DSHIPDRIVER_USE_SVG)
-endif ()
-
+late_init()
 # Set up targets. Targets sets up a recursive call with BUILD_TYPE set to
 # 'flatpak', 'pkg' or 'tarball'. The initial call without BUILD_TYPE ends
 # here.
@@ -136,7 +120,6 @@ endif ()
 if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   # Build package as required (flatpak already dealt with).
   #
-  include(PluginCompiler)
   include(PluginInstall)
   include(PluginPackage)
   if (QT_ANDROID)
@@ -150,15 +133,9 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
 
   add_subdirectory("libs/jsoncpp")
   target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
-  
-  add_subdirectory("libs/tinyxml")
-  target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
-  
-  add_subdirectory("libs/wxJSON")
-  target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
 
-  add_subdirectory("libs/plugingl")
-  target_link_libraries(${PACKAGE_NAME} ocpn::plugingl)
+  add_plugin_libraries()
+
 endif ()
 
 configure_file(
@@ -176,7 +153,6 @@ configure_file(
   ${CMAKE_SOURCE_DIR}/ci/upload.bat.in ${CMAKE_BINARY_DIR}/upload.bat
   @ONLY
 )
-
 
 set(checksum "@checksum@")
 configure_file(
