@@ -18,7 +18,6 @@ message(STATUS "Cmake version: ${CMAKE_VERSION}.")
 
 # -------- Build setup  --------
 #
-include(PluginCompiler)
 include(PluginOptions)
 if (BUILD_TYPE)
   message(STATUS "Building: ${BUILD_TYPE}")
@@ -31,6 +30,7 @@ include(Plugin.cmake)
 # -------- Setup completed, build the plugin --------
 #
 project(ShipDriver_pi VERSION ${PKG_VERSION})
+include(PluginCompiler)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
 include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
