@@ -99,7 +99,7 @@ git merge --no-ff --no-commit --allow-unrelated-histories $merge_opt \
 
 echo "Restoring non-template files"
 for f in \
-    CMakePlugin.cmake \
+    Plugin.cmake \
     CMakeLists.txt \
     build-deps \
     config.h.in \

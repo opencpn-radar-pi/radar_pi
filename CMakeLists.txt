@@ -26,7 +26,7 @@ else ()
   message(STATUS "Configuring")
 endif ()
 
-include(CMakePlugin.cmake)
+include(Plugin.cmake)
 
 # -------- Setup completed, build the plugin --------
 #
