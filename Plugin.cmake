@@ -9,7 +9,6 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 
-
 # -------- Options ----------
 
 set(OCPN_TEST_REPO
@@ -33,7 +32,7 @@ option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 #
 # -------  Plugin setup --------
 #
-set(PKG_VERSION  3.0.1)
+set(PKG_VERSION  3.0.2)
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
