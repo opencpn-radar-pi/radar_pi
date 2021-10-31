@@ -4,15 +4,15 @@
   <name> @PLUGIN_API_NAME@ </name>
   <version> @pkg_semver@ </version>
   <release> @PROJECT_VERSION_TWEAK@ </release>
-  <summary> @CPACK_PACKAGE_DESCRIPTION_SUMMARY@ </summary>
+  <summary> @PKG_SUMMARY@ </summary>
 
   <api-version> @API_VERSION@ </api-version>
   <open-source> @PKG_IS_OPEN_SOURCE@ </open-source>
   <author> @PKG_AUTHOR@ </author>
-  <source> @CPACK_PACKAGE_HOMEPAGE_URL@ </source>
+  <source> @PKG_HOMEPAGE@ </source>
   <info-url> @PKG_INFO_URL@ </info-url>
 
-  <description> @CPACK_PACKAGE_DESCRIPTION@ </description>
+  <description> @PKG_DESCRIPTION@ </description>
 
   <target>@pkg_target_arch@</target>
   <target-version>@plugin_target_version@</target-version>
