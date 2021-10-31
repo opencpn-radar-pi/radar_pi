@@ -22,7 +22,67 @@ include(PluginCompiler)
 include(PluginOptions)
 message(STATUS "Building: ${BUILD_TYPE}")
 
+<<<<<<< HEAD
 include(CMakePlugin.cmake)
+=======
+# -------- Options ----------
+
+set(OCPN_TEST_REPO
+    "opencpn/shipdriver-alpha"
+    CACHE STRING "Default repository for untagged builds"
+)
+set(OCPN_BETA_REPO
+    "opencpn/shipdriver-beta"
+    CACHE STRING 
+    "Default repository for tagged builds matching 'beta'"
+)
+set(OCPN_RELEASE_REPO
+    "opencpn/shipdriver-prod"
+    CACHE STRING 
+    "Default repository for tagged builds not matching 'beta'"
+)
+option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
+
+include(PluginOptions)
+#
+#
+# -------  Plugin setup --------
+#
+project(ShipDriver_pi VERSION 2.9.0)
+set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
+
+set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
+set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
+set(CPACK_PACKAGE_CONTACT "Mike Rossiter")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Simulate ship movements")
+set(CPACK_PACKAGE_DESCRIPTION [=[
+Simulates navigation of a vessel. Using the sail option and a current
+grib file for wind data, simulates how a sailing vessel might react in
+those conditions. Using 'Preferences' the simulator is able to record AIS
+data from itself. This can be replayed to simulate collision situations.
+]=])
+
+set(PKG_AUTHOR "Mike Rossiter")
+set(PKG_IS_OPEN_SOURCE "yes")
+set(CPACK_PACKAGE_HOMEPAGE_URL https://github.com/Rasbats/shipdriver_pi)
+set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/shipdriver.html)
+
+set(SRC
+    src/ShipDriver_pi.h
+    src/ShipDriver_pi.cpp
+    src/icons.h
+    src/icons.cpp
+    src/ShipDrivergui.h
+    src/ShipDrivergui.cpp
+    src/ShipDrivergui_impl.cpp
+    src/ShipDrivergui_impl.h
+    src/AisMaker.h
+    src/AisMaker.cpp
+    src/GribRecord.cpp
+    src/GribRecordSet.h
+    src/GribRecord.h
+)
+>>>>>>> 57e898e (sd2.9.0)
 
 # -------- Setup completed, build the plugin --------
 #
