@@ -51,6 +51,7 @@ if [[ -z "$CI" ]]; then
     exit 0
 fi
 
+git submodule update --init opencpn-libs
 make VERBOSE=1 tarball
 
 # Install cloudsmith needed by upload script

@@ -66,6 +66,7 @@ pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
 cp .python-version $HOME
 
 # Configure and build the plugin tarball and metadata.
+git submodule update --init opencpn-libs
 mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 flatpak

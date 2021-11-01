@@ -32,6 +32,7 @@ wget $url/pool/${OCPN_TARGET/-*/}/main/c/cm/cmake-data_3.19.3-0.1_all.deb
 wget $url/pool/${OCPN_TARGET/-*/}/main/c/cm/cmake_3.19.3-0.1_armhf.deb
 sudo apt install ./cmake_3.19.3-0.1_armhf.deb ./cmake-data_3.19.3-0.1_all.deb
 
+git submodule update --init opencpn-libs
 rm -rf build; mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 tarball

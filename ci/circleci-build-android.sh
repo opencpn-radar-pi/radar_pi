@@ -27,6 +27,7 @@ python3 -m pip install --user -q cloudsmith-cli cryptography
 python3 -m pip install --user -q cmake
 
 # Build tarball
+git submodule update --init opencpn-libs
 test -d build || mkdir build
 cd build && rm -rf *
 
