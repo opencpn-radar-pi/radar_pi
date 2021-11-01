@@ -31,7 +31,7 @@ curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
 curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
 sudo apt -q update
 
-sudo apt install devscripts equivs wget
+sudo apt install devscripts equivs wget git
 sudo mk-build-deps -ir /ci-source/build-deps/control
 sudo apt-get -q --allow-unauthenticated install -f
 
