@@ -18,39 +18,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Set up option NPROC: Number of processors used when compiling.
-if (DEFINED ENV{CMAKE_BUILD_PARALLEL_LEVEL})
-  set(_nproc $ENV{CMAKE_BUILD_PARALLEL_LEVEL})
-else ()
-  if (WIN32)
-    set(_nproc_cmd
-      cmd /C if defined NUMBER_OF_PROCESSORS (echo %NUMBER_OF_PROCESSORS%)
-      else (echo 1)
-    )
-
-  elseif (APPLE)
-    set(_nproc_cmd sysctl -n hw.physicalcpu)
-  else ()
-    set(_nproc_cmd nproc)
-  endif ()
-  execute_process(
-    COMMAND ${_nproc_cmd}
-    OUTPUT_VARIABLE _nproc
-    RESULT_VARIABLE _status
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
-  if (NOT "${_status}" STREQUAL "0")
-    set(_nproc 1)
-    message(
-      STATUS "Cannot probe for processor count using \"${_nproc_cmd}\""
-    )
-  endif ()
-endif ()
-set(OCPN_NPROC ${_nproc}
-  CACHE STRING "Number of processors used to compile [${_nproc}]"
-)
-message(STATUS "Build uses ${OCPN_NPROC} processors")
-
 set(_ocpn_cflags " -Wall -Wno-unused-result -fexceptions")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   string(APPEND CMAKE_C_FLAGS " ${_ocpn_cflags}")
