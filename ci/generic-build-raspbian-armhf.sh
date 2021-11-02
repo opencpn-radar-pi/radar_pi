@@ -43,7 +43,7 @@ wget $url/pool/bullseye/main/c/cm/cmake_3.20.5-0.1/cmake_3.20.5-0.1_armhf.deb
 sudo apt install ./cmake_3.*-0.1_armhf.deb ./cmake-data_3.*-0.1_all.deb
 
 cd /ci-source
-git submodule update -init opencpn-libs
+git submodule update --init opencpn-libs
 rm -rf build; mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=debug ..
 make -j $(nproc) VERBOSE=1 tarball
