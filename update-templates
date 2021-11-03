@@ -18,7 +18,6 @@ Parameters:
          A shipdriver tag, branch or commit, defaults to shipdriver/master
 
 Options:
-    -t   Add a -X theirs to git-merge(1)
     -T   Test mode, do not auto-update
     -h   Print this message and exit
 EOT
@@ -37,8 +36,6 @@ usage="Usage: $0 [-t] [-T] [treeish]"
 merge_opt=""
 while getopts "tTh" opt; do
     case "${opt}" in
-        t)  merge_opt="-X theirs"
-            ;;
         T)  test_mode=true
             ;;
         h)  usage; exit 0
@@ -91,54 +88,40 @@ EOT
     fi
 fi
 
+echo "Updating cmake/ and ci/"
+git rm -rf cmake/*
+git checkout $source_treeish cmake
+git add cmake
+git commit -m "Templates: Updating cmake"
 
-echo "Merging shipdriver branch with local plugin"
-git merge --no-ff --no-commit --allow-unrelated-histories $merge_opt \
-    $source_treeish
+git rm -rf ci/*
+git checkout $source_treeish ci
+git add ci
+git commit -m "Templates: Updating ci"
 
 
-echo "Restoring non-template files"
+echo "Templates: Updating other files"
 for f in \
-    Plugin.cmake \
-    CMakeLists.txt \
-    build-deps \
-    config.h.in \
-    COPYING \
-    data \
-    flatpak \
-    manual \
-    po \
-    README.md \
-    src
+    appveyor.yml \
+    .circleci \
+    .clang-format \
+    .cmake-format.yaml \
+    .drone.yml \
+    .gitattributes \
+    .gitignore \
+    INSTALL.md \
+    plugin.xml.in \
+    pre-commit \
+    .travis.yml \
+    update-templates \
+    UPDATE_TEMPLATES.md
 do
-    if test -e "$f"; then
-        git checkout -q HEAD $f
-        # Remove all added files in local directories
-        for ff in $(git diff --diff-filter=AC --name-only --staged $f); do
-            git rm --quiet -f $ff
-        done
-    fi
+    if test -d $f; then git rm -rf $f; fi
+    git checkout $source_treeish $f
+    git add $f || git add --renormalize $f
 done
 
-echo "Restore private libraries in libs/"
-for d in libs/*; do
-    case "$d" in
-      api*|WindowsHeaders)
-          continue
-          ;;
-      *)  git checkout -q HEAD $d
-          ;;
-    esac
-done
-
-
-echo "Remove miscellaneous added files"
-for f in $(git diff --diff-filter=AC --name-only --staged \
-           | grep -E "\.enc$|\.pub$|\.fbp$")
-do
-    git rm -f --quiet $f
-done
-
+git commit -m "Templates: Updating other files"
 
 if [ -e update-ignored ]; then
     echo "Revert changes in blacklisted files."
@@ -146,11 +129,6 @@ if [ -e update-ignored ]; then
         git checkout HEAD $f
     done
 fi
-
-echo "Add files which are simple additions"
-for f in $(git diff --staged --name-only --diff-filter=A); do
-    git add $f
-done
 
 if [ -f cmake/TemplateVersion ]; then
     our_manifest=$(echo flatpak/org.opencpn.OpenCPN.Plugin.*.yaml)

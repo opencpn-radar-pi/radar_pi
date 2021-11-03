@@ -69,45 +69,17 @@ The script is run from the plugin top directory using
 
 Usage summary:
 
-    update-templates [-t] [treeish]
+    update-templates [-T | -h] [treeish]
 
-The *-t* option adds a *-X theirs* to the git merge performed. It will
-resolve all conflicts by using the upstream shipdriver stuff. By default,
-the conflicts will be unresolved in the results.
+The *treeish* argument can be used to merge changes from another shipdriver
+branch than the default shipdriver/master.
 
-The *treeish* option can be used to merge changes from another shipdriver
-state than the default shipdriver/master i. e., a tag or a commit from
-the shipdriver repo.
+_-T_ runs in test mode, lots of output, requires an existing remote and
+does not self-update.
 
 *update-templates -h* prints the complete help message.
 
-
-Inspecting results and committing
----------------------------------
-
-The basic check is `git status`. This will display a list of modified or
-added files. `git diff --staged <filename>` lists files which are unmerged
-and thus needs handling.
-
-If the template files have local changes there might be conflicts. These
-can be resolved manually by editing the conflicting file.
-
-All changes can be reverted using `git checkout HEAD <file>` -- doing this
-on a conflicted file resolves the conflict.
-
-Another option is to apply all changes unconditionally, basically dropping
-local changes using `git checkout shipdriver/master <file>` -- this also
-resolves a possible conflict.
-
-`git diff HEAD upstream/master` for file or directory shows the applied
-changes.  A typical sequence is
-
-    $ git diff --stat HEAD upstream/master ci    # list files changed in ci/
-    $ git diff HEAD upstream/master ci           # list the actual diff(s)
-    $ git checkout upstream/master ci            # Accept all changes
-
-When all looks good changes can be committed using something like
-`git commit -m "Update shipdriver templates."`
+Script unconditionally updates known files and commits them directly.
 
 Checking modifications in CMakeLists.txt and flatpak manifest
 -------------------------------------------------------------
