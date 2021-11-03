@@ -28,3 +28,4 @@ CC BY-SA 4.0 license.
 
 The software contains open-source licensed files under different licenses
 including Expat, Apache-2  and Libpng. See the source files for details.
+
