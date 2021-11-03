@@ -105,7 +105,7 @@ jobs:
 
   build-bionic:
     docker:
-      - image: circleci/buildpack-deps:bionic-scm
+      - image: cimg/base:stable-18.04
     environment:
       - OCPN_TARGET: bionic
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
@@ -113,7 +113,7 @@ jobs:
 
   build-bionic-gtk3:
     docker:
-      - image: circleci/buildpack-deps:bionic-scm
+      - image: cimg/base:stable-18.04
     environment:
       - BUILD_GTK3: true
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
@@ -122,7 +122,7 @@ jobs:
 
   build-focal:
     docker:
-      - image: circleci/buildpack-deps:focal-scm
+      - image: cimg/base:stable-20.04
     environment:
       - OCPN_TARGET: focal
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
