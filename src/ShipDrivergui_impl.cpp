@@ -440,6 +440,8 @@ void Dlg::Notify()
     initLon = stepLon;
 
     dt = mdt;
+
+    GetParent()->Refresh();
 }
 
 void Dlg::SetInterval(int interval)
