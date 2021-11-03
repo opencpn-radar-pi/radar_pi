@@ -35,7 +35,7 @@ include(PluginCompiler)
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
 include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
-add_subdirectory("opencpn-libs/${PKG_API_LIB}")
+add_subdirectory("libs/${PKG_API_LIB}")
 target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
 
 set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
@@ -78,7 +78,7 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
 
   include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
-  add_subdirectory("opencpn-libs/jsoncpp")
+  add_subdirectory("libs/jsoncpp")
   target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
 
   if (COMMAND add_plugin_libraries)
