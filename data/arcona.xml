@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ShipDriver version="0.1" creator="Opencpn otidalroute plugin">
+	<TWA WindAngle=0>
+    <SPD WindSpeed=6>0</SPD>        
+    <SPD WindSpeed=8>0</SPD>
+    <SPD WindSpeed=10>0</SPD>
+    <SPD WindSpeed=12>0</SPD>
+    <SPD WindSpeed=14>0</SPD>
+    <SPD WindSpeed=16>0</SPD>
+    <SPD WindSpeed=20>0</SPD>
+    <SPD WindSpeed=100>0</SPD>
+    </TWA>
+    <TWA WindAngle=45>
+    <SPD WindSpeed=6>3.1</SPD>        
+    <SPD WindSpeed=8>3.7</SPD>
+    <SPD WindSpeed=10>4.3</SPD>
+    <SPD WindSpeed=12>4.5</SPD>
+    <SPD WindSpeed=14>4.7</SPD>
+    <SPD WindSpeed=16>4.8</SPD>
+    <SPD WindSpeed=20>4.8</SPD>
+    <SPD WindSpeed=100>4</SPD>
+    </TWA>
+    <TWA WindAngle=52>  
+    <SPD WindSpeed=6>4.8</SPD>
+    <SPD WindSpeed=8>5.9</SPD>
+    <SPD WindSpeed=10>6.3</SPD>
+    <SPD WindSpeed=12>6.5</SPD>
+    <SPD WindSpeed=14>6.7</SPD>
+    <SPD WindSpeed=16>6.8</SPD>
+    <SPD WindSpeed=20>6.9</SPD>
+    <SPD WindSpeed=100>7</SPD>   
+    </TWA>
+    <TWA WindAngle=60>   
+    <SPD WindSpeed=6>5.2</SPD>
+    <SPD WindSpeed=8>6.1</SPD>
+    <SPD WindSpeed=10>6.5</SPD>
+    <SPD WindSpeed=12>6.8</SPD>
+    <SPD WindSpeed=14>7</SPD>
+    <SPD WindSpeed=16>7.1</SPD>
+    <SPD WindSpeed=20>7.2</SPD>
+    <SPD WindSpeed=100>7</SPD>   
+    </TWA>  
+    <TWA WindAngle=75>
+    <SPD WindSpeed=6>5.5</SPD>
+    <SPD WindSpeed=8>6.4</SPD>
+    <SPD WindSpeed=10>6.8</SPD>
+    <SPD WindSpeed=12>7.1</SPD>
+    <SPD WindSpeed=14>7.3</SPD>
+    <SPD WindSpeed=16>7.4</SPD>
+    <SPD WindSpeed=20>7.6</SPD>
+    <SPD WindSpeed=100>7</SPD>
+    </TWA>
+    <TWA WindAngle=90>
+    <SPD WindSpeed=6>5.8</SPD>
+    <SPD WindSpeed=8>6.6</SPD>
+    <SPD WindSpeed=10>7</SPD>
+    <SPD WindSpeed=12>7.3</SPD>
+    <SPD WindSpeed=14>7.5</SPD>
+    <SPD WindSpeed=16>7.6</SPD>
+    <SPD WindSpeed=20>7.8</SPD>
+    <SPD WindSpeed=100>7</SPD>
+    </TWA>
+    <TWA WindAngle=110>
+    <SPD WindSpeed=6>5.6</SPD>
+    <SPD WindSpeed=8>6.4</SPD>
+    <SPD WindSpeed=10>6.9</SPD>
+    <SPD WindSpeed=12>7.3</SPD>
+    <SPD WindSpeed=14>7.5</SPD>
+    <SPD WindSpeed=16>7.8</SPD>
+    <SPD WindSpeed=20>8.2</SPD>
+    <SPD WindSpeed=100>8</SPD>
+    </TWA>
+    <TWA WindAngle=120>
+    <SPD WindSpeed=6>5.1</SPD>
+    <SPD WindSpeed=8>6.2</SPD>
+    <SPD WindSpeed=10>6.7</SPD>
+    <SPD WindSpeed=12>7.1</SPD>
+    <SPD WindSpeed=14>7.4</SPD>
+    <SPD WindSpeed=16>7.7</SPD>
+    <SPD WindSpeed=20>8.3</SPD>
+    <SPD WindSpeed=100>8</SPD>
+    </TWA>
+     <TWA WindAngle=135>
+    <SPD WindSpeed=6>4.5</SPD>
+    <SPD WindSpeed=8>5.6</SPD>
+    <SPD WindSpeed=10>6.4</SPD>
+    <SPD WindSpeed=12>6.8</SPD>
+    <SPD WindSpeed=14>7.2</SPD>
+    <SPD WindSpeed=16>7.5</SPD>
+    <SPD WindSpeed=20>8.1</SPD>
+    <SPD WindSpeed=100>8</SPD>
+    </TWA>
+    <TWA WindAngle=150>
+    <SPD WindSpeed=6>3.8</SPD>
+    <SPD WindSpeed=8>4.8</SPD>
+    <SPD WindSpeed=10>5.8</SPD>
+    <SPD WindSpeed=12>6.4</SPD>
+    <SPD WindSpeed=14>6.8</SPD>
+    <SPD WindSpeed=16>7.2</SPD>
+    <SPD WindSpeed=20>7.7</SPD>
+    <SPD WindSpeed=100>7</SPD>
+    </TWA>
+    <TWA WindAngle=180>
+    <SPD WindSpeed=6>3.8</SPD>
+    <SPD WindSpeed=8>4.8</SPD>
+    <SPD WindSpeed=10>5.8</SPD>
+    <SPD WindSpeed=12>6.4</SPD>
+    <SPD WindSpeed=14>6.8</SPD>
+    <SPD WindSpeed=16>7.2</SPD>
+    <SPD WindSpeed=20>7.7</SPD>
+    <SPD WindSpeed=100>7</SPD>
+    </TWA>
+</ShipDriver>

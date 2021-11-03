@@ -1,14 +1,14 @@
 site:
-  title: DR Plugin Manual
+  title: shipdriver Plugin Manual
   url:  https://nowhere.net
-  start_page: dead_reckoning:ROOT:index.adoc
+  start_page: shipdriver:ROOT:index.adoc
 
 content:
   sources:
-    - url: ../
+    - url: ..
       start_path: manual
       branches: HEAD
-      edit_url: https://github.com/Rasbats/DR_pi/edit/master/{path}
+      edit_url: https://github.com/Rasbats/shipdriver_pi/edit/master/{path}
 
 ui:   
   bundle:
@@ -18,3 +18,9 @@ ui:
 output:
   dir: ./docs
   clean: true              
+
+asciidoc:
+  attributes:
+    copyright: 2021 Mike Rossiter
+    license: CC BY-SA 4.0
+    license-link: https://creativecommons.org/licenses/by-sa/4.0/

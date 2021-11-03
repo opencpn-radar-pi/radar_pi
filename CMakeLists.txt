@@ -29,7 +29,7 @@ include(Plugin.cmake)
 
 # -------- Setup completed, build the plugin --------
 #
-project(DR_pi VERSION ${PKG_VERSION})
+project(ShipDriver_pi VERSION ${PKG_VERSION})
 include(PluginCompiler)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
@@ -56,10 +56,11 @@ endif ()
 # 'flatpak', 'android' or 'tarball'. The initial call without BUILD_TYPE ends
 # here.
 #
-include(Targets)
-create_targets(
-  ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.DR.yaml
+file(GLOB FLATPAK_MANIFEST
+  ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
 )
+include(Targets)
+create_targets(${FLATPAK_MANIFEST})
 if ("${BUILD_TYPE}" STREQUAL "")
   return ()
 endif ()
@@ -76,6 +77,9 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   include(PluginLocalization)
 
   include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
+
+  add_subdirectory("libs/jsoncpp")
+  target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
 
   if (COMMAND add_plugin_libraries)
     add_plugin_libraries()

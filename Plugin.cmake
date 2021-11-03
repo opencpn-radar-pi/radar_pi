@@ -13,52 +13,58 @@
 # -------- Options ----------
 
 set(OCPN_TEST_REPO
-    "opencpn/dr-alpha"
+    "opencpn/shipdriver-alpha"
     CACHE STRING "Default repository for untagged builds"
 )
 set(OCPN_BETA_REPO
-    "opencpn/dr-beta"
+    "opencpn/shipdriver-beta"
     CACHE STRING
     "Default repository for tagged builds matching 'beta'"
 )
 set(OCPN_RELEASE_REPO
-    "opencpn/dr-prod"
+    "opencpn/shipdriver-prod"
     CACHE STRING
     "Default repository for tagged builds not matching 'beta'"
 )
 
-option(DR_USE_SVG "Use SVG graphics" ON)
+option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
 
 #
 #
 # -------  Plugin setup --------
 #
-set(PKG_VERSION  4.0.0)
+set(PKG_VERSION  3.0.0)
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
-set(DISPLAY_NAME DR)    # Dialogs, installer artifacts, ...
-set(PLUGIN_API_NAME DR) # As of GetCommonName() in plugin API
-set(PKG_SUMMARY "make GPX files for dead reckoning positions")
+set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
+set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
+set(PKG_SUMMARY "Simulate ship movements")
 set(PKG_DESCRIPTION [=[
-Create GPX files for dead reckoning positions using existing GPX route files
+Simulates navigation of a vessel. Using the sail option and a current
+grib file for wind data, simulates how a sailing vessel might react in
+those conditions. Using 'Preferences' the simulator is able to record AIS
+data from itself. This can be replayed to simulate collision situations.
 ]=])
 
 set(PKG_AUTHOR "Mike Rossiter")
 set(PKG_IS_OPEN_SOURCE "yes")
-set(PKG_HOMEPAGE https://github.com/Rasbats/DR_pi)
-set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/dreckoning.html)
+set(PKG_HOMEPAGE https://github.com/Rasbats/shipdriver_pi)
+set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/shipdriver.html)
 
 set(SRC
-    src/DR_pi.h
-    src/DR_pi.cpp
+    src/ShipDriver_pi.h
+    src/ShipDriver_pi.cpp
     src/icons.h
     src/icons.cpp
-    src/DRgui.h
-    src/DRgui.cpp
-    src/DRgui_impl.cpp
-    src/DRgui_impl.h
-    src/NavFunc.cpp
-    src/NavFunc.h
+    src/ShipDrivergui.h
+    src/ShipDrivergui.cpp
+    src/ShipDrivergui_impl.cpp
+    src/ShipDrivergui_impl.h
+    src/AisMaker.h
+    src/AisMaker.cpp
+    src/GribRecord.cpp
+    src/GribRecordSet.h
+    src/GribRecord.h
 )
 
 set(PKG_API_LIB api-16)  #  A directory in libs/ e. g., api-17 or api-16
@@ -66,8 +72,8 @@ set(PKG_API_LIB api-16)  #  A directory in libs/ e. g., api-17 or api-16
 macro(late_init)
   # Perform initialization after the PACKAGE_NAME library, compilers
   # and ocpn::api is available.
-  if (DR_USE_SVG)
-    target_compile_definitions(${PACKAGE_NAME} PUBLIC DR_USE_SVG)
+  if (SHIPDRIVER_USE_SVG)
+    target_compile_definitions(${PACKAGE_NAME} PUBLIC SHIPDRIVER_USE_SVG)
   endif ()
 endmacro ()
 
@@ -75,6 +81,9 @@ macro(add_plugin_libraries)
   # Add libraries required by this plugin
   add_subdirectory("libs/tinyxml")
   target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
+
+  add_subdirectory("libs/wxJSON")
+  target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
 
   add_subdirectory("libs/plugingl")
   target_link_libraries(${PACKAGE_NAME} ocpn::plugingl)

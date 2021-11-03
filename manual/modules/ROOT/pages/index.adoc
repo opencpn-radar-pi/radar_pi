@@ -1,97 +1,182 @@
-= Dead Reckoning
-
-image:dr_pi.png[role=left] .
-
-Add DR positions to a route by means of editing a gpx file, which has
-been exported from 'Route Manager'.
-
-== Installation
-
-Available in the managed plugins catalog.
-
-image:managed_plugin.png[role=left] .
+= ShipDriver
 
 == Links
 
-* Source: https://github.com/Rasbats/DR_pi[Gihub Repository]  
-* Releases: https://github.com/Rasbats/DR_pi/releases[Github Releases]  
-* Downloads: https://opencpn.org/OpenCPN/plugins/dreckoning.html[Website Download]  
-* Forum:
-http://www.cruisersforum.com/forums/f134/dead-reckoning-plugin-for-ocpn-82864.html[Cruiser's Forum Dead Reckoning thread]  
-* Forum:
-http://www.cruisersforum.com/forums/f134/dr-plugin-splitting-up-gpx-route-files-114482.html[DR plugin splitting up gpx routefiles]  
+Test
 
-== Definition
+Source: https://github.com/Rasbats/shipdriver_pi[Github Repository]
 
-In navigation, dead reckoning or dead-reckoning (also ded for deduced
-reckoning or *DR*) is the process of calculating one's current
-*position* by using a previously determined *position*, or fix, and
-advancing that *position* based upon known or estimated speeds over
-elapsed time and course.
+Releases: https://github.com/Rasbats/shipdriver_pi/releases[Github Releases]
+
+
+Forum:
+http://www.cruisersforum.com/forums/f134/shipdriver-another-beta-194030.html[Cruiser's
+Forum ShipDriver Thread]
 
 == 1. What and Why
 
-The DR plugin is a means of adding DR positions to a route. Because the
-plugin cannot access 'Route Manager' directly it works by editing a gpx
-file, which has been exported from 'Route Manager'.
+image::sd10.png[]
 
-DR speed and the time between the DR positions can be changed before the
-DR gpx is finally created.
-
-This plugin is a temporary solution to the problem of creating DR
-positions. The *Draw plugin* now allows the creation of DR positions for
-course legs.
+ShipDriver is intended as a very basic ship simulator. It allows a
+simulated vessel to be driven across the chart and mimics the appearance
+of the OpenCPN screen when in actual use. AIS can be recorded and played
+back with the VDR plugin, allowing the display of collision avoidance
+situations. This could be useful for training purposes.The simulation
+can extend to multiplayer scenarios where AIS data from one simulator is
+sent across a network to another user.
 
 == 2. Install
 
-Copy 'DR_pi.dll' to the plugins folder. Start OpenCPN. Tools/Options and
-select 'Enable' for the DR entry.
+Download the installer.
 
-image::tools_plugins.png[]
+https://github.com/Rasbats/ShipDriver_pi/releases
+
+Windows: Run the .exe file.
 
 == 3. Standard actions
 
-Save the route which you want to add DR positions to by using 'Route
-Manager'. Make a note of the folder where this original route file can
-be found.
+Enable the plugin using Tools→Plugins and finding the ShipDriver entry.
+Press the Enable button.
 
-image::export_route.png[]
+image::sd1.png[]
 
-Start DR:
 
-image::menu_bar.png[]
+The AIS Preferences are used later
+They can be left unchecked.
 
-The main page of the plugin appears:
+image::sd2.png[]
 
-image::add_options.png[]
 
-The DR speed and interval between DR positions have been added. The DR
-route name is entered in the bottom box.
+After 'Apply'/'Ok' the ShipDriver icon will appear in the toolbar of the
+main screen.
 
-The process of creating the DR route is started by pressing 'Generate
-GPX'. A file dialog box appears.
+image::sd3.png[]
 
-image::import_gpx.png[]
 
-Select the route GPX file where DR positions will be added.
+Press the icon to display the simulator control.
 
-Immediately after selecting this file a new file dialog box appears.
+image::sd5.png[]
 
-image::export_dr_gpx.png[]
 
-After pressing 'Save' the route_dr gpx file is created in the folder you
-have chosen. If the original file is not needed you can use the same
-file name and the original file will be over-written.
+Use right-click to bring up the menu for selecting the vessel start
+position. I have chosen a position close to a waypoint.
 
-The plugin can now be closed.
+image::sd4.png[]
 
-Using 'Route Manager' import the DR gpx:
 
-image::import_dr_gpx.png[]
+Initially nothing happens but when you press the 'Start' button on the
+control the ownship icon appears, coloured red.
 
-image::import_dr_gpx_route_manager.png[]
+image::sd8.png[]
 
-image::show_dr_gpx.png[]
+If you have not chosen a start position a warning notice will appear.
 
-The DR route is now available. To avoid confusion the original route can
-be hidden by using the 'Eye' symbol.
+image::sd7.png[]
+
+
+At the same time the Grib plugin form appears. Grib data is used for the sail option
+
+The Grib form can be closed at this point.
+
+The basic controls for using the simulator are shown here:
+
+image::sd8.1.png[]
+
+
+The best way of learning is to use the tiller and speed controls and
+watch the effect. When using the tiller an indicator at the top shows
+the rudder position. There is also a digital readout, either side of the
+'Midships' button.
+
+image::sd11.png[]
+
+
+== 4. Options
+
+=== Auto
+
+The 'Auto' button directly controls the heading. 'Standby' stops the
+function. Using the tiller while the Auto function is active will
+override and stop 'Auto'.
+
+'Auto' active:
+
+
+image::sd14.png[]
+
+
+=== Sail
+
+'Sail' uses the wind data from a Grib file to determine the speed of the
+boat. A polar from an 'Open 60' forms the basis for this. Press 'Sail'.
+By adjusting the heading the speed of the boat will change accordingly.
+
+If the Grib plugin is not using a file that covers the present
+time/location a warning appears.
+
+image::sd17.png[]
+
+
+The speed control is not active when the 'Sail' option is in use.
+
+when 'Sail' is active the button changes colour from green to red. Press
+'Sail' again to stop this mode.
+
+[#ais]
+=== AIS
+
+In Tools→Plugins the 'Preferences' button for ShipDriver is used to
+select the AIS options.
+
+image::sd18.png[]
+
+
+When recording AIS a text file is created that can be played back with
+the VDR plugin. This records AIS data from 'Own Ship'. This data is
+nearly the same as seen when meeting a vessel transmitting a Class B AIS
+signal in the real world.
+
+AIS being recorded:
+
+image::sd19.png[]
+
+
+ShipDriver has been stopped and the AIS file is being played back using
+the VDR plugin:
+
+image::sd20.png[]
+
+
+By moving the vessel start position, re-starting and running ShipDriver,
+at the same time as playing the AIS with 'VDR_pi' a collision regs
+scenario can be created.
+
+image::sd21.png[]
+
+
+Obtain the AIS data for the 'other vessel' by using 'right-click' on the
+target.
+
+image::sd22.png[]
+
+
+=== AIS Transmission
+
+Using Tools→Plugins and 'Preferences' for the plugin select the
+'Transmit' option.
+
+image::sd23.png[]
+
+
+When ShipDriver is in use an AIS signal will be transmitted from 'Own
+Ship'.
+
+image::sd24.png[]
+
+
+This has limited use when OpenCPN is used on a single computer. However,
+on a network it is possible to transmit the data to another computer
+running ShipDriver allowing two users to simulate collision avoidance
+situations.
+
+== 5. FAQ
