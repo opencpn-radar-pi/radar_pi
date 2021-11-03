@@ -13,7 +13,11 @@
 
 set -xe
 
+<<<<<<< HEAD
+export MACOSX_DEPLOYMENT_TARGET=10.9
+=======
 export MACOSX_DEPLOYMENT_TARGET=10.10
+>>>>>>> shipdriver/master
 
 # Return latest version of $1, optiomally using option $2
 pkg_version() { brew list --versions $2 $1 | tail -1 | awk '{print $2}'; }
@@ -42,7 +46,11 @@ cmake \
   -DwxWidgets_CONFIG_EXECUTABLE=/tmp/wx315_opencpn50_macos1010/bin/wx-config \
   -DwxWidgets_CONFIG_OPTIONS="--prefix=/tmp/wx315_opencpn50_macos1010" \
   -DCMAKE_INSTALL_PREFIX= \
+<<<<<<< HEAD
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
+=======
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 \
+>>>>>>> shipdriver/master
   ..
 
 if [[ -z "$CI" ]]; then

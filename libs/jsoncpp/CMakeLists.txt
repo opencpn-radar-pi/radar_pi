@@ -13,6 +13,15 @@ project("jsoncpp")
 
 option(USE_SYSTEM_JSONCPP "Use system copy of library if available" OFF)
 
+find_program(GIT NAMES git)
+if (GIT)
+  file(GLOB PATCHFILE 0001*patch)
+  execute_process(
+    COMMAND git apply -p3 --directory libs/jsoncpp ${PATCHFILE}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+  )
+endif ()
+
 add_library(_JSONCPP INTERFACE)
 add_library(ocpn::jsoncpp ALIAS _JSONCPP)
 
