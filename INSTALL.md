@@ -2,12 +2,8 @@
 
 Install build dependencies as described in the 
 [manual](https://opencpn-manuals.github.io/main/AlternativeWorkflow/Local-Build.html)
-
-After cloning, enter this directory, setup the library submodule and
-enter a fresh working directory:
-
-    $ git submodule update --init opencpn-libs
-    $ rm -rf build; mkdir build; cd build
+Then clone this repository, enter it and make
+`rm -rf build; mkdir build; cd build`.
 
 A "normal" (not flatpak) tar.gz tarball which can be used by the new plugin
 installer available from OpenCPN 5.2.0 is built using:
