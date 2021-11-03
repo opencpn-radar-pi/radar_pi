@@ -36,7 +36,6 @@ wget -q https://download.opencpn.org/s/MCiRiq4fJcKD56r/download \
 tar -C /tmp -xJf /tmp/wx315_opencpn50_macos1010.tar.xz
 
 # Build and package
-git submodule update --init opencpn-libs
 rm -rf build && mkdir build && cd build
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -52,6 +51,7 @@ if [[ -z "$CI" ]]; then
     exit 0
 fi
 
+git submodule update --init opencpn-libs
 make VERBOSE=1 tarball
 
 # Install cloudsmith needed by upload script
