@@ -753,11 +753,17 @@ bool Reader::addErrorAndRecover(const String& message, Token& token,
 
 Value& Reader::currentValue() { return *(nodes_.top()); }
 
+// https://github.com/open-source-parsers/jsoncpp/issues/1188
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored  "-Wdeprecated-declarations"
+
 Reader::Char Reader::getNextChar() {
   if (current_ == end_)
     return 0;
   return *current_++;
 }
+
+#pragma GCC diagnostic pop
 
 void Reader::getLocationLineAndColumn(Location location, int& line,
                                       int& column) const {
@@ -794,6 +800,7 @@ String Reader::getFormatedErrorMessages() const {
   return getFormattedErrorMessages();
 }
 
+
 String Reader::getFormattedErrorMessages() const {
   String formattedMessage;
   for (const auto& error : errors_) {
@@ -807,6 +814,10 @@ String Reader::getFormattedErrorMessages() const {
   return formattedMessage;
 }
 
+// https://github.com/open-source-parsers/jsoncpp/issues/1188
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored  "-Wdeprecated-declarations"
+
 std::vector<Reader::StructuredError> Reader::getStructuredErrors() const {
   std::vector<Reader::StructuredError> allErrors;
   for (const auto& error : errors_) {
@@ -818,6 +829,8 @@ std::vector<Reader::StructuredError> Reader::getStructuredErrors() const {
   }
   return allErrors;
 }
+
+#pragma GCC diagnostic pop
 
 bool Reader::pushError(const Value& value, const String& message) {
   ptrdiff_t const length = end_ - begin_;
