@@ -12,6 +12,10 @@
 # (at your option) any later version.
 
 set -xe
+
+# Load local environment if it exists i. e., this is a local build
+if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
+
 sudo apt -qq update || apt update
 sudo apt-get -qq install devscripts equivs software-properties-common
 

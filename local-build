@@ -1,0 +1,78 @@
+#!/bin/bash
+#
+# Script starts builds which are supposed to run at current host.
+#
+# Files:
+#   ~/.config/local-build.rc
+#      Used to populate environment, typically containing lines
+#      like 'export CLOUDSMITH_API_KEY=xxxxx'. This file should be
+#      protected from other users, normally 600. 
+#
+# Dependencies: 
+#   - Circleci command line tool: https://circleci.com/docs/2.0/local-cli/
+#   - Android builds needs cmake and NDK, see
+#     https://opencpn-manuals.github.io/main/AlternativeWorkflow/Local-Build.html
+#
+# Bugs:
+#   - Does not build flatpak, even if the resources actually are in place.
+#
+# Notes:
+#   - Eats a lot of network connections. Use 'docker network prune'
+#     to reset usage if the side-effects are tolerable.
+#   - Only simple testing on Linux (Fedora) so far, expect bugs.
+#   - Unclear if/how script can run on Windows or MacOS.
+
+case $(uname -m) in 
+    amd64|x86_64)   platform=x86_64;;
+    aarch64|arm64)  platform=aarch64;;
+    *)              platform=$(uname -m);;
+esac
+
+if [[ "$(uname -a)" == *Darwin* ]]; then platform=macos; fi
+
+echo "Building for $platform"
+
+if [ -f ~/.config/local-build.rc ] ;then 
+    echo "Reading configuration from ~/.config/local-build.rc"
+    source ~/.config/local-build.rc
+fi
+
+set -x
+
+function build_cmd() {
+    cat << EOT
+        sh -c "circleci local execute \
+                -e CLOUDSMITH_API_KEY="\$CLOUDSMITH_API_KEY" \
+                -e GIT_REPO=\\"\$GIT_REPO\\" \
+                -e GIT_KEY_PASSWORD=\\"\$GIT_KEY_PASSWORD\\" \
+                -e CLOUDSMITH_STABLE_REPO=\\"\$CLOUDSMITH_STABLE_REPO\\" \
+                -e CLOUDSMITH_UNSTABLE_REPO=\\"\$CLOUDSMITH_UNSTABLE_REPO\\" \
+                -e CLOUDSMITH_BETA_REPO=\\"\$CLOUDSMITH_BETA_REPO\\" \
+                --job $1; sleep 1000"
+EOT
+}
+
+build_buster=$(build_cmd build-buster)
+
+script=$(mktemp)
+cat << EOT >$script
+if [ "$platform" = x86_64 ]; then
+  gnome-terminal --tab --title=Buster -- $(build_cmd build-buster)
+  gnome-terminal --tab --title=Focal -- $(build_cmd build-focal)
+  gnome-terminal --tab --title=Bionic -- $(build_cmd build-bionic)
+  gnome-terminal --tab --title=Bionic-gtk3 -- $(build_cmd build-bionic-gtk3)
+  gnome-terminal --tab --title=Xenial -- $(build_cmd build-xenial)
+  gnome-terminal --tab \
+      --title=Android arm64 -- $(build_cmd build-android-arm64)
+  gnome-terminal --tab \
+      --title=Android armhf -- $(build_cmd build-android-armhf)
+elif [ "$platform" = aarch64 ]; then
+  gnome-terminal --tab \
+      --title=Flatpak-aarch64 -- $(build_cmd build-flatpak-arm64)
+elif [ "$platform" = macos ]; then
+  gnome-terminal --tab --title=MacOS -- $(build_cmd build-macos)
+fi
+EOT
+
+chmod 755 $script
+gnome-terminal -- bash $script

@@ -13,6 +13,9 @@
 
 set -xe
 
+# Load local environment if it exists i. e., this is a local build
+if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
+
 sudo apt -q update
 sudo apt install -q cmake git gettext
 
