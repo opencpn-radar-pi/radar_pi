@@ -15,9 +15,8 @@
 #     https://opencpn-manuals.github.io/main/AlternativeWorkflow/Local-Build.html
 #   - raspbian builds needs a working qemu installation, notably with the
 #     qemu-user-static Fedora/Debian package.
+#   - Flatpak builds requires flatpak, flatpak-builder and flathub repo.
 #
-# Bugs:
-#   - Does not build flatpak, even if the resources actually are in place.
 #
 # Notes:
 #   - Eats a lot of network connections. Use 'docker network prune'
@@ -75,6 +74,8 @@ if [ "$platform" = x86_64 ]; then
       $(build_cmd build-android-armhf)
   gnome-terminal --tab  --title=Raspbian-armhf -- \
       $(local_build generic-build-raspbian-armhf.sh)
+  gnome-terminal --tab  --title=Flatpak-20.08 -- \
+      $(local_build circleci-build-flatpak.sh)
 elif [ "$platform" = aarch64 ]; then
   gnome-terminal --tab \
       --title=Flatpak-aarch64 -- $(build_cmd build-flatpak-arm64)
