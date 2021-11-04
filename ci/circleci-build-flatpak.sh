@@ -17,14 +17,15 @@ MANIFEST=$(cd flatpak; ls org.opencpn.OpenCPN.Plugin*yaml)
 echo "Using manifest file: $MANIFEST"
 set -x
 
-sudo apt update
+if [ -n "$CI" ]; then
+    sudo apt update
 
+    # Avoid using outdated TLS certificates, see #210.
+    sudo apt install --reinstall  ca-certificates
 
-# Avoid using outdated TLS certificates, see #210.
-sudo apt install --reinstall  ca-certificates
-
-# Install flatpak and flatpak-builder
-sudo apt install flatpak flatpak-builder
+    # Install flatpak and flatpak-builder
+    sudo apt install flatpak flatpak-builder
+fi
 flatpak remote-add --user --if-not-exists \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
@@ -68,7 +69,7 @@ if ! python3 --version 2>&1 >/dev/null; then
 fi
 
 # Configure and build the plugin tarball and metadata.
-mkdir build; cd build
+rm -rf build && mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 flatpak
 

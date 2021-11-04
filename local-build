@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Script starts builds which are supposed to run at current host.
+# Each build runs in a terminal window tab.
 #
 # Files:
 #   ~/.config/local-build.rc
@@ -22,7 +23,6 @@
 #   - Eats a lot of network connections. Use 'docker network prune'
 #     to reset usage if the side-effects are tolerable.
 #   - Only simple testing on Linux (Fedora) so far, expect bugs.
-#   - Unclear if/how script can run on Windows or MacOS.
 
 case $(uname -m) in 
     amd64|x86_64)   platform=x86_64;;

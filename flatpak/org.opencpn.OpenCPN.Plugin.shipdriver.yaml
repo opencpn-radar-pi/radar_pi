@@ -6,7 +6,7 @@
 #
 id: org.opencpn.OpenCPN.Plugin.shipdriver
 runtime: org.opencpn.OpenCPN
-runtime-version: stable   # official build at flathub
+runtime-version: stable
 #runtime-version: master   # for nightly builds
 sdk: org.freedesktop.Sdk//20.08
 build-extension: true
