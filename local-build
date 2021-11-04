@@ -12,6 +12,8 @@
 #   - Circleci command line tool: https://circleci.com/docs/2.0/local-cli/
 #   - Android builds needs cmake and NDK, see
 #     https://opencpn-manuals.github.io/main/AlternativeWorkflow/Local-Build.html
+#   - raspbian builds needs a working qemu installation, notably with the
+#     qemu-user-static Fedora/Debian package.
 #
 # Bugs:
 #   - Does not build flatpak, even if the resources actually are in place.
@@ -40,19 +42,24 @@ fi
 set -x
 
 function build_cmd() {
-    cat << EOT
-        sh -c "circleci local execute \
-                -e CLOUDSMITH_API_KEY="\$CLOUDSMITH_API_KEY" \
-                -e GIT_REPO=\\"\$GIT_REPO\\" \
-                -e GIT_KEY_PASSWORD=\\"\$GIT_KEY_PASSWORD\\" \
-                -e CLOUDSMITH_STABLE_REPO=\\"\$CLOUDSMITH_STABLE_REPO\\" \
-                -e CLOUDSMITH_UNSTABLE_REPO=\\"\$CLOUDSMITH_UNSTABLE_REPO\\" \
-                -e CLOUDSMITH_BETA_REPO=\\"\$CLOUDSMITH_BETA_REPO\\" \
-                --job $1; sleep 1000"
+  cat << EOT
+    sh -c "circleci local execute \
+    -e CLOUDSMITH_API_KEY="\$CLOUDSMITH_API_KEY" \
+    -e GIT_REPO=\\"\$GIT_REPO\\" \
+    -e GIT_KEY_PASSWORD=\\"\$GIT_KEY_PASSWORD\\" \
+    -e CLOUDSMITH_STABLE_REPO=\\"\$CLOUDSMITH_STABLE_REPO\\" \
+    -e CLOUDSMITH_UNSTABLE_REPO=\\"\$CLOUDSMITH_UNSTABLE_REPO\\" \
+    -e CLOUDSMITH_BETA_REPO=\\"\$CLOUDSMITH_BETA_REPO\\" \
+    --job $1; sleep 1000"
 EOT
 }
 
-build_buster=$(build_cmd build-buster)
+function local_build() {
+cat << EOT
+    sh -c "ci/$1; ./local-upload build; ci/git-push; sleep 1000"
+EOT
+}
+
 
 script=$(mktemp)
 cat << EOT >$script
@@ -62,10 +69,12 @@ if [ "$platform" = x86_64 ]; then
   gnome-terminal --tab --title=Bionic -- $(build_cmd build-bionic)
   gnome-terminal --tab --title=Bionic-gtk3 -- $(build_cmd build-bionic-gtk3)
   gnome-terminal --tab --title=Xenial -- $(build_cmd build-xenial)
-  gnome-terminal --tab \
-      --title=Android arm64 -- $(build_cmd build-android-arm64)
-  gnome-terminal --tab \
-      --title=Android armhf -- $(build_cmd build-android-armhf)
+  gnome-terminal --tab --title=Android-arm64 -- \
+      $(build_cmd build-android-arm64)
+  gnome-terminal --tab --title=Android-armhf -- \
+      $(build_cmd build-android-armhf)
+  gnome-terminal --tab  --title=Raspbian-armhf -- \
+      $(local_build generic-build-raspbian-armhf.sh)
 elif [ "$platform" = aarch64 ]; then
   gnome-terminal --tab \
       --title=Flatpak-aarch64 -- $(build_cmd build-flatpak-arm64)
@@ -73,6 +82,6 @@ elif [ "$platform" = macos ]; then
   gnome-terminal --tab --title=MacOS -- $(build_cmd build-macos)
 fi
 EOT
-
 chmod 755 $script
+
 gnome-terminal -- bash $script
