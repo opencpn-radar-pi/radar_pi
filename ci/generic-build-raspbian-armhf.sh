@@ -31,7 +31,7 @@ curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
 curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
 sudo apt -q update
 
-sudo apt install devscripts equivs wget
+sudo apt install devscripts equivs wget git lsb-release
 sudo mk-build-deps -ir /ci-source/build-deps/control
 sudo apt-get -q --allow-unauthenticated install -f
 
@@ -52,8 +52,10 @@ EOF
 
 # Run script in docker image
 #
-sudo apt -q update
-sudo apt install qemu-user-static
+if [ -n "$CI" ]; then
+    sudo apt -q update
+    sudo apt install qemu-user-static
+fi
 docker run --rm --privileged multiarch/qemu-user-static:register --reset || :
 docker run --privileged -ti \
     -e "OCPN_TARGET=$OCPN_TARGET" \
@@ -69,12 +71,16 @@ rm -f $ci_source/build.sh
 
 # Install cloudsmith-cli (for upload) and cryptography (for git-push).
 #
-pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1 \
-    > $HOME/.python-version
-# Latest pip 21.0.0 is broken:
-python3 -m pip install --force-reinstall pip==20.3.4
+if pyenv versions &>/dev/null;  then
+  pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1 \
+      > $HOME/.python-version
+fi
+
+# Latest pip 21.0.0 requires python 3.7+, we have just 3.5:
+python3 -m pip install -q --force-reinstall pip==20.3.4
+
 # https://github.com/pyca/cryptography/issues/5753 -> cryptography < 3.4
-python3 -m pip install --user cloudsmith-cli 'cryptography<3.4'
+python3 -m pip install -q --user cloudsmith-cli 'cryptography<3.4'
 
 # python install scripts in ~/.local/bin, teach upload.sh to use in it's PATH:
 echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.uploadrc
