@@ -62,8 +62,10 @@ fi
 sed -i "/^runtime-version/s/:.*/: $FLATPAK_BRANCH/" flatpak/$MANIFEST
 
 # The flatpak checksumming needs python3:
-pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
-cp .python-version $HOME
+if ! python3 --version 2>&1 >/dev/null; then
+    pyenv local $(pyenv versions | sed 's/*//' | awk '{print $1}' | tail -1)
+    cp .python-version $HOME
+fi
 
 # Configure and build the plugin tarball and metadata.
 mkdir build; cd build
