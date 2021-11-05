@@ -3,14 +3,14 @@
 # The standard  pre-commit which comes with git with some additions.
 #
 # To enable this hook on non-windows platforms:
-#      $ cd .git/hooks; ln -s ../../pre-commit .
+#      $ cd .git/hooks; ln -s ../../scripts/pre-commit .
 #
 # On Windows, with administrative or developer mode privileges and in
 # a native CMD window (not git-bash):
-#      $ cd .git/hooks; mklink pre-commit ..\..\pre-commit
+#      > cd .git/hooks; mklink pre-commit ..\..\scripts\pre-commit
 #
 # Otherwise on Windows (the symlink is preferred):
-#      $ cp pre-commit .git/hooks
+#      > cp pre-commit ..\.git/hooks
 
 
 if git rev-parse --verify HEAD >/dev/null 2>&1
