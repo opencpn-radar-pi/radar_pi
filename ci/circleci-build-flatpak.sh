@@ -69,7 +69,7 @@ if ! python3 --version 2>&1 >/dev/null; then
 fi
 
 # Configure and build the plugin tarball and metadata.
-rm -rf build && mkdir build && cd build
+rm -rf build-flatpak && mkdir build-flatpak && cd build-flatpak
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 flatpak
 

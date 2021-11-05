@@ -2,6 +2,10 @@
 #
 # Push metadata to remote git clone of plugins project.
 #
+# Usage: git-push [builddir]
+#
+# 'builddir' is the directory with metadata file; defaults to 'build'.
+#
 # Environment variables:
 #   - GIT_REPO: ssh url to clone of plugins project e. g.,
 #     git@github.com:Rasbats/plugins.git
@@ -217,7 +221,8 @@ def main():
     os.chdir(os.path.join(top, 'plugins'))
 
     # Bring the new metadata file into repo.
-    metadata = glob(os.path.join(top, 'build', '*.xml'))
+    builddir = 'build' if len(sys.argv) == 1 else sys.argv[1]
+    metadata = glob(os.path.join(top, builddir, '*.xml'))
     if len(metadata) != 1:
         print("A single metadata file cannot be located, giving up")
         sys.exit(1);
