@@ -1,0 +1,19 @@
+# This is an example confifguration file. The items GIT_KEY_PASSWORD and
+# CLOUDSMITH_API_KEY are secrets and hence obfuscated here. Other values
+# are as used by me
+#
+# Location:
+#    Linux: ~/.config/local-build.rc
+#    Windows: %APPDATA%\Roaming\local-build.rc
+#
+# The variables here are tme same as used when setting up a builder like
+# circleci or Appveyor. See:
+# https://opencpn-manuals.github.io/main/AlternativeWorkflow/CircleCI.html#_set_the_environment_variables_for_appveyor
+
+
+export CLOUDSMITH_API_KEY=39af566896f3aderrnotevenhexdigitsher
+export CLOUDSMITH_STABLE_REPO=alec-leamas/opencpn-plugins-stable
+export CLOUDSMITH_UNSTABLE_REPO=alec-leamas/opencpn-plugins-unstable
+export CLOUDSMITH_BETA_REPO=alec-leamas/opencpn-plugins-stable
+export GIT_KEY_PASSWORD=MySecretPassword
+export GIT_REPO=git@github.com:leamas/plugins.git
