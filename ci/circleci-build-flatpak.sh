@@ -16,6 +16,7 @@ set -e
 MANIFEST=$(cd flatpak; ls org.opencpn.OpenCPN.Plugin*yaml)
 echo "Using manifest file: $MANIFEST"
 set -x
+if [ -n "$TRAVIS_BUILD_DIR" ]; then cd $TRAVIS_BUILD_DIR; fi
 
 if [ -n "$CI" ]; then
     sudo apt update

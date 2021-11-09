@@ -57,7 +57,7 @@ if [ -n "$CI" ]; then
     sudo apt install qemu-user-static
 fi
 docker run --rm --privileged multiarch/qemu-user-static:register --reset || :
-docker run --privileged -ti \
+docker run --privileged \
     -e "OCPN_TARGET=$OCPN_TARGET" \
     -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
     -e "CLOUDSMITH_BETA_REPO=$OCPN_BETA_REPO" \
