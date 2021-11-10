@@ -215,14 +215,16 @@ def main():
 
     private_key_setup(ci, build_deps, user, password)
 
+    builddir = 'build' if len(sys.argv) == 1 else sys.argv[1]
+    builddir = os.path.join(top, builddir)
+
     # Clone the repo if it does not exist.
-    if not os.path.exists(os.path.join(top, 'plugins')):
-        subprocess.check_call(git.clone, cwd=top)
-    os.chdir(os.path.join(top, 'plugins'))
+    if not os.path.exists(os.path.join(builddir, 'plugins')):
+        subprocess.check_call(git.clone, cwd=builddir)
+    os.chdir(os.path.join(builddir, 'plugins'))
 
     # Bring the new metadata file into repo.
-    builddir = 'build' if len(sys.argv) == 1 else sys.argv[1]
-    metadata = glob(os.path.join(top, builddir, '*.xml'))
+    metadata = glob(os.path.join(builddir, '*.xml'))
     if len(metadata) != 1:
         print("A single metadata file cannot be located, giving up")
         sys.exit(1);
