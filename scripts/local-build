@@ -18,6 +18,11 @@
 #   - Flatpak builds requires flatpak, flatpak-builder and flathub repo.
 #   - The gui target requires gnome-terminal i. e., Linux.
 #
+# Notes:
+#   Script uses a lot of docker network connections. Sometimes starts fail
+#   with a "ERROR: Could not find an available, non-overlapping ipv4 
+#   addres..." message. 'sudo docker network prune' fixes this.
+#
 #
 #
 #
@@ -84,9 +89,10 @@ TAB_CCI_TEMPLATE = \
     '-e CLOUDSMITH_BETA_REPO={CLOUDSMITH_BETA_REPO} ' + \
     '--job {job}; sleep 1000"'
 
+
 TAB_LOCAL_TEMPLATE = \
     'gnome-terminal --tab  --title={title} -- ' + \
-    'sh -c "ci/{script}; cd {directory}; ' + \
+    'sh -c "{script}; cd {directory}; ' + \
     './upload.sh build;  ../ci/git-push; sleep 1000"'
 
 
@@ -109,6 +115,7 @@ def ensure_docker():
         print("Seems that docker isn't running (not installed?), giving up")
         sys.exit(1)
 
+
 def ensure_terminal():
     "Ensure that gnome-terminal is installed"
     if not ensure(['gnome-terminal', '--version']):
@@ -116,7 +123,7 @@ def ensure_terminal():
         sys.exit(1)
 
 
-def local_cci_build(job, **kwargs):
+def local_cci_build(job):
     "Start a local build using circleci script."
     ensure_cci()
     ensure_docker()
@@ -162,6 +169,7 @@ def read_config():
 
 
 def run_gui():
+    "Start all known builds in parallel, each in a terminal tab. "
     ensure_terminal()
     script = ""
     for title, build in TARGETS.items():
@@ -169,6 +177,9 @@ def run_gui():
         line = line.replace('{title}', title)
         if 'job' in build:
             line = line.replace('{job}', build['job'])
+        else:
+            line = line.replace('{script}', build['script'])
+            line = line.replace('{directory}', build['directory'])
         script += line + "\n"
     keys = build.copy()
     keys.update(os.environ)
@@ -197,12 +208,10 @@ def main():
             print("    " + key) 
         if platform.system() == 'Linux':
             print("The target 'gui' runs all builds in terminal tabs\n")
-        sys,exit(0)
-    if sys.argv[1] == 'gui':
+    elif sys.argv[1] == 'gui':
         run_gui()
         print("All build jobs started")
-        sys.exit(0)
-    if not sys.argv[1] in TARGETS.keys():
+    elif not sys.argv[1] in TARGETS.keys():
         print("No such build target")
         sys.exit(1)
     else:
