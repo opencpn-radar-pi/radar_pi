@@ -37,12 +37,13 @@ python -m pip install -q setuptools wheel
 python -m pip install -q cloudsmith-cli
 python -m pip install cryptography
 
-
-export WXWIN=/c/wxWidgets-3.1.2
+here=$(readlink -fn $(dirname $0))
+cache=$here/../cache
+test -d $cache || mkdir $cache
+export WXWIN=$cache/wxWidgets-3.1.2
 export wxWidgets_ROOT_DIR=$WXWIN
 export wxWidgets_LIB_DIR=$WXWIN/lib/vc_dll
 export PATH="$PATH:$WXWIN:$wxWidgets_LIB_DIR"
-export PATH="/c/Program Files/cmake/bin:$PATH"
 
 if [ ! -d $WXWIN ]; then
     wget -q https://download.opencpn.org/s/E2p4nLDzeqx4SdX/download \
