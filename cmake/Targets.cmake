@@ -182,8 +182,9 @@ function (flatpak_target manifest)
   set(_fp_script "
     execute_process(
       COMMAND
-        flatpak-builder --force-clean ${CMAKE_CURRENT_BINARY_DIR}/app
-          ${manifest}
+        flatpak-builder
+          --state-dir ${CMAKE_SOURCE_DIR}/cache/flatpak --force-clean
+          ${CMAKE_CURRENT_BINARY_DIR}/app ${manifest}
     )
     execute_process(
       COMMAND bash -c \"sed -e '/@checksum@/d' \
