@@ -39,5 +39,6 @@ To build an android armhf tarball
 On windows, a different workflow is used:
 
     > ..\buildwin\win_deps.bat
-    > cmake -T v141_xp -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
+    > cmake -T v141_xp -G "Visual Studio 15 2017" ^
+           -DCMAKE_BUILD_TYPE=RelWithDebInfo  ..
     > cmake --build . --target tarball --config RelWithDebInfo

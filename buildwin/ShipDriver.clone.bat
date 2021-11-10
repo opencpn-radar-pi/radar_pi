@@ -18,7 +18,7 @@ cd shipdriver_pi
 mkdir  build
 cd build
 cmake -T v141_xp ..
-cmake -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
+cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 cmake --build . --target tarball --config RelWithDebInfo
 
 cmd /k
