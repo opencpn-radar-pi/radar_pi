@@ -10,12 +10,10 @@ rem
 python --version > nul 2>&1 && python -m ensurepip > nul 2>&1
 if errorlevel 1 (
    choco install -y python
-   refreshenv
 )
 cmake --version > nul 2>&1
 if errorlevel 1 (
    choco install -y cmake
-   refreshenv
 )
 python --version
 python -m ensurepip
@@ -24,7 +22,9 @@ python -m pip install -q setuptools wheel
 python -m pip install -q cloudsmith-cli
 python -m pip install -q cryptography
 
-set WXWIN=C:\wxWidgets-3.1.2
+set SCRIPTDIR=%~dp0
+set WXWIN=%SCRIPTDIR%..\cache\wxWidgets-3.1.2
+
 set wxWidgets_ROOT_DIR=%WXWIN%
 set wxWidgets_LIB_DIR=%WXWIN%\lib\vc_dll
 SET PATH=%PATH%;%WXWIN%;%wxWidgets_LIB_DIR%
@@ -40,3 +40,5 @@ if not exist "C:\Program Files (x86)\Poedit" (
 )
 SET PATH=%PATH%;C:\Program Files (x86)\Poedit\Gettexttools\bin
 SET PATH=%PATH%;C:\Program Files (x86)\Poedit
+
+refreshenv
