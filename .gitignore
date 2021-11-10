@@ -1,4 +1,5 @@
 build
+build-*
 po/*.pot
 .DS_Store
 *humbs.db

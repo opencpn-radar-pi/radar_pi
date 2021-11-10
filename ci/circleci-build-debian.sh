@@ -44,7 +44,9 @@ sudo apt install -q \
 python3 -m pip install --user --upgrade -q setuptools wheel pip
 python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
-mkdir  build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+builddir=build-$OCPN_TARGET
+
+test -d $builddir || mkdir  $builddir
+cd $builddir && rm -rf *
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 make VERBOSE=1 tarball

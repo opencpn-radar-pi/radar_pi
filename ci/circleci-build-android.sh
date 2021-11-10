@@ -13,6 +13,8 @@
 
 set -xe
 
+uname -m
+
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 
@@ -30,8 +32,9 @@ python3 -m pip install --user -q cloudsmith-cli cryptography
 python3 -m pip install --user -q cmake
 
 # Build tarball
-test -d build || mkdir build
-cd build && rm -rf *
+builddir=build-$OCPN_TARGET
+test -d $builddir || mkdir $builddir
+cd $builddir && rm -rf *
 
 sudo ln -sf /opt/android/android-ndk-* /opt/android/ndk
 cmake -DCMAKE_TOOLCHAIN_FILE=cmake/$OCPN_TARGET-toolchain.cmake ..
