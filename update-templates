@@ -99,6 +99,13 @@ git checkout $source_treeish ci
 git add ci
 git commit -m "Templates: Updating ci"
 
+git rm -rf scripts/*
+git checkout $source_treeish scripts
+git add scripts
+git commit -m "Templates: Updating scripts"
+
+
+
 
 echo "Templates: Updating other files"
 for f in \
