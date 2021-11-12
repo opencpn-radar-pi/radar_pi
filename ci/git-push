@@ -142,8 +142,8 @@ def get_subject(git, metadata_path):
 class Git:
     def __init__(self, branch):
         self.clone = [
-                'git', 'clone', '-b', branch, '--depth', '2',
-                os.environ.get('GIT_REPO')]
+                'git', 'clone', os.environ.get('GIT_REPO'), '-b', branch,
+                '--depth', '2' ]
         self.log = [
                 'git', '-C', '..', 'log', '-1', '--format=format:%h: @trg@: %s']
         self._rebase = ['git', 'rebase', 'origin/' + branch]
@@ -198,10 +198,8 @@ def main():
     """Indeed: main function."""
 
     # Set up (const) variables.
-    builddir = 'build' if len(sys.argv) == 1 else sys.argv[1]
     here = os.path.dirname(sys.argv[0])
     ci = os.path.abspath(os.path.join(here, '..', 'ci'))
-    cache = os.path.abspath(os.path.join(here, '..', 'cache'))
     build_deps = os.path.abspath(os.path.join(here, '..', 'build-deps'))
     top = os.path.abspath(os.path.join(here, '..'))
     user = get_user()
@@ -217,22 +215,18 @@ def main():
 
     private_key_setup(ci, build_deps, user, password)
 
+    builddir = 'build' if len(sys.argv) == 1 else sys.argv[1]
+    builddir = os.path.join(top, builddir)
 
     # Clone the repo if it does not exist.
-    if not os.path.exists(cache):
-        os.mkdir(cache)
-    clone_dir = 'plugins-' + builddir
-    clone_cmd = git.clone.copy()
-    clone_cmd.append(clone_dir)
-    if not os.path.exists(os.path.join(cache, clone_dir)):
-        subprocess.check_call(clone_cmd, cwd=cache)
-    os.chdir(os.path.join(cache, clone_dir))
+    if not os.path.exists(os.path.join(builddir, 'plugins')):
+        subprocess.check_call(git.clone, cwd=builddir)
+    os.chdir(os.path.join(builddir, 'plugins'))
 
     # Bring the new metadata file into repo.
-    metadata = glob(os.path.join(os.path.join(top, builddir), '*.xml'))
+    metadata = glob(os.path.join(builddir, '*.xml'))
     if len(metadata) != 1:
-        print("A single metadata file %s cannot be located, giving up"
-                % metadata.join(" "))
+        print("A single metadata file cannot be located, giving up")
         sys.exit(1);
     copy(metadata[0], 'metadata')
 
