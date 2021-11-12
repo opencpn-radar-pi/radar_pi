@@ -4,7 +4,7 @@ updates-templates README
 The script update-templates can be used to update a plugin with
 newer versions of the shipdriver templates. The basic workflow
 is to
-
+  - If keys exist in the ./ci folder copy them to ./build-deps. If not they will be removed in the update process.
   - Make sure the plugin repo is clean (commit or stash changes)
   - Bootstrap process by downloading script and add it to repo.
   - Pin files which should not be updated.
