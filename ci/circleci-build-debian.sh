@@ -15,6 +15,11 @@ set -xe
 
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
+if [ -d /ci-source ]; then cd /ci-source; fi
+
+builddir=build-$OCPN_TARGET
+test -d $builddir || sudo mkdir $builddir && sudo chmod 777 $builddir
+if [ "$PWD" != "/"  ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
 
 sudo apt -qq update || apt update
 sudo apt-get -qq install devscripts equivs software-properties-common
@@ -44,9 +49,8 @@ sudo apt install -q \
 python3 -m pip install --user --upgrade -q setuptools wheel pip
 python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
-builddir=build-$OCPN_TARGET
+cd $builddir && sudo rm -rf *
 
-test -d $builddir || mkdir  $builddir
-cd $builddir && rm -rf *
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 make VERBOSE=1 tarball
+sudo chmod -R go+w .

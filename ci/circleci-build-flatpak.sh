@@ -13,9 +13,20 @@
 
 set -e
 
+
 MANIFEST=$(cd flatpak; ls org.opencpn.OpenCPN.Plugin*yaml)
 echo "Using manifest file: $MANIFEST"
 set -x
+
+# Load local environment if it exists i. e., this is a local build
+if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
+if [ -d /ci-source ]; then cd /ci-source; fi
+
+builddir=build-flatpak
+test -d $builddir || sudo mkdir $builddir && sudo chmod 777 $builddir
+if [ "$PWD" != "/"  ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
+
+
 if [ -n "$TRAVIS_BUILD_DIR" ]; then cd $TRAVIS_BUILD_DIR; fi
 
 if [ -n "$CI" ]; then
@@ -36,7 +47,7 @@ flatpak remote-add --user --if-not-exists \
 
 commit_1808=959f5fd700f72e63182eabb9821b6aa52fb12189eddf72ccf99889977b389447
 FLATPAK_BRANCH=stable
-if dpkg-architecture --is arm64; then
+if [ "$(uname -m)" = "aarch64" ]; then
     flatpak install --user -y --noninteractive \
         flathub org.freedesktop.Sdk//20.08
     flatpak remote-add --user --if-not-exists flathub-beta \
@@ -70,7 +81,7 @@ if ! python3 --version 2>&1 >/dev/null; then
 fi
 
 # Configure and build the plugin tarball and metadata.
-rm -rf build-flatpak && mkdir build-flatpak && cd build-flatpak
+cd $builddir && rm -rf *
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 flatpak
 

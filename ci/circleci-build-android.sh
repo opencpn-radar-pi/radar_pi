@@ -17,6 +17,16 @@ uname -m
 
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
+if [ -d /ci-source ]; then cd /ci-source; fi
+
+builddir=build-$OCPN_TARGET
+test -d $builddir || sudo mkdir $builddir && sudo chmod 777 $builddir
+if [ "$PWD" != "/"  ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
+
+# The local container needs to access the cache directory
+test -d cache || sudo mkdir cache
+test -w cache || sudo chmod -R go+w cache
+
 
 sudo apt -q update
 sudo apt install -q cmake git gettext
@@ -32,8 +42,6 @@ python3 -m pip install --user -q cloudsmith-cli cryptography
 python3 -m pip install --user -q cmake
 
 # Build tarball
-builddir=build-$OCPN_TARGET
-test -d $builddir || mkdir $builddir
 cd $builddir && rm -rf *
 
 sudo ln -sf /opt/android/android-ndk-* /opt/android/ndk

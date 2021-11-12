@@ -5,9 +5,9 @@ debian-steps: &debian-steps
   steps:
     - checkout
     - run: ci/circleci-build-debian.sh
-    - run: sh -c "ldd build-$OCPN_TARGET/app/*/lib/opencpn/*.so"
-    - run: sh -c "cd build-$OCPN_TARGET; /bin/bash < upload.sh"
-    - run: sh -c "python3 ci/git-push build-$OCPN_TARGET"
+    - run: sh -c "ldd /build-$OCPN_TARGET/app/*/lib/opencpn/*.so"
+    - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
+    - run: sh -c "python3 ci/git-push /build-$OCPN_TARGET"
 
 flatpak-steps: &flatpak-steps
   steps:
@@ -20,8 +20,8 @@ flatpak-steps: &flatpak-steps
         key: <<parameters.cache-key>>-{{ checksum "ci/circleci-build-flatpak.sh" }}
         paths:
           - /home/circleci/.local/share/flatpak/repo
-    - run: cd build-flatpak; /bin/bash < upload.sh
-    - run: python3 ci/git-push build-flatpak
+    - run: cd /build-flatpak; /bin/bash < upload.sh
+    - run: python3 ci/git-push /build-flatpak
 
 jobs:
 
@@ -145,8 +145,8 @@ jobs:
     steps:
       - checkout
       - run: ci/circleci-build-android.sh
-      - run: sh -c "cd build-$OCPN_TARGET; /bin/bash < upload.sh"
-      - run: sh -c "python3 ci/git-push build-$OCPN_TARGET"
+      - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
+      - run: sh -c "python3 ci/git-push /build-$OCPN_TARGET"
 
   build-android-armhf:
     docker:
@@ -157,8 +157,8 @@ jobs:
     steps:
       - checkout
       - run: ci/circleci-build-android.sh
-      - run: sh -c "cd build-$OCPN_TARGET; /bin/bash < upload.sh"
-      - run: sh -c "python3 ci/git-push build-$OCPN_TARGET"
+      - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
+      - run: sh -c "python3 ci/git-push /build-$OCPN_TARGET"
 
 std-filters: &std-filters
   filters:
