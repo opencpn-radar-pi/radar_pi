@@ -25,6 +25,7 @@ if [ -d /ci-source ]; then cd /ci-source; fi
 builddir=build-flatpak
 test -d $builddir || sudo mkdir $builddir && sudo chmod 777 $builddir
 if [ "$PWD" != "/"  ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
+if [ -z "$CI" ]; then exec > >(tee $builddir/build.log) 2>&1; fi
 
 
 if [ -n "$TRAVIS_BUILD_DIR" ]; then cd $TRAVIS_BUILD_DIR; fi
@@ -84,6 +85,10 @@ fi
 cd $builddir && rm -rf *
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 flatpak
+
+# Restore permissions and owner in build tree.
+if [ -d /ci-source ]; then sudo chown --reference=/ci-source -R . ../cache; fi
+sudo chmod --reference=.. .
 
 # Fix upload script if building 18.08:
 test -n "$BUILD_1808" && sed -i 's/20.08/18.08/' upload.sh

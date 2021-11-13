@@ -5,10 +5,10 @@
 # Usage:
 #     build <target | gui | help>
 #
-# Either builds a specific build target or all in parallel, each 
+# Either builds a specific build target or all in parallel, each
 # in a terminal tab. Using help prints available targets.
 #
-# Dependencies: 
+# Dependencies:
 #   - Circleci command line tool: https://circleci.com/docs/2.0/local-cli/
 #   - Docker installed and running.
 #   - Android builds needs cmake and NDK, see
@@ -20,7 +20,7 @@
 #
 # Notes:
 #   Script uses a lot of docker network connections. Sometimes starts fail
-#   with a "ERROR: Could not find an available, non-overlapping ipv4 
+#   with a "ERROR: Could not find an available, non-overlapping ipv4
 #   addres..." message. 'sudo docker network prune' fixes this.
 #
 #
@@ -67,15 +67,15 @@ if platform.system() == "Linux":
             'script': 'ci/generic-build-raspbian-armhf.sh',
             'directory': 'build-raspbian'
         }
-    } 
+    }
 elif platform.system() == 'Windows':
     TARGETS = {
         'Windows': {
              'script': 'ci/travis-build-win32.sh',
              'directory': 'build-windows'
          },
- 
-    } 
+
+    }
 
 
 TAB_CCI_TEMPLATE = \
@@ -92,15 +92,17 @@ TAB_CCI_TEMPLATE = \
 
 
 TAB_LOCAL_TEMPLATE = \
+    'mkdir cache >/dev/null 2>&1 || : \n' + \
     'gnome-terminal --tab  --title={title} -- ' + \
     'sh -c "{script}; cd {directory}; ' + \
-    './upload.sh build;  ../ci/git-push; sleep 1000"'
+    'chmod --reference=. cache;' + \
+    './upload.sh build;  ../ci/git-push; sleep 1000'
 
 
 def ensure(cmd):
     p = subprocess.run(cmd, stdout = subprocess.DEVNULL,
             stderr = subprocess.DEVNULL)
-    return  p.returncode == 0 
+    return  p.returncode == 0
 
 
 def ensure_cci():
@@ -172,7 +174,7 @@ def read_config():
 def run_gui():
     "Start all known builds in parallel, each in a terminal tab. "
     ensure_terminal()
-    script = ""
+    script = 'mkdir cache >/dev/null 2>%1 || : ; chmod 777 cache \n'
     for title, build in TARGETS.items():
         line = TAB_CCI_TEMPLATE if 'job' in build else TAB_LOCAL_TEMPLATE
         line = line.replace('{title}', title)
@@ -182,6 +184,7 @@ def run_gui():
             line = line.replace('{script}', build['script'])
             line = line.replace('{directory}', build['directory'])
         script += line + "\n"
+    script += 'chmod --reference=. cache; sleep 1000'
     keys = build.copy()
     keys.update(os.environ)
     script = script.format_map(keys)
@@ -206,7 +209,7 @@ def main():
     if sys.argv[1] == 'help':
         print("Available targets: ")
         for key in TARGETS.keys():
-            print("    " + key) 
+            print("    " + key)
         if platform.system() == 'Linux':
             print("The target 'gui' runs all builds in terminal tabs\n")
     elif sys.argv[1] == 'gui':
