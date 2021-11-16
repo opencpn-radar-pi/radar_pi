@@ -95,7 +95,7 @@ TAB_LOCAL_TEMPLATE = \
     'mkdir cache >/dev/null 2>&1 || : \n' + \
     'gnome-terminal --tab  --title={title} -- ' + \
     'sh -c "{script}; cd {directory}; ' + \
-    './upload.sh build;  ../ci/git-push; sleep 1000"'
+    './upload.sh build;  ../ci/git-push $(basename {directory}); sleep 1000"'
 
 def ensure(cmd):
     p = subprocess.run(cmd, stdout = subprocess.DEVNULL,
@@ -139,7 +139,8 @@ def local_build(build):
     script = os.path.join(os.getcwd(), build['directory'], "upload.sh")
     subprocess.check_call( ["bash", script], cwd = build['directory'])
     script = os.path.join(os.getcwd(), "ci", "git-push")
-    subprocess.check_call(["python",   script])
+    builddir = os.path.basename(build['directory'])
+    subprocess.check_call(["python", script, builddir])
 
 
 def read_config():
