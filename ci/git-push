@@ -208,8 +208,9 @@ def main():
     password = get_password()
     branch = os.environ.get('GIT_BRANCH')
     branch = branch if branch else "auto"
-    print("Using repository (stripping git@github.com: prefix): " + 
-            os.environ.get("GIT_REPO").replace( 'git@github.com:',''))
+
+    print("Using repository: " + 
+         ''.join([c + ' ' for c in os.environ.get("GIT_REPO")]))
     print("Using branch: " + branch)
 
     git = Git(branch)
