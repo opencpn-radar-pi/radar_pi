@@ -4,6 +4,8 @@
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
 
+if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
+
 if [ -z "$CLOUDSMITH_API_KEY" ]; then
     echo 'Warning: $CLOUDSMITH_API_KEY is not available, giving up.'
     echo 'Metadata: @pkg_displayname@.xml'

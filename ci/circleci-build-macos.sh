@@ -16,9 +16,12 @@ set -xe
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 
+# Set up build directory
 if [ -n "$TRAVIS_BUILD_DIR" ]; then cd $TRAVIS_BUILD_DIR; fi
 rm -rf build-osx  && mkdir build-osx
-if [ -z "$CI" ]; then exec > >(tee build-osx/build.log) 2>&1; fi
+
+# Create a log file.
+exec > >(tee build-osx/build.log) 2>&1
 
 export MACOSX_DEPLOYMENT_TARGET=10.10
 

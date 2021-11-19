@@ -17,10 +17,15 @@ set -xe
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 if [ -d /ci-source ]; then cd /ci-source; fi
 
+
+# Set up build directory and a visible link in /
 builddir=build-$OCPN_TARGET
-test -d $builddir || sudo mkdir $builddir && sudo chmod 777 $builddir
+test -d $builddir || sudo mkdir $builddir  && sudo rm -rf $builddir/*
+sudo chmod 777 $builddir
 if [ "$PWD" != "/"  ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
-if [ -z "$CI" ]; then exec > >(tee $builddir/build.log) 2>&1; fi
+
+# Create a log file.
+exec > >(tee $builddir/build.log) 2>&1;
 
 sudo apt -qq update || apt update
 sudo apt-get -qq install devscripts equivs software-properties-common
@@ -50,9 +55,11 @@ sudo apt install -q \
 python3 -m pip install --user --upgrade -q setuptools wheel pip
 python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
-cd $builddir && sudo rm -rf *
+cd $builddir
 
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 make VERBOSE=1 tarball
-if [ -d /ci-source ]; then sudo chown --reference=/ci-source -R . ../cache; fi
+if [ -d /ci-source ]; then
+    sudo chown --reference=/ci-source -R . ../cache || :
+fi
 sudo chmod --reference=.. .

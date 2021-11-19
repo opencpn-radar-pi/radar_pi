@@ -47,7 +47,6 @@ rm -rf build-raspbian; mkdir build-raspbian; cd build-raspbian
 cmake -DCMAKE_BUILD_TYPE=debug ..
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
-sudo chown --reference=/ci-source -R . ../cache;
 sudo chmod --reference=.. .
 EOF
 

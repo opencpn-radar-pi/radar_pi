@@ -19,10 +19,14 @@ uname -m
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 if [ -d /ci-source ]; then cd /ci-source; fi
 
+# Set up build directory and a visible link in /
 builddir=build-$OCPN_TARGET
-test -d $builddir || sudo mkdir $builddir && sudo chmod 777 $builddir
+test -d $builddir || sudo mkdir $builddir && sudo rm -rf $builddir/*
+sudo chmod 777 $builddir
 if [ "$PWD" != "/"  ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
-if [ -z "$CI" ]; then exec > >(tee $builddir/build.log) 2>&1; fi
+
+# Create a log file.
+exec > >(tee $builddir/build.log) 2>&1
 
 # The local container needs to access the cache directory
 test -d cache || sudo mkdir cache
@@ -43,7 +47,7 @@ python3 -m pip install --user -q cloudsmith-cli cryptography
 python3 -m pip install --user -q cmake
 
 # Build tarball
-cd $builddir && rm -rf *
+cd $builddir
 
 sudo ln -sf /opt/android/android-ndk-* /opt/android/ndk
 cmake -DCMAKE_TOOLCHAIN_FILE=cmake/$OCPN_TARGET-toolchain.cmake ..

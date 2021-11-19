@@ -64,9 +64,9 @@ if platform.system() == "Linux":
              'directory': 'build-flatpak'
          },
         'Raspbian-armhf': {
-            'script': 'ci/generic-build-raspbian-armhf.sh',
-            'directory': 'build-raspbian'
-        }
+             'script': 'ci/generic-build-raspbian-armhf.sh',
+             'directory': 'build-raspbian'
+         }
     }
 elif platform.system() == 'Windows':
     TARGETS = {
@@ -88,6 +88,8 @@ TAB_CCI_TEMPLATE = \
     '-e CLOUDSMITH_UNSTABLE_REPO={CLOUDSMITH_UNSTABLE_REPO} ' + \
     '-e CLOUDSMITH_BETA_REPO={CLOUDSMITH_BETA_REPO} ' + \
     '-v {PWD}:/ci-source ' + \
+    '-v {HOME}/%s:/home/circleci/%s '.replace(
+            '%s', '.config/local_build.rc') + \
     '--job {job}; sleep 1000"'
 
 
@@ -96,6 +98,7 @@ TAB_LOCAL_TEMPLATE = \
     'gnome-terminal --tab  --title={title} -- ' + \
     'sh -c "{script}; cd {directory}; ' + \
     './upload.sh build;  ../ci/git-push $(basename {directory}); sleep 1000"'
+
 
 def ensure(cmd):
     p = subprocess.run(cmd, stdout = subprocess.DEVNULL,
@@ -128,7 +131,10 @@ def local_cci_build(job):
     "Start a local build using circleci script."
     ensure_cci()
     ensure_docker()
-    cmd = ["circleci",  "local",  "execute",  "--job",  job]
+    cmd = ["circleci",  "local",  "execute",  "--job",  job ,
+            '-v', os.getcwd() + ':/ci-source',
+            '-v', (os.path.expanduser('~') + '/%s:/home/circleci/%s').replace(
+                   '%s', '.config/local-build.rc')]
     subprocess.check_call(cmd)
 
 
@@ -173,7 +179,7 @@ def read_config():
 def run_gui():
     "Start all known builds in parallel, each in a terminal tab. "
     ensure_terminal()
-    script = 'mkdir cache >/dev/null 2>%1 || : ; chmod 777 cache \n'
+    script = 'mkdir cache >/dev/null 2>&1 || : ; chmod 777 cache \n'
     for title, build in TARGETS.items():
         line = TAB_CCI_TEMPLATE if 'job' in build else TAB_LOCAL_TEMPLATE
         line = line.replace('{title}', title)
