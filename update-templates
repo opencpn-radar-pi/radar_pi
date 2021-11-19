@@ -118,7 +118,6 @@ for f in \
     .gitignore \
     INSTALL.md \
     plugin.xml.in \
-    pre-commit \
     .travis.yml \
     update-templates \
     UPDATE_TEMPLATES.md
@@ -158,14 +157,14 @@ echo "commit: $commit" >> cmake/TemplateVersion
 tags=$(git tag --contains $commit)
 echo "tags: $tags" >> cmake/TemplateVersion
 git add cmake/TemplateVersion
+git commit -m "cmake: Update TemplateVersion to $commit"
 
 cat << EOF
 
 
-Shipdriver templates has been updated. To review pending changes:
+Shipdriver templates has been updated. To review changes made:
 
-    $ git status
-    $ git diff --stat --staged
+    $ git log --oneline -5
 
 See UPDATE_TEMPLATES.md for more.
 EOF
