@@ -29,7 +29,7 @@ include(Plugin.cmake)
 
 # -------- Setup completed, build the plugin --------
 #
-project(ShipDriver_pi VERSION ${PKG_VERSION})
+project(${PKG_NAME} VERSION ${PKG_VERSION})
 include(PluginCompiler)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
