@@ -97,7 +97,7 @@ sudo chmod --reference=.. .
 # Fix upload script if building 18.08, handle possible read-only current dir:
 test -w upload.sh || sudo chmod go+w upload.sh
 test -n "$BUILD_1808" && sed 's/20.08/18.08/' upload.sh > /tmp/upload.sh \
-   && cp /tmp/upload.sh upload.sh && tm /tmp/upload.sh
+   && cp /tmp/upload.sh upload.sh && rm /tmp/upload.sh
 
 # Restore patched file so the cache checksumming is ok.
 git checkout ../flatpak/$MANIFEST

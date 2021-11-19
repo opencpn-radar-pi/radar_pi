@@ -39,7 +39,7 @@ jobs:
       - checkout
       - run: ci/generic-build-raspbian-armhf.sh
       - run: cd build-raspbian; /bin/bash < upload.sh
-      - run: ci/git-push.sh /build-raspbian
+      - run: ci/git-push.sh build-raspbian
 
   build-flatpak-arm64:
     machine:
@@ -92,7 +92,7 @@ jobs:
       - run: >
           sh -c "otool -L build-osx/app/*/OpenCPN.app/Contents/PlugIns/*.dylib"
       - run: cd build-osx; /bin/bash < upload.sh
-      - run: ci/git-push.sh  /build-osx
+      - run: ci/git-push.sh  build-osx
 
   build-xenial:
     docker:
