@@ -1,0 +1,235 @@
+#!/usr/bin/env python
+#
+# Make a local build
+#
+# Usage:
+#     build <target | gui | help>
+#
+# Either builds a specific build target or all in parallel, each
+# in a terminal tab. Using help prints available targets.
+#
+# Dependencies:
+#   - Circleci command line tool: https://circleci.com/docs/2.0/local-cli/
+#   - Docker installed and running.
+#   - Android builds needs cmake and NDK, see
+#     https://opencpn-manuals.github.io/main/AlternativeWorkflow/Local-Build.html
+#   - Raspbian builds needs a working qemu installation, notably with the
+#     'qemu-user-static' Fedora/Debian package.
+#   - Flatpak builds requires flatpak, flatpak-builder and flathub repo.
+#   - The gui target requires gnome-terminal i. e., Linux.
+#
+# Notes:
+#   Script uses a lot of docker network connections. Sometimes starts fail
+#   with a "ERROR: Could not find an available, non-overlapping ipv4
+#   addres..." message. 'sudo docker network prune' fixes this.
+#
+#
+#
+#
+# Copyright (c) 2021 Alec Leamas
+
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+
+import os
+import platform
+import subprocess
+import sys
+import time
+
+from glob import glob
+from tempfile import mkstemp
+
+USAGE = """
+
+Usage: build <target | gui | help>
+
+target is a valid build target. Using 'help' lists available targets.
+The target 'gui' starts all known builds in gnome-terminal tabs.
+"""
+if platform.system() == "Linux":
+    TARGETS = {
+        'Xenial': {'job': 'build-xenial'},
+        'Bionic': {'job': 'build-bionic'},
+        'Bionic-gtk3': {'job': 'build-bionic-gtk3'},
+        'Focal': {'job': 'build-focal'},
+        'Buster': {'job': 'build-buster'},
+        'Android-armhf': {'job': 'build-android-armhf'},
+        'Android-arm64': {'job': 'build-android-arm64'},
+        'Flatpak-2008': {
+             'script': 'ci/circleci-build-flatpak.sh',
+             'directory': 'build-flatpak'
+         },
+        'Raspbian-armhf': {
+             'script': 'ci/generic-build-raspbian-armhf.sh',
+             'directory': 'build-raspbian'
+         }
+    }
+elif platform.system() == 'Windows':
+    TARGETS = {
+        'Windows': {
+             'script': 'ci/travis-build-win32.sh',
+             'directory': 'build-windows'
+         },
+
+    }
+
+
+TAB_CCI_TEMPLATE = \
+    'gnome-terminal --tab  --title={title} -- ' + \
+    'sh -c "circleci local execute ' + \
+    '-e CLOUDSMITH_API_KEY={CLOUDSMITH_API_KEY} ' + \
+    '-e GIT_REPO={GIT_REPO} ' + \
+    '-e GIT_KEY_PASSWORD={GIT_KEY_PASSWORD} ' + \
+    '-e CLOUDSMITH_STABLE_REPO={CLOUDSMITH_STABLE_REPO}  ' + \
+    '-e CLOUDSMITH_UNSTABLE_REPO={CLOUDSMITH_UNSTABLE_REPO} ' + \
+    '-e CLOUDSMITH_BETA_REPO={CLOUDSMITH_BETA_REPO} ' + \
+    '-v {PWD}:/ci-source ' + \
+    '-v {HOME}/%s:/home/circleci/%s '.replace(
+            '%s', '.config/local_build.rc') + \
+    '--job {job}; sleep 1000"'
+
+
+TAB_LOCAL_TEMPLATE = \
+    'mkdir cache >/dev/null 2>&1 || : \n' + \
+    'gnome-terminal --tab  --title={title} -- ' + \
+    'sh -c "{script}; cd {directory}; ' + \
+    './upload.sh build;  ../ci/git-push $(basename {directory}); sleep 1000"'
+
+
+def ensure(cmd):
+    p = subprocess.run(cmd, stdout = subprocess.DEVNULL,
+            stderr = subprocess.DEVNULL)
+    return  p.returncode == 0
+
+
+def ensure_cci():
+    "Ensure that circleci command line script is installed"
+    if not ensure(['circleci', 'version']):
+        print("Cannot execute circleci command line script, giving up")
+        sys.exit(1)
+
+
+def ensure_docker():
+    "Ensure that docker is installed"
+    if not ensure(['systemctl', 'status', 'docker.service']):
+        print("Seems that docker isn't running (not installed?), giving up")
+        sys.exit(1)
+
+
+def ensure_terminal():
+    "Ensure that gnome-terminal is installed"
+    if not ensure(['gnome-terminal', '--version']):
+        print("Seems that gnome-terminal is not installed, giving up")
+        sys.exit(1)
+
+
+def local_cci_build(job):
+    "Start a local build using circleci script."
+    ensure_cci()
+    ensure_docker()
+    cmd = ["circleci",  "local",  "execute",  "--job",  job ,
+            '-v', os.getcwd() + ':/ci-source',
+            '-v', (os.path.expanduser('~') + '/%s:/home/circleci/%s').replace(
+                   '%s', '.config/local-build.rc')]
+    subprocess.check_call(cmd)
+
+
+def local_build(build):
+    "Start a local using build script."
+    script = os.path.join(os.getcwd(), build['script'])
+    subprocess.check_call( ["bash", script])
+    script = os.path.join(os.getcwd(), build['directory'], "upload.sh")
+    subprocess.check_call( ["bash", script], cwd = build['directory'])
+    script = os.path.join(os.getcwd(), "ci", "git-push")
+    builddir = os.path.basename(build['directory'])
+    subprocess.check_call(["python", script, builddir])
+
+
+def read_config():
+    "Read configuration file and export into environment."
+    if platform.system() == "Windows":
+        if 'APPDATA' in os.environ:
+            config_file = os.path.expandvars("$APPDATA/local-build.rc")
+        else:
+            config_file = \
+                os.path.expandvars("$HOME/AppData/Roaming/local-build.rc")
+    else:     # Linux
+        config_file = os.path.expanduser("~/.config/local-build.rc")
+    if not os.path.exists(config_file):
+        print("WARNING: configuration file %s not found" % config_file,
+              flush=True)
+        return
+    with open(config_file, 'r') as f:
+        config = f.read()
+    for line in config.split('\n'):
+        line = line.strip()
+        if line.startswith('#'):
+            continue
+        if not '=' in line:
+            continue
+        line = line.replace("export", "").strip()
+        words = line.split('=', 1)
+        os.environ[words[0]] = words[1]
+
+
+def run_gui():
+    "Start all known builds in parallel, each in a terminal tab. "
+    ensure_terminal()
+    script = 'mkdir cache >/dev/null 2>&1 || : ; chmod 777 cache \n'
+    for title, build in TARGETS.items():
+        line = TAB_CCI_TEMPLATE if 'job' in build else TAB_LOCAL_TEMPLATE
+        line = line.replace('{title}', title)
+        if 'job' in build:
+            line = line.replace('{job}', build['job'])
+        else:
+            line = line.replace('{script}', build['script'])
+            line = line.replace('{directory}', build['directory'])
+        script += line + "\n"
+    script += 'chmod --reference=. cache; sleep 1000'
+    keys = build.copy()
+    keys.update(os.environ)
+    script = script.format_map(keys)
+    fd, path = mkstemp()
+    with open(fd, "w") as f:
+        f.write(script)
+    subprocess.check_call(['gnome-terminal', '--', 'bash', path])
+    time.sleep(20)
+    os.remove(path)
+
+
+def main():
+    """Indeed: main function."""
+
+    # Set up (const) variables.
+    here = os.path.dirname(sys.argv[0])
+    os.chdir(os.path.join(here, ".."))
+    read_config()
+    if len(sys.argv) != 2:
+        print(USAGE)
+        sys.exit(1)
+    if sys.argv[1] == 'help':
+        print("Available targets: ")
+        for key in TARGETS.keys():
+            print("    " + key)
+        if platform.system() == 'Linux':
+            print("The target 'gui' runs all builds in terminal tabs\n")
+    elif sys.argv[1] == 'gui':
+        run_gui()
+        print("All build jobs started")
+    elif not sys.argv[1] in TARGETS.keys():
+        print("No such build target")
+        sys.exit(1)
+    else:
+        build = TARGETS[sys.argv[1]]
+        if 'job' in build.keys():
+            local_cci_build(build['job'])
+        else:
+            local_build(build)
+
+
+if __name__ == '__main__':
+    main()
