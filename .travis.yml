@@ -1,0 +1,50 @@
+---
+language: cpp
+
+matrix:
+  include:
+    - os: Linux
+      dist: focal
+      arch: arm64
+      env:
+        - OCPN_TARGET=flatpak-arm64
+        - CMAKE_BUILD_PARALLEL_LEVEL=2
+      script:
+        - >
+          sed -i '/branch:/s/:.*/: travis/'
+          flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+
+        - ci/circleci-build-flatpak.sh
+        - sh -c "cd build-flatpak; /bin/bash < upload.sh"
+        - python3 ci/git-push
+    - os: osx
+      osx_mage: xcode13.1
+      env:
+        - OCPN_TARGET=macos
+        - CMAKE_BUILD_PARALLEL_LEVEL=2
+      script:
+        - ci/circleci-build-macos.sh
+        - sh -c "otool -L build/app/*/OpenCPN.app/Contents/PlugIns/*.dylib"
+        - sh -c "cd build; /bin/bash < upload.sh"
+        - python3 ci/git-push
+
+    - os: Linux
+      dist: focal
+      arch: arm64
+      env:
+        - OCPN_TARGET=debian-11-arm64
+        - CMAKE_BUILD_PARALLEL_LEVEL=2
+      script:
+        - ci/generic-build-raspbian-armhf.sh
+        - sh -c "cd build-raspbian; /bin/bash < upload.sh"
+        - python3 ci/git-push
+
+    - os: windows
+      script:
+        - ci/travis-build-win32.sh
+        - sh -c "cd build-windows; bash upload.sh"
+        - bash ci/git-push.sh
+
+branches:
+  only:
+    - travis
