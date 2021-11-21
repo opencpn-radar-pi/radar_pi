@@ -1,7 +1,16 @@
+# ~~~
+# Summary:      Set up variables for xml metadata and upload scripts
+# License:      GPLv3+
+# Copyright (c) 2021 Alec Leamas
 #
-# Set up variables for configuration of xml metadata and upload scripts, all of
-# which with a pkg_ prefix.
-#
+# Set up variables for configuration of xml metadata and upload scripts, 
+# all of which with a pkg_ prefix.
+# ~~~
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
 
 #cmake-format: off
 
@@ -26,25 +35,33 @@ execute_process(
   COMMAND git tag --contains HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE _git_tag
+  RESULT_VARIABLE error_code
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
   set(_build_id "$ENV{CIRCLE_BUILD_NUM}")
+  set(_pkg_build_info "$ENV{CIRCLE_BUILD_URL}")
 elseif (NOT "$ENV{TRAVIS_BUILD_NUMBER}" STREQUAL "")
   set(_build_id "$ENV{TRAVIS_BUILD_NUMBER}")
+  set(_pkg_build_info "$ENV{TRAVIS_BUILD_WEB_URL}")
 elseif (NOT "$ENV{APPVEYOR_BUILD_NUMBER}" STREQUAL "")
   set(_build_id "$ENV{APPVEYOR_BUILD_NUMBER}")
+  string(CONCAT _pkg_build_info
+    "https://ci.appveyor.com/project"
+    "/$ENV{APPVEYOR_ACCOUNT_NAME}/$ENV{APPVEYOR_PROJECT_SLUG}"
+    "/builds/$ENV{APPVEYOR_BUILD_ID}"
+  )
 elseif (NOT "$ENV{DRONE_BUILD_NUMBER}" STREQUAL "")
   set(_build_id "$ENV{DRONE_BUILD_NUMBER}")
+  set(_pkg_build_info
+    "https://cloud.drone.io/$ENV{DRONE_REPO}/$ENV{DRONE_BUILD_NUMBER}"
+  )
 else ()
   string(TIMESTAMP _build_id "%y%m%d%H%M" UTC)
+  cmake_host_system_information(RESULT _hostname QUERY HOSTNAME)
+  set(_pkg_build_info "${_hostname} - ${_build_id}")
 endif ()
-
-message(STATUS "git_hash  : ${_git_hash}")
-message(STATUS "git_tag   : ${_git_tag}")
-message(STATUS "build_id  : ${_build_id}")
 
 if ("${_git_tag}" STREQUAL "")
   set(_gitversion "${_git_hash}")
@@ -58,6 +75,9 @@ else ()
   set(_pkg_arch "${ARCH}")
 endif ()
 
+# pkg_build_info: Info about build host (link to log if available).
+set(pkg_build_info ${_pkg_build_info})
+
 # pkg_repo: Repository to use for upload
 if ("${_git_tag}" STREQUAL "")
   set(pkg_repo "$ENV{CLOUDSMITH_UNSTABLE_REPO}")
@@ -66,47 +86,61 @@ if ("${_git_tag}" STREQUAL "")
   endif ()
 else ()
   string(TOLOWER  ${_git_tag}  _lc_git_tag)
-  if (_lc_git_tag MATCHES "^[v][0-9.]*$")
-    set(pkg_repo "$ENV{CLOUDSMITH_STABLE_REPO}")
-    if ("${pkg_repo}" STREQUAL "")
-      set(pkg_repo ${OCPN_RELEASE_REPO})
-    endif ()
-  else ()
+  if (_lc_git_tag MATCHES "beta|rc")
     set(pkg_repo "$ENV{CLOUDSMITH_BETA_REPO}")
     if ("${pkg_repo}" STREQUAL "")
       set(pkg_repo ${OCPN_BETA_REPO})
     endif ()
+  else ()
+    set(pkg_repo "$ENV{CLOUDSMITH_STABLE_REPO}")
+    if ("${pkg_repo}" STREQUAL "")
+      set(pkg_repo ${OCPN_RELEASE_REPO})
+    endif ()
   endif()
 endif ()
-message(STATUS "Selected upload repository: ${pkg_repo}")
+
+# Make sure repo is displayed even if builders hides environment variables.
+string(REGEX REPLACE "([a-zA-Z0-9/-])" "\\1 " pkg_repo_display  ${pkg_repo})
+message(STATUS "Selected upload repository: ${pkg_repo_display}")
 
 # pkg_semver: Complete version including pre-release tag and build info
+# for untagged builds.
 set(_pre_rel ${PKG_PRERELEASE})
-if (_pre_rel MATCHES "^[^-].") 
-  # Prepend - if pre-release not empty and doesn't start with -
+if (NOT "${_pre_rel}" STREQUAL "" AND _pre_rel MATCHES "^[^-]")
   string(PREPEND _pre_rel "-")
 endif ()
-set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_git_hash}")
+set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_gitversion}")
 
-# pkg_displayname: Used for xml metadata and GUI name
+# pkg_displayname: GUI name
 if (ARCH MATCHES "arm64|aarch64")
   set(_display_arch "-A64")
 endif()
-string(CONCAT pkg_displayname
-  "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}"
+if ("${_git_tag}" STREQUAL "")
+  set(pkg_displayname "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}")
+else ()
+  set(pkg_displayname "${PLUGIN_API_NAME}-${_git_tag}")
+endif ()
+string(APPEND pkg_displayname
   "-${plugin_target}${_display_arch}-${plugin_target_version}"
 )
 
+# pkg_xmlname: XML metadata basename
+set(pkg_xmlname ${pkg_displayname})
+
 # pkg_tarname: Tarball basename
-string(CONCAT pkg_tarname 
-  "${PLUGIN_API_NAME}-${pkg_semver}_"
-  "${plugin_target}-${plugin_target_version}-${_pkg_arch}"
+if ("${_git_tag}" STREQUAL "")
+  set(pkg_tarname "${PLUGIN_API_NAME}-${pkg_semver}")
+else ()
+  set(pkg_tarname "${PLUGIN_API_NAME}-${_git_tag}")
+endif ()
+string(APPEND pkg_tarname
+  "_${plugin_target}-${plugin_target_version}-${_pkg_arch}"
 )
 
 # pkg_tarball_url: Tarball location at cloudsmith
 string(CONCAT pkg_tarball_url
   "https://dl.cloudsmith.io/public/${pkg_repo}/raw"
-  "/names/${pkg_displayname}-tarball" "/versions/${pkg_semver}"
+  "/names/${pkg_displayname}-tarball/versions/${pkg_semver}"
   "/${pkg_tarname}.tar.gz"
 )
 
