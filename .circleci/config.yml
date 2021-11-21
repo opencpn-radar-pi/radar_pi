@@ -199,11 +199,12 @@ workflows:
       - build-buster:
           <<: *std-filters
 
-      - build-android-arm64:
-          <<: *std-filters
+      # https://github.com/opencpn-radar-pi/radar_pi/issues/187
+      # - build-android-arm64:
+      #     <<: *std-filters
 
-      - build-android-armhf:
-          <<: *std-filters
+      # - build-android-armhf:
+      #     <<: *std-filters
 
       - build-raspbian-bullseye:
           <<: *std-filters
