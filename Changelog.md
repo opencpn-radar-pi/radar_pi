@@ -1,6 +1,8 @@
-3.0.0-beta2   TBD
+3.0.0-beta2   Nov 21, 2021
 
-* Added support for device context for Android builds (#318)
+* Code added to ShipDrivergui_impl.cpp/.h to allow mouse drag
+  events for Android.
+* libs/plugingl files work with Android builds.
 * Added support for local builds including Cloudsmith uploads and
   metadata git push.
 * Big rewrite of update-templates to allow a simplified history.
