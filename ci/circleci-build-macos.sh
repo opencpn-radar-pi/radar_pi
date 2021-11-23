@@ -57,7 +57,7 @@ cmake \
 
 if [[ -z "$CI" ]]; then
     echo '$CI not found in environment, assuming local setup'
-    echo "Complete build using 'cd build; make tarball' or so."
+    echo "Complete build using 'cd build-osx; make tarball' or so."
     exit 0
 fi
 
