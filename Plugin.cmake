@@ -88,4 +88,7 @@ macro(add_plugin_libraries)
 
   add_subdirectory("libs/plugingl")
   target_link_libraries(${PACKAGE_NAME} ocpn::plugingl)
+
+  add_subdirectory("libs/jsoncpp")
+  target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
 endmacro ()
