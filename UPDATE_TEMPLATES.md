@@ -101,4 +101,4 @@ the manifest and eventually remove the comment.
 Upstreaming local changes to shipdriver
 ---------------------------------------
 If there is a need to modify any of the files updated by update-templates,
-please file bugs against the shipdirver repo so next update runs smoother.
+please file bugs against the shipdriver repo so the next update runs smoother.
