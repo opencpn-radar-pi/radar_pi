@@ -75,7 +75,7 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
     wxFileConfig* pConf = GetOCPNConfigObject();
 
     if (pConf) {
-        pConf->SetPath(_T("/Settings/ShipDriver_pi"));
+        pConf->SetPath(_T("/PlugIns/ShipDriver_pi"));
 
         pConf->Read(_T("shipdriverUseAis"), &m_bUseAis, 0);
         pConf->Read(_T("shipdriverUseFile"), &m_bUseFile, 0);

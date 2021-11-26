@@ -313,7 +313,7 @@ bool ShipDriver_pi::LoadConfig(void)
     wxFileConfig* pConf = (wxFileConfig*)m_pconfig;
 
     if (pConf) {
-        pConf->SetPath(_T( "/Settings/ShipDriver_pi" ));
+        pConf->SetPath(_T( "/PlugIns/ShipDriver_pi" ));
         pConf->Read(_T( "ShowShipDriverIcon" ), &m_bShipDriverShowIcon, 1);
         pConf->Read(_T("shipdriverUseAis"), &m_bCopyUseAis, 0);
         pConf->Read(_T("shipdriverUseFile"), &m_bCopyUseFile, 0);
@@ -342,7 +342,7 @@ bool ShipDriver_pi::SaveConfig(void)
     wxFileConfig* pConf = (wxFileConfig*)m_pconfig;
 
     if (pConf) {
-        pConf->SetPath(_T ( "/Settings/ShipDriver_pi" ));
+        pConf->SetPath(_T ( "/PlugIns/ShipDriver_pi" ));
         pConf->Write(_T ( "ShowShipDriverIcon" ), m_bShipDriverShowIcon);
         pConf->Write(_T("shipdriverUseAis"), m_bCopyUseAis);
         pConf->Write(_T("shipdriverUseFile"), m_bCopyUseFile);
