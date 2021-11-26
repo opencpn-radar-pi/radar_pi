@@ -85,8 +85,8 @@ Script unconditionally updates known files and commits them directly.
 Checking modifications in CMakeLists.txt and flatpak manifest
 -------------------------------------------------------------
 
-As part of the 3.0.0 transition CMakeLists.txt is split into one plugin-
-specific file Plugin.cmake and a generic CMakeLists.txt.  Later updates
+As part of the 3.0.0 transition CMakeLists.txt is split into one plugin-specific 
+file Plugin.cmake and a generic CMakeLists.txt.  Later updates
 are only supposed to affect CMakeLists.txt while Plugin.cmake, the
 plugin-specific parts is kept as-is.
 
