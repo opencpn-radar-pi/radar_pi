@@ -17,7 +17,7 @@ is to
 
 Bootstrapping
 -------------
-Only required if the update script is yet not part of the repo. Once
+Only required if the update script is not yet part of the repo. Once
 installed, the script is self-updating.
 
 Linux:
@@ -37,7 +37,7 @@ except that the `chmod` command does not make sense here and hence is omitted.
 Bootstrap - Windows (cmd.com)
 -----------------------------
 
-As in linux, bootstrapping is only required if the script is yet not
+As in linux, bootstrapping is only required if the script is not yet
 available in the plugin repo. Once installed, it's self-updating.
 
 The script is written in bash, so git-bash is required. Using git-bash, the
@@ -85,14 +85,14 @@ Script unconditionally updates known files and commits them directly.
 Checking modifications in CMakeLists.txt and flatpak manifest
 -------------------------------------------------------------
 
-As part of the 3.0.0 transition CMakeLists.txt si splitted in one plugin-
+As part of the 3.0.0 transition CMakeLists.txt is split into one plugin-
 specific file Plugin.cmake and a generic CMakeLists.txt.  Later updates
-is supposed to only affect CMakeLists.txt while Plugin.cmake, the
+are only supposed to affect CMakeLists.txt while Plugin.cmake, the
 plugin-specific parts is kept as-is.
 
 The "flatpak manifest" is the yaml file configuring the flatpak build,
 named like flatpak/org.opencpn.OpenCPN.Plugin.\*.yaml.  This might need
-to be updated. If there has been changes to the shipdriver manifest 
+to be updated. If there have been changes to the shipdriver manifest 
 since the last release these are added as comments at the end of the
 manifest. Review the file, consider applying corresponding changes to
 the manifest and eventually remove the comment.
