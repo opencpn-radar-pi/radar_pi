@@ -75,12 +75,5 @@ if (TARGET OpenGL::OpenGL OR TARGET OpenGL::GL)
 endif ()
 
 find_package(wxWidgets REQUIRED ${WX_COMPONENTS})
-if (MSYS)
-  # This is just a hack. I think the bug is in FindwxWidgets.cmake
-  string(
-    REGEX REPLACE "/usr/local" "\\\\;C:/MinGW/msys/1.0/usr/local"
-    wxWidgets_INCLUDE_DIRS ${wxWidgets_INCLUDE_DIRS}
-  )
-endif ()
 include(${wxWidgets_USE_FILE})
 target_link_libraries(${PACKAGE_NAME} ${wxWidgets_LIBRARIES})
