@@ -1,3 +1,10 @@
+3.0.0 Nov 27, 2021
+
+* Update shipdriver main code to use correct config file section
+  [PlugIns] instead of [Settings].
+* Fix broken build due to missing, unused libjsoncpp lib (#324).
+* Documentation updates and bugfixes.
+
 3.0.0-beta2   Nov 21, 2021
 
 * Code added to ShipDrivergui_impl.cpp/.h to allow mouse drag
