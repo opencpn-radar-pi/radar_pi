@@ -2,6 +2,10 @@
 #
 # Push metadata to remote git clone of plugins project.
 #
+# Usage: git-push [builddir]
+#
+# 'builddir' is the directory with metadata file; defaults to 'build'.
+#
 # Environment variables:
 #   - GIT_REPO: ssh url to clone of plugins project e. g.,
 #     git@github.com:Rasbats/plugins.git
@@ -9,9 +13,17 @@
 #     as entered to new-credentials script.
 #
 # Keys:
-#   Uses keys created by new credentials. These lives in ci/ with names
-#   like  ci/user.enc and ci/user.pub where 'user' is as present in GIT_REPO.
+#   Uses keys created by new credentials. These lives in build-deps/ with
+#   names like  build-deps/user.enc and build-deps/user.pub where 'user'
+#   is as present in GIT_REPO.
+#
+# Copyright (c) 2021 Alec Leamas
 
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
 
 import base64
 import getpass
@@ -28,8 +40,9 @@ from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.exceptions import InvalidSignature
 
-WIKI_BASE="https://github.com/Rasbats/managed_plugins/wiki"
+MANUAL_BASE="https://opencpn-manuals.github.io/main/AlternativeWorkflow"
 
 
 def cipherFernet(password):
@@ -68,22 +81,32 @@ def get_password():
     return pw
 
 
-def private_key_setup(ci, user, password):
+def private_key_setup(ci, build_deps, user, password):
     """ Decrypt ssh key and setup up GIT_SSH_COMMAND in environment. """
 
-    try:
-        with open(os.path.join(ci, user + ".enc"), 'r') as f:
+    key_path = os.path.join(ci, user + ".enc")
+    if (os.path.exists(key_path)):
+        print("WARNING: Using key in deprecated location ci/")
+        print("Please move key to build-deps/")
+    else:    
+        key_path = os.path.join(build_deps, user + ".enc")
+    if (os.path.exists(key_path)):
+        with open(key_path, 'r') as f:
             encrypted = f.read()
-    except FileNotFoundError:
+    else:
         print("No private key found, cannot push metadata to git repo.")
-        print("See %s/OpenCPN-Plugins-Catalog-and-Github-Integration"
-                % WIKI_BASE)
+        print("See %s/Catalog-Github-Integration.html" % MANUAL_BASE)
         sys.exit(0)
-    decrypted = decrypt1(encrypted.encode(), password.encode())
-    with open(os.path.join(ci, user ), 'wb') as f:
+    try:
+        decrypted = decrypt1(encrypted.encode(), password.encode())
+    except (InvalidToken, InvalidSignature):
+        print("ERROR: Cannot decrypt private key (wrong GIT_KEY_PASSWORD?)")
+        sys.exit(1)
+    key_path = key_path.replace(".enc", "")
+    with open(key_path, 'wb') as f:
         f.write(decrypted)
-    os.chmod(os.path.join(ci, user ), 0o600)
-    hostpath = os.path.normpath(os.path.join(ci, user))
+    os.chmod(key_path, 0o600)
+    hostpath = os.path.normpath(key_path)
     print("Using identity file: " + hostpath)
     os.environ['GIT_SSH_COMMAND'] = \
         "ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i " \
@@ -119,8 +142,8 @@ def get_subject(git, metadata_path):
 class Git:
     def __init__(self, branch):
         self.clone = [
-                'git', 'clone', os.environ.get('GIT_REPO'), '-b', branch,
-                '--depth', '2' ]
+                'git', 'clone', '-b', branch, '--depth', '2',
+                os.environ.get('GIT_REPO')]
         self.log = [
                 'git', '-C', '..', 'log', '-1', '--format=format:%h: @trg@: %s']
         self._rebase = ['git', 'rebase', 'origin/' + branch]
@@ -175,37 +198,55 @@ def main():
     """Indeed: main function."""
 
     # Set up (const) variables.
+    builddir = 'build' if len(sys.argv) == 1 else sys.argv[1]
     here = os.path.dirname(sys.argv[0])
     ci = os.path.abspath(os.path.join(here, '..', 'ci'))
+    cache = os.path.abspath(os.path.join(here, '..', 'cache'))
+    build_deps = os.path.abspath(os.path.join(here, '..', 'build-deps'))
     top = os.path.abspath(os.path.join(here, '..'))
     user = get_user()
     password = get_password()
     branch = os.environ.get('GIT_BRANCH')
     branch = branch if branch else "auto"
-    print("Using repository: " + os.environ.get("GIT_REPO"))
+
+    print("Using repository: " + 
+         ''.join([c + ' ' for c in os.environ.get("GIT_REPO")]))
     print("Using branch: " + branch)
 
     git = Git(branch)
     git.configure()
 
-    private_key_setup(ci, user, password)
+    private_key_setup(ci, build_deps, user, password)
+
 
     # Clone the repo if it does not exist.
-    if not os.path.exists(os.path.join(top, 'plugins')):
-        subprocess.check_call(git.clone, cwd=top)
-    os.chdir(os.path.join(top, 'plugins'))
+    if not os.path.exists(cache):
+        os.mkdir(cache)
+    clone_dir = 'plugins-' + builddir
+    clone_cmd = git.clone.copy()
+    clone_cmd.append(clone_dir)
+    if not os.path.exists(os.path.join(cache, clone_dir)):
+        subprocess.check_call(clone_cmd, cwd=cache)
+    os.chdir(os.path.join(cache, clone_dir))
 
     # Bring the new metadata file into repo.
-    metadata = glob(os.path.join(top, 'build', '*.xml'))
+    metadata = glob(os.path.join(os.path.join(top, builddir), '*.xml'))
     if len(metadata) != 1:
-        print("A single metadata file cannot be located, giving up")
+        print("A single metadata file %s cannot be located, giving up"
+                % ' '.join(metadata))
         sys.exit(1);
     copy(metadata[0], 'metadata')
 
     if git.commit(metadata[0]):
         git.push()
+    priv_key = os.path.join(build_deps, user)
+    if (not os.path.exists(priv_key)):
+        priv_key = os.path.join(ci, user)
+    os.remove(priv_key)
 
-    os.remove(os.path.join(ci, user))     # Drop the private key
+    print("Pushed metadata to branch " + branch + " at the "
+            +  os.environ.get("GIT_REPO").replace("git@github.com:", "")
+            + " repository")
 
 
 if __name__ == '__main__':

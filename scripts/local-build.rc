@@ -1,0 +1,26 @@
+# This is an example configuration file. The items GIT_KEY_PASSWORD and
+# CLOUDSMITH_API_KEY are secrets and hence obfuscated here. Other values
+# are as used by me.
+#
+# Modify as required and install in:
+#
+#    Linux:          ~/.config/local-build.rc
+#    Windows (cmd):  %APPDATA%\local-build.rc
+#    Windows (bash): $APPDATA/local-build.rc
+#
+# The variables here are the same as used when setting up a builder like
+# circleci or Appveyor. See:
+# https://opencpn-manuals.github.io/main/AlternativeWorkflow/CircleCI.html#_set_the_environment_variables_for_appveyor
+#
+
+export CLOUDSMITH_API_KEY=39afdeadbeefxxerrnotevenhexdigitsher
+export GIT_KEY_PASSWORD=MySecretPassword
+export GIT_REPO=git@github.com:leamas/plugins.git
+
+# These variables are only required when using upload directories others
+# than those defined in Plugin.cmake. To be effective they must be available
+# during the build
+
+export CLOUDSMITH_STABLE_REPO=alec-leamas/opencpn-plugins-stable
+export CLOUDSMITH_UNSTABLE_REPO=alec-leamas/opencpn-plugins-unstable
+export CLOUDSMITH_BETA_REPO=alec-leamas/opencpn-plugins-stable

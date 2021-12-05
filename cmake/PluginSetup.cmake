@@ -1,7 +1,15 @@
-#
-# Export variables used in plugin setup: plugin_target and
-# plugin_target_version.
-#
+# ~~~
+# Summary:     Set up and export plugin_target and plugin_target_version
+# License:     GPLv3+
+# Copyright (c) 2020-2021 Alec Leamas
+# ~~~
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+
+
 if (DEFINED plugin_target)
   return ()
 endif ()

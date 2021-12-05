@@ -17,10 +17,12 @@ cloudsmith push raw --no-wait-for-sync ^
     --name @pkg_displayname@-metadata ^
     --version @pkg_semver@ ^
     --summary "Plugin metadata for automatic installation" ^
-    @pkg_repo@ @pkg_displayname@.xml
+    --republish ^
+    @pkg_repo@ @pkg_xmlname@.xml
 
 cloudsmith push raw --no-wait-for-sync ^
     --name @pkg_displayname@-tarball ^
     --version @pkg_semver@ ^
     --summary "Plugin tarball for automatic installation" ^
+    --republish ^
     @pkg_repo@ @pkg_tarname@.tar.gz

@@ -27,7 +27,7 @@ steps:
         from_secret: GIT_KEY_PASSWORD
     commands:
       - export PATH=$HOME/.local/bin:$PATH
-      - ci/drone-build-raspbian.sh
+      - /bin/bash ci/drone-build-raspbian.sh
       - bash -c "cd build; bash < upload.sh"
       - python3 ci/git-push
 

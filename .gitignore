@@ -1,8 +1,8 @@
-CMakeCache.txt
-CMakeFiles
-Makefile
-cmake_install.cmake
-install_manifest.txt
-rel-*/
-example/
-build/
+build
+build-*
+!build-deps
+po/*.pot
+.DS_Store
+*humbs.db
+cache
+plugins

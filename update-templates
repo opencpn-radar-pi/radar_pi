@@ -1,0 +1,170 @@
+#!/usr/bin/bash
+#
+# Update a plugin with new shipdriver templates.
+#
+# usage: ./update-templates [-t] [treeish]
+#
+# Merge changes from upstream shipdriver repo into
+# current branch.
+#
+# See UPDATE-TEMPLATES.md for more info
+
+function usage() {
+    cat << EOT
+Usage: update-templates [-t] [-T] [-h] [treeish]
+
+Parameters:
+    treeish:
+         A shipdriver tag, branch or commit, defaults to shipdriver/master
+
+Options:
+    -T   Test mode, do not auto-update
+    -h   Print this message and exit
+EOT
+}
+
+# Exec on tmpfile to avoid file lock when updating script on Windows.
+# The directory /c exists on git bash on Windows, and hopefully only there.
+if [[ -d /c && "$0" =~ .*update-templates ]]; then
+    tmpfile=$(mktemp)
+    cp $0 $tmpfile
+    exec $tmpfile
+fi
+
+# Handle options and parameters
+usage="Usage: $0 [-t] [-T] [treeish]"
+merge_opt=""
+while getopts "tTh" opt; do
+    case "${opt}" in
+        T)  test_mode=true
+            ;;
+        h)  usage; exit 0
+            ;;
+        *)  usage >&2; exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+test -z "$test_mode" || set -x
+source_treeish=${1:-"shipdriver/master"}
+
+
+# Refuse to run unless the index is clean:
+clean=$(git status --porcelain)
+if [ -n "$clean" ]; then
+    echo "Please commit or stash pending changes. Aborting."
+    exit 1
+fi
+
+if [ -z "$test_mode" ]; then
+    # Set up the shipdriver remote
+    if git ls-remote --exit-code shipdriver &>/dev/null; then
+        git remote remove shipdriver
+        echo "Removing existing shipdriver remote."
+    fi
+    echo "Adding new shipdriver remote"
+    git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
+    git remote update shipdriver
+    git fetch --tags shipdriver
+
+    # Create a new update branch and work on that
+    hash=$(git rev-parse --short  $source_treeish)
+    new_branch="update.$hash"
+    if git rev-parse $new_branch &> /dev/null; then git branch -D $new_branch; fi
+    git branch $new_branch $source_treeish
+    echo "Created temporary work branch  $new_branch"
+
+    echo "Checking for updates of updates-templates script"
+    if [ -z "$test_mode" ]; then
+        if ! git diff --quiet HEAD $source_treeish -- update-templates; then
+            git checkout $source_treeish update-templates
+            cat << EOT
+update-templates script is updated to latest version. Please commit
+changes and re-run script.
+EOT
+            exit 0
+        fi
+    fi
+fi
+
+echo "Updating cmake/ and ci/"
+git rm -rf cmake/*
+git checkout $source_treeish cmake
+git add cmake
+git commit -m "Templates: Updating cmake"
+
+git rm -rf ci/*
+git checkout $source_treeish ci
+git add ci
+git commit -m "Templates: Updating ci"
+
+git rm -rf scripts/*
+git checkout $source_treeish scripts
+git add scripts
+git commit -m "Templates: Updating scripts"
+
+
+
+
+echo "Templates: Updating other files"
+for f in \
+    appveyor.yml \
+    .circleci \
+    .clang-format \
+    .cmake-format.yaml \
+    .drone.yml \
+    .gitattributes \
+    .gitignore \
+    INSTALL.md \
+    plugin.xml.in \
+    .travis.yml \
+    update-templates \
+    UPDATE_TEMPLATES.md
+do
+    if test -d $f; then git rm -rf $f; fi
+    git checkout $source_treeish $f
+    git add $f || git add --renormalize $f
+done
+
+git commit -m "Templates: Updating other files"
+
+if [ -e update-ignored ]; then
+    echo "Revert changes in blacklisted files."
+    for f in $(cat update-ignored); do
+        git checkout HEAD $f
+    done
+fi
+
+if [ -f cmake/TemplateVersion ]; then
+    our_manifest=$(echo flatpak/org.opencpn.OpenCPN.Plugin.*.yaml)
+    echo "Append shipdriver flatpak manifest's log of changes to $our_manifest"
+
+    git fetch --tags ${source_treeish%/*}
+    prev_commit=$(sed -n '/commit:/s/.*: *//p' cmake/TemplateVersion)
+    src_manifest=flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+    git checkout $source_treeish $src_manifest
+    git diff  $prev_commit $src_manifest | sed 's/^/# /' \
+        >> $our_manifest
+    git rm -f $src_manifest
+fi
+    
+echo "Create or update cmake/TemplateVersion"
+echo "# Created by update-templates" > cmake/TemplateVersion
+echo "date: $(date -u +'%Y-%m-%d %H:%M UTC')" >> cmake/TemplateVersion
+commit=$(git rev-parse --short $source_treeish)
+echo "commit: $commit" >> cmake/TemplateVersion
+tags=$(git tag --contains $commit)
+echo "tags: $tags" >> cmake/TemplateVersion
+git add cmake/TemplateVersion
+git commit -m "cmake: Update TemplateVersion to $commit"
+
+cat << EOF
+
+
+Shipdriver templates has been updated. To review changes made:
+
+    $ git log --oneline -5
+
+See UPDATE_TEMPLATES.md for more.
+EOF
