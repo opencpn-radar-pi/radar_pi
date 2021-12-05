@@ -40,7 +40,11 @@ if (APPLE)
   endif ()
 endif ()
 
-set(wxWidgets_USE_LIBS base core net xml html adv stc)
+set(WX_COMPONENTS base core net xml html adv stc aui)
+if (TARGET OpenGL::OpenGL OR TARGET OpenGL::GL)
+  list(APPEND WX_COMPONENTS gl)
+endif ()
+
 set(BUILD_SHARED_LIBS TRUE)
 
 set(_bad_win_env_msg [=[
@@ -53,7 +57,7 @@ if (WIN32 AND NOT DEFINED ENV{WXWIN})
   message(WARNING ${_bad_win_env_msg})
 endif ()
 
-find_package(wxWidgets REQUIRED base core net xml html adv stc aui)
+find_package(wxWidgets REQUIRED ${WX_COMPONENTS})
 if (MSYS)
   # This is just a hack. I think the bug is in FindwxWidgets.cmake
   string(
