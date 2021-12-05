@@ -78,13 +78,13 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
 
   include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
-  if (EXISTS "libs/jsoncpp")
-    add_subdirectory("libs/jsoncpp")
-    target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
-  endif ()
-
   if (COMMAND add_plugin_libraries)
     add_plugin_libraries()
+  endif ()
+
+  if (EXISTS "libs/jsoncpp" AND NOT TARGET ocpn::jsoncpp)
+    add_subdirectory("libs/jsoncpp")
+    target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
   endif ()
 
 endif ()
