@@ -34,7 +34,7 @@ set(OCPN_RELEASE_REPO
 # -------  Plugin setup --------
 #
 set(PKG_NAME radar_pi)
-set(PKG_VERSION 5.2.2)
+set(PKG_VERSION 5.3.0)
 set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME radar)    # Dialogs, installer artifacts, ...
@@ -46,7 +46,7 @@ Garmin, Navico and Raymarine radar support
 
 WARNING: OPENGL MODE IS REQUIRED!
 
-Works with Garmin HD, xHD, Navico BR24, 3G, 4G, HALOxx and older Raymarine radars.
+Works with Garmin HD, xHD, Navico BR24, 3G, 4G, HALOxx and several Raymarine radars.
 
 When a compass heading is provided it will allow radar overlay on the chart(s).
 It also allows separate display of a traditional radar picture (PPI).

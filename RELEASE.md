@@ -33,17 +33,20 @@ Follow these steps:
     git checkout master
     ```
 
-2. Edit the following lines in CMakeLists.txt to reflect the new status:
+2. Edit the following lines in Plugin.cmake to reflect the new status:
     ```
-    project(radar_pi VERSION 5.2.2)
-    set(PKG_RELEASE "")
-    set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
+#
+# -------  Plugin setup --------
+#
+set(PKG_NAME radar_pi)
+set(PKG_VERSION 5.3.0)
+set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
     ```
 
 3. For Beta releases: Add the file to the git staging area, add a commented tag that includes Beta or beta:
 
     ```
-    git add CMakeLists.txt
+    git add Plugin.cmake
     git commit -m"v5.0.4-beta1 release"
     git tag -a --force -m"v5.0.4-beta1 release" v5.0.4-beta1
     git push --atomic --force origin master v5.0.4-beta1
