@@ -25,6 +25,8 @@ else ()
   message(STATUS "Configuring")
 endif ()
 
+# -------- Plugin setup ----------
+#
 include(Plugin.cmake)
 
 # -------- Setup completed, build the plugin --------
@@ -80,11 +82,6 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
 
   if (COMMAND add_plugin_libraries)
     add_plugin_libraries()
-  endif ()
-
-  if (EXISTS "libs/jsoncpp" AND NOT TARGET ocpn::jsoncpp)
-    add_subdirectory("libs/jsoncpp")
-    target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
   endif ()
 
 endif ()
