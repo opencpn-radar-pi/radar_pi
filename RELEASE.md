@@ -103,7 +103,9 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
 1. Clone the _opencpn-radar-pi_ repo, and set upstream, if you have not already done so:
    (See [Configuring a remote for a fork](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/configuring-a-remote-for-a-fork))
     ```
-    git clone git@github.com:opencpn-radar-pi/plugins.git
+    git clone git@github.com:opencpn-radar-pi/plugins.git` 
+	or
+	git clone https://github.com/opencpn-radar-pi/plugins
     cd plugins
     git remote add upstream https://github.com/OpenCPN/plugins.git
     ```
@@ -130,6 +132,9 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
     versio. Since that may have changed dramatically, we merge this in a way that always takes 'their' files
     not 'ours'. This should give no conflicts.
 
+	Alternatively the syncing of the can be done on the main git page: https://github.com/opencpn-radar-pi/plugins by clicking "Fetch upstream".
+	This Fetch upstream should be done for the Beta branch when working on beta.
+
 3. Copy the XML files from CloudSmith to your local plugins repo:
     ```
     ./cloudsmith-sync.sh radar_pi opencpn-radar-pi opencpn-radar-pi-prod 5.2.0.eecba41
@@ -141,7 +146,7 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
     ```
 
    Unlike earlier versions of the sync script you must determine yourself what version+commit
-   to download.
+   to download. As this is a search key it should identify the release, does not need the full version+commit. Radar-v5.3.0-beta worked fine.
 
    The output should be verbose with each XML url mentioned as well as the XML for that file.
    If you don't, run it using `sh -x`, copy the shown curl command and run this yourself to see what you are doing wrong.
