@@ -89,23 +89,24 @@ EOT
 fi
 
 echo "Updating cmake/ and ci/"
-git rm -rf cmake/*
+if [ -d cmake ]; then git rm -rf cmake/*; fi
 git checkout $source_treeish cmake
 git add cmake
 git commit -m "Templates: Updating cmake"
 
-git rm -rf ci/*
+if [ -d ci ]; then  git rm -rf ci/*; fi
 git checkout $source_treeish ci
 git add ci
 git commit -m "Templates: Updating ci"
 
-git rm -rf scripts/*
+if [ -d scripts ]; then git rm -rf scripts/*; fi
 git checkout $source_treeish scripts
 git add scripts
 git commit -m "Templates: Updating scripts"
 
 
-
+# If Plugin.cmake exists we should also update CMakeLists.txt
+if [ -f Plugin.cmake ]; then CMakeLists=CMakeLists.txt; fi
 
 echo "Templates: Updating other files"
 for f in \
@@ -120,7 +121,8 @@ for f in \
     plugin.xml.in \
     .travis.yml \
     update-templates \
-    UPDATE_TEMPLATES.md
+    UPDATE_TEMPLATES.md \
+    $CMakeLists
 do
     if test -d $f; then git rm -rf $f; fi
     git checkout $source_treeish $f
@@ -135,6 +137,15 @@ if [ -e update-ignored ]; then
         git checkout HEAD $f
     done
 fi
+
+for f in buildosx buildwin/NSIS* libs/AndroidLibs.cmake mingw; do
+    if test -e $f; then git rm -rf $f; fi
+done
+git diff-index --quiet --cached HEAD -- || {
+    echo "Removing unused files"
+    git commit -am "Templates: Removing obsoleted and unused files."
+}
+
 
 if [ -f cmake/TemplateVersion ]; then
     our_manifest=$(echo flatpak/org.opencpn.OpenCPN.Plugin.*.yaml)
