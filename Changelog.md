@@ -1,3 +1,9 @@
+3.1.0 TBD
+* Drop the special treatment of libjsoncpp. Plugins which depends
+  depends in this library must include and use it explicitly.
+* Use the script win\_deps.bat in both CI and "manual" builds.
+
+
 3.0.0 Nov 27, 2021
 
 * Update shipdriver main code to use correct config file section
