@@ -88,7 +88,7 @@ EOT
     fi
 fi
 
-echo "Updating cmake/ and ci/"
+echo "Updating cmake/, scripts/, buildwin/ and ci/"
 if [ -d cmake ]; then git rm -rf cmake/*; fi
 git checkout $source_treeish cmake
 git add cmake
@@ -103,6 +103,11 @@ if [ -d scripts ]; then git rm -rf scripts/*; fi
 git checkout $source_treeish scripts
 git add scripts
 git commit -m "Templates: Updating scripts"
+
+if [ -d buildwin ]; then git rm -rf buildwin/*; fi
+git checkout $source_treeish buildwin
+git add buildwin
+git commit -m "Templates: Updating buildwin"
 
 
 # If Plugin.cmake exists we should also update CMakeLists.txt
