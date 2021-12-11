@@ -50,7 +50,6 @@ flatpak remote-add --user --if-not-exists \
 # x86_64 only using last known 18.08 commit on stable branch.
 
 commit_1808=959f5fd700f72e63182eabb9821b6aa52fb12189eddf72ccf99889977b389447
-FLATPAK_BRANCH=stable
 if [ "$(uname -m)" = "aarch64" ]; then
     flatpak install --user -y --noninteractive \
         flathub org.freedesktop.Sdk//20.08
@@ -58,7 +57,6 @@ if [ "$(uname -m)" = "aarch64" ]; then
         https://flathub.org/beta-repo/flathub-beta.flatpakrepo
     flatpak install --user -y --or-update  --noninteractive \
         flathub-beta org.opencpn.OpenCPN
-    FLATPAK_BRANCH=beta
 elif [ -n "$BUILD_1808" ]; then
     flatpak install --user -y --noninteractive \
         flathub org.freedesktop.Sdk//18.08
@@ -77,7 +75,6 @@ fi
 # Patch the runtime version so it matches the nightly builds
 # or beta as appropriate.
 test -w flatpak/$MANIFEST || sudo chmod go+w flatpak/$MANIFEST
-sed -i "/^runtime-version/s/:.*/: $FLATPAK_BRANCH/" flatpak/$MANIFEST
 
 # The flatpak checksumming needs python3:
 if ! python3 --version 2>&1 >/dev/null; then
