@@ -42,32 +42,15 @@ if [ -n "$CI" ]; then
     # Install flatpak and flatpak-builder
     sudo apt install flatpak flatpak-builder
 fi
+
 flatpak remote-add --user --if-not-exists \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-# aarch64 is built from beta branch, regular x86_64 from master.
-# Both uses 20.08. Compatibility 18.08 builds are built for
-# x86_64 only using last known 18.08 commit on master branch.
+flatpak install --user -y --noninteractive \
+    flathub org.freedesktop.Sdk//20.08
 
-commit_1808=959f5fd700f72e63182eabb9821b6aa52fb12189eddf72ccf99889977b389447
-if [ -n "$BUILD_1808" ]; then
-    flatpak install --user -y --noninteractive \
-        flathub org.freedesktop.Sdk//18.08
-    flatpak install --user -y --or-update --noninteractive \
-        flathub  org.opencpn.OpenCPN
-    flatpak update --user -y --noninteractive --commit $commit_1808 \
-        org.opencpn.OpenCPN
-    sed -i '/sdk:/s/20.08/18.08/'  flatpak/org.opencpn.*.yaml
-else
-    flatpak install --user -y --noninteractive \
-        flathub org.freedesktop.Sdk//20.08
-    flatpak install --user -y --or-update --noninteractive \
-        flathub  org.opencpn.OpenCPN
-fi
-
-# Patch the runtime version so it matches the nightly builds
-# or beta as appropriate.
-test -w flatpak/$MANIFEST || sudo chmod go+w flatpak/$MANIFEST
+flatpak install --user -y --or-update --noninteractive \
+    flathub  org.opencpn.OpenCPN
 
 # The flatpak checksumming needs python3:
 if ! python3 --version 2>&1 >/dev/null; then
@@ -83,14 +66,6 @@ make -j $(nproc) VERBOSE=1 flatpak
 # Restore permissions and owner in build tree.
 if [ -d /ci-source ]; then sudo chown --reference=/ci-source -R . ../cache; fi
 sudo chmod --reference=.. .
-
-# Fix upload script if building 18.08, handle possible read-only current dir:
-test -w upload.sh || sudo chmod go+w upload.sh
-test -n "$BUILD_1808" && sed 's/20.08/18.08/' upload.sh > /tmp/upload.sh \
-   && cp /tmp/upload.sh upload.sh && rm /tmp/upload.sh
-
-# Restore patched file so the cache checksumming is ok.
-git checkout ../flatpak/$MANIFEST
 
 # Install cloudsmith and cryptography, required by upload script and git-push
 python3 -m pip install -q --user --upgrade pip
