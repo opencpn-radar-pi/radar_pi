@@ -189,7 +189,7 @@ function (flatpak_target manifest)
     execute_process(
       COMMAND
         flatpak-builder  --run app ${manifest}  bash -c \"
-          stable_link=$(find /run/build -maxdepth 1 -type l)\; \
+          set -x\; stable_link=$(find /run/build -maxdepth 1 -type l)\; \
           cp -ar $stable_link/app/files/*           \
               ${CMAKE_CURRENT_BINARY_DIR}/app/files
         \"

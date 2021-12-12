@@ -45,19 +45,12 @@ fi
 flatpak remote-add --user --if-not-exists \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-# aarch64 is built from beta branch, regular x86_64 from stable.
+# aarch64 is built from beta branch, regular x86_64 from master.
 # Both uses 20.08. Compatibility 18.08 builds are built for
-# x86_64 only using last known 18.08 commit on stable branch.
+# x86_64 only using last known 18.08 commit on master branch.
 
 commit_1808=959f5fd700f72e63182eabb9821b6aa52fb12189eddf72ccf99889977b389447
-if [ "$(uname -m)" = "aarch64" ]; then
-    flatpak install --user -y --noninteractive \
-        flathub org.freedesktop.Sdk//20.08
-    flatpak remote-add --user --if-not-exists flathub-beta \
-        https://flathub.org/beta-repo/flathub-beta.flatpakrepo
-    flatpak install --user -y --or-update  --noninteractive \
-        flathub-beta org.opencpn.OpenCPN
-elif [ -n "$BUILD_1808" ]; then
+if [ -n "$BUILD_1808" ]; then
     flatpak install --user -y --noninteractive \
         flathub org.freedesktop.Sdk//18.08
     flatpak install --user -y --or-update --noninteractive \
