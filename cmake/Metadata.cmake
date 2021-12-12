@@ -109,7 +109,11 @@ set(_pre_rel ${PKG_PRERELEASE})
 if (NOT "${_pre_rel}" STREQUAL "" AND _pre_rel MATCHES "^[^-]")
   string(PREPEND _pre_rel "-")
 endif ()
-set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_gitversion}")
+if ("${_git_tag}" STREQUAL "")
+  set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_gitversion}")
+else ()
+  set(pkg_semver "${_git_tag}")
+endif ()
 
 # pkg_displayname: GUI name
 if (ARCH MATCHES "arm64|aarch64")
@@ -128,12 +132,8 @@ string(APPEND pkg_displayname
 set(pkg_xmlname ${pkg_displayname})
 
 # pkg_tarname: Tarball basename
-if ("${_git_tag}" STREQUAL "")
-  set(pkg_tarname "${PLUGIN_API_NAME}-${pkg_semver}")
-else ()
-  set(pkg_tarname "${PLUGIN_API_NAME}-${_git_tag}")
-endif ()
-string(APPEND pkg_tarname
+string(CONCAT pkg_tarname
+  "${PLUGIN_API_NAME}-${pkg_semver}"
   "_${plugin_target}-${plugin_target_version}-${_pkg_arch}"
 )
 
