@@ -1,3 +1,11 @@
+3.0.1-beta1 TBD
+* Actually use the tag as effective version (#349)
+* update-templates: Don't forget to update buildwin (#133).
+* update-templates: Remove unused files (#336).
+* update-templates: Only import sd\* tags to client plugin
+* ci: flatpak: Drop transition 18.08 builds
+* ci: flatpak: Build aarch 64 from master branch after 5.6.0 release.
+
 3.0.0 Nov 27, 2021
 
 * Update shipdriver main code to use correct config file section
