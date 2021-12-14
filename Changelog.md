@@ -1,7 +1,17 @@
 3.1.0 TBD
+* The Flatpak runtime 18.08 compatibility builds are removed.
+* Add a git submodule with libraries. This affects how the plugin
+  is cloned and initiated, see INSTALL.md (#338).
 * Drop the special treatment of libjsoncpp. Plugins which depends
-  depends in this library must include and use it explicitly.
+  on this library must include and use it explicitly in the same way
+  as other plugins
+* Clean up the handling of SVG cpp symbols and includes (#354).
 * Use the script win\_deps.bat in both CI and "manual" builds.
+* Actually use the tag as effective version (#349)
+* update-templates: Don't forget to update buildwin (#133).
+* update-templates: Remove unused files (#336).
+* update-templates: Fixes for installing templates first time.
+* Streamline Flatpak CI builds using released OpenCPN 5.6.0
 
 
 3.0.0 Nov 27, 2021
