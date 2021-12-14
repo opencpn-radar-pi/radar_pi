@@ -109,6 +109,18 @@ git checkout $source_treeish buildwin
 git add buildwin
 git commit -m "Templates: Updating buildwin"
 
+test -d opencpn-libs || {
+    echo "Adding the opencpn-libs submodule"
+    git submodule add https://github.com/leamas/opencpn-libs.git
+    git commit -am "Add the opencpn-libs submodule"
+}
+
+git -C opencpn-libs pull origin master
+git add opencpn-libs
+git diff-index --quiet --cached HEAD -- || {
+    echo "Updating opencpn-libs submodule"
+    git commit -m "opencpn-libs: Update to latest version"
+}
 
 # If Plugin.cmake exists we should also update CMakeLists.txt
 if [ -f Plugin.cmake ]; then CMakeLists=CMakeLists.txt; fi
