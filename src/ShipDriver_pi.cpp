@@ -64,33 +64,49 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) { delete p; }
 //
 //---------------------------------------------------------------------------------------------------------
 
-ShipDriver_pi::ShipDriver_pi(void* ppimgr)
-    : opencpn_plugin_116(ppimgr)
-{
-    // Create the PlugIn icons
-    initialize_images();
+/**
+ * Load a icon, possibly using SVG
+ * Parameters
+ *  - api_name: Argument to GetPluginDataDir()
+ *  - icon_name: Base name of icon living in data/ directory. When using
+ *    SVG icon_name.svg is used, otherwise icon_name.png
+ */
 
+static wxBitmap load_plugin(const char* icon_name, const char* api_name) {
+    wxBitmap bitmap; 
     wxFileName fn;
-
-    auto path = GetPluginDataDir("ShipDriver_pi");
+    auto path = GetPluginDataDir(api_name);
     fn.SetPath(path);
     fn.AppendDir("data");
-    fn.SetFullName("shipdriver_panel_icon.png");
-
+    fn.SetName(icon_name);
+#ifdef SHIPDRIVER_USE_SVG
+    wxLogDebug("Loading SVG icon");
+    fn.SetExt("svg");
+    const static int ICON_SIZE = 48;  // FIXME: Needs size from GUI 
+    bitmap = GetBitmapFromSVGFile(fn.GetFullPath(), ICON_SIZE, ICON_SIZE);
+#else
+    wxLogDebug("Loading png icon");
+    fn.SetExt("png");
     path = fn.GetFullPath();
-
-    wxInitAllImageHandlers();
-
-    wxLogDebug(wxString("Using icon path: ") + path);
     if (!wxImage::CanRead(path)) {
         wxLogDebug("Initiating image handlers.");
         wxInitAllImageHandlers();
     }
     wxImage panelIcon(path);
-    if (panelIcon.IsOk())
-        m_panelBitmap = wxBitmap(panelIcon);
-    else
-        wxLogWarning("ShipDriver panel icon has NOT been loaded");
+    bitmap = wxBitmap(panelIcon);
+#endif
+    wxLogDebug("Icon loaded, result: %s", bitmap.IsOk() ? "ok" : "fail");
+    return bitmap;
+}
+
+ 
+
+ShipDriver_pi::ShipDriver_pi(void* ppimgr)
+    : opencpn_plugin_116(ppimgr)
+{
+    // Create the PlugIn icons
+    initialize_images();
+    m_panelBitmap = load_plugin("shipdriver_panel_icon", "ShipDriver_pi");
     m_bShowShipDriver = false;
 }
 
