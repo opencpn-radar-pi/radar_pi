@@ -138,7 +138,7 @@ int ShipDriver_pi::Init(void)
 
     //    This PlugIn needs a toolbar icon, so request its insertion
     if (m_bShipDriverShowIcon) {
-#ifdef SHIPDRIVER_USE_SVG
+#ifdef ocpnUSE_SVG
         m_leftclick_tool_id = InsertPlugInToolSVG(_T( "ShipDriver" ),
             _svg_shipdriver, _svg_shipdriver, _svg_shipdriver_toggled,
             wxITEM_CHECK, _("ShipDriver"), _T( "" ), NULL,

@@ -9,7 +9,7 @@
 
 wxBitmap* _img_ShipDriverIcon;
 
-#ifdef SHIPDRIVER_USE_SVG
+#ifdef ocpnUSE_SVG
 #include "ocpn_plugin.h"
 wxString _svg_shipdriver;
 wxString _svg_shipdriver_toggled;
@@ -76,7 +76,7 @@ void initialize_images(void)
         _img_ShipDriverIcon = new wxBitmap(wxImage(sm));
     }
 
-#ifdef SHIPDRIVER_USE_SVG
+#ifdef ocpnUSE_SVG
     wxFileName fn;
     wxString tmp_path;
 
@@ -89,7 +89,7 @@ void initialize_images(void)
     fn.SetFullName(_T("shipdriver_pi_toggled.svg"));
     _svg_shipdriver_toggled = fn.GetFullPath();
 
-#endif // SHIPDRIVER_USE_SVG
+#endif // ocpnUSE_SVG
 
     return;
 }

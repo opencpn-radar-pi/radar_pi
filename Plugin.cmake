@@ -27,8 +27,6 @@ set(OCPN_RELEASE_REPO
     "Default repository for tagged builds not matching 'beta'"
 )
 
-option(SHIPDRIVER_USE_SVG "Use SVG graphics" ON)
-
 #
 #
 # -------  Plugin setup --------
@@ -73,9 +71,6 @@ set(PKG_API_LIB api-16)  #  A directory in libs/ e. g., api-17 or api-16
 macro(late_init)
   # Perform initialization after the PACKAGE_NAME library, compilers
   # and ocpn::api is available.
-  if (SHIPDRIVER_USE_SVG)
-    target_compile_definitions(${PACKAGE_NAME} PUBLIC SHIPDRIVER_USE_SVG)
-  endif ()
 endmacro ()
 
 macro(add_plugin_libraries)
@@ -91,4 +86,8 @@ macro(add_plugin_libraries)
 
   add_subdirectory("libs/jsoncpp")
   target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
+
+  # The wxsvg library enables SVG overall in the plugin
+  add_subdirectory("libs/wxsvg")
+  target_link_libraries(${PACKAGE_NAME} ocpn::wxsvg)
 endmacro ()

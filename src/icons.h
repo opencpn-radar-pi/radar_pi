@@ -11,7 +11,7 @@ extern void initialize_images(void);
 
 extern wxBitmap* _img_ShipDriverIcon;
 
-#ifdef SHIPDRIVER_USE_SVG
+#ifdef ocpnUSE_SVG
 extern wxString _svg_shipdriver;
 extern wxString _svg_shipdriver_toggled;
 #endif
