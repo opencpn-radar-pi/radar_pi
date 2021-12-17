@@ -81,23 +81,14 @@ if [ -z "$test_mode" ]; then
     git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
     git remote update shipdriver
 
-    # Create a new update branch and work on that
-    hash=$(git rev-parse --short  $source_treeish)
-    new_branch="update.$hash"
-    if git rev-parse $new_branch &> /dev/null; then git branch -D $new_branch; fi
-    git branch $new_branch $source_treeish
-    echo "Created temporary work branch  $new_branch"
-
     echo "Checking for updates of updates-templates script"
-    if [ -z "$test_mode" ]; then
-        if ! git diff --quiet HEAD $source_treeish -- update-templates; then
-            git checkout $source_treeish update-templates
-            cat << EOT
+    if ! git diff --quiet HEAD $source_treeish -- update-templates; then
+        git checkout $source_treeish update-templates
+        cat << EOT
 update-templates script is updated to latest version. Please commit
 changes and re-run script.
 EOT
-            exit 0
-        fi
+        exit 0
     fi
 fi
 
@@ -177,7 +168,7 @@ if [ -f cmake/TemplateVersion ]; then
         >> $our_manifest
     git rm -f $src_manifest
 fi
-    
+
 echo "Create or update cmake/TemplateVersion"
 echo "# Created by update-templates" > cmake/TemplateVersion
 echo "date: $(date -u +'%Y-%m-%d %H:%M UTC')" >> cmake/TemplateVersion
