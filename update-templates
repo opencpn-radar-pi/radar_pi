@@ -35,7 +35,7 @@ function list_sd_tags() {
 if [[ -d /c && "$0" =~ .*update-templates ]]; then
     tmpfile=$(mktemp)
     cp $0 $tmpfile
-    exec $tmpfile
+    exec $tmpfile $@
 fi
 
 # Handle options and parameters
