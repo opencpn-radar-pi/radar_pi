@@ -66,11 +66,6 @@ if [ -n "$clean" ]; then
     exit 1
 fi
 
-# Fetch all available shipdriver sd* tags
-for t in $(list_sd_tags); do
-    git fetch -q shipdriver refs/tags/$t:refs/tags/$t --no-tags
-done
-
 if [ -z "$test_mode" ]; then
     # Set up the shipdriver remote
     if git ls-remote --exit-code shipdriver &>/dev/null; then
@@ -80,6 +75,11 @@ if [ -z "$test_mode" ]; then
     echo "Adding new shipdriver remote"
     git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
     git remote update shipdriver
+
+    # Fetch all available shipdriver sd* tags
+    for t in $(list_sd_tags); do
+        git fetch -q shipdriver refs/tags/$t:refs/tags/$t --no-tags
+    done
 
     echo "Checking for updates of updates-templates script"
     if ! git diff --quiet HEAD $source_treeish -- update-templates; then
