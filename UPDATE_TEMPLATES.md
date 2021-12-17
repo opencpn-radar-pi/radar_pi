@@ -64,23 +64,35 @@ Running
 -------
 
 The script is run from the plugin top directory using
-`./update-templates`. In windows, assuming standard installation paths:
+`./update-templates`. In windows CMD, assuming standard installation paths:
 
     > "C:\Program Files\Git\bin\bash.exe" update-templates
 
 Usage summary:
 
-    update-templates [-T | -h] [treeish]
+    update-templates [-T] [treeish]
+    update-templates  -h
+    update-templates  -l
+    
+**treeish** defaults to _shipdriver/master_ i. e., templates are updated
+from shipdriver's development branch. It could be set to a branch
+like _shipdriver/v3.0_ or a tag like _sd3.0.0_ to retrieve data from
+corresponding git trees.
 
-The *treeish* argument can be used to merge changes from another shipdriver
-branch than the default shipdriver/master.
+**-l** lists available tags which can be used as _treeish_
 
-_-T_ runs in test mode, lots of output, requires an existing remote and
-does not self-update.
+**-T** runs in test mode, lots of output, requires an existing shipdriver 
+remote and does not self-update.
 
 *update-templates -h* prints the complete help message.
 
 Script unconditionally updates known files and commits them directly.
+
+Examples:
+
+    update-templates shipdriver/v3.0    -- get updates from v3.0 branch
+    update-templates sd3.0.0            -- get updates from sd3.0.0 tag
+    update-templates -l                 -- list all available tags
 
 Checking modifications in CMakeLists.txt and flatpak manifest
 -------------------------------------------------------------
