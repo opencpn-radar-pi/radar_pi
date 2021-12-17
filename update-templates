@@ -30,6 +30,20 @@ function list_sd_tags() {
         | sed  -n -e '/{}/d' -e 's|.*tags/||' -e '/^sd/p'
 }
 
+function update_dir() {
+    # Update directory $1 from shipdriver treeish $2
+    local d=$1
+    local treeish=$2
+
+    echo "Updating $d"
+    if [ -d $d ]; then git rm -rf $d/*; fi
+    git checkout $treeish $d
+    git add $d
+    git diff-index --quiet --cached HEAD -- || {
+        git commit -m "Templates: Updating $d"
+    }
+}
+
 # Exec on tmpfile to avoid file lock when updating script on Windows.
 # The directory /c exists on git bash on Windows, and hopefully only there.
 if [[ -d /c && "$0" =~ .*update-templates ]]; then
@@ -92,32 +106,10 @@ EOT
     fi
 fi
 
-echo "Updating cmake/, scripts/, buildwin/ and ci/"
-if [ -d cmake ]; then git rm -rf cmake/*; fi
-git checkout $source_treeish cmake
-git add cmake
-git commit -m "Templates: Updating cmake"
-
-if [ -d ci ]; then  git rm -rf ci/*; fi
-git checkout $source_treeish ci
-git add ci
-git commit -m "Templates: Updating ci"
-
-if [ -d scripts ]; then git rm -rf scripts/*; fi
-git checkout $source_treeish scripts
-git add scripts
-git commit -m "Templates: Updating scripts"
-
-if [ -d buildwin ]; then git rm -rf buildwin/*; fi
-git checkout $source_treeish buildwin
-git add buildwin
-git commit -m "Templates: Updating buildwin"
-
-if [ -d libs ]; then git rm -rf libs/*; fi
-git checkout $source_treeish libs
-git add libs
-git commit -m "Templates: Updating libs"
-
+# Updating  standard directories
+for dir in cmake ci scripts buildwin libs; do
+    update_dir $dir $source_treeish
+done
 
 test -d opencpn-libs || {
     echo "Adding the opencpn-libs submodule"
