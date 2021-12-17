@@ -123,6 +123,7 @@ test -d opencpn-libs || {
     echo "Adding the opencpn-libs submodule"
     git submodule add https://github.com/leamas/opencpn-libs.git
     git commit -am "Add the opencpn-libs submodule"
+    git submodule update --init opencpn-libs
 }
 
 git -C opencpn-libs pull origin master
