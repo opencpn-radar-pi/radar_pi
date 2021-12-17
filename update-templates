@@ -113,6 +113,12 @@ git checkout $source_treeish buildwin
 git add buildwin
 git commit -m "Templates: Updating buildwin"
 
+if [ -d libs ]; then git rm -rf libs/*; fi
+git checkout $source_treeish libs
+git add libs
+git commit -m "Templates: Updating libs"
+
+
 test -d opencpn-libs || {
     echo "Adding the opencpn-libs submodule"
     git submodule add https://github.com/leamas/opencpn-libs.git
