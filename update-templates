@@ -11,16 +11,23 @@
 
 function usage() {
     cat << EOT
-Usage: update-templates [-t] [-T] [-h] [treeish]
-
+Usage: update-templates [-T]  [treeish]
+       update-templates [-h | -l]
 Parameters:
     treeish:
          A shipdriver tag, branch or commit, defaults to shipdriver/master
 
 Options:
     -T   Test mode, do not auto-update
+    -l   List available shipdriver tags
     -h   Print this message and exit
 EOT
+}
+
+function list_sd_tags() {
+    # List all tags in shipdriver remote with a 'sd' prefix
+    git ls-remote --tags shipdriver \
+        | sed  -n -e '/{}/d' -e 's|.*tags/||' -e '/^sd/p'
 }
 
 # Exec on tmpfile to avoid file lock when updating script on Windows.
@@ -34,11 +41,13 @@ fi
 # Handle options and parameters
 usage="Usage: $0 [-t] [-T] [treeish]"
 merge_opt=""
-while getopts "tTh" opt; do
+while getopts "tThl" opt; do
     case "${opt}" in
         T)  test_mode=true
             ;;
         h)  usage; exit 0
+            ;;
+        l)  list_sd_tags; exit 0
             ;;
         *)  usage >&2; exit 1
             ;;
@@ -57,6 +66,11 @@ if [ -n "$clean" ]; then
     exit 1
 fi
 
+# Fetch all available shipdriver sd* tags
+for t in $(list_sd_tags); do
+    git fetch -q shipdriver refs/tags/$t:refs/tags/$t --no-tags
+done
+
 if [ -z "$test_mode" ]; then
     # Set up the shipdriver remote
     if git ls-remote --exit-code shipdriver &>/dev/null; then
@@ -66,7 +80,6 @@ if [ -z "$test_mode" ]; then
     echo "Adding new shipdriver remote"
     git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
     git remote update shipdriver
-    git fetch --tags shipdriver
 
     # Create a new update branch and work on that
     hash=$(git rev-parse --short  $source_treeish)
