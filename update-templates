@@ -179,7 +179,6 @@ if [ -f cmake/TemplateVersion ]; then
     our_manifest=$(echo flatpak/org.opencpn.OpenCPN.Plugin.*.yaml)
     echo "Append shipdriver flatpak manifest's log of changes to $our_manifest"
 
-    git fetch --tags ${source_treeish%/*}
     prev_commit=$(sed -n '/commit:/s/.*: *//p' cmake/TemplateVersion)
     src_manifest=flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
     git checkout $source_treeish $src_manifest
