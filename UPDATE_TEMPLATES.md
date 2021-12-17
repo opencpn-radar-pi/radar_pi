@@ -89,7 +89,7 @@ remote and does not self-update.
 Script unconditionally updates known files and commits them directly.
 
 Examples:
-
+ 
     update-templates shipdriver/v3.0    -- get updates from v3.0 branch
     update-templates sd3.0.0            -- get updates from sd3.0.0 tag
     update-templates -l                 -- list all available tags
