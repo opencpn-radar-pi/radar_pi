@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-07-05 11:37+0200\n"
-"PO-Revision-Date: 2021-07-10 10:54\n"
+"PO-Revision-Date: 2021-12-16 19:00\n"
 "Last-Translator: \n"
 "Language-Team: Finnish\n"
 "Language: fi_FI\n"
@@ -151,11 +151,11 @@ msgstr "Kantaman korjausasetus"
 
 #: src\ControlsDialog.cpp:763
 msgid "Display timing"
-msgstr ""
+msgstr "Näytön ajoitus"
 
 #: src\ControlsDialog.cpp:769
 msgid "Main bang suppression"
-msgstr ""
+msgstr "Lähetyspulssin häivytys"
 
 #: src\ControlsDialog.cpp:776
 msgid "No transmit start"
@@ -296,7 +296,7 @@ msgstr "Doppler"
 
 #: src\ControlsDialog.cpp:1038
 msgid "DopplerAutoTrack"
-msgstr ""
+msgstr "DopplerAutoTrack"
 
 #: src\ControlsDialog.cpp:1046 src\OptionsDialog.cpp:134
 msgid "Target trails"
@@ -982,7 +982,7 @@ msgstr "Liittymää ei löytynyt"
 
 #: src\garminhd\GarminHDReceive.cpp:213 src\garminxhd\GarminxHDReceive.cpp:186
 msgid "Interface must match"
-msgstr ""
+msgstr "Käyttöliittymän on täsmättävä"
 
 #: src\garminhd\GarminHDReceive.cpp:239 src\garminxhd\GarminxHDReceive.cpp:212
 #: src\navico\NavicoReceive.cpp:487 src\raymarine\RME120Receive.cpp:139
@@ -1043,5 +1043,5 @@ msgstr "Herätetään"
 
 #: src\raymarine\RME120Receive.cpp:558
 msgid "IF-Serial #"
-msgstr ""
+msgstr "If-Sarja #"
 

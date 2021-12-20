@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-07-05 11:37+0200\n"
-"PO-Revision-Date: 2021-07-10 10:54\n"
+"PO-Revision-Date: 2021-12-16 19:00\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -103,7 +103,7 @@ msgstr "Extension de la cible"
 
 #: src\ControlsDialog.cpp:675
 msgid "STC"
-msgstr ""
+msgstr "STC"
 
 #: src\ControlsDialog.cpp:681
 msgid "Fine tune"
@@ -115,7 +115,7 @@ msgstr "Réglage grossier"
 
 #: src\ControlsDialog.cpp:694
 msgid "STC curve"
-msgstr ""
+msgstr "Courbe STC"
 
 #: src\ControlsDialog.cpp:701
 msgid "Interference rejection"
@@ -147,7 +147,7 @@ msgstr "Alignement de gisements"
 
 #: src\ControlsDialog.cpp:756
 msgid "Range adjustment"
-msgstr ""
+msgstr "Ajustement de la plage"
 
 #: src\ControlsDialog.cpp:763
 msgid "Display timing"
@@ -155,7 +155,7 @@ msgstr "Durée d\\'affichage"
 
 #: src\ControlsDialog.cpp:769
 msgid "Main bang suppression"
-msgstr ""
+msgstr "Suppression du  Bang principal"
 
 #: src\ControlsDialog.cpp:776
 msgid "No transmit start"
@@ -296,7 +296,7 @@ msgstr "Doppler"
 
 #: src\ControlsDialog.cpp:1038
 msgid "DopplerAutoTrack"
-msgstr ""
+msgstr "Auto Track Doppler"
 
 #: src\ControlsDialog.cpp:1046 src\OptionsDialog.cpp:134
 msgid "Target trails"
@@ -797,7 +797,7 @@ msgstr "\"Radar\""
 
 #: src\radar_pi.cpp:484
 msgid "Radar PlugIn with support for Garmin, Raymarine and Navico radars"
-msgstr ""
+msgstr "Complément Radar avec support pour les radars Garmin, Raymarine et Navico"
 
 #: src\radar_pi.cpp:861
 msgid " Zone"
@@ -1043,5 +1043,5 @@ msgstr "Mise en route"
 
 #: src\raymarine\RME120Receive.cpp:558
 msgid "IF-Serial #"
-msgstr ""
+msgstr "IF-Serial #"
 

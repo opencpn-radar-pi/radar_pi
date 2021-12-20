@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-07-05 11:37+0200\n"
-"PO-Revision-Date: 2021-07-10 10:55\n"
+"PO-Revision-Date: 2021-11-25 16:43\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -809,27 +809,27 @@ msgstr "Следующий сигнал в"
 
 #: src\radar_pi.cpp:1130
 msgid "COG"
-msgstr ""
+msgstr "COG"
 
 #: src\radar_pi.cpp:1134
 msgid "HDT"
-msgstr ""
+msgstr "HDT"
 
 #: src\radar_pi.cpp:1154
 msgid "HDM"
-msgstr ""
+msgstr "HDM"
 
 #: src\radar_pi.cpp:1718
 msgid "GPS"
-msgstr ""
+msgstr "GPS"
 
 #: src\radar_pi.cpp:1880
 msgid "WMM"
-msgstr ""
+msgstr "WMM"
 
 #: src\radar_pi.cpp:2029
 msgid "NMEA"
-msgstr ""
+msgstr "NMEA"
 
 #: src\SelectDialog.cpp:40
 msgid "Radar Selection"

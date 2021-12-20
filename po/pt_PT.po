@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-07-05 11:37+0200\n"
-"PO-Revision-Date: 2021-07-10 10:55\n"
+"PO-Revision-Date: 2021-11-07 15:31\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt_PT\n"
@@ -103,19 +103,19 @@ msgstr "Alvo de expansão"
 
 #: src\ControlsDialog.cpp:675
 msgid "STC"
-msgstr ""
+msgstr "STC"
 
 #: src\ControlsDialog.cpp:681
 msgid "Fine tune"
-msgstr ""
+msgstr "Regulação fina"
 
 #: src\ControlsDialog.cpp:688
 msgid "Coarse tune"
-msgstr ""
+msgstr "Regulação grosseira"
 
 #: src\ControlsDialog.cpp:694
 msgid "STC curve"
-msgstr ""
+msgstr "Curva STC"
 
 #: src\ControlsDialog.cpp:701
 msgid "Interference rejection"
@@ -147,15 +147,15 @@ msgstr "Alinhamento do rumo"
 
 #: src\ControlsDialog.cpp:756
 msgid "Range adjustment"
-msgstr ""
+msgstr "Ajuste de alcance"
 
 #: src\ControlsDialog.cpp:763
 msgid "Display timing"
-msgstr ""
+msgstr "Duração de visualização"
 
 #: src\ControlsDialog.cpp:769
 msgid "Main bang suppression"
-msgstr ""
+msgstr "Supressão do Bang principal"
 
 #: src\ControlsDialog.cpp:776
 msgid "No transmit start"
@@ -296,7 +296,7 @@ msgstr "Doppler"
 
 #: src\ControlsDialog.cpp:1038
 msgid "DopplerAutoTrack"
-msgstr ""
+msgstr "DopplerAutoTrack"
 
 #: src\ControlsDialog.cpp:1046 src\OptionsDialog.cpp:134
 msgid "Target trails"
@@ -797,7 +797,7 @@ msgstr "Extensão Radar"
 
 #: src\radar_pi.cpp:484
 msgid "Radar PlugIn with support for Garmin, Raymarine and Navico radars"
-msgstr ""
+msgstr "Plugin radar com suporte para radares Garmin, Raymarine e Navico"
 
 #: src\radar_pi.cpp:861
 msgid " Zone"
@@ -930,7 +930,7 @@ msgstr "Ligado"
 
 #: include\SoftwareControlSet.h:154
 msgid "* 0.1 %"
-msgstr ""
+msgstr "* 0.1 %"
 
 #: src\emulator\EmulatorReceive.cpp:206
 msgid "OK"
@@ -978,11 +978,11 @@ msgstr "Rápido"
 
 #: src\garminhd\GarminHDReceive.cpp:212 src\garminxhd\GarminxHDReceive.cpp:185
 msgid "No interface found"
-msgstr ""
+msgstr "Não encontrada interface"
 
 #: src\garminhd\GarminHDReceive.cpp:213 src\garminxhd\GarminxHDReceive.cpp:186
 msgid "Interface must match"
-msgstr ""
+msgstr "A interface deve corresponder"
 
 #: src\garminhd\GarminHDReceive.cpp:239 src\garminxhd\GarminxHDReceive.cpp:212
 #: src\navico\NavicoReceive.cpp:487 src\raymarine\RME120Receive.cpp:139
@@ -1043,5 +1043,5 @@ msgstr "Acordar"
 
 #: src\raymarine\RME120Receive.cpp:558
 msgid "IF-Serial #"
-msgstr ""
+msgstr "IF-Serial #"
 
