@@ -11,12 +11,13 @@
 
 function usage() {
     cat << EOT
-Usage: update-templates [-T]  <treeish>
-       update-templates [-h | -l]
+Usage:
+    update-templates [-T]  <treeish>
+    update-templates [-h | -l]
+
 Parameters:
     treeish:
          A shipdriver tag or branch.
-
 Options:
     -l   List available shipdriver tags
     -h   Print this message and exit
