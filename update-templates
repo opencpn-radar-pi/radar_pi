@@ -15,7 +15,7 @@ Usage: update-templates [-T]  <treeish>
        update-templates [-h | -l]
 Parameters:
     treeish:
-         A shipdriver tag, branch or commit.
+         A shipdriver tag or branch.
 
 Options:
     -l   List available shipdriver tags
