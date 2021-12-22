@@ -1,4 +1,4 @@
-3.0.1-beta1 TBD
+3.0.1-beta1 Dec 22, 2021
 * Actually use the tag as effective version (#349)
 * update-templates: Don't forget to update buildwin (#133).
 * update-templates: Remove unused files (#336).
