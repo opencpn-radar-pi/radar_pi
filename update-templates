@@ -62,7 +62,7 @@ fi
 # Handle options and parameters
 usage="Usage: $0 [-t] [-T] [treeish]"
 merge_opt=""
-while getopts "tThl" opt; do
+while getopts "Thl" opt; do
     case "${opt}" in
         T)  test_mode=true
             ;;
