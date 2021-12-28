@@ -37,19 +37,20 @@ function list_sd_tags() {
         | sed  -n -e '/{}/d' -e 's|.*tags/||' -e '/^sd/p'
 }
 
-function update_dir() {
-    # Update directory $1 from shipdriver treeish $2
-    local d=$1
-    local treeish=$2
-
-    echo "Updating $d"
-    if [ -d $d ]; then git rm -rf $d/*; fi
-    git checkout $treeish $d
-    git add $d
-    git diff-index --quiet --cached HEAD -- || {
-        git commit -m "Templates: Updating $d"
-    }
+function init_shipdriver_remote() {
+    # Set up the shipdriver remote
+    if git ls-remote --exit-code shipdriver &>/dev/null; then
+        git remote remove shipdriver
+        echo "Removing existing shipdriver remote."
+    fi
+    echo "Adding new shipdriver remote"
+    git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
+    # Fetch all available shipdriver sd* tags
+    for t in $(list_sd_tags); do
+        git fetch -q shipdriver refs/tags/$t:refs/tags/$t --no-tags
+    done
 }
+
 
 # Exec on tmpfile to avoid file lock when updating script on Windows.
 # The directory /c exists on git bash on Windows, and hopefully only there.
@@ -68,13 +69,19 @@ while getopts "Thl" opt; do
             ;;
         h)  usage; exit 0
             ;;
-        l)  list_sd_tags; exit 0
+        l)  do_list_tags="true"
             ;;
         *)  usage >&2; exit 1
             ;;
     esac
 done
 shift $((OPTIND-1))
+
+if [ -n "$do_list_tags" ]; then
+    if [ -z "$test_mode" ]; then init_shipdriver_remote; fi
+    list_sd_tags
+    exit 0
+fi
 
 if [ -z "$1" ]; then
     usage >&2
@@ -93,19 +100,7 @@ if [ -n "$clean" ]; then
 fi
 
 if [ -z "$test_mode" ]; then
-    # Set up the shipdriver remote
-    if git ls-remote --exit-code shipdriver &>/dev/null; then
-        git remote remove shipdriver
-        echo "Removing existing shipdriver remote."
-    fi
-    echo "Adding new shipdriver remote"
-    git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
-    git remote update shipdriver
-
-    # Fetch all available shipdriver sd* tags
-    for t in $(list_sd_tags); do
-        git fetch -q shipdriver refs/tags/$t:refs/tags/$t --no-tags
-    done
+    init_shipdriver_remote
 
     echo "Checking for updates of updates-templates script"
     if ! git diff --quiet HEAD $source_treeish -- update-templates; then
@@ -118,24 +113,31 @@ EOT
     fi
 fi
 
-# Updating  standard directories
-for dir in cmake ci scripts buildwin libs; do
-    update_dir $dir $source_treeish
-done
+echo "Updating cmake/, scripts/, buildwin/ and ci/"
+if [ -d cmake ]; then git rm -rf cmake/*; fi
+git checkout $source_treeish cmake
+git add cmake
+git commit -m "Templates: Updating cmake"
 
-test -d opencpn-libs || {
-    echo "Adding the opencpn-libs submodule"
-    git submodule add https://github.com/leamas/opencpn-libs.git
-    git commit -am "Add the opencpn-libs submodule"
-    git submodule update --init opencpn-libs
-}
+if [ -d ci ]; then  git rm -rf ci/*; fi
+git checkout $source_treeish ci
+git add ci
+git commit -m "Templates: Updating ci"
 
-git -C opencpn-libs pull origin master
-git add opencpn-libs
-git diff-index --quiet --cached HEAD -- || {
-    echo "Updating opencpn-libs submodule"
-    git commit -m "opencpn-libs: Update to latest version"
-}
+if [ -d scripts ]; then git rm -rf scripts/*; fi
+git checkout $source_treeish scripts
+git add scripts
+git commit -m "Templates: Updating scripts"
+
+if [ -d buildwin ]; then git rm -rf buildwin/*; fi
+git checkout $source_treeish buildwin
+git add buildwin
+git commit -m "Templates: Updating buildwin"
+
+if [ -d libs ]; then git rm -rf libs/*; fi
+git checkout $source_treeish libs
+git add libs
+git commit -m "Templates: Updating libs"
 
 # If Plugin.cmake exists we should also update CMakeLists.txt
 if [ -f Plugin.cmake ]; then CMakeLists=CMakeLists.txt; fi
