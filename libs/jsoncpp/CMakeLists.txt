@@ -1,9 +1,3 @@
-# ~~~
-# Summary:      jsoncpp library cmake setup
-# License:      Expat
-# Copyright (c) 2021 Alec Leamas
-# ~~~
-
 if (TARGET ocpn::jsoncpp)
   return()
 endif ()
