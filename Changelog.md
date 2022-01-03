@@ -1,3 +1,14 @@
+
+3.0.1-beta4  TBD
+* Major updates to update-templates to handle pristine plugins.
+* Use a SVG main icon (#354).
+
+3.0.1-beta3  Jan 3, 2022
+* Broken release based on wrong branch
+
+3.0.1-beta2  Jan 2, 2022
+* Broken release based on wrong branch
+
 3.0.1-beta1 Dec 22, 2021
 * Actually use the tag as effective version (#349)
 * update-templates: Don't forget to update buildwin (#133).
