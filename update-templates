@@ -15,9 +15,12 @@ Usage:
     update-templates [-T]  <treeish>
     update-templates [-h | -l]
 
+
 Parameters:
     treeish:
          A shipdriver tag or branch.
+    Recommended usage is using the latest stable (non-beta) tag
+
 Options:
     -l   List available shipdriver tags
     -h   Print this message and exit
@@ -25,7 +28,7 @@ Options:
 
 Examples:
     update-templates -l                   -- List available tags
-    update-templates sd3.0.0              -- Update from sd3.0.0 tag
+    update-templates sd3.0.1              -- Update from sd3.0.1 tag
     update-templates shipdriver/v3.0      -- Update from v3.0 release branch
     update-templates shipdriver/master    -- Update from development branch
 EOT
