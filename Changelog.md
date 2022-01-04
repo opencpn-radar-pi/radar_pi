@@ -1,5 +1,5 @@
 
-3.0.1-beta4  TBD
+3.0.1-beta4  Jan 4, 2022
 * Major updates to update-templates to handle pristine plugins.
 * Use a SVG main icon (#354).
 
