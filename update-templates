@@ -131,9 +131,16 @@ EOT
 fi
 
 # Updating  standard directories
-for dir in cmake ci scripts buildwin libs; do
+for dir in cmake ci scripts buildwin; do
     update_dir $dir $source_treeish
 done
+
+echo "Updating libs"
+git checkout $source_treeish libs
+git add libs
+git diff-index --quiet --cached HEAD -- || {
+    git commit -m "Templates: Updating libs"
+}
 
 # If Plugin.cmake exists we should also update CMakeLists.txt
 if [ -f Plugin.cmake ]; then CMakeLists=CMakeLists.txt; fi
