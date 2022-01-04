@@ -9,7 +9,7 @@ if (TARGET ocpn::api)
 endif ()
 
 set(API_VERSION "1.17" PARENT_SCOPE)
-set(API_OCPN_MIN_VERSION "5.2.0" PARENT_SCOPE)
+set(API_OCPN_MIN_VERSION "5.0.0" PARENT_SCOPE)
 
 add_library(OCPN_API INTERFACE)
 add_library(ocpn::api ALIAS OCPN_API)
@@ -19,7 +19,8 @@ if (WIN32 AND MSVC)
     OCPN_API INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/msvc/opencpn.lib")
   # Assuming unicode build, required for mingw headers
   target_compile_definitions(OCPN_API INTERFACE -DUNICODE)
-elseif (WIN32 AND MINGW) 
+elseif(WIN32 AND MINGW) 
   target_link_libraries(
     OCPN_API INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/mingw/libopencpn.dll.a")
 endif ()
+
