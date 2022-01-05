@@ -130,6 +130,11 @@ EOT
     fi
 fi
 
+git rev-parse --verify -q $source_treeish || {
+    echo "Unknown tag or branch $source_treeish -- giving up."
+    exit 1
+}
+
 # Updating  standard directories
 for dir in cmake ci scripts buildwin; do
     update_dir $dir $source_treeish
