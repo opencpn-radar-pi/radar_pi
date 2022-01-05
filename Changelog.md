@@ -1,3 +1,5 @@
+3.0.1 Jan 5, 2022
+* update-templates: Don't touch libs (#378)
 
 3.0.1-beta4  Jan 4, 2022
 * Major updates to update-templates to handle pristine plugins.
