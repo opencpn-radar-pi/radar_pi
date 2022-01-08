@@ -65,7 +65,7 @@ make -j $(nproc) VERBOSE=1 flatpak
 
 # Restore permissions and owner in build tree.
 if [ -d /ci-source ]; then sudo chown --reference=/ci-source -R . ../cache; fi
-sudo chmod --reference=.. .
+sudo chown --reference=.. .
 
 # Install cloudsmith and cryptography, required by upload script and git-push
 python3 -m pip install -q --user --upgrade pip
