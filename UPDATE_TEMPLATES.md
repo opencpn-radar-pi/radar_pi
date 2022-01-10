@@ -1,24 +1,23 @@
-updates-templates README
-========================
+# updates-templates README
 
 The script update-templates can be used to update a plugin with
 newer versions of the shipdriver templates. The basic workflow
 is to
-  - If keys exist in the ./ci folder copy them to ./build-deps.
-  - Bootstrap process by downloading the updates-templates script
-    and add it to repo if it does not exist.
-  - Make sure the plugin repo is clean (commit or stash changes)
-  - Run script
-  - Handle updates to CMakeLists.txt/Plugin.cmake and the
-    flatpak yaml manifest.
-  - Upstream local changes to shipdriver templates
 
-Bootstrapping
--------------
+0. If keys exist in the ./ci folder copy them to ./build-deps.
+1. Bootstrap process by downloading the updates-templates script
+   and add it to repo if it does not exist.
+2. Run script
+3. Handle updates to CMakeLists.txt/Plugin.cmake
+4. Review the flatpak yaml manifest.
+5. Upstream local changes to shipdriver templates
+
+## 1.  Bootstrapping
+
 Only required if the update script is not yet part of the repo. Once
 installed, the script is self-updating.
 
-Linux:
+### 1.1 Linux and Windows git-bash:
 
     $ cd some_plugin
     $ repo=https://raw.githubusercontent.com/Rasbats/shipdriver_pi/master
@@ -32,8 +31,7 @@ It is also possible to use wget instead of curl, like
 except that the `chmod` command does not make sense here and hence is omitted.
 
 
-Bootstrap - Windows (cmd.com)
------------------------------
+### 1.2 Windows (cmd.com)
 
 As in linux, bootstrapping is only required if the script is not yet
 available in the plugin repo. Once installed, it's self-updating.
@@ -50,8 +48,9 @@ Using the Windows command CLI goes like:
     > git commit -m "Add update-templates script"
 
 
-Running
--------
+## 2. Run script
+
+Before running, commit or stash all changes. The repository must be clean.
 
 The script is run from the plugin top directory using
 `./update-templates`. In windows CMD, assuming standard installation paths:
@@ -65,10 +64,9 @@ Usage summary :
 
 Parameters:
 
-**treeish**: A shipdriver tag or branch.  Recommended usage is using the
-latest stable (non-beta) tag.
-
-Options:
+    treeish:
+         A shipdriver tag or branch.  Recommended usage is using the
+         latest stable (non-beta) tag.
 
 **-l** lists available tags which can be used as _treeish_
 
@@ -80,16 +78,18 @@ remote and does not self-update.
 Examples:
 
     update-templates -l                   -- List available tags
-    update-templates sd3.0.1              -- Update from sd3.0.1 tag
+    update-templates sd3.0.2              -- Update from sd3.0.2 tag
     update-templates shipdriver/v3.0      -- Update from v3.0 release branch
     update-templates shipdriver/master    -- Update from development branch
 
-Checking modifications in CMakeLists.txt and flatpak manifest
--------------------------------------------------------------
+
+## 3 CMakeLists.txt
 
 As part of the 3.0.0 transition CMakeLists.txt is split into one plugin-specific 
 file Plugin.cmake and a generic CMakeLists.txt. If the file _Plugin.cmake_
 exists script will thus update _CMakeLists.txt_, otherwise not.
+
+## 4. Checking modifications in flatpak manifest
 
 The "flatpak manifest" is the yaml file configuring the flatpak build,
 named like flatpak/org.opencpn.OpenCPN.Plugin.\*.yaml.  This might need
@@ -99,7 +99,7 @@ manifest. Review the file, consider applying corresponding changes to
 the manifest and eventually remove the comment.
 
 
-Upstreaming local changes to shipdriver
----------------------------------------
+## 5. Upstreaming local changes to shipdriver
+
 If there is a need to modify any of the files updated by update-templates,
 please file bugs against the shipdriver repo so the next update runs smoother.
