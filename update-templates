@@ -13,7 +13,7 @@ function usage() {
     cat << EOT
 Usage:
     update-templates [-T]  <treeish>
-    update-templates [-h | -l]
+    update-templates [-h |-l]
 
 
 Parameters:
@@ -28,7 +28,7 @@ Options:
 
 Examples:
     update-templates -l                   -- List available tags
-    update-templates sd3.0.1              -- Update from sd3.0.1 tag
+    update-templates sd3.0.2              -- Update from sd3.0.2 tag
     update-templates shipdriver/v3.0      -- Update from v3.0 release branch
     update-templates shipdriver/master    -- Update from development branch
 EOT
@@ -216,7 +216,7 @@ cat << EOF
 
 Shipdriver templates has been updated. To review changes made:
 
-    $ git log --oneline -5
+    $ git log --oneline -12
 
 See UPDATE_TEMPLATES.md for more.
 EOF
