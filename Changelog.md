@@ -1,3 +1,9 @@
+3.0.2 Jan 11, 2022
+* Checklist completed (#392)
+
+3.0.2-beta1 Jan 9, 2022
+* update-templates: update and polish
+
 3.0.1 Jan 5, 2022
 * update-templates: Don't touch libs (#378)
 

@@ -15,7 +15,7 @@ against this site.
 
 ## Copyright and licensing
 
-This software is Copyright (c) Mike Rossiter 2017-2020. It is distributed
+This software is Copyright (c) Mike Rossiter 2017-2022. It is distributed
 under the terms of the Gnu Public License version 3 or, at your option,
 any later version. See the file COPYING for details.
 
