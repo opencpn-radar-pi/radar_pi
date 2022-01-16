@@ -24,12 +24,12 @@ flatpak-steps: &flatpak-steps
 
 jobs:
 
-  build-raspbian-bullseye:
+  build-bionic-armhf:
     machine:
       image: ubuntu-2004:202101-01
-    resource_class: arm.medium
+    resource_class: medium
     environment:
-      - OCPN_TARGET: raspbian-armhf
+      - OCPN_TARGET: ubuntu-armhf
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     parameters:
       cache-key:
@@ -37,9 +37,26 @@ jobs:
         default: "fp-arm20-v2"
     steps:
       - checkout
-      - run: ci/generic-build-raspbian-armhf.sh
-      - run: cd build-raspbian; /bin/bash < upload.sh
-      - run: ci/git-push.sh build-raspbian
+      - run: ci/circleci-build-bionic-armhf.sh
+      - run: cd build-ubuntu; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-ubuntu
+
+  build-focal-armhf:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: medium
+    environment:
+      - OCPN_TARGET: ubuntu-gtk3-armhf
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    parameters:
+      cache-key:
+        type: string
+        default: "fp-arm20-v2"
+    steps:
+      - checkout
+      - run: ci/circleci-build-focal-armhf.sh
+      - run: cd build-ubuntu; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-ubuntu
 
   build-flatpak-arm64:
     machine:
@@ -177,5 +194,8 @@ workflows:
       - build-android-armhf:
           <<: *std-filters
 
-      - build-raspbian-bullseye:
+      - build-bionic-armhf:
+          <<: *std-filters
+
+      - build-focal-armhf:
           <<: *std-filters
