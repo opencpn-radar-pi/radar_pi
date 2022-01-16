@@ -118,8 +118,8 @@ endif ()
 # pkg_displayname: GUI name
 if (ARCH MATCHES "arm64|aarch64")
   set(_display_arch "-A64")
-elseif ("${plugin_target}" MATCHES "ubuntu" AND "${_pkg_arch}" MATCHES "armhf")
-  set(_display_arch "-armhf")
+elseif ("${_pkg_arch}" MATCHES "armhf")
+  set(_display_arch "-A32")
 endif()
 
 if ("${_git_tag}" STREQUAL "")
