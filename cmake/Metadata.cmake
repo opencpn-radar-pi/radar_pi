@@ -3,7 +3,7 @@
 # License:      GPLv3+
 # Copyright (c) 2021 Alec Leamas
 #
-# Set up variables for configuration of xml metadata and upload scripts, 
+# Set up variables for configuration of xml metadata and upload scripts,
 # all of which with a pkg_ prefix.
 # ~~~
 
@@ -118,7 +118,10 @@ endif ()
 # pkg_displayname: GUI name
 if (ARCH MATCHES "arm64|aarch64")
   set(_display_arch "-A64")
+elseif ("${plugin_target}" MATCHES "ubuntu" AND "${_pkg_arch}" MATCHES "armhf")
+  set(_display_arch "-armhf")
 endif()
+
 if ("${_git_tag}" STREQUAL "")
   set(pkg_displayname "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}")
 else ()
