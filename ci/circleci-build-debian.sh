@@ -30,16 +30,6 @@ exec > >(tee $builddir/build.log) 2>&1;
 sudo apt -qq update || apt update
 sudo apt-get -qq install devscripts equivs software-properties-common
 
-if [ -n  "$USE_DEADSNAKES_PY37" ]; then
-    sudo add-apt-repository -y ppa:deadsnakes/ppa
-    sudo apt -qq update
-    sudo  apt-get -q install  python3.7
-    for py in $(ls /usr/bin/python3.[0-9]); do
-        sudo update-alternatives --install /usr/bin/python3 python3 $py 1
-    done
-    sudo update-alternatives --set python3 /usr/bin/python3.7
-fi
-
 sudo mk-build-deps -ir build-deps/control
 sudo apt-get -q --allow-unauthenticated install -f
 
