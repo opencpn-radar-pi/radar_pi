@@ -27,7 +27,7 @@ jobs:
   build-bionic-armhf:
     machine:
       image: ubuntu-2004:202101-01
-    resource_class: medium
+    resource_class: arm.medium
     environment:
       - OCPN_TARGET: ubuntu-armhf
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
@@ -44,7 +44,7 @@ jobs:
   build-focal-armhf:
     machine:
       image: ubuntu-2004:202101-01
-    resource_class: medium
+    resource_class: arm.medium
     environment:
       - OCPN_TARGET: ubuntu-gtk3-armhf
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
