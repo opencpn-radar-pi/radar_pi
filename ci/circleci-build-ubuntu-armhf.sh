@@ -32,23 +32,32 @@ cat > $ci_source/build.sh << "EOF"
 #sudo apt -y update
 #sudo apt -y install devscripts equivs wget git lsb-release
 
+echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+apt-get -qq update && DEBIAN_FRONTEND='noninteractive' TZ='America/New_York' apt-get -y --no-install-recommends install tzdata
+
 sudo mk-build-deps  /ci-source/build-deps/control
 sudo apt -y install ./opencpn-build-deps_1.0_all.deb
 sudo apt-get -q --allow-unauthenticated install -f
 
-#  cmake 3.22 was built in this docker image, and installed before uploading to dockerhub
+#  cmake 3.20 was intalled in this docker image before uploading to dockerhub
+#  Alternatively, cmake could be installed at runtime by something like this:
 
+#CMAKE_VERSION=3.20.5-0kitware1ubuntu20.04.1
+#wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc --no-check-certificate 2>/dev/null | apt-key add -
+#apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
+#apt-get update
+#apt install cmake=$CMAKE_VERSION cmake-data=$CMAKE_VERSION
 
 cd /ci-source
 rm -rf build-ubuntu; mkdir build-ubuntu; cd build-ubuntu
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" ..
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 sudo chown --reference=.. .
 EOF
 
+sed -i "s/@TARGET_TUPLE@/$TARGET_TUPLE/" $ci_source/build.sh
 
-cat $ci_source/build.sh
 
 # Run script in docker image
 #
@@ -65,7 +74,7 @@ docker run --platform linux/arm/v7 --privileged \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
-    opencpn/ubuntu-bionic-armhf:v1 /bin/bash -xe /ci-source/build.sh
+    ${DOCKER_IMAGE:-opencpn/ubuntu-focal-armhf:v1} /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
 

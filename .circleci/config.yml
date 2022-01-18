@@ -29,7 +29,8 @@ jobs:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
     environment:
-      - OCPN_TARGET: ubuntu-armhf
+      - DOCKER_IMAGE: opencpn/ubuntu-bionic-armhf:v1
+      - TARGET_TUPLE: ubuntu;18.04;armhf
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     parameters:
       cache-key:
@@ -37,7 +38,7 @@ jobs:
         default: "fp-arm20-v2"
     steps:
       - checkout
-      - run: ci/circleci-build-bionic-armhf.sh
+      - run: ci/circleci-build-ubuntu-armhf.sh
       - run: cd build-ubuntu; /bin/bash < upload.sh
       - run: ci/git-push.sh build-ubuntu
 
@@ -46,7 +47,7 @@ jobs:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
     environment:
-      - OCPN_TARGET: ubuntu-gtk3-armhf
+      - TARGET_TUPLE: ubuntu;20.04;armhf
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     parameters:
       cache-key:
@@ -54,7 +55,7 @@ jobs:
         default: "fp-arm20-v2"
     steps:
       - checkout
-      - run: ci/circleci-build-focal-armhf.sh
+      - run: ci/circleci-build-ubuntu-armhf.sh
       - run: cd build-ubuntu; /bin/bash < upload.sh
       - run: ci/git-push.sh build-ubuntu
 
