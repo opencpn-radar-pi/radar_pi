@@ -1,5 +1,9 @@
 3.1.0 TBD
+* The drone.io builder is not longer used (#217).
+* The Xenial builds are removed (#399)
+* Raspbian armhf builds are replaced with Ubunut (#380).
 * The Flatpak runtime 18.08 compatibility builds are removed.
+* New Debian 10/11 builds are added (#381).
 * Add a git submodule with libraries. This affects how the plugin
   is cloned and initiated, see INSTALL.md (#338).
 * Drop the special treatment of libjsoncpp. Plugins which depends
