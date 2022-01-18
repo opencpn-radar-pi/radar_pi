@@ -59,6 +59,34 @@ jobs:
       - run: cd build-ubuntu; /bin/bash < upload.sh
       - run: ci/git-push.sh build-ubuntu
 
+  build-bullseye-armhf:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    environment:
+      - TARGET_TUPLE: debian;11;armhf
+      - OCPN_TARGET: bullseye
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-armhf.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
+
+  build-buster-armhf:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    environment:
+      - TARGET_TUPLE: debian;10;armhf
+      - OCPN_TARGET: buster
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-armhf.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
+
   build-flatpak-arm64:
     machine:
       image: ubuntu-2004:202101-01
@@ -199,4 +227,10 @@ workflows:
           <<: *std-filters
 
       - build-focal-armhf:
+          <<: *std-filters
+
+      - build-bullseye-armhf:
+          <<: *std-filters
+
+      - build-buster-armhf:
           <<: *std-filters
