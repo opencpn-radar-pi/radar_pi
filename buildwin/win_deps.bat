@@ -32,8 +32,8 @@ pathman add "%POEDIT_HOME%\bin" > nul
 
 :: Update required python stuff
 ::
-python --version > nul 2>&1 && python -m ensurepip > nul 2>&1
-if errorlevel 1 choco install -y python
+set PYTHON_HOME=C:\Python310
+if not exist "%PYTHON_HOME%" choco install python
 python --version
 python -m ensurepip
 python -m pip install --upgrade pip
