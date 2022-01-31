@@ -7,7 +7,7 @@
 ::
 
 :: Install the pathman tool: https://github.com/therootcompany/pathman
-:: Fix PATH so it can be used in this script
+:: Fix Path to so it can be used in this script
 ::
 if not exist "%HomeDrive%%HomePath%\.local\bin\pathman.exe" (
     pushd "%HomeDrive%%HomePath%"
@@ -21,19 +21,37 @@ pathman add %HomeDrive%%HomePath%\.local\bin >nul
 :: Install choco cmake and add it's persistent user path element
 ::
 set CMAKE_HOME=C:\Program Files\CMake
-if not exist "%CMAKE_HOME%\bin\cmake.exe" choco install -y cmake
-pathman add "%CMAKE_HOME%\bin" > nul
+cmake --version > nul 2>&1
+if errorlevel 1 (
+    if not exist "%CMAKE_HOME%\bin\cmake.exe" choco install -y cmake
+    pathman add "%CMAKE_HOME%\bin" > nul
+)
 
 :: Install choco poedit and add it's persistent user path element
 ::
 set POEDIT_HOME=C:\Program Files (x86)\Poedit\Gettexttools
-if not exist "%POEDIT_HOME%" choco install -y poedit
-pathman add "%POEDIT_HOME%\bin" > nul
+msgmerge --version > nul 2>&1
+if errorlevel 1 (
+    if not exist "%POEDIT_HOME%" choco install -y poedit
+    pathman add "%POEDIT_HOME%\bin" > nul
+)
+
+:: Install choco git and add it's persistent user path elementA
+::
+set GIT_HOME=C:\Program Files\Git
+git --version > nul 2>&1
+if errorlevel 1 (
+   if not exist "%GIT_HOME%\cmd\git.exe" choco install -y git
+   pathman add %GIT_HOME%\cmd > nul
+)
 
 :: Update required python stuff
 ::
 set PYTHON_HOME=C:\Python310
-if not exist "%PYTHON_HOME%" choco install python
+python --version > nul 2>&1
+if errorlevel 1 (
+    if not exist "%PYTHON_HOME%\python.exe" choco install -y python
+)
 python --version
 python -m ensurepip
 python -m pip install --upgrade pip
@@ -41,7 +59,7 @@ python -m pip install -q setuptools wheel
 python -m pip install -q cloudsmith-cli
 python -m pip install -q cryptography
 
-:: Install pre-compiled wxWidgets and other DLL; add required paths.
+:: Install pre-compiled wxWidgets and other DLL and add required paths
 ::
 set SCRIPTDIR=%~dp0
 set WXWIN=%SCRIPTDIR%..\cache\wxWidgets-3.1.2
