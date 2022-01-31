@@ -170,8 +170,17 @@ do
     git checkout $source_treeish $f
     git add $f || git add --renormalize $f
 done
-
 git commit -m "Templates: Updating other files"
+
+# Check for files/dirs which are private, but should be copied on first run.
+for f in config.h.in build-deps; do
+    if test -e $f; then continue; fi
+    git checkout $source_treeish $f
+done
+git diff-index --quiet --cached HEAD -- || {
+    echo "Adding initial versions of private data"
+    git commit -m "Adding initial versions of private data"
+}
 
 if [ -e update-ignored ]; then
     echo "Revert changes in blacklisted files."
@@ -187,7 +196,6 @@ git diff-index --quiet --cached HEAD -- || {
     echo "Removing unused files"
     git commit -am "Templates: Removing obsoleted and unused files."
 }
-
 
 if [ -f cmake/TemplateVersion ]; then
     our_manifest=$(echo flatpak/org.opencpn.OpenCPN.Plugin.*.yaml)
