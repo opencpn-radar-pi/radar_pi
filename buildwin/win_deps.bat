@@ -7,7 +7,7 @@
 ::
 
 :: Install the pathman tool: https://github.com/therootcompany/pathman
-:: Fix Path to so it can be used in this script
+:: Fix PATH so it can be used in this script
 ::
 if not exist "%HomeDrive%%HomePath%\.local\bin\pathman.exe" (
     pushd "%HomeDrive%%HomePath%"
