@@ -26,6 +26,7 @@ cat > $ci_source/build.sh << "EOF"
 # The  docker images are updated and have installed devscripts and equivs
 # i. e., what is required for mk-build-deps.
 
+sudo apt -q update
 sudo mk-build-deps  /ci-source/build-deps/control
 sudo apt -y install ./opencpn-build-deps_1.0_all.deb
 sudo apt-get -q --allow-unauthenticated install -f
