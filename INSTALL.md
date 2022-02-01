@@ -42,7 +42,13 @@ To build an android armhf tarball
 #### Building on windows (MSVC)
 On windows, a different workflow is used:
 
+    > ..\minimal-path.bat
     > ..\buildwin\win_deps.bat
     > cmake -T v141_xp -G "Visual Studio 15 2017" ^
            -DCMAKE_BUILD_TYPE=RelWithDebInfo  ..
     > cmake --build . --target tarball --config RelWithDebInfo
+
+The _minimal-path.bat_ file strips down %PATH% to a very small path, excluding
+most if not all otherwise available tools. In many cases this neither required
+nor convenient and can be excluded. However, using it represents a tested
+baseline.
