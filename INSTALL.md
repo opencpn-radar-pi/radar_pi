@@ -1,6 +1,6 @@
 ## INSTALL: Building Plugins generic README.
 
-Install build dependencies as described in the 
+Install build dependencies as described in the
 [manual](https://opencpn-manuals.github.io/main/AlternativeWorkflow/Local-Build.html)
 
 After cloning, enter this directory, setup the library submodule and
@@ -40,15 +40,19 @@ To build an android armhf tarball
     $ make
 
 #### Building on windows (MSVC)
-On windows, a different workflow is used:
+On Windows, build is performed in the _build_ directory using a CMD shell:
 
-    > ..\minimal-path.bat
+    > set PATH=C:\ProgramData\chocolatey\bin;C:\Windows\system32;C:\Windows
     > ..\buildwin\win_deps.bat
     > cmake -T v141_xp -G "Visual Studio 15 2017" ^
            -DCMAKE_BUILD_TYPE=RelWithDebInfo  ..
     > cmake --build . --target tarball --config RelWithDebInfo
 
-The _minimal-path.bat_ file strips down %PATH% to a very small path, excluding
-most if not all otherwise available tools. In many cases this neither required
-nor convenient and can be excluded. However, using it represents a tested
-baseline.
+_win\_deps.bat_ needs administrative privileges on the first run when it
+installs some build dependencies. Subsequent runs can (should) be
+done without such privileges.
+
+The initial `set PATH=...` file strips down %PATH% to a very small path,
+excluding most if not all otherwise available tools. In many cases this is
+neither required nor convenient and can be excluded. However, doing it
+represents a tested baseline.
