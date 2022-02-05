@@ -164,6 +164,18 @@ jobs:
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     <<: *debian-steps
 
+  build-focal-wx31:
+    docker:
+      - image: cimg/base:stable-20.04
+    environment:
+      - OCPN_TARGET: focal-wx31
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-wx31.sh
+      - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
+      - run: sh -c "ci/git-push.sh /build-$OCPN_TARGET"
+
   build-buster:
     docker:
       - image: circleci/buildpack-deps:buster-scm
@@ -235,6 +247,9 @@ workflows:
           <<: *std-filters
 
       - build-focal:
+          <<: *std-filters
+
+      - build-focal-wx31:
           <<: *std-filters
 
       - build-buster:
