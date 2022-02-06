@@ -160,6 +160,14 @@ jobs:
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     <<: *debian-steps
 
+  build-bullseye:
+    docker:
+      - image: circleci/buildpack-deps:bullseye-scm
+    environment:
+      - OCPN_TARGET: buster
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    <<: *debian-steps
+
   build-android-arm64:
     docker:
       - image: circleci/android:api-28-ndk
@@ -215,6 +223,9 @@ workflows:
           <<: *std-filters
 
       - build-buster:
+          <<: *std-filters
+
+      - build-bullseye:
           <<: *std-filters
 
       - build-android-arm64:
