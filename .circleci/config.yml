@@ -112,6 +112,18 @@ jobs:
         default: "fp-x86-20-v2"
     <<: *flatpak-steps
 
+  build-flatpak-x86-wx315:
+    machine:
+      image: ubuntu-2004:202010-01
+    environment:
+      - OCPN_TARGET: flatpak
+      - OCPN_MANIFEST_GLOB: org.opencpn.OpenCPN.wx31.Plugin.*.yaml 
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-flatpak-wx31.sh
+      - run: cd /build-flatpak; /bin/bash < upload.sh
+      - run: ci/git-push.sh /build-flatpak
 
   build-macos:
     macos:
@@ -208,6 +220,9 @@ workflows:
           <<: *std-filters
 
       - build-flatpak-x86-2008:
+          <<: *std-filters
+
+      - build-flatpak-x86-wx315:
           <<: *std-filters
 
       - build-macos:

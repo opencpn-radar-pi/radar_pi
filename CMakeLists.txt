@@ -58,11 +58,9 @@ endif ()
 # 'flatpak', 'android' or 'tarball'. The initial call without BUILD_TYPE ends
 # here.
 #
-file(GLOB FLATPAK_MANIFEST
-  ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
-)
+file(GLOB _manifest ${PROJECT_SOURCE_DIR}/flatpak/${OCPN_MANIFEST_GLOB})
 include(Targets)
-create_targets(${FLATPAK_MANIFEST})
+create_targets(${_manifest})
 if ("${BUILD_TYPE}" STREQUAL "")
   return ()
 endif ()
