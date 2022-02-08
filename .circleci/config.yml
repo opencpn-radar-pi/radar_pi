@@ -188,7 +188,7 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:bullseye-scm
     environment:
-      - OCPN_TARGET: buster
+      - OCPN_TARGET: bullseye
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     <<: *debian-steps
 
