@@ -1,12 +1,15 @@
+3.0.3 TBD
+* No changes from 3.0.3-beta1
+
 3.0.3-beta1 Feb 02, 2022
-*  Win build fixes (#413)
+* Win build fixes (#413)
 * ubuntu-armhf: Don't forget 'apt update' (#409)
 * update-templates: Add missing private data if required (#405)
-*  win_deps.bat: Make PATH handling more consistent (#407)
+* win_deps.bat: Make PATH handling more consistent (#407)
 * Add new Debian armhf builds, misc (#404)
 * Build ubuntu armhf targets (#402)
-*  Drop xenial builds (#401)
-*  Fixes from o-charts_pi (#398)      
+* Drop xenial builds (#401)
+* Fixes from o-charts_pi (#398)      
 
 3.0.2 Jan 11, 2022
 * Checklist completed (#392)
