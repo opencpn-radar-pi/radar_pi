@@ -21,6 +21,9 @@ else
     ci_source="$(pwd)"
 fi
 
+cd $ci_source
+git submodule update --init opencpn-libs
+
 cat > $ci_source/build.sh << "EOF"
 
 # The  docker images are updated and have installed devscripts and equivs

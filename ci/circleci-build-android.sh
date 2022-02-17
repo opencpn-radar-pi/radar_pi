@@ -19,6 +19,8 @@ uname -m
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 if [ -d /ci-source ]; then cd /ci-source; fi
 
+git submodule update --init opencpn-libs
+
 # Set up build directory and a visible link in /
 builddir=build-$OCPN_TARGET
 test -d $builddir || sudo mkdir $builddir && sudo rm -rf $builddir/*
