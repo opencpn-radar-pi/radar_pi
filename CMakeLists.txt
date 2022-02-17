@@ -37,7 +37,7 @@ include(PluginCompiler)
 add_library(${CMAKE_PROJECT_NAME} SHARED EXCLUDE_FROM_ALL ${SRC})
 include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
-add_subdirectory("libs/${PKG_API_LIB}")
+add_subdirectory("opencpn-libs/${PKG_API_LIB}")
 target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
 
 set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
