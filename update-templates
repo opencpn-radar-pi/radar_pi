@@ -172,6 +172,17 @@ do
 done
 git commit -m "Templates: Updating other files"
 
+# Handle opencpn-libs submodule
+test -d opencpn-libs || \
+    git submodule add https://github.com/leamas/opencpn-libs.git opencpn-libs
+git submodule update --remote --merge opencpn-libs
+git add opencpn-libs
+git diff-index --quiet --cached HEAD -- || {
+    echo "Updating opencpn-libs submodule"
+    git commit -m "opencpn-libs: Update to latest version."
+}
+
+
 # Check for files/dirs which are private, but should be copied on first run.
 for f in config.h.in build-deps; do
     if test -e $f; then continue; fi
