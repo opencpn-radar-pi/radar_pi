@@ -1,4 +1,4 @@
-3.0.3 TBD
+3.0.3 Feb 17, 2022
 * No changes from 3.0.3-beta1
 
 3.0.3-beta1 Feb 02, 2022
