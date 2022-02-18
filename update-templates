@@ -140,13 +140,6 @@ for dir in cmake ci scripts buildwin; do
     update_dir $dir $source_treeish
 done
 
-echo "Updating libs"
-git checkout $source_treeish libs
-git add libs
-git diff-index --quiet --cached HEAD -- || {
-    git commit -m "Templates: Updating libs"
-}
-
 # If Plugin.cmake exists we should also update CMakeLists.txt
 if [ -f Plugin.cmake ]; then CMakeLists=CMakeLists.txt; fi
 
@@ -184,7 +177,7 @@ git diff-index --quiet --cached HEAD -- || {
 
 
 # Check for files/dirs which are private, but should be copied on first run.
-for f in config.h.in build-deps; do
+for f in config.h.in build-deps libs; do
     if test -e $f; then continue; fi
     git checkout $source_treeish $f
 done
