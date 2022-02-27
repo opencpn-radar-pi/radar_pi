@@ -2,8 +2,6 @@
 
 == Links
 
-Test
-
 Source: https://github.com/Rasbats/shipdriver_pi[Github Repository]
 
 Releases: https://github.com/Rasbats/shipdriver_pi/releases[Github Releases]
