@@ -117,11 +117,11 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       - OCPN_TARGET: flatpak
-      - OCPN_MANIFEST_GLOB: org.opencpn.OpenCPN.wx31.Plugin.*.yaml 
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
+      - BUILD_WX31: true
     steps:
       - checkout
-      - run: ci/circleci-build-flatpak-wx31.sh
+      - run: ci/circleci-build-flatpak.sh
       - run: cd /build-flatpak; /bin/bash < upload.sh
       - run: ci/git-push.sh /build-flatpak
 
