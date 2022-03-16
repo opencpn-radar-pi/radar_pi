@@ -103,3 +103,31 @@ the manifest and eventually remove the comment.
 
 If there is a need to modify any of the files updated by update-templates,
 please file bugs against the shipdriver repo so the next update runs smoother.
+
+## Testing update-templates
+
+Testing is done using -T which means that many steps otherwise handled
+automagically needs to be done manually. This is a complicated and
+error-prone procedure.
+
+In  shipdriver repo: Commit changes and create a tag with a sd- prefix, 
+something like:
+
+    $ git commit -am "Testing new update-templates"
+    $ git tag sd-foo
+
+
+In client repo, first create the shipdriver remote pointing to the
+local shipdriver repository, something like:
+
+    $ git remote add shipdriver ../shipdriver_pi
+
+Still in client repo, import tag and the updated update-templates scripts:
+
+    $ git fetch --no-tags shipdriver refs/tags/sd-foo:refs/tags/sd-foo
+    $ git checkout sd-foo update-templates
+    $ git commit -am "update-templates: Update to test version"
+
+And run the update:
+
+    $ ./update-templates -T sd-foo
