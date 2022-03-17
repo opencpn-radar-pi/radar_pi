@@ -1,6 +1,8 @@
+3.1.0 TBD
+
 3.1.0-beta2 Mar 16, 2022
-* Install this Changelog in client plugins
-* Clean up the flatpak-wx315 build
+* Install this Changelog in client plugins (#430).
+* Clean up the flatpak-wx315 build (#429).
 
 3.1.0-beta1 Feb 20, 2022
 * The drone.io builder is not longer used (#217).
