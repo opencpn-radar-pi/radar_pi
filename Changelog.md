@@ -1,4 +1,4 @@
-3.1.0 TBD
+3.1.0 Mar 18, 2022
 
 3.1.0-beta2 Mar 16, 2022
 * Install this Changelog in client plugins (#430).
