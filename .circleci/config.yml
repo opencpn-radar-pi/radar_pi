@@ -112,19 +112,6 @@ jobs:
         default: "fp-x86-20-v2"
     <<: *flatpak-steps
 
-  build-flatpak-x86-wx315:
-    machine:
-      image: ubuntu-2004:202010-01
-    environment:
-      - OCPN_TARGET: flatpak
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-      - BUILD_WX31: true
-    steps:
-      - checkout
-      - run: ci/circleci-build-flatpak.sh
-      - run: cd /build-flatpak; /bin/bash < upload.sh
-      - run: ci/git-push.sh /build-flatpak
-
   build-macos:
     macos:
       xcode: "12.5.1"
@@ -232,9 +219,6 @@ workflows:
           <<: *std-filters
 
       - build-flatpak-x86-2008:
-          <<: *std-filters
-
-      - build-flatpak-x86-wx315:
           <<: *std-filters
 
       - build-macos:
