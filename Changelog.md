@@ -1,3 +1,6 @@
+3.1.2 TBD
+* Placeholder
+
 3.1.1 Mar 27, 2022
 * Handle updated ubuntu repository keys (#436).
 * Remove too early ubuntu-wx315 which fails in validation (#437).
