@@ -88,3 +88,8 @@ if (plugin_target STREQUAL "ubuntu")
     message(WARNING "Cannot locate wx-config utility")
   endif ()
 endif ()
+
+string(CONCAT msg "Building for target-release "
+  "${plugin_target}-${plugin_target_version}"
+)
+message(STATUS "${msg}")
