@@ -211,6 +211,6 @@ macro(add_plugin_libraries)
   add_subdirectory("libs/nmea0183")
   target_link_libraries(${PACKAGE_NAME} ocpn::nmea0183)
 
-  add_subdirectory("libs/wxJSON")
+  add_subdirectory("opencpn-libs/wxJSON")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
 endmacro ()
