@@ -24,12 +24,13 @@ flatpak-steps: &flatpak-steps
 
 jobs:
 
-  build-raspbian-bullseye:
+  build-bionic-armhf:
     machine:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
     environment:
-      - OCPN_TARGET: raspbian-armhf
+      - DOCKER_IMAGE: opencpn/ubuntu-bionic-armhf:v1
+      - TARGET_TUPLE: ubuntu;18.04;armhf
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     parameters:
       cache-key:
@@ -37,9 +38,54 @@ jobs:
         default: "fp-arm20-v2"
     steps:
       - checkout
-      - run: ci/generic-build-raspbian-armhf.sh
-      - run: cd build-raspbian; /bin/bash < upload.sh
-      - run: ci/git-push.sh build-raspbian
+      - run: ci/circleci-build-ubuntu-armhf.sh
+      - run: cd build-ubuntu; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-ubuntu
+
+  build-focal-armhf:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    environment:
+      - TARGET_TUPLE: ubuntu;20.04;armhf
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    parameters:
+      cache-key:
+        type: string
+        default: "fp-arm20-v2"
+    steps:
+      - checkout
+      - run: ci/circleci-build-ubuntu-armhf.sh
+      - run: cd build-ubuntu; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-ubuntu
+
+  build-bullseye-armhf:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    environment:
+      - TARGET_TUPLE: debian;11;armhf
+      - OCPN_TARGET: bullseye
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-armhf.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
+
+  build-buster-armhf:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    environment:
+      - TARGET_TUPLE: debian;10;armhf
+      - OCPN_TARGET: buster
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-armhf.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
 
   build-flatpak-arm64:
     machine:
@@ -54,19 +100,6 @@ jobs:
         default: "fp-arm20-v2"
     <<: *flatpak-steps
 
-  build-flatpak-x86-1808:
-    machine:
-      image: ubuntu-2004:202010-01
-    environment:
-      - OCPN_TARGET: flatpak
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-      - BUILD_1808: "true"
-    parameters:
-      cache-key:
-        type: string
-        default: "fp-x86-18-v2"
-    <<: *flatpak-steps
-
   build-flatpak-x86-2008:
     machine:
       image: ubuntu-2004:202010-01
@@ -78,7 +111,6 @@ jobs:
         type: string
         default: "fp-x86-20-v2"
     <<: *flatpak-steps
-
 
   build-macos:
     macos:
@@ -93,15 +125,6 @@ jobs:
           sh -c "otool -L build-osx/app/*/OpenCPN.app/Contents/PlugIns/*.dylib"
       - run: cd build-osx; /bin/bash < upload.sh
       - run: ci/git-push.sh  build-osx
-
-  build-xenial:
-    docker:
-      - image: circleci/buildpack-deps:xenial-scm
-    environment:
-      - OCPN_TARGET: xenial
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-      - USE_DEADSNAKES_PY37: 1
-    <<: *debian-steps
 
   build-bionic:
     docker:
@@ -128,11 +151,31 @@ jobs:
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     <<: *debian-steps
 
+  build-focal-wx31:
+    docker:
+      - image: cimg/base:stable-20.04
+    environment:
+      - OCPN_TARGET: focal-wx31
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-wx31.sh
+      - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
+      - run: sh -c "ci/git-push.sh /build-$OCPN_TARGET"
+
   build-buster:
     docker:
       - image: circleci/buildpack-deps:buster-scm
     environment:
       - OCPN_TARGET: buster
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    <<: *debian-steps
+
+  build-bullseye:
+    docker:
+      - image: circleci/buildpack-deps:bullseye-scm
+    environment:
+      - OCPN_TARGET: bullseye
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     <<: *debian-steps
 
@@ -175,16 +218,10 @@ workflows:
       - build-flatpak-arm64:
           <<: *std-filters
 
-      - build-flatpak-x86-1808:
-          <<: *std-filters
-
       - build-flatpak-x86-2008:
           <<: *std-filters
 
       - build-macos:
-          <<: *std-filters
-
-      - build-xenial:
           <<: *std-filters
 
       - build-bionic-gtk3:
@@ -196,15 +233,29 @@ workflows:
       - build-focal:
           <<: *std-filters
 
+      - build-focal-wx31:
+          <<: *std-filters
+
       - build-buster:
           <<: *std-filters
 
-      # https://github.com/opencpn-radar-pi/radar_pi/issues/187
-      # - build-android-arm64:
-      #     <<: *std-filters
+      - build-bullseye:
+          <<: *std-filters
 
-      # - build-android-armhf:
-      #     <<: *std-filters
+      - build-android-arm64:
+          <<: *std-filters
 
-      - build-raspbian-bullseye:
+      - build-android-armhf:
+          <<: *std-filters
+
+      - build-bionic-armhf:
+          <<: *std-filters
+
+      - build-focal-armhf:
+          <<: *std-filters
+
+      - build-bullseye-armhf:
+          <<: *std-filters
+
+      - build-buster-armhf:
           <<: *std-filters

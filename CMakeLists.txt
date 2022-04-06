@@ -25,6 +25,8 @@ else ()
   message(STATUS "Configuring")
 endif ()
 
+# -------- Plugin setup ----------
+#
 include(Plugin.cmake)
 
 # -------- Setup completed, build the plugin --------
@@ -32,10 +34,10 @@ include(Plugin.cmake)
 project(${PKG_NAME} VERSION ${PKG_VERSION})
 include(PluginCompiler)
 
-add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
+add_library(${CMAKE_PROJECT_NAME} SHARED EXCLUDE_FROM_ALL ${SRC})
 include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
-add_subdirectory("libs/${PKG_API_LIB}")
+add_subdirectory("opencpn-libs/${PKG_API_LIB}")
 target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
 
 set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
@@ -61,6 +63,7 @@ file(GLOB FLATPAK_MANIFEST
 )
 include(Targets)
 create_targets(${FLATPAK_MANIFEST})
+
 if ("${BUILD_TYPE}" STREQUAL "")
   return ()
 endif ()
@@ -77,11 +80,6 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   include(PluginLocalization)
 
   include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
-
-  if (EXISTS libs/jsoncpp)
-    add_subdirectory("libs/jsoncpp")
-    target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
-  endif ()
 
   if (COMMAND add_plugin_libraries)
     add_plugin_libraries()
@@ -105,7 +103,6 @@ configure_file(
   @ONLY
 )
 
-message(STATUS "pkg_semver: ${pkg_semver}")
 set(checksum "@checksum@")
 configure_file(
   # The XML metadata file
