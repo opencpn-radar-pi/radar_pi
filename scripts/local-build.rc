@@ -2,18 +2,24 @@
 # CLOUDSMITH_API_KEY are secrets and hence obfuscated here. Other values
 # are as used by me.
 #
-# Modify as required and install in:
+# The configuration is used by the local-build, git-push and local-push
+# scripts. It is not required for a regular local build according to
+# INSTALL.md
+#
+# To be used, this template should be copied to it's installation path:
 #
 #    Linux:          ~/.config/local-build.rc
 #    Windows (cmd):  %APPDATA%\local-build.rc
 #    Windows (bash): $APPDATA/local-build.rc
 #
-# The variables here are the same as used when setting up a builder like
-# circleci or Appveyor. See:
+# Once in place, modify it according to your setup. The variables here are
+# the same as used when setting up a builder like CircleCI or Appveyor. See:
 # https://opencpn-manuals.github.io/main/AlternativeWorkflow/CircleCI.html#_set_the_environment_variables_for_appveyor
 #
+# NOTE: Don't commit secrets into the git repository by editing this file
+# in place before copying it.
 
-export CLOUDSMITH_API_KEY=39afdeadbeefxxerrnotevenhexdigitsher
+export CLOUDSMITH_API_KEY=MySecretApiKey
 export GIT_KEY_PASSWORD=MySecretPassword
 export GIT_REPO=git@github.com:leamas/plugins.git
 
