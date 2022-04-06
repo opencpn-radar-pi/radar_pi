@@ -242,12 +242,13 @@ workflows:
       - build-bullseye:
           <<: *std-filters
 
-      - build-android-arm64:
-          <<: *std-filters
-
-      - build-android-armhf:
-          <<: *std-filters
-
+      # See: https://github.com/opencpn-radar-pi/radar_pi/issues/187
+      #    - build-android-arm64:
+      #        <<: *std-filters
+      # 
+      #    - build-android-armhf:
+      #        <<: *std-filters
+       
       - build-bionic-armhf:
           <<: *std-filters
 
