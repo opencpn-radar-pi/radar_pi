@@ -28,16 +28,12 @@ if [ "$PWD" != "/"  ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
 # Create a log file.
 exec > >(tee $builddir/build.log) 2>&1;
 
+sudo add-apt-repository ppa:leamas-alec/wxwidgets
 sudo apt -qq update || apt update
 sudo apt-get -qq install devscripts equivs software-properties-common
 
 sudo mk-build-deps -ir build-deps/control
 sudo apt-get -q --allow-unauthenticated install -f
-
-if [ -n "$BUILD_GTK3" ]; then
-    sudo update-alternatives --set wx-config \
-        /usr/lib/*-linux-*/wx/config/gtk3-unicode-3.0
-fi
 
 sudo apt install -q \
     python3-pip python3-setuptools python3-dev python3-wheel \
@@ -48,7 +44,10 @@ python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
 cd $builddir
 
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DOCPN_TARGET_TUPLE="ubuntu-wx315;20.04;x86_64" \
+    ..
 make VERBOSE=1 tarball
 ldd app/*/lib/opencpn/*.so
 if [ -d /ci-source ]; then

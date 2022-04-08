@@ -1,65 +1,41 @@
+---
 clone_folder: c:\project\opencpn\plugin_src
 shallow_clone: false
 clone_depth: 10
 
 image:
-- Visual Studio 2017
+  - Visual Studio 2017
 
-platform: 
-# - x64
-- Win32
+platform:
+  - Win32
 
 configuration: RelWithDebInfo
-test: OFF
+test: false
 
 install:
-  # VS2015 and earlier version - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x86'
-  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
-  
-  # set environment variables for wxWidgets
-  - set WXWIN=C:\wxWidgets-3.1.2
-  - set wxWidgets_ROOT_DIR=%WXWIN%
-  - set wxWidgets_LIB_DIR=%WXWIN%\lib\vc_dll
-  - cmd: SET PATH=%PATH%;%WXWIN%;%wxWidgets_LIB_DIR%;C:\Program Files (x86)\Poedit\Gettexttools\bin;
-
-  # install dependencies:
-  - choco install poedit
-
-  # Download and unzip wxwidgets
-  - ps: Start-FileDownload https://download.opencpn.org/s/E2p4nLDzeqx4SdX/download -FileName wxWidgets-3.1.2.7z
-  - cmd: 7z x wxWidgets-3.1.2.7z -o%WXWIN% > null
-
-  # some debugging information
-  # - cmake --help
-  # - set Displays sensitive password!
-
-  # build wxWidgets - Disabled as we provide prebuilt WX to save time
-  #- cmd: cd %WXWIN%\build\msw\
-  #- cmd: nmake -f makefile.vc BUILD=release SHARED=1 CFLAGS=/D_USING_V120_SDK71_ CXXFLAGS=/D_USING_V120_SDK71_
-  #- cmd: nmake -f makefile.vc BUILD=debug SHARED=1 CFLAGS=/D_USING_V120_SDK71_ CXXFLAGS=/D_USING_V120_SDK71_
+  - set VS_HOME=C:\Program Files (x86)\Microsoft Visual Studio\2017
+  - call "%VS_HOME%\Community\VC\Auxiliary\Build\vcvars32.bat"
 
 before_build:
-  # Unless removed, this interferes with the 32-bit python installation
+  # Ensure there is a working python installation. Unless removed,
+  # Python38-64 and Python27 interferes with the 32-bit 3.8 installation
   - rmdir /Q /S C:\Python38-x64
-
-  # python stuff required by upload.bat and git-push
+  - rmdir /Q /S C:\Python27
   - cmd: SET PATH=C:\Python38;C:\Python38\Scripts;%PATH%
-  - py --version
-  - py -m ensurepip
-  - py -m pip install --upgrade pip
-  - pip install -q setuptools wheel
-  - pip install -q cloudsmith-cli
-  - pip install -q cryptography
+  # And check out submodules:
+  - git submodule update --init opencpn-libs
 
 build_script:
-  - mkdir build
-  - cd build
-  - >
-    cmake -T v141_xp -G "Visual Studio 15 2017"
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo  ..
+  - call buildwin\win_deps.bat
+  - mkdir build && cd build
+  - cmake -T v141_xp -G "Visual Studio 15 2017" ..
+  - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
   - cmake --build . --target tarball --config RelWithDebInfo
-  - py ..\ci\windows-ldd
-  - cmd: upload.bat
-  - py ..\ci\git-push
 
+after_build:
+  # Something in build_script messes with %PATH%:
+  - cmd: SET PATH=C:\Python38;C:\Python38\Scripts;%PATH%
 
+  - python ..\ci\windows-ldd
+  - call upload.bat
+  - python ..\ci\git-push
