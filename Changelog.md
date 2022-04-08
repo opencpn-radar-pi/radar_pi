@@ -1,5 +1,16 @@
 3.2.0 TBD 
-* Placeholder for 3.2 changes.
+* Remove still more wxWidgets 3.1.5 builds (#444)
+* update-templates: Remove .drone.yml (#443)
+* Drop the __OCPN__ANDROID__ symbol, use __ANDROID__ instead.
+* Fix bad bug when copying results in Flatpak resulting in empty
+  Flatpak plugin tarballs (#453, 454).
+* Drop the buggy and superfluous symbols ANDROID and ARMHF; use
+  __ANDROID__, __arm__ and __aarch64__ instead  (#451).
+* AndroidLibs: Update downloaded library hash (#446).
+* update-templates: Don't access non-existing Flatpak/wx31.patch
+* opencpn-libs: fixes to mute some warnings in plugin\_gl
+* Handle updated ubuntu repository keys (#436).
+* Remove too early ubuntu-wx315 which fails in validation (#437).
 
 3.1.0 Mar 18, 2022
 
