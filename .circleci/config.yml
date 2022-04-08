@@ -233,9 +233,6 @@ workflows:
       - build-focal:
           <<: *std-filters
 
-      - build-focal-wx31:
-          <<: *std-filters
-
       - build-buster:
           <<: *std-filters
 
