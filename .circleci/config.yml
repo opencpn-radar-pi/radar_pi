@@ -152,6 +152,7 @@ jobs:
     <<: *debian-steps
 
   build-focal-wx31:
+    # Unused until we start building for wxWidgets 3.1.5 or 3.2
     docker:
       - image: cimg/base:stable-20.04
     environment:
@@ -231,9 +232,6 @@ workflows:
           <<: *std-filters
 
       - build-focal:
-          <<: *std-filters
-
-      - build-focal-wx31:
           <<: *std-filters
 
       - build-buster:
