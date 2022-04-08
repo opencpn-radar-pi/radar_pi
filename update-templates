@@ -153,7 +153,6 @@ for f in \
     .drone.yml \
     .gitattributes \
     .gitignore \
-    flatpak/manifest.wx31.patch \
     INSTALL.md \
     plugin.xml.in \
     .travis.yml \
