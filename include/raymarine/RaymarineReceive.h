@@ -49,8 +49,6 @@ class RaymarineReceive : public RadarReceive {
  public:
    RaymarineReceive(radar_pi *pi, RadarInfo *ri, NetworkAddress reportAddr, NetworkAddress dataAddr, NetworkAddress sendAddr)
       : RadarReceive(pi, ri)
-      , m_target_expansion(false)
-      , m_comm_socket(INVALID_SOCKET) 
   {
     m_info.serialNr = wxT(" ");
     m_info.spoke_data_addr = dataAddr;
@@ -58,6 +56,8 @@ class RaymarineReceive : public RadarReceive {
     m_info.send_command_addr = sendAddr;
     m_next_spoke = -1;
     m_range_meters = 0;
+    m_target_expansion = false;
+    m_comm_socket = INVALID_SOCKET; 
     // However radar is leading for range_units, will be overwritten with value from the radar
     m_shutdown_time_requested = 0;
     m_is_shutdown = false;
