@@ -66,6 +66,7 @@ PLUGIN_BEGIN_NAMESPACE
  - Marcus: 3G, RI, true heading: 0x45be
  - Kees: 4G, RI, mag heading: 0x07d6 = 2006 = 176,6 deg
  - Kees: 4G, RI, no heading: 0x8000 = -1 = negative
+ - Kees: Halo, true heading: 0x4xxx => true
  Known values for heading value:
 */
 #define HEADING_TRUE_FLAG 0x4000
@@ -137,13 +138,16 @@ struct halo_mystery_packet {
   // 72
 };
 
+#define SCAN_MAX (256)
+
 struct common_header {
-  uint8_t headerLen;       // 1 bytes
-  uint8_t status;          // 1 bytes
-  uint8_t scan_number[2];  // 2 bytes, 0-4095
-  uint8_t u00[4];          // 4 bytes
-  uint8_t angle[2];        // 2 bytes
-  uint8_t heading[2];      // 2 bytes heading with RI-10/11. See bitmask explanation above.
+  uint8_t headerLen;    // 1 bytes
+  uint8_t status;       // 1 bytes
+  uint8_t scan_number;  // 1 byte
+  uint8_t u00[1];       // 1 byte, 2nd byte of scan_number on 4G and older
+  uint8_t u01[4];       // 4 bytes
+  uint8_t angle[2];     // 2 bytes
+  uint8_t heading[2];   // 2 bytes heading with RI-10/11. See bitmask explanation above.
 };
 
 struct br24_header {
@@ -288,27 +292,29 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, size_t len) {
     radar_line *line = &packet->line[scanline];
 
     // Validate the spoke
-    int spoke = line->common.scan_number[0] | (line->common.scan_number[1] << 8);
+    uint8_t scan = line->common.scan_number;
     m_ri->m_statistics.spokes++;
     if (line->common.headerLen != 0x18) {
       LOG_RECEIVE(wxT("%s strange header length %d"), m_ri->m_name.c_str(), line->common.headerLen);
       // Do not draw something with this...
-      m_ri->m_statistics.missing_spokes++;
-      m_next_spoke = (spoke + 1) % SPOKES;
+      m_ri->m_statistics.broken_spokes++;
+      m_next_scan = scan + 1;  // We use automatic rollover of uint8_t here
       continue;
     }
     if (line->common.status != 0x02 && line->common.status != 0x12) {
       LOG_RECEIVE(wxT("%s strange status %02x"), m_ri->m_name.c_str(), line->common.status);
       m_ri->m_statistics.broken_spokes++;
     }
-    if (m_next_spoke >= 0 && spoke != m_next_spoke) {
-      if (spoke > m_next_spoke) {
-        m_ri->m_statistics.missing_spokes += spoke - m_next_spoke;
+
+    LOG_RECEIVE(wxT("%s scan=%d m_next_scan=%d"), m_ri->m_name.c_str(), scan, m_next_scan);
+    if (m_next_scan >= 0 && scan != m_next_scan) {
+      if (scan > m_next_scan) {
+        m_ri->m_statistics.missing_spokes += scan - m_next_scan;
       } else {
-        m_ri->m_statistics.missing_spokes += SPOKES + spoke - m_next_spoke;
+        m_ri->m_statistics.missing_spokes += SCAN_MAX + scan - m_next_scan;
       }
     }
-    m_next_spoke = (spoke + 1) % SPOKES;
+    m_next_scan = scan + 1;  // We use automatic rollover of uint8_t here
 
     int range_raw = 0;
     int angle_raw = 0;

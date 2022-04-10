@@ -55,7 +55,7 @@ public:
         m_info.spoke_data_addr = dataAddr;
         m_info.report_addr = reportAddr;
         m_info.send_command_addr = sendAddr;
-        m_next_spoke = -1;
+        m_next_scan = 0;
         m_radar_status = 0;
         m_shutdown_time_requested = 0;
         m_is_shutdown = false;
@@ -135,7 +135,7 @@ private:
     struct ifaddrs* m_interface_array;
     struct ifaddrs* m_interface;
 
-    int m_next_spoke;
+    uint8_t m_next_scan;
     char m_radar_status;
     bool m_first_receive;
 
