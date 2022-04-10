@@ -959,10 +959,10 @@ void RaymarineReceive::ProcessScanData(const UINT8 *data, int len) {
       uint8_t *dData = (uint8_t *)unpacked_data;
       uint8_t *sData = (uint8_t *)data + nextOffset + sizeof(SpokeData);
 
-      int iS = 0;
-      int iD = 0;
+      unsigned int iS = 0;
+      unsigned int iD = 0;
       // LOG_BINARY_RECEIVE(wxT("spoke data sData"), sData, pSData->data_len);
-      while (iS < (int)pSData->data_len) {
+      while (iS < pSData->data_len) {
         if (HDtype) {
           if (iD >= 1024) {  // remove trailing zero's
             break;
@@ -975,7 +975,7 @@ void RaymarineReceive::ProcessScanData(const UINT8 *data, int len) {
           } else {
             uint8_t nFill = sData[1];  // number to be filled
             uint8_t cFill = sData[2];  // data to be filled
-            for (int i = 0; i < nFill; i++) {
+            for (unsigned int i = 0; i < nFill; i++) {
               *dData++ = cFill;
             }
             sData += 3;
@@ -993,7 +993,7 @@ void RaymarineReceive::ProcessScanData(const UINT8 *data, int len) {
             uint8_t nFill = sData[1];
             uint8_t cFill = sData[2];
 
-            for (int i = 0; i < nFill; i++) {
+            for (unsigned int i = 0; i < nFill; i++) {
               *dData++ = ((cFill & 0x0f) << 4) + 0x0f;
               *dData++ = (cFill & 0xf0) + 0x0f;
             }
@@ -1004,7 +1004,7 @@ void RaymarineReceive::ProcessScanData(const UINT8 *data, int len) {
         }
       }
       if (iD != returns_per_line) {
-        while (iS < (int)pSData->length - 8 && iD <= returns_per_line) {
+        while (iS < pSData->length - 8 && iD <= returns_per_line) {
           if (HDtype) {
             *dData++ = *sData;
             sData++;
@@ -1065,7 +1065,7 @@ void RaymarineReceive::ProcessScanData(const UINT8 *data, int len) {
                m_range_meters, m_ri->m_spokes);*/
       m_ri->ProcessRadarSpoke(angle, bearing, dataPtr, returns_per_line, m_range_meters, nowMillis);
       // When te HD radar is transmitting in a mode with 1024 spokes, insert additional spokes to fill the image
-      if (spokes_1024 && angle + 1 < m_ri->m_spokes && bearing + 1 < m_ri->m_spokes) {
+      if (spokes_1024 && angle + 1 < (int) m_ri->m_spokes && bearing + 1 < (int) m_ri->m_spokes) {
         m_ri->ProcessRadarSpoke(angle + 1, bearing + 1, dataPtr, returns_per_line, m_range_meters, nowMillis);
       }
     }
@@ -1102,8 +1102,6 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
   SQuantumScanDataHeader *qheader = (SQuantumScanDataHeader *)data;
   m_pi->logBinaryData(wxT("SQuantumScanDataHeader"), data, len);
   if (len > (int)(sizeof(SQuantumScanDataHeader))) {
-//    Header1 *pHeader = (Header1 *)data;
-    bool HDtype = true;
     u_int returns_per_line;
 
     time_t now = time(0);
@@ -1119,9 +1117,9 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
       uint8_t *dData = (uint8_t *)unpacked_data;
       uint8_t *sData = (uint8_t *)data + nextOffset;
 
-      int iS = 0;
-      int iD = 0;
-      while (iS < (int)qheader->data_len) {
+      unsigned int iS = 0;
+      unsigned int iD = 0;
+      while (iS < qheader->data_len) {
         if (iD >= 1024) {  // remove trailing zero's
           break;
         }
@@ -1133,7 +1131,7 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
         } else {
           uint8_t nFill = sData[1];  // number to be filled
           uint8_t cFill = sData[2];  // data to be filled
-          for (int i = 0; i < nFill; i++) {
+          for (unsigned int i = 0; i < nFill; i++) {
             *dData++ = cFill;
           }
           sData += 3;
