@@ -165,33 +165,37 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
   }
 
   switch (controlType) {
-    case CT_NONE:
-    case CT_RANGE:
-    case CT_TIMED_IDLE:
-    case CT_TIMED_RUN:
-    case CT_TRANSPARENCY:
-    case CT_REFRESHRATE:
-    case CT_TARGET_ON_PPI:
-    case CT_TARGET_TRAILS:
-    case CT_TRAILS_MOTION:
-    case CT_MAIN_BANG_SIZE:
-    case CT_MAX:
-    case CT_ORIENTATION:
-    case CT_CENTER_VIEW:
-    case CT_OVERLAY_CANVAS:
+    case CT_ALL_TO_AUTO:
     case CT_ANTENNA_FORWARD:
     case CT_ANTENNA_STARBOARD:
-    case CT_NO_TRANSMIT_START:
-    case CT_NO_TRANSMIT_END:
-    case CT_FTC:
     case CT_AUTOTTRACKDOPPLER:
-    case CT_STC:
-    case CT_TUNE_FINE:
-    case CT_TUNE_COARSE:
+    case CT_CENTER_VIEW:
+    case CT_COLOR_GAIN:
     case CT_DISPLAY_TIMING:
-    case CT_STC_CURVE:
+    case CT_FTC:
+    case CT_MAIN_BANG_SIZE:
     case CT_MAIN_BANG_SUPPRESSION:
+    case CT_MAX:
+    case CT_MODE:
+    case CT_NONE:
+    case CT_NO_TRANSMIT_END:
+    case CT_NO_TRANSMIT_START:
+    case CT_ORIENTATION:
+    case CT_OVERLAY_CANVAS:
+    case CT_RANGE:
     case CT_RANGE_ADJUSTMENT:
+    case CT_REFRESHRATE:
+    case CT_STC:
+    case CT_STC_CURVE:
+    case CT_TARGET_ON_PPI:
+    case CT_TARGET_TRAILS:
+    case CT_TIMED_IDLE:
+    case CT_TIMED_RUN:
+    case CT_TRAILS_MOTION:
+    case CT_TRANSPARENCY:
+    case CT_TUNE_COARSE:
+    case CT_TUNE_FINE:
+
       // The above are not settings that are not radar commands or not supported by Navico radar.
       // Made them explicit so the compiler can catch missing control types.
       break;

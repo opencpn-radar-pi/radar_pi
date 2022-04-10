@@ -167,9 +167,12 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_ANTENNA_STARBOARD:
     case CT_AUTOTTRACKDOPPLER:
     case CT_CENTER_VIEW:
+    case CT_DISPLAY_TIMING:
     case CT_DOPPLER:
+    case CT_FTC:
     case CT_LOCAL_INTERFERENCE_REJECTION:
     case CT_MAIN_BANG_SIZE:
+    case CT_MAIN_BANG_SUPPRESSION:
     case CT_MAX:
     case CT_NOISE_REJECTION:
     case CT_NONE:
@@ -178,11 +181,13 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_ORIENTATION:
     case CT_OVERLAY_CANVAS:
     case CT_RANGE:
+    case CT_RANGE_ADJUSTMENT:
     case CT_REFRESHRATE:
     case CT_SCAN_SPEED:
     case CT_SIDE_LOBE_SUPPRESSION:
     case CT_STC:
     case CT_STC_CURVE:
+    case CT_TARGET_BOOST:
     case CT_TARGET_ON_PPI:
     case CT_TARGET_SEPARATION:
     case CT_TARGET_TRAILS:
@@ -193,7 +198,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_TUNE_COARSE:
     case CT_TUNE_FINE:
 
-      // The above are not settings that are not radar commands or not supported by Navico radar.
+      // The above are not settings that are not radar commands or not supported by Quantum radar.
       // Made them explicit so the compiler can catch missing control types.
       break;
 

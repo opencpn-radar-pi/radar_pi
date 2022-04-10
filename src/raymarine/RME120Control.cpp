@@ -180,15 +180,18 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
   }
 
   switch (controlType) {
+    case CT_ALL_TO_AUTO:
     case CT_ANTENNA_FORWARD:
     case CT_ANTENNA_HEIGHT:
     case CT_ANTENNA_STARBOARD:
     case CT_AUTOTTRACKDOPPLER:
     case CT_CENTER_VIEW:
+    case CT_COLOR_GAIN:
     case CT_DOPPLER:
     case CT_LOCAL_INTERFERENCE_REJECTION:
     case CT_MAIN_BANG_SIZE:
     case CT_MAX:
+    case CT_MODE:
     case CT_NOISE_REJECTION:
     case CT_NONE:
     case CT_NO_TRANSMIT_END:
@@ -213,7 +216,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_TUNE_COARSE:
     case CT_TUNE_FINE:
 
-      // The above are not settings that are not radar commands or not supported by Navico radar.
+      // The above are not settings that are not radar commands or not supported by Raymarine E120 radar.
       // Made them explicit so the compiler can catch missing control types.
       break;
 
