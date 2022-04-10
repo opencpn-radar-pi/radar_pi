@@ -77,6 +77,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_trails = 0;
   m_idle_standby = 0;
   m_idle_transmit = 0;
+  m_doppler_count = 0;
   m_showManualValueInAuto = false;
   m_timed_idle_hardware = false;
   m_status_text_hide = false;
