@@ -754,7 +754,8 @@ void ControlsDialog::CreateControls() {
 
   // The SCALING button
   if (m_ctrl[CT_RANGE_ADJUSTMENT].type) {
-    m_range_adjustment_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Range adjustment"), m_ctrl[CT_RANGE_ADJUSTMENT], &m_ri->m_range_adjustment);
+    m_range_adjustment_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Range adjustment"), m_ctrl[CT_RANGE_ADJUSTMENT],
+                                                       &m_ri->m_range_adjustment);
     m_installation_sizer->Add(m_range_adjustment_button, 0, wxALL, BORDER);
   }
 
@@ -919,7 +920,8 @@ void ControlsDialog::CreateControls() {
 
   // The COLOR GAIN button
   if (m_ctrl[CT_COLOR_GAIN].type) {
-    m_color_gain_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Color Gain"), m_ctrl[CT_COLOR_GAIN], &m_ri->m_color_gain);
+    m_color_gain_button =
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Color Gain"), m_ctrl[CT_COLOR_GAIN], &m_ri->m_color_gain);
     m_adjust_sizer->Add(m_color_gain_button, 0, wxALL, BORDER);
   }
 
