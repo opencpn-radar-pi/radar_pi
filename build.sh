@@ -28,9 +28,10 @@ case $host-$BUILD_TYPE in
 
   kees-mbp*cli)
     BUILDDIR=rel-mac
-    CMAKE_OPTIONS=" -DwxWidgets_CONFIG_EXECUTABLE=$HOME/src/wx312_opencpn50_macos109/bin/wx-config
-                    -DwxWidgets_CONFIG_OPTIONS='--prefix=$HOME/src/wx312_opencpn50_macos109'
-                    -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9"
+    #CMAKE_OPTIONS=" -DwxWidgets_CONFIG_EXECUTABLE=$HOME/src/wx312_opencpn50_macos109/bin/wx-config
+    #                -DwxWidgets_CONFIG_OPTIONS='--prefix=$HOME/src/wx312_opencpn50_macos109'
+    #                -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9"
+    CMAKE_OPTIONS="-DCMAKE_OSX_DEPLOYMENT_TARGET=10.9"
     export CMAKE_BUILD_PARALLEL_LEVEL=8
     ;;
 
