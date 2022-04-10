@@ -60,6 +60,7 @@ void NavicoLocate::CleanupCards() {
     m_socket = 0;
   }
   m_interface_count = 0;
+  ClearErrors();
 }
 
 void NavicoLocate::UpdateEthernetCards() {
@@ -89,8 +90,15 @@ void NavicoLocate::UpdateEthernetCards() {
           struct sockaddr_in *sa = (struct sockaddr_in *)addr->ifa_addr;
           m_interface_addr[i].addr = sa->sin_addr;
           m_interface_addr[i].port = 0;
+          error = wxString::Format(wxT("Cannot scan interface %s: "), m_interface_addr[i].FormatNetworkAddress());
           m_socket[i] = startUDPMulticastReceiveSocket(m_interface_addr[i], reportNavicoCommon, error);
-          LOG_VERBOSE(wxT("NavicoLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
+          if (m_socket[i] == INVALID_SOCKET) {
+            wxLogError(error);
+            AddError(error);
+          } else {
+            LOG_VERBOSE(wxT("Scanning interface %s for radars on socket %d"), m_interface_addr[i].FormatNetworkAddress(),
+                        m_socket[i]);
+          }
           i++;
         }
       }
@@ -138,6 +146,7 @@ void *NavicoLocate::Entry(void) {
       if (m_socket[i] != INVALID_SOCKET) {
         FD_SET(m_socket[i], &fdin);
         maxFd = MAX(m_socket[i], maxFd);
+        LOG_RECEIVE(wxT("reading from socket %d"), m_socket[i]);
       }
     }
 
@@ -151,6 +160,7 @@ void *NavicoLocate::Entry(void) {
         if (m_socket[i] != INVALID_SOCKET && FD_ISSET(m_socket[i], &fdin)) {
           rx_len = sizeof(rx_addr);
           r = recvfrom(m_socket[i], (char *)data, sizeof(data), 0, (struct sockaddr *)&rx_addr, &rx_len);
+          LOG_RECEIVE(wxT("read %d bytes from socket %d"), r, m_socket[i]);
           if (r > 2) {  // we are not interested in 2 byte messages
             NetworkAddress radar_address;
             radar_address.addr = rx_addr.ipv4.sin_addr;
@@ -511,6 +521,22 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
     }
   }
   LOG_INFO(wxT("Failed to allocate info from NavicoLocate to a radar"));
+}
+
+void NavicoLocate::ClearErrors(void) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  m_errors.Clear();
+}
+
+void NavicoLocate::AddError(wxString &error) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  m_errors << wxT("\n");
+  m_errors << error;
+}
+
+void NavicoLocate::AppendErrors(wxString &error) {
+  wxCriticalSectionLocker lock(m_exclusive);
+  error << m_errors;
 }
 
 PLUGIN_END_NAMESPACE

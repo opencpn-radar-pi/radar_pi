@@ -482,7 +482,7 @@ SOCKET NavicoReceive::GetNewReportSocket() {
     wxString addr = m_interface_addr.FormatNetworkAddress();
     wxString rep_addr = m_info.report_addr.FormatNetworkAddressPort();
 
-    LOG_RECEIVE(wxT("%s scanning interface %s for data from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
+    LOG_RECEIVE(wxT("%s listening on interface %s for reports from %s"), m_ri->m_name.c_str(), addr.c_str(), rep_addr.c_str());
 
     s << _("Scanning interface") << wxT(" ") << addr;
     SetInfoStatus(s);
@@ -785,7 +785,7 @@ void *NavicoReceive::Entry(void) {
             LOG_RECEIVE(wxT("%s active mfd detected at %s"), m_ri->m_name.c_str(), mfd_address.FormatNetworkAddress());
             m_halo_received_info = wxGetUTCTimeMillis();
           }
-          IF_LOG_AT(LOGLEVEL_RECEIVE, m_pi->logBinaryData(wxT("halo receive"), data, r));
+          IF_LOG_AT(LOGLEVEL_RECEIVE, m_pi->logBinaryData(m_ri->m_name, data, r));
 
           halo_heading_packet *msg = (halo_heading_packet *)data;
 
@@ -1283,7 +1283,10 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
 
       default: {
         if (m_pi->m_settings.verbose >= 2) {
-          LOG_BINARY_RECEIVE(wxT("received unknown report"), report, len);
+          wxString rep;
+
+          rep << m_ri->m_name << wxT(" received unknown report");
+          LOG_BINARY_RECEIVE(rep, report, len);
         }
         break;
       }
@@ -1373,12 +1376,23 @@ void NavicoReceive::Shutdown() {
 }
 
 wxString NavicoReceive::GetInfoStatus() {
+  wxString r;
+
   wxCriticalSectionLocker lock(m_lock);
+
+  r << m_status;
+
   // Called on the UI thread, so be gentle
   if (m_firmware.length() > 0) {
-    return m_status + wxT("\n") + m_firmware;
+    r << wxT("\n");
+    r << m_firmware;
   }
-  return m_status;
+
+  if (m_pi->m_navico_locator) {
+    m_pi->m_navico_locator->AppendErrors(r);
+  }
+
+  return r;
 }
 
 PLUGIN_END_NAMESPACE

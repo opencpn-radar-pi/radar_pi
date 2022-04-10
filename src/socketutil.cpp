@@ -34,6 +34,9 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+static bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address, const NetworkAddress &mcast_address,
+                                wxString &error_message);
+
 wxString FormatPackedAddress(const PackedAddress &addr) {
   uint8_t *a = (uint8_t *)&addr.addr;  // sin_addr is in network layout
   wxString address;
@@ -190,8 +193,7 @@ SOCKET startUDPMulticastReceiveSocket(const NetworkAddress &interface_address, c
     goto fail;
   }
 
-  if (socketAddMembership(rx_socket, interface_address, mcast_address)) {
-    error_message << _("Invalid IP address for UDP multicast");
+  if (socketAddMembership(rx_socket, interface_address, mcast_address, error_message)) {
     goto fail;
   }
 
@@ -205,15 +207,16 @@ fail:
   return INVALID_SOCKET;
 }
 
-bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address, const NetworkAddress &mcast_address) {
+static bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address, const NetworkAddress &mcast_address,
+                                wxString &error_message) {
   // Subscribe rx_socket to an extra multicast address
   struct ip_mreq mreq;
   mreq.imr_interface = interface_address.addr;
   mreq.imr_multiaddr = mcast_address.addr;
 
   if (setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&mreq, sizeof(mreq))) {
-    wxLogMessage(wxT("failed to add multicast reception for %s on interface %s"), mcast_address.FormatNetworkAddressPort(),
-                 interface_address.FormatNetworkAddress());
+    error_message << _("failed to add multicast reception for ") << mcast_address.FormatNetworkAddressPort() << _(" on ")
+                  << interface_address.FormatNetworkAddress();
     return true;
   }
 

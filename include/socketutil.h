@@ -167,7 +167,6 @@ extern SOCKET startUDPMulticastReceiveSocket(const NetworkAddress &addr, const N
                                              wxString &error_message);
 extern SOCKET GetLocalhostServerTCPSocket();
 extern SOCKET GetLocalhostSendTCPSocket(SOCKET receive_socket);
-extern bool socketAddMembership(SOCKET socket, const NetworkAddress &interface_address, const NetworkAddress &mcast_address);
 
 #ifndef __WXMSW__
 
