@@ -141,6 +141,8 @@ radar_pi::radar_pi(void *ppimgr)
   m_initialized = false;
   m_predicted_position_initialised = false;
 
+  M_SETTINGS = { 0 };
+
   // Create the PlugIn icons
   initialize_images();
   m_pdeficon = new wxBitmap(*_img_radar_blank);
@@ -589,12 +591,13 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   LOG_DIALOG(wxT("ShowPreferencesDialog"));
 
   bool oldShow = M_SETTINGS.show;
-  M_SETTINGS.show = 0;
+  M_SETTINGS.show = false;
   M_SETTINGS.reset_radars = false;
   NotifyRadarWindowViz();
 
   if (EnsureRadarSelectionComplete(false)) {
     OptionsDialog dlg(parent, m_settings, m_radar[0]->m_radar_type);
+
     if (dlg.ShowModal() == wxID_OK) {
       m_settings = dlg.GetSettings();
       if (EnsureRadarSelectionComplete(m_settings.reset_radars)) {
@@ -995,22 +998,23 @@ void radar_pi::UpdateHeadingPositionState() {
  */
 void radar_pi::ScheduleWindowRefresh() {
   int drawTime = 0;
-  int millis;
+  int millis = 0;
   int renderPPI[RADARS];
   int render_overlay[MAX_CHART_CANVAS];
   int doppler_count = 0;
 
+  CLEAR_STRUCT(renderPPI);
+  CLEAR_STRUCT(render_overlay);
+
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->RefreshDisplay();
-    drawTime += m_radar[r]->GetDrawTime();
-    renderPPI[r] = m_radar[r]->GetDrawTime();
+    drawTime += (renderPPI[r] = m_radar[r]->GetDrawTime());
     doppler_count += m_radar[r]->GetDopplerCount();
   }
 
   int max_canvas = GetCanvasCount();
   for (int r = 0; r < max_canvas; r++) {
-    drawTime += m_draw_time_overlay_ms[r];
-    render_overlay[r] = m_draw_time_overlay_ms[r];
+    drawTime += (render_overlay[r] = m_draw_time_overlay_ms[r]);
   }
 
   int refreshrate = m_settings.refreshrate.GetValue();
