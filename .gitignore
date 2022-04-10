@@ -7,3 +7,5 @@ po/*.pot
 *humbs.db
 cache
 plugins
+opencpn-libs
+rel-*
