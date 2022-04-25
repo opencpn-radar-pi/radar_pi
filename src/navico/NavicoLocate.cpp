@@ -418,6 +418,9 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
        info.serialNr[1] == '5')) {  // It seems that serial # starting with 15 - 19  refers to Halo type radars
     halo_type = true;
   }
+  if (info.serialNr[0] == '1' && info.serialNr[1] == '2') { // autumn 2021 serials for Halo
+    halo_type = true;
+  }
   if (info.serialNr[0] != '1') {  // all the new radars are Halo
     halo_type = true;
   }
