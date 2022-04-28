@@ -1,0 +1,29 @@
+Source: opencpn
+Build-Depends: debhelper (>= 9),
+ base-files (>>8) | mesa-common-dev,
+ base-files (>>8) | libgl1-mesa-dev,
+ libgtk2.0-dev,
+ libjsoncpp-dev,
+ libtinyxml-dev,
+ libunarr-dev | base-files (<< 11),
+ libwxgtk3.0-dev | libwxgtk3.0-gtk3-dev,
+ libwxgtk3.0-0v5 | libwxgtk3.0-0 | libwxgtk3.0-gtk3-0v5,
+ libwxgtk3.0-gtk3-dev | base-files (<< 10),
+ libwxgtk-webview3.0-dev | libwxgtk-webview3.0-gtk3-dev | base-files (<< 11),
+ libwxsvg-dev | base-files (<< 11),
+ python3-pip,
+ python3-setuptools,
+ python3-wheel
+
+Standards-Version: 4.3.0
+Homepage: https://opencpn.org
+
+Description: Packages needed to build opencpn on debian.
+ The Build-Depends field can be used to install dependencies
+ using something like:
+ .
+ .   sudo apt install devscripts equivs
+ .   sudo mk-build-deps --install ci/control
+ .
+ These packages are available in trusty+. The base-files
+ fallback is for optional packages available in later releases.

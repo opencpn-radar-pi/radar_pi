@@ -1,0 +1,24 @@
+Source: opencpn
+Build-Depends: debhelper (>= 9),
+ build-essential,
+ file,
+ gettext,
+ git,
+ libgtk2.0-dev,
+ libjsoncpp-dev,
+ libtinyxml-dev,
+ libwxgtk3.0-dev,
+ lsb-release,
+ wget,
+ wx-common
+
+Standards-Version: 4.3.0
+Homepage: https://opencpn.org
+
+Description: Packages needed to build plugin on raspbian.
+ The Build-Depends field can be used to install dependencies
+ using something like:
+ .
+ .   sudo apt install devscripts equivs
+ .   sudo mk-build-deps -ir ci/control-raspbian
+ .   sudo apt-get -q --allow-unauthenticated install -f
