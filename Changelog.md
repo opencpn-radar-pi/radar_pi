@@ -1,5 +1,7 @@
-3.1.2 TBD
+3.1.2 April 29, 2022
 * AndroidLibs: Update downloaded library hash (#446).
+* update-templates: Don't access non-existing Flatpak/wx31.patch
+* opencpn-libs: fixes to mute some warnings in plugin\_gl
 
 3.1.1 Mar 27, 2022
 * Handle updated ubuntu repository keys (#436).
