@@ -403,12 +403,28 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
   // Find the number of physical Navico
   bool navico[RT_MAX];
   CLEAR_STRUCT(navico);
+  int navicos = 0;
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (m_pi->m_radar[r]->m_radar_type == RT_3G) navico[RT_3G] = true;
-    if (m_pi->m_radar[r]->m_radar_type == RT_4GA) navico[RT_4GA] = true;
-    if (m_pi->m_radar[r]->m_radar_type == RT_4GB) navico[RT_4GB] = true;
-    if (m_pi->m_radar[r]->m_radar_type == RT_HaloA) navico[RT_HaloA] = true;
-    if (m_pi->m_radar[r]->m_radar_type == RT_HaloB) navico[RT_HaloB] = true;
+    if (m_pi->m_radar[r]->m_radar_type == RT_3G) {
+      navico[RT_3G] = true;
+      navicos++;
+    }
+    if (m_pi->m_radar[r]->m_radar_type == RT_4GA) {
+      navico[RT_4GA] = true;
+      navicos++;
+    }
+    if (m_pi->m_radar[r]->m_radar_type == RT_4GB) {
+      navico[RT_4GB] = true;
+      navicos++;
+    }
+    if (m_pi->m_radar[r]->m_radar_type == RT_HaloA) {
+      navico[RT_HaloA] = true;
+      navicos++;
+    }
+    if (m_pi->m_radar[r]->m_radar_type == RT_HaloB) {
+      navico[RT_HaloB] = true;
+      navicos++;
+    }
   }
 
   // associate the info found with the right type of radar
@@ -422,6 +438,10 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
     halo_type = true;
   }
   if (info.serialNr[0] != '1') {  // all the new radars are Halo
+    halo_type = true;
+  }
+  if (navicos <= 2 && (navico[RT_HaloA] || navico[RT_HaloB])) {
+    // if there are 1 or 2 navico radars and at least one is a Halo, we assume the received data is from a halo
     halo_type = true;
   }
   if (halo_type) {
