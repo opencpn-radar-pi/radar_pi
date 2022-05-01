@@ -196,7 +196,6 @@ void *NavicoLocate::Entry(void) {
 
  Not definitive list for
  4G radars only send the C4 data.
-
  */
 
 //
