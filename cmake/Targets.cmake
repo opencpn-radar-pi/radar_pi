@@ -70,6 +70,7 @@ set(_cs_script "
   configure_file(
     ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml.in
     ${CMAKE_BINARY_DIR}/${pkg_xmlname}.xml
+    NEWLINE_STYLE LF
     @ONLY
   )
 ")
