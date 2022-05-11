@@ -1,4 +1,4 @@
-3.1.2 May 11, 2022
+3.1.3 May 11, 2022
 * Add a build for new Ubuntu LTS Jammy (22.04)
 * Fix correct target ubuntu (not ubuntu-gtk3) for 22.04+ versions.
 * opencpn-libs: plugingl: Incorporate changes from o-charts\_pi affecting
