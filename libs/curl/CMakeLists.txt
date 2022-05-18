@@ -19,8 +19,24 @@ set(curl_version 7.83.1)   # Actual version for downloaded tarball
 
 project(ocpn_curl)
 
+add_library(curl_if INTERFACE)
+add_library(libcurl::libcurl ALIAS curl_if)
+
+if (UNIX AND NOT APPLE AND NOT QT_ANDROID)
+  #  On Linux and Flatpak: use the system library and be done with it.
+  find_library(LIBCURL NAMES libcurl curl REQUIRED)
+  if (${CMAKE_VERSION} VERSION_LESS 3.18)
+    find_path(CURL_HEADERS NAMES curl.h PATH_SUFFIXES curl)
+  else ()
+    find_path(CURL_HEADERS NAMES curl.h PATH_SUFFIXES curl REQUIRED)
+  endif ()
+  target_link_libraries(curl_if INTERFACE ${LIBCURL})
+  target_include_directories(curl_if INTERFACE ${CURL_HEADERS})
+  return ()
+endif ()
+
 set(curl_tarball "curl-${curl_version}.tar.gz")
-set(curl_url https://curl.se/download/${curl_tarball})  
+set(curl_url https://curl.se/download/${curl_tarball})
 set(curl_cache_dir "${CMAKE_CURRENT_LIST_DIR}/cache")
 set(curl_srcdir "${curl_cache_dir}/curl-${curl_version}")
 
@@ -63,7 +79,5 @@ endif ()
 
 add_subdirectory(${curl_srcdir})
 
-add_library(curl_if INTERFACE)
-add_library(libcurl::libcurl ALIAS curl_if)
 target_link_libraries(curl_if INTERFACE libcurl)
 target_include_directories(curl_if INTERFACE "${curl_srcdir}/include")
