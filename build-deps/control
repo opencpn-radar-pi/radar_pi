@@ -1,6 +1,7 @@
 Source: opencpn
 Build-Depends: debhelper (>= 9),
  git,
+ libcurl-dev,
  libgtk2.0-dev,
  libgl-dev,
  libjsoncpp-dev,
