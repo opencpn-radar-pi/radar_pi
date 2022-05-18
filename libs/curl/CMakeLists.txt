@@ -11,18 +11,23 @@
 
 cmake_minimum_required (VERSION 3.1.0)
 
+set(curl_version 7.83.1)   # Actual version for built library
+
 if (TARGET libcurl::libcurl)
   return ()
 endif ()
 
-set(curl_version 7.83.1)   # Actual version for downloaded tarball
+if (QT_ANDROID)
+  message(STATUS "NOTE: libcurl is not available on Android")
+  return ()
+endif ()
 
 project(ocpn_curl)
 
 add_library(curl_if INTERFACE)
 add_library(libcurl::libcurl ALIAS curl_if)
 
-if (UNIX AND NOT APPLE AND NOT QT_ANDROID)
+if (UNIX AND NOT APPLE)
   #  On Linux and Flatpak: use the system library and be done with it.
   find_library(LIBCURL NAMES libcurl curl REQUIRED)
   if (${CMAKE_VERSION} VERSION_LESS 3.18)
