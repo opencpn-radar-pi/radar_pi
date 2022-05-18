@@ -50,4 +50,4 @@ modules:
       sources:
           - type: git
             url: ..
-            branch: master
+            branch: v3.1
