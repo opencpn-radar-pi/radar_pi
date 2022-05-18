@@ -36,7 +36,12 @@ endif ()
 target_link_libraries(PLUGINGL PRIVATE ocpn::api)
 
 if (WIN32)
-target_link_libraries(PLUGINGL PRIVATE windows::headers)
+  target_link_libraries(PLUGINGL PRIVATE windows::headers)
+endif ()
+
+find_path(GLU_HEADERS NAMES GL/glu.h)
+if (GLU_HEADERS)
+  target_include_directories(PLUGINGL PRIVATE ${GLU_HEADERS})
 endif ()
 
 target_include_directories(PLUGINGL PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
