@@ -180,20 +180,26 @@ function (flatpak_target manifest)
       $ENV{CMAKE_BUILD_OPTS}
       ${CMAKE_BINARY_DIR}
   )
+
+  # Construct script used to copy out files from the sandbox
+  file(STRINGS ${manifest} id_line  REGEX "^id:")
+  string(REPLACE "id:" "" id_line ${id_line})
+  string(REPLACE org.opencpn.OpenCPN.Plugin. "" id_line "${id_line}")
+  string(STRIP ${id_line} id_line)
+  file(WRITE ${CMAKE_BINARY_DIR}/copy_out
+    "cp -ar /run/build/${id_line}/app/files/* ${CMAKE_BINARY_DIR}/app/files"
+  )
+
   set(_fp_script "
     execute_process(
       COMMAND
         flatpak-builder --force-clean --keep-build-dirs
-          ${CMAKE_CURRENT_BINARY_DIR}/app ${manifest}
+          ${CMAKE_BINARY_DIR}/app ${manifest}
     )
     # Copy the data out of the sandbox to installation directory
     execute_process(
       COMMAND
-        flatpak-builder  --run app ${manifest}  bash -c \"
-          set -x\; stable_link=$(find /run/build -maxdepth 1 -type l)\; \
-          cp -ar $stable_link/app/files/*           \
-              ${CMAKE_CURRENT_BINARY_DIR}/app/files
-        \"
+        flatpak-builder --run app ${manifest} bash ${CMAKE_BINARY_DIR}/copy_out
     )
     execute_process(
       COMMAND bash -c \"sed -e '/@checksum@/d' \
