@@ -101,7 +101,6 @@ target_link_libraries(${PACKAGE_NAME}
 add_compile_definitions(
   __WXQT__
   ANDROID
-  ARMHF
   BUILDING_PLUGIN
   OCPN_USE_WRAPPER
   ocpnUSE_GLES
