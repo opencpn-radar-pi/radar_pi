@@ -106,7 +106,7 @@ public:
         const wxSize& size = wxDefaultSize, long style = SHIPDRIVER_DLG_STYLE);
     ShipDriver_pi* plugin;
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     void OnMouseEvent( wxMouseEvent& event );
 #endif
 
