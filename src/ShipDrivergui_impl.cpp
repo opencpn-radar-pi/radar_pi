@@ -36,7 +36,7 @@
 #include "ShipDrivergui_impl.h"
 #include "ShipDriver_pi.h"
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 wxWindow *g_Window;
 #endif
 
@@ -66,7 +66,7 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
     m_bInvalidGribFile = false;
     m_bShipDriverHasStarted = false;
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     g_Window = this;
     GetHandle()->setStyleSheet( qtStyleSheet);
     Connect( wxEVT_MOTION, wxMouseEventHandler( Dlg::OnMouseEvent ) );
@@ -83,7 +83,7 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
     }
 }
 
-#ifdef __OCPN__ANDROID__ 
+#ifdef __ANDROID__
 wxPoint g_startPos;
 wxPoint g_startMouse;
 wxPoint g_mouse_pos_screen;
