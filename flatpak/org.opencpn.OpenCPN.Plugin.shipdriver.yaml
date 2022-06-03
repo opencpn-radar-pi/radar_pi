@@ -19,26 +19,13 @@ finish-args:
     - --device=all
 
 modules:
-    - name: glu
-      # Copy from https://github.com/flathub/shared-modules
-      config-opts: 
-          - --disable-static
-          - --prefix=/app/extensions/shipdriver
-      sources: 
-        - type: archive
-          url: https://mesa.freedesktop.org/archive/glu/glu-9.0.1.tar.xz
-          sha256: fb5a4c2dd6ba6d1c21ab7c05129b0769544e1d68e1e3b0ffecb18e73c93055bc
-      cleanup: 
-        - /include
-        - /lib/*.a
-        - /lib/*.la
-        - /lib/pkgconfig
+    - @include libs/glu.yaml
 
-    - name: shipdriver
+    - name: @plugin_name
       no-autogen: true
       buildsystem: cmake
       config-opts:
-          - -DCMAKE_INSTALL_PREFIX=/app/extensions/shipdriver/
+          - -DCMAKE_INSTALL_PREFIX=/app/extensions/@plugin_name/
           - -DCMAKE_BUILD_TYPE:STRING=Release
           - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
           - -DBUILD_TYPE:STRING=tarball
