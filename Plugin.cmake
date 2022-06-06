@@ -87,11 +87,6 @@ macro(add_plugin_libraries)
   add_subdirectory("${CMAKE_SOURCE_DIR}/opencpn-libs/jsoncpp")
   target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
 
-  if (NOT QT_ANDROID)
-    add_subdirectory("${CMAKE_SOURCE_DIR}/libs/curl")
-    target_link_libraries(${PACKAGE_NAME} libcurl::libcurl)
-  endif ()
-
   # The wxsvg library enables SVG overall in the plugin
   add_subdirectory("${CMAKE_SOURCE_DIR}/opencpn-libs/wxsvg")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxsvg)
