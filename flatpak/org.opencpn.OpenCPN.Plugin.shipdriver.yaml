@@ -19,7 +19,7 @@ finish-args:
     - --device=all
 
 modules:
-    - @include libs/glu.yaml
+    - @include opencpn-libs/flatpak/glu.yaml
 
     - name: @plugin_name
       no-autogen: true
