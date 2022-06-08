@@ -45,7 +45,7 @@ python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 cd $builddir
 
 cmake \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_BUILD_TYPE=Release \
     -DOCPN_TARGET_TUPLE="ubuntu-wx315;20.04;x86_64" \
     ..
 make VERBOSE=1 tarball
