@@ -200,6 +200,14 @@ function (flatpak_target manifest)
       COMMAND bash -c \"sed -e '/@checksum@/d' \
           < ${pkg_xmlname}.xml.in > app/files/metadata.xml\"
     )
+    if (not exists "app/files/lib/opencpn/lib${PACKAGE_NAME}.so")
+      execute_process(
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMAND ls -lR app
+      )
+      message(FATAL_ERROR \"No shared library generated at app/files/lib/opencpn/lib${PACKAGE_NAME}.so\")
+    endif ()
+ 
     if (${CMAKE_BUILD_TYPE} MATCHES Release|MinSizeRel)
       message(STATUS \"Stripping app/files/lib/opencpn/lib${PACKAGE_NAME}.so\")
       execute_process(
