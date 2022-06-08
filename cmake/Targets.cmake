@@ -191,8 +191,9 @@ function (flatpak_target manifest)
     execute_process(
       COMMAND
         flatpak-builder  --run app ${manifest}  bash -c \"
-          set -x\; stable_link=$(find /run/build -maxdepth 1 -type l)\; \
-          cp -ar $stable_link/app           \
+          set -xe\; \
+          stable_link=$(find /run/build -name 'lib${PACKAGE_NAME}.so' | sed -e 's!/app/.*!/app!)\; \
+          cp -ar $stable_link            \
               ${CMAKE_CURRENT_BINARY_DIR}/
         \"
     )
