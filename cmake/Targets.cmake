@@ -200,7 +200,7 @@ function (flatpak_target manifest)
       COMMAND bash -c \"sed -e '/@checksum@/d' \
           < ${pkg_xmlname}.xml.in > app/files/metadata.xml\"
     )
-    if (not exists "app/files/lib/opencpn/lib${PACKAGE_NAME}.so")
+    if (NOT EXISTS "app/files/lib/opencpn/lib${PACKAGE_NAME}.so")
       execute_process(
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND ls -lR app
