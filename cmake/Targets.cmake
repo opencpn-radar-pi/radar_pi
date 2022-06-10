@@ -203,8 +203,8 @@ function (flatpak_target manifest)
         flatpak-builder --run app ${manifest}
            bash copy_out lib${PACKAGE_NAME}.so ${CMAKE_BINARY_DIR}
     )
-    if (NOT EXISTS ${CMAKE_BINARY_DIR}/app)
-      message(FATAL_ERROR \"Cannot find generated files\")
+    if (NOT EXISTS app/files/lib/opencpn/lib${PACKAGE_NAME}.so)
+      message(FATAL_ERROR \"Cannot find generated file lib${PACKAGE_NAME}.so\")
     endif ()
     execute_process(
       COMMAND bash -c \"sed -e '/@checksum@/d' \
