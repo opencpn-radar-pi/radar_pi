@@ -181,14 +181,14 @@ function (flatpak_target manifest)
       ${CMAKE_BINARY_DIR}
   )
 
-  # Construct script used to copy out files from the sandbox
-  file(STRINGS ${manifest} id_line  REGEX "^id:")
-  string(REPLACE "id:" "" id_line ${id_line})
-  string(REPLACE org.opencpn.OpenCPN.Plugin. "" id_line "${id_line}")
-  string(STRIP ${id_line} id_line)
-  file(WRITE ${CMAKE_BINARY_DIR}/copy_out
-    "cp -ar /run/build/${id_line}/app/files/* ${CMAKE_BINARY_DIR}/app/files"
-  )
+  # Script used to copy out files from the flatpak sandbox
+  file(WRITE ${CMAKE_BINARY_DIR}/copy_out [=[
+    appdir=$(find /run/build -maxdepth 3 -iname $1)
+    appdir=$(ls -t $appdir)       # Sort entries if there is more than one
+    appdir=${appdir%% *}          # Pick first entry
+    appdir=${appdir%%/lib*so}     # Drop filename, use remaining dir part
+    cp -ar $appdir/app $2
+  ]=])
 
   set(_fp_script "
     execute_process(
@@ -198,9 +198,14 @@ function (flatpak_target manifest)
     )
     # Copy the data out of the sandbox to installation directory
     execute_process(
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       COMMAND
-        flatpak-builder --run app ${manifest} bash ${CMAKE_BINARY_DIR}/copy_out
+        flatpak-builder --run app ${manifest}
+           bash copy_out lib${PACKAGE_NAME}.so ${CMAKE_BINARY_DIR}
     )
+    if (NOT EXISTS ${CMAKE_BINARY_DIR}/app)
+      message(FATAL_ERROR \"Cannot find generated files\")
+    endif ()
     execute_process(
       COMMAND bash -c \"sed -e '/@checksum@/d' \
           < ${pkg_xmlname}.xml.in > app/files/metadata.xml\"
