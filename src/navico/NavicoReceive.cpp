@@ -1407,7 +1407,7 @@ wxString NavicoReceive::GetInfoStatus() {
     r << m_firmware;
   }
 
-  if (m_pi->m_navico_locator) {
+  if (m_radar_status == 0 && m_pi->m_navico_locator) {
     m_pi->m_navico_locator->AppendErrors(r);
   }
 
