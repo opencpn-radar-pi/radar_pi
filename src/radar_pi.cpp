@@ -1096,8 +1096,16 @@ void radar_pi::TimedControlUpdate() {
           t << wxString::Format(wxT("Magnetron current %d\n"), m_radar[r]->m_magnetron_current.GetValue());
           double mag_hours = (double)m_radar[r]->m_magnetron_time.GetValue() / 10.;
           t << wxString::Format(wxT("Magnetron hours %5.1f\n"), mag_hours);
-          t << wxString::Format(wxT("Rotation period %d msec\n"), m_radar[r]->m_rotation_period.GetValue());
           t << wxString::Format(wxT("Signal strength %d\n"), m_radar[r]->m_signal_strength.GetValue());
+        }
+
+        int rot = m_radar[r]->m_rotation_period.GetValue();
+        double rpm = 60000.0 / rot;
+
+        LOG_RECEIVE(wxT("Radar RPM=%f rot=%d ms\n"), rpm, rot);
+
+        if (rpm >= 10.0 && rpm <= 180.0) {  // Print when speed seems okay
+          t << wxString::Format(wxT("RPM %3.1f (%d ms)\n"), rpm, rot);
         }
       }
     }

@@ -80,6 +80,8 @@ public:
     int m_radar_ranges[21]; // Ranges actually in use (values displayed). Always
                             // in meters, also if units is NM. Currently only
                             // used for Raymarine.
+    wxLongLong m_last_rotation_time;
+    SpokeBearing m_last_angle;
 
     // Digital radars cannot produce just any range. When asked for a particular
     // value they produce a slightly larger range.
@@ -243,7 +245,7 @@ public:
     void ShowRadarWindow(bool show);
     void ShowControlDialog(bool show, bool reparent);
     void Shutdown();
-    // void DeleteReceive();
+    void CalculateRotationSpeed(SpokeBearing angle);
     void UpdateTransmitState();
     void RequestRadarState(RadarState state);
     int GetDrawTime()

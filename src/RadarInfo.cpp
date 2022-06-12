@@ -87,6 +87,8 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_radar_location_info = RadarLocationInfo(empty_info);
   m_radar_interface_address = NetworkAddress();
   m_radar_address = NetworkAddress();
+  m_last_rotation_time = 0;
+  m_last_angle = 0;
 
   m_mouse_pos.lat = NAN;
   m_mouse_pos.lon = NAN;
@@ -416,6 +418,23 @@ void RadarInfo::ResetSpokes() {
   }
 }
 
+void RadarInfo::CalculateRotationSpeed(SpokeBearing angle) {
+  if (m_radar_type == RM_E120) {
+    // Nothing, we learn the rotation speed directly from the radar.
+  } else if (angle < m_last_angle) {
+    wxLongLong now = wxGetUTCTimeMillis();
+
+    if (m_last_rotation_time != 0 && now > m_last_rotation_time + 100) {
+      wxLongLong delta = now - m_last_rotation_time;
+      int deltaInt = (int)delta.GetValue();
+
+      m_rotation_period.Update(deltaInt);
+    }
+    m_last_rotation_time = now;
+  }
+  m_last_angle = angle;
+}
+
 /*
  * A spoke of data has been received by the receive thread and it calls this (in
  * the context of the receive thread, so no UI actions can be performed here.)
@@ -431,8 +450,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
                                   wxLongLong time_rec) {
   int orientation;
 
-  // calculate course as the moving average of m_hdt over one revolution
-  SampleCourse(angle);  // used for course_up mode
+  SampleCourse(angle);            // Calculate course as the moving average of m_hdt over one revolution
+  CalculateRotationSpeed(angle);  // Find out how fast the radar is rotating
 
   for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
     data[i] = 0;
