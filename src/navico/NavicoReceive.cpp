@@ -1006,6 +1006,9 @@ struct RadarReport_04C4_66 {   // 04 C4 with length 66
   uint16_t bearing_alignment;  // 6-7
   uint16_t field8;             // 8-9
   uint16_t antenna_height;     // 10-11
+  uint32_t field12;            // 12-15  0x00
+  uint8_t field16[3];          // 16-18  0x00
+  uint8_t accent_light;        // 19     accent light 0..3
 };
 
 struct RadarReport_08C4_18 {             // 08 c4  length 18
@@ -1091,7 +1094,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
 
   m_ri->resetTimeout(now);
 
-  // LOG_BINARY_RECEIVE(wxT("received report"), report, len);
+  LOG_BINARY_RECEIVE(wxT("received report"), report, len);
 
   if (report[1] == 0xC4) {
     // Looks like a radar report. Is it a known one?
@@ -1228,6 +1231,12 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
 
         // antenna height
         m_ri->m_antenna_height.Update(data->antenna_height / 1000);
+
+        // accent light
+        m_ri->m_accent_light.Update(data->accent_light);
+
+        LOG_RECEIVE(wxT("%s bearing_alignment=%f antenna_height=%umm accent_light=%u"), m_ri->m_name.c_str(),
+                    (int)data->bearing_alignment / 10.0, data->antenna_height, data->accent_light);
         break;
       }
 

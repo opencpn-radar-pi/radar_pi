@@ -342,6 +342,13 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }
+
+    case CT_ACCENT_LIGHT: {
+      uint8_t cmd[] = {0x31, 0xc1, (uint8_t)value};
+      LOG_VERBOSE(wxT("%s Accent light: %d"), m_name.c_str(), value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
   }
 
   return r;

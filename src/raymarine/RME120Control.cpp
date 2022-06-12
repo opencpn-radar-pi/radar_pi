@@ -134,13 +134,12 @@ static uint8_t rd_msg_5s[] = {
 
 uint8_t rd_msg_1s[] = {
     // E120
-	  0x00, 0x80, 0x01, 0x00, 0x52, 0x41, 0x44, 0x41, 0x52, 0x00, 0x00, 0x00
-};
+    0x00, 0x80, 0x01, 0x00, 0x52, 0x41, 0x44, 0x41, 0x52, 0x00, 0x00, 0x00};
 
 bool RME120Control::RadarStayAlive() {
   static int count = 4;
 
-  if(count++ >= 4) {
+  if (count++ >= 4) {
     TransmitCmd(rd_msg_5s, sizeof(rd_msg_5s));
     count = 0;
   }
@@ -180,6 +179,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
   }
 
   switch (controlType) {
+    case CT_ACCENT_LIGHT:
     case CT_ALL_TO_AUTO:
     case CT_ANTENNA_FORWARD:
     case CT_ANTENNA_HEIGHT:

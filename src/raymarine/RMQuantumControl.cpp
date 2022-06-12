@@ -37,10 +37,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-bool RMQuantumControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
-  return true;
-}
-
+bool RMQuantumControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) { return true; }
 
 bool RMQuantumControl::TransmitCmd(const uint8_t *msg, int size) {
   if (m_ri->m_radar_location_info.send_command_addr.IsNull()) {
@@ -71,7 +68,6 @@ bool RMQuantumControl::TransmitCmd(const uint8_t *msg, int size) {
   return true;
 }
 
-
 void RMQuantumControl::RadarTxOff() {
   uint8_t rd_msg_tx_control[] = {0x10, 0x00, 0x28, 0x00,
                                  0x00,  // Control value at offset 4 : 0 - off, 1 - on   //10 00 28 00 01 00 00 00
@@ -88,29 +84,28 @@ void RMQuantumControl::RadarTxOn() {
   TransmitCmd(rd_msg_tx_control, sizeof(rd_msg_tx_control));
 };
 
+static uint8_t stay_alive_1sec[] = {0x00, 0x00, 0x28, 0x00, 0x52, 0x61,
+                                    0x64, 0x61, 0x72, 0x00, 0x00, 0x00};  // Quantum 1 sec stay alive
 
-static uint8_t stay_alive_1sec[] = {0x00, 0x00, 0x28, 0x00, 0x52, 0x61, 0x64, 0x61, 0x72, 0x00, 0x00, 0x00}; // Quantum 1 sec stay alive
-
-
-static uint8_t rd_msg_5s[] = {0x03, 0x89, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // Quantum stay alive 5 sec message, 36 bytes
-                              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                              0x9e, 0x03, 0x00, 0x00, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static uint8_t rd_msg_5s[] = {
+    0x03, 0x89, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // Quantum stay alive 5 sec message, 36 bytes
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x9e, 0x03, 0x00, 0x00, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 bool RMQuantumControl::RadarStayAlive() {
   static int counter = 0;
- 
+
   TransmitCmd(stay_alive_1sec, sizeof(stay_alive_1sec));
 
-  if(counter == 0)
-    TransmitCmd(rd_msg_5s, sizeof(rd_msg_5s));
+  if (counter == 0) TransmitCmd(rd_msg_5s, sizeof(rd_msg_5s));
 
-  if(counter++ > 4) counter = 0;
+  if (counter++ > 4) counter = 0;
 
   return true;
 }
 
-static uint8_t rd_msg_set_range[] = {0x01, 0x01, 0x28, 0x00, 0x00, 
-                                     0x0f,    // Quantum range index at pos 5
+static uint8_t rd_msg_set_range[] = {0x01, 0x01, 0x28, 0x00, 0x00,
+                                     0x0f,  // Quantum range index at pos 5
                                      0x00, 0x00};
 
 bool RMQuantumControl::SetRange(int meters) {
@@ -130,27 +125,26 @@ void RMQuantumControl::SetRangeIndex(size_t index) {
   TransmitCmd(rd_msg_set_range, sizeof(rd_msg_set_range));
 }
 
-
 // Overview of Quantum radar conmmands as far as known
-      // Ordering the radar commands by the first byte value.
-      /*
-      00 00 28       Stay alive 1 sec
-      01 01 28       Range
-      01 03 28 00 00 00 00 00 Gain to manual
-      01 03 28 00 00 01 00 00 Gain to auto
-      02 03 28 00 00 xx 7e a3    Gain
-      05 03 28 00 00 00 00 00 Sea to manual
-      05 03 28 00 00 01 00 00 Sea to auto
-      06 03 28 00 00 xx 00 00 Sea
-      0b 03 28 00 00 00 00 00 Rain to manual
-      0b 03 28 00 00 00 00 00 Rain to auto
-      0c 03 28       Rain
-      0f 03 28 00 00 01 00 00 Target expansion on, 00 on 5 == off
-      10 00 28 00 01 00 00 00 Radar transmit ON. Controlling value at pos 4!
-      10 00 28 00 00 00 00 00 Radar transmit OFF
-      14 03 28       Mode, harbor 0, coastal 1, offshore 2, weather 3
+// Ordering the radar commands by the first byte value.
+/*
+00 00 28       Stay alive 1 sec
+01 01 28       Range
+01 03 28 00 00 00 00 00 Gain to manual
+01 03 28 00 00 01 00 00 Gain to auto
+02 03 28 00 00 xx 7e a3    Gain
+05 03 28 00 00 00 00 00 Sea to manual
+05 03 28 00 00 01 00 00 Sea to auto
+06 03 28 00 00 xx 00 00 Sea
+0b 03 28 00 00 00 00 00 Rain to manual
+0b 03 28 00 00 00 00 00 Rain to auto
+0c 03 28       Rain
+0f 03 28 00 00 01 00 00 Target expansion on, 00 on 5 == off
+10 00 28 00 01 00 00 00 Radar transmit ON. Controlling value at pos 4!
+10 00 28 00 00 00 00 00 Radar transmit OFF
+14 03 28       Mode, harbor 0, coastal 1, offshore 2, weather 3
 
-      */
+*/
 
 bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) {
   bool r = false;
@@ -162,6 +156,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
   }
 
   switch (controlType) {
+    case CT_ACCENT_LIGHT:
     case CT_ANTENNA_FORWARD:
     case CT_ANTENNA_HEIGHT:
     case CT_ANTENNA_STARBOARD:
@@ -226,17 +221,13 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     }
 
     case CT_COLOR_GAIN: {
-      uint8_t command_color_gain_auto[] = {
-        0x03, 0x03, 0x28, 0x00, 0x00, 
-        0x00,	// Color gain auto - 1, manual - 0 @5 
-        0x00, 0x00
-      };
+      uint8_t command_color_gain_auto[] = {0x03, 0x03, 0x28, 0x00, 0x00,
+                                           0x00,  // Color gain auto - 1, manual - 0 @5
+                                           0x00, 0x00};
 
-      uint8_t command_color_gain_set[] = {
-        0x04, 0x03, 0x28, 0x00, 0x00, 
-        0x37, 	// Color gain value 0 - 100 @5
-        0x00, 0x00
-      };
+      uint8_t command_color_gain_set[] = {0x04, 0x03, 0x28, 0x00, 0x00,
+                                          0x37,  // Color gain value 0 - 100 @5
+                                          0x00, 0x00};
       if (!autoValue) {
         command_color_gain_auto[5] = 0;
         r = TransmitCmd(command_color_gain_auto, sizeof(command_color_gain_auto));  // set auto off
@@ -275,9 +266,10 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     }
 
     case CT_RAIN: {  // Rain Clutter
-      uint8_t command_rain_auto[] = {0x0b, 0x03, 0x28, 0x00, 0x00, 
-                                     0x01,  // Auto on at offset 5, 01 = manual, 00 = auto (different from the others!)// changed for test
-                                     0x00, 0x00};
+      uint8_t command_rain_auto[] = {
+          0x0b, 0x03, 0x28, 0x00, 0x00,
+          0x01,  // Auto on at offset 5, 01 = manual, 00 = auto (different from the others!)// changed for test
+          0x00, 0x00};
 
       uint8_t command_rain_set[] = {0x0c, 0x03, 0x28, 0x00, 0x00,
                                     0x28,  // Quantum value at pos 5
@@ -350,11 +342,9 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_BEARING_ALIGNMENT: {  // to be consistent with the local bearing alignment of the pi
                                   // this bearing alignment works opposite to the one an a Lowrance display
 
-      uint8_t rd_msg_bearing_offset[] = {
-	      0x01, 0x04, 0x28, 0x00, 
-	      0x05, 0x00,	// Bearing offset in .1 degrees with .5 resolution [-179.5 - 180] @4
-	      0x00, 0x00
-      };
+      uint8_t rd_msg_bearing_offset[] = {0x01, 0x04, 0x28,
+                                         0x00, 0x05, 0x00,  // Bearing offset in .1 degrees with .5 resolution [-179.5 - 180] @4
+                                         0x00, 0x00};
 
       rd_msg_bearing_offset[4] = value & 0xff;
       rd_msg_bearing_offset[5] = (value >> 8) & 0xff;
@@ -362,14 +352,13 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
       r = TransmitCmd(rd_msg_bearing_offset, sizeof(rd_msg_bearing_offset));
       break;
     }
-  
+
       // case CT_DOPPLER: {
       //  uint8_t cmd[] = {0x23, 0xc1, (uint8_t)value};
       //  LOG_VERBOSE(wxT("%s Doppler state: %d"), m_name.c_str(), value);
       //  r = TransmitCmd(cmd, sizeof(cmd));
       //  break;
       //}
-
   }
 
   return r;

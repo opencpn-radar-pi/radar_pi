@@ -111,7 +111,7 @@ EVT_CLOSE(ControlsDialog::OnClose)
 END_EVENT_TABLE()
 
 // The following are only for logging, so don't care about translations.
-string ControlTypeNames[CT_MAX] = {
+const string ControlTypeNames[CT_MAX] = {
     "Unused",
 #define CONTROL_TYPE(x, y) y,
 #include "ControlType.inc"
@@ -836,6 +836,12 @@ void ControlsDialog::CreateControls() {
     m_main_bang_size_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Main bang size"), m_ctrl[CT_MAIN_BANG_SIZE],
                                                      &m_ri->m_main_bang_size, _("pixels"));
     m_installation_sizer->Add(m_main_bang_size_button, 0, wxALL, BORDER);
+  }
+
+  if (m_ctrl[CT_ACCENT_LIGHT].type) {
+    m_accent_light_button =
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Accent light"), m_ctrl[CT_ACCENT_LIGHT], &m_ri->m_accent_light);
+    m_installation_sizer->Add(m_accent_light_button, 0, wxALL, BORDER);
   }
 
   m_top_sizer->Hide(m_installation_sizer);
@@ -2148,9 +2154,15 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   if (m_main_bang_size_button) {
     m_main_bang_size_button->UpdateLabel();
   }
+
+  if (m_accent_light_button) {
+    m_accent_light_button->UpdateLabel();
+  }
+
   if (m_antenna_starboard_button) {
     m_antenna_starboard_button->UpdateLabel();
   }
+
   if (m_antenna_forward_button) {
     m_antenna_forward_button->UpdateLabel();
   }

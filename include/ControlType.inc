@@ -50,6 +50,7 @@ CONTROL_TYPE(CT_TIMED_RUN, "Timed run")
 CONTROL_TYPE(CT_TRAILS_MOTION, "Target trails motion")
 
 // Hardware
+CONTROL_TYPE(CT_ACCENT_LIGHT, "Accent light")
 CONTROL_TYPE(CT_ANTENNA_HEIGHT, "Antenna height")
 CONTROL_TYPE(CT_BEARING_ALIGNMENT, "Bearing alignment")
 CONTROL_TYPE(CT_GAIN, "Gain")
