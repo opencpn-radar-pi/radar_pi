@@ -39,103 +39,107 @@ PLUGIN_BEGIN_NAMESPACE
 enum message_status { HIDE, SHOW, SHOW_NO_NMEA, SHOW_CLOSE };
 
 class radar_info_item {
- public:
-  void Update(wxString &v) {
-    wxCriticalSectionLocker lock(m_exclusive);
+public:
+    void Update(wxString& v)
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
 
-    mod = true;
-    value = v;
-  };
+        mod = true;
+        value = v;
+    };
 
-  bool GetNewValue(wxString *str) {
-    if (mod) {
-      wxCriticalSectionLocker lock(m_exclusive);
+    bool GetNewValue(wxString* str)
+    {
+        if (mod) {
+            wxCriticalSectionLocker lock(m_exclusive);
 
-      mod = false;
-      *str = value;
-      return true;
+            mod = false;
+            *str = value;
+            return true;
+        }
+        return false;
     }
-    return false;
-  }
 
-  void GetValue(wxString *str) {
-    wxCriticalSectionLocker lock(m_exclusive);
+    void GetValue(wxString* str)
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
 
-    *str = value;
-  }
+        *str = value;
+    }
 
-  radar_info_item() { mod = false; }
+    radar_info_item() { mod = false; }
 
- private:
-  wxCriticalSection m_exclusive;
-  wxString value;
-  bool mod;
+private:
+    wxCriticalSection m_exclusive;
+    wxString value;
+    bool mod;
 };
 
 class MessageBox : public wxDialog {
-  DECLARE_CLASS(MessageBox)
-  DECLARE_EVENT_TABLE()
+    DECLARE_CLASS(MessageBox)
+    DECLARE_EVENT_TABLE()
 
- public:
-  MessageBox();
+public:
+    MessageBox();
 
-  ~MessageBox();
-  void Init();
-  bool Show(bool show = true);
+    ~MessageBox();
+    void Init();
+    bool Show(bool show = true);
 
-  bool Create(wxWindow *parent, radar_pi *pi);
-  void CreateControls();
-  bool UpdateMessage(bool force);  // Check whether message box needs to be visible, return true if shown
-  void SetTrueHeadingInfo(wxString &msg);
-  void SetMagHeadingInfo(wxString &msg);
-  void SetVariationInfo(wxString &msg);
-  void SetStatisticsInfo(wxString &msg);
+    bool Create(wxWindow* parent, radar_pi* pi);
+    void CreateControls();
+    bool UpdateMessage(bool force); // Check whether message box needs to be
+                                    // visible, return true if shown
+    void SetTrueHeadingInfo(wxString& msg);
+    void SetMagHeadingInfo(wxString& msg);
+    void SetVariationInfo(wxString& msg);
+    void SetStatisticsInfo(wxString& msg);
 
-  void OnClose(wxCloseEvent &event);
+    void OnClose(wxCloseEvent& event);
 
- private:
-  void OnIdOKClick(wxCommandEvent &event);
-  void OnMove(wxMoveEvent &event);
-  void OnSize(wxSizeEvent &event);
+private:
+    void OnIdOKClick(wxCommandEvent& event);
+    void OnMove(wxMoveEvent& event);
+    void OnSize(wxSizeEvent& event);
 
-  void OnMessageCloseButtonClick(wxCommandEvent &event);
-  void OnMessageHideRadarClick(wxCommandEvent &event);
-  void OnMessageChooseRadarClick(wxCommandEvent &event);
+    void OnMessageCloseButtonClick(wxCommandEvent& event);
+    void OnMessageHideRadarClick(wxCommandEvent& event);
+    void OnMessageChooseRadarClick(wxCommandEvent& event);
 
-  bool IsModalDialogShown();
+    bool IsModalDialogShown();
 
-  wxWindow *m_parent;
-  radar_pi *m_pi;
+    wxWindow* m_parent;
+    radar_pi* m_pi;
 
-  radar_info_item m_true_heading_info;
-  radar_info_item m_mag_heading_info;
-  radar_info_item m_variation_info;
-  radar_info_item m_statistics_info;
+    radar_info_item m_true_heading_info;
+    radar_info_item m_mag_heading_info;
+    radar_info_item m_variation_info;
+    radar_info_item m_statistics_info;
 
-  message_status m_message_state;
-  bool m_old_radar_seen;
-  bool m_allow_auto_hide;
+    message_status m_message_state;
+    bool m_old_radar_seen;
+    bool m_allow_auto_hide;
 
-  wxBoxSizer *m_top_sizer;
-  wxBoxSizer *m_nmea_sizer;
-  wxBoxSizer *m_info_sizer;
+    wxBoxSizer* m_top_sizer;
+    wxBoxSizer* m_nmea_sizer;
+    wxBoxSizer* m_info_sizer;
 
-  wxBoxSizer *m_message_sizer;  // Contains NO HDG and/or NO GPS
+    wxBoxSizer* m_message_sizer; // Contains NO HDG and/or NO GPS
 
-  // For each radar we have a text box
-  wxStaticBox *m_radar_box[4];
-  wxStaticText *m_radar_text[4];
+    // For each radar we have a text box
+    wxStaticBox* m_radar_box[4];
+    wxStaticText* m_radar_text[4];
 
-  // MessageBox
-  wxButton *m_choose_button;
-  wxButton *m_hide_radar;
-  wxButton *m_close_button;
-  wxCheckBox *m_have_open_gl;
-  wxCheckBox *m_have_boat_pos;
-  wxCheckBox *m_have_true_heading;
-  wxCheckBox *m_have_mag_heading;
-  wxCheckBox *m_have_variation;
-  wxStaticText *m_statistics;
+    // MessageBox
+    wxButton* m_choose_button;
+    wxButton* m_hide_radar;
+    wxButton* m_close_button;
+    wxCheckBox* m_have_open_gl;
+    wxCheckBox* m_have_boat_pos;
+    wxCheckBox* m_have_true_heading;
+    wxCheckBox* m_have_mag_heading;
+    wxCheckBox* m_have_variation;
+    wxStaticText* m_statistics;
 };
 
 PLUGIN_END_NAMESPACE

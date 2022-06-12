@@ -42,41 +42,44 @@ PLUGIN_BEGIN_NAMESPACE
 //
 
 class RadarReceive : public wxThread {
- public:
-  RadarReceive(radar_pi *pi, RadarInfo *ri) : wxThread(wxTHREAD_JOINABLE) {
-    Create(1024 * 1024);  // Stack size, be liberal
-    m_pi = pi;            // This allows you to access the main plugin stuff
-    m_ri = ri;            // and this the per-radar stuff
-  }
+public:
+    RadarReceive(radar_pi* pi, RadarInfo* ri)
+        : wxThread(wxTHREAD_JOINABLE)
+    {
+        Create(1024 * 1024); // Stack size, be liberal
+        m_pi = pi; // This allows you to access the main plugin stuff
+        m_ri = ri; // and this the per-radar stuff
+    }
 
-  virtual ~RadarReceive() {}
+    virtual ~RadarReceive() { }
 
-  virtual void *Entry(void) = 0;
+    virtual void* Entry(void) = 0;
 
-  /*
-   * GetInfoStatus
-   *
-   * Return a string that explains whether the radar has been seen,
-   * if interesting at which IP address or whatever, and whether it is functional.
-   *
-   * It can include newlines. It is presented to the end users, so it must be
-   * a translated string.
-   */
-  virtual wxString GetInfoStatus() = 0;
-  virtual void SetInfoStatus(wxString s){};
+    /*
+     * GetInfoStatus
+     *
+     * Return a string that explains whether the radar has been seen,
+     * if interesting at which IP address or whatever, and whether it is
+     * functional.
+     *
+     * It can include newlines. It is presented to the end users, so it must be
+     * a translated string.
+     */
+    virtual wxString GetInfoStatus() = 0;
+    virtual void SetInfoStatus(wxString s) {};
 
-  /*
-   * Shutdown
-   *
-   * Called when the thread should stop.
-   * It should stop running.
-   */
-  virtual void Shutdown(void) = 0;
-  virtual SOCKET GetCommSocket() { return INVALID_SOCKET; }
+    /*
+     * Shutdown
+     *
+     * Called when the thread should stop.
+     * It should stop running.
+     */
+    virtual void Shutdown(void) = 0;
+    virtual SOCKET GetCommSocket() { return INVALID_SOCKET; }
 
- protected:
-  radar_pi *m_pi;
-  RadarInfo *m_ri;
+protected:
+    radar_pi* m_pi;
+    RadarInfo* m_ri;
 };
 
 PLUGIN_END_NAMESPACE

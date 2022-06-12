@@ -42,10 +42,10 @@ PLUGIN_BEGIN_NAMESPACE
 //    Radar Control Dialog Specification
 //----------------------------------------------------------------------------------------------------------
 class RMQuantumControlsDialog : public ControlsDialog {
- public:
-   RMQuantumControlsDialog(size_t radarType);
+public:
+    RMQuantumControlsDialog(size_t radarType);
 
-  ~RMQuantumControlsDialog(){};
+    ~RMQuantumControlsDialog() {};
 };
 
 PLUGIN_END_NAMESPACE

@@ -28,5 +28,11 @@ all:
 ide:
 	bash ./build.sh ide
 
+format:
+	clang-format -i src/*.cpp
+	clang-format -i src/*/*.cpp
+	clang-format -i include/*.h
+	clang-format -i include/*/*.h
+
 endif    # gmake: close condition; nmake: not seen
 !endif : # gmake: unused target; nmake close conditional

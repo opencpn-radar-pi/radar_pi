@@ -48,7 +48,7 @@ extern "C" {
 #include "GL/glext.h"
 #include "GL/glu.h"
 #elif __WXMAC__
-#include <OpenGL/gl3.h>  // from ..../Frameworks/OpenGL.framework/Headers/gl.h
+#include <OpenGL/gl3.h> // from ..../Frameworks/OpenGL.framework/Headers/gl.h
 #define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #else
 #include <winsock2.h>
@@ -63,7 +63,7 @@ extern "C" {
 #include <opengl/GL/glext.h>
 #endif
 
-}  // end "extern C"
+} // end "extern C"
 
 #include "wx/wxprec.h"
 #ifdef __WXOSX__
@@ -155,27 +155,29 @@ using namespace std;
 #endif
 
 #define METERS_PER_NM 1852
-#define NM(x) (METERS_PER_NM * x)  // Define this such that NM(1/8) works even with integer division
+#define NM(x)                                                                  \
+    (METERS_PER_NM                                                             \
+        * x) // Define this such that NM(1/8) works even with integer division
 
 #define DEFINE_RADAR(t, n, s, l, a, b, c, d)
 #include "RadarType.h"
 
 // So now SPOKES_MAX and SPOKE_LEN_MAX are the maxima over all radar types...
 
-#define DEGREES_PER_ROTATION (360)  // Classical math
+#define DEGREES_PER_ROTATION (360) // Classical math
 
 struct GeoPosition {
-  double lat;
-  double lon;
+    double lat;
+    double lon;
 };
 
 struct ExtendedPosition {
-  GeoPosition pos;
-  double dlat_dt;   // m / sec
-  double dlon_dt;   // m / sec
-  wxLongLong time;  // millis
-  double speed_kn;
-  double sd_speed_kn;  // standard deviation of the speed in knots
+    GeoPosition pos;
+    double dlat_dt; // m / sec
+    double dlon_dt; // m / sec
+    wxLongLong time; // millis
+    double speed_kn;
+    double sd_speed_kn; // standard deviation of the speed in knots
 };
 
 #endif

@@ -41,45 +41,52 @@
 PLUGIN_BEGIN_NAMESPACE
 
 class RMQuantumControl : public RadarControl {
- public:
-  RMQuantumControl(radar_pi *pi, RadarInfo *ri) {
-    // m_radar_socket = INVALID_SOCKET;
-    m_pi = pi;
-    m_ri = ri;
-    m_name = ri->m_name;
-    m_send_address = NetworkAddress();
-  }
+public:
+    RMQuantumControl(radar_pi* pi, RadarInfo* ri)
+    {
+        // m_radar_socket = INVALID_SOCKET;
+        m_pi = pi;
+        m_ri = ri;
+        m_name = ri->m_name;
+        m_send_address = NetworkAddress();
+    }
 
-  ~RMQuantumControl() {
-    // if (m_radar_socket != INVALID_SOCKET) {
-    //   closesocket(m_radar_socket);
-    //   LOG_TRANSMIT(wxT("%s transmit socket closed"), m_name.c_str());
-    // }
-  }
+    ~RMQuantumControl()
+    {
+        // if (m_radar_socket != INVALID_SOCKET) {
+        //   closesocket(m_radar_socket);
+        //   LOG_TRANSMIT(wxT("%s transmit socket closed"), m_name.c_str());
+        // }
+    }
 
-  bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr);
+    bool Init(radar_pi* pi, RadarInfo* ri, NetworkAddress& ifadr,
+        NetworkAddress& radaradr);
 
-  void RadarTxOff();
-  void RadarTxOn();
-  bool RadarStayAlive();
-  bool SetRange(int meters);
-  bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button);
+    void RadarTxOff();
+    void RadarTxOn();
+    bool RadarStayAlive();
+    bool SetRange(int meters);
+    bool SetControlValue(ControlType controlType, RadarControlItem& item,
+        RadarControlButton* button);
 
-  /*
-   * Update the send address where to send data; this is variable
-   * on Navico and RME radars, we are told where it is using a message.
-   */
-  void SetSendAddress(NetworkAddress sendSendAddress) { m_send_address = sendSendAddress; }
+    /*
+     * Update the send address where to send data; this is variable
+     * on Navico and RME radars, we are told where it is using a message.
+     */
+    void SetSendAddress(NetworkAddress sendSendAddress)
+    {
+        m_send_address = sendSendAddress;
+    }
 
- private:
-  radar_pi *m_pi;
-  RadarInfo *m_ri;
-  // SOCKET m_radar_socket;
-  wxString m_name;
-  NetworkAddress m_send_address;
+private:
+    radar_pi* m_pi;
+    RadarInfo* m_ri;
+    // SOCKET m_radar_socket;
+    wxString m_name;
+    NetworkAddress m_send_address;
 
-  bool TransmitCmd(const uint8_t *msg, int size);
-  void SetRangeIndex(size_t index);
+    bool TransmitCmd(const uint8_t* msg, int size);
+    void SetRangeIndex(size_t index);
 };
 
 PLUGIN_END_NAMESPACE

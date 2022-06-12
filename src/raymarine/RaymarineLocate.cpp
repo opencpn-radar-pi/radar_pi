@@ -34,6 +34,7 @@
  */
 
 #include "raymarine/RaymarineLocate.h"
+
 #include "MessageBox.h"
 #include "RadarInfo.h"
 
@@ -187,7 +188,7 @@ void *RaymarineLocate::Entry(void) {
   CleanupCards();
   m_is_shutdown = true;
   if (success) {
-  LOG_INFO(wxT("Raymarine locate stopped after success"));
+    LOG_INFO(wxT("Raymarine locate stopped after success"));
   }
   return 0;
 }
@@ -195,17 +196,17 @@ void *RaymarineLocate::Entry(void) {
 #pragma pack(push, 1)
 
 struct LocationInfoBlock {
-  uint32_t field1; // 0
-  uint32_t field2; // 4
-  uint8_t model_id;  // 0x28 byte 8
-  uint8_t field3;    // byte 9
-  uint16_t field4;  // byte 10
-  uint32_t field5;  // 12
-  uint32_t field6;  // 16
-  uint32_t data_ip;  // 20
-  uint32_t data_port;  // 24
-  uint32_t radar_ip;   // 28
-  uint32_t radar_port; // 32
+  uint32_t field1;      // 0
+  uint32_t field2;      // 4
+  uint8_t model_id;     // 0x28 byte 8
+  uint8_t field3;       // byte 9
+  uint16_t field4;      // byte 10
+  uint32_t field5;      // 12
+  uint32_t field6;      // 16
+  uint32_t data_ip;     // 20
+  uint32_t data_port;   // 24
+  uint32_t radar_ip;    // 28
+  uint32_t radar_port;  // 32
 };
 #pragma pack(pop)
 
@@ -225,26 +226,23 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
       break;
     }
   }
-  if (len == sizeof(LocationInfoBlock) &&
-        rRec->model_id == raymarine_radar_code) {  // only length 36 is used
+  if (len == sizeof(LocationInfoBlock) && rRec->model_id == raymarine_radar_code) {  // only length 36 is used
     if (m_pi->m_settings.verbose >= 2) {
       LOG_BINARY_RECEIVE(wxT("RaymarineLocate received RadarReport"), report, len);
     }
 
     RadarLocationInfo infoA;
     NetworkAddress radar_ipA = radar_address;
-    if(rRec->data_ip == 0) {
-      if(raymarine_radar_code != 0x28) {
-      // Quantum WiFi is the only one that is all unicast
+    if (rRec->data_ip == 0) {
+      if (raymarine_radar_code != 0x28) {
+        // Quantum WiFi is the only one that is all unicast
         return false;
-      }
-      else {
+      } else {
         radar_ipA.port = ntohs(rRec->radar_port);
         infoA.report_addr.addr.s_addr = ntohl(rRec->radar_ip);
         infoA.report_addr.port = ntohs(rRec->radar_port);
       }
-    }
-    else {
+    } else {
       radar_ipA.port = htons(RO_PRIMARY);
       infoA.report_addr.addr.s_addr = ntohl(rRec->data_ip);
       infoA.report_addr.port = ntohs(rRec->data_port);
@@ -252,14 +250,14 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
 
     infoA.send_command_addr.addr.s_addr = ntohl(rRec->radar_ip);
     infoA.send_command_addr.port = ntohs(rRec->radar_port);
-    infoA.spoke_data_addr.addr.s_addr = ntohl(rRec->data_ip); // Unused ???
+    infoA.spoke_data_addr.addr.s_addr = ntohl(rRec->data_ip);  // Unused ???
     infoA.spoke_data_addr.port = ntohs(rRec->data_port);
     infoA.serialNr = wxT(" ");  // empty
-    
+
     LOG_INFO(wxT("Located raymarine radar IP %s, interface %s [%s]"), radar_ipA.FormatNetworkAddressPort(),
-               interface_address.FormatNetworkAddress(), infoA.to_string());
-      m_report_count++;
-    
+             interface_address.FormatNetworkAddress(), infoA.to_string());
+    m_report_count++;
+
     FoundRaymarineLocationInfo(radar_ipA, interface_address, infoA);
     return true;
   }
@@ -274,7 +272,7 @@ void RaymarineLocate::FoundRaymarineLocationInfo(const NetworkAddress &addr, con
 
   // Check if the info is OK
   if (info.report_addr.IsNull() || info.send_command_addr.IsNull()) {
-    LOG_INFO(wxT("RaymarineLocate::FoundRaymarineLocationInfo something is null")); 
+    LOG_INFO(wxT("RaymarineLocate::FoundRaymarineLocationInfo something is null"));
     return;
   }
 

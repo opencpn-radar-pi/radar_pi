@@ -39,27 +39,29 @@
 PLUGIN_BEGIN_NAMESPACE
 
 class GarminHDControl : public RadarControl {
- public:
-  GarminHDControl(NetworkAddress sendMultiCastAddress);
-  ~GarminHDControl();
+public:
+    GarminHDControl(NetworkAddress sendMultiCastAddress);
+    ~GarminHDControl();
 
-  bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
-  void RadarTxOff();
-  void RadarTxOn();
-  bool RadarStayAlive();
-  bool SetRange(int meters);
+    bool Init(radar_pi* pi, RadarInfo* ri, NetworkAddress& interfaceAddress,
+        NetworkAddress& radarAddress);
+    void RadarTxOff();
+    void RadarTxOn();
+    bool RadarStayAlive();
+    bool SetRange(int meters);
 
-  bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button);
+    bool SetControlValue(ControlType controlType, RadarControlItem& item,
+        RadarControlButton* button);
 
- private:
-  void logBinaryData(const wxString &what, const void *data, int size);
-  bool TransmitCmd(const void *msg, int size);
+private:
+    void logBinaryData(const wxString& what, const void* data, int size);
+    bool TransmitCmd(const void* msg, int size);
 
-  radar_pi *m_pi;
-  RadarInfo *m_ri;
-  struct sockaddr_in m_addr;
-  SOCKET m_radar_socket;
-  wxString m_name;
+    radar_pi* m_pi;
+    RadarInfo* m_ri;
+    struct sockaddr_in m_addr;
+    SOCKET m_radar_socket;
+    wxString m_name;
 };
 
 PLUGIN_END_NAMESPACE

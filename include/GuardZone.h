@@ -32,90 +32,103 @@
 #ifndef _GUARDZONE_H_
 #define _GUARDZONE_H_
 
+#include "radar_pi.h"
+
 namespace RadarPlugin {
 
 class GuardZone {
- public:
-  GuardZoneType m_type;
-  AngleDegrees m_start_bearing;
-  AngleDegrees m_end_bearing;
-  int m_inner_range;  // start in meters
-  int m_outer_range;  // end   in meters
-  int m_alarm_on;
-  int m_arpa_on;
-  time_t m_show_time;
-  wxLongLong m_arpa_update_time[SPOKES_MAX];
+public:
+    GuardZoneType m_type;
+    AngleDegrees m_start_bearing;
+    AngleDegrees m_end_bearing;
+    int m_inner_range; // start in meters
+    int m_outer_range; // end   in meters
+    int m_alarm_on;
+    int m_arpa_on;
+    time_t m_show_time;
+    wxLongLong m_arpa_update_time[SPOKES_MAX];
 
-  void ResetBogeys() {
-    m_bogey_count = -1;
-    m_running_count = 0;
-    m_last_in_guard_zone = false;
-    m_last_angle = 0;
-  };
+    void ResetBogeys()
+    {
+        m_bogey_count = -1;
+        m_running_count = 0;
+        m_last_in_guard_zone = false;
+        m_last_angle = 0;
+    };
 
-  void SetType(GuardZoneType type) {
-    m_type = type;
-    if (m_type > (GuardZoneType)1) m_type = (GuardZoneType)0;
-    ResetBogeys();
-  };
-  void SetStartBearing(SpokeBearing start_bearing) {
-    m_start_bearing = start_bearing;
-    ResetBogeys();
-  };
-  void SetEndBearing(SpokeBearing end_bearing) {
-    m_end_bearing = end_bearing;
-    ResetBogeys();
-  };
-  void SetInnerRange(int inner_range) {
-    m_inner_range = inner_range;
-    ResetBogeys();
-  };
-  void SetOuterRange(int outer_range) {
-    m_outer_range = outer_range;
-    ResetBogeys();
-  };
-  void SetArpaOn(int arpa) { m_arpa_on = arpa; };
-  void SetAlarmOn(int alarm) {
-    m_alarm_on = alarm;
-    if (m_alarm_on) {
-      m_pi->m_guard_bogey_confirmed = false;
-    } else {
-      ResetBogeys();
-    }
-  };
+    void SetType(GuardZoneType type)
+    {
+        m_type = type;
+        if (m_type > (GuardZoneType)1)
+            m_type = (GuardZoneType)0;
+        ResetBogeys();
+    };
+    void SetStartBearing(SpokeBearing start_bearing)
+    {
+        m_start_bearing = start_bearing;
+        ResetBogeys();
+    };
+    void SetEndBearing(SpokeBearing end_bearing)
+    {
+        m_end_bearing = end_bearing;
+        ResetBogeys();
+    };
+    void SetInnerRange(int inner_range)
+    {
+        m_inner_range = inner_range;
+        ResetBogeys();
+    };
+    void SetOuterRange(int outer_range)
+    {
+        m_outer_range = outer_range;
+        ResetBogeys();
+    };
+    void SetArpaOn(int arpa) { m_arpa_on = arpa; };
+    void SetAlarmOn(int alarm)
+    {
+        m_alarm_on = alarm;
+        if (m_alarm_on) {
+            m_pi->m_guard_bogey_confirmed = false;
+        } else {
+            ResetBogeys();
+        }
+    };
 
-  /*
-   * Check if data is in this GuardZone, if so update bogeyCount
-   */
-  void ProcessSpoke(SpokeBearing angle, uint8_t *data, uint8_t *hist, size_t len);
+    /*
+     * Check if data is in this GuardZone, if so update bogeyCount
+     */
+    void ProcessSpoke(
+        SpokeBearing angle, uint8_t* data, uint8_t* hist, size_t len);
 
-  // Find targets inside the zone
-  void SearchTargets();
+    // Find targets inside the zone
+    void SearchTargets();
 
-  int GetBogeyCount() {
-    if (m_bogey_count > -1) {
-      LOG_GUARD(wxT("%s reporting bogey_count=%d"), m_log_name.c_str(), m_bogey_count);
-    }
-    return m_bogey_count;
-  };
+    int GetBogeyCount()
+    {
+        if (m_bogey_count > -1) {
+            LOG_GUARD(wxT("%s reporting bogey_count=%d"), m_log_name.c_str(),
+                m_bogey_count);
+        }
+        return m_bogey_count;
+    };
 
-  GuardZone(radar_pi *pi, RadarInfo *ri, int zone);
+    GuardZone(radar_pi* pi, RadarInfo* ri, int zone);
 
-  ~GuardZone() { LOG_VERBOSE(wxT("%s destroyed"), m_log_name.c_str()); }
+    ~GuardZone() { LOG_VERBOSE(wxT("%s destroyed"), m_log_name.c_str()); }
 
- private:
-  radar_pi *m_pi;
-  RadarInfo *m_ri;
+private:
+    radar_pi* m_pi;
+    RadarInfo* m_ri;
 
-  wxString m_log_name;
-  bool m_last_in_guard_zone;
-  SpokeBearing m_last_angle;
-  int m_bogey_count;    // complete cycle
-  int m_running_count;  // current swipe
+    wxString m_log_name;
+    bool m_last_in_guard_zone;
+    SpokeBearing m_last_angle;
+    int m_bogey_count; // complete cycle
+    int m_running_count; // current swipe
 
-  void UpdateSettings();
+    void UpdateSettings();
 };
 
-}  // namespace
+} // namespace
 
 #endif /* _GUARDZONE_H_ */

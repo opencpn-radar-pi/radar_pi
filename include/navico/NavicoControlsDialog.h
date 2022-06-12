@@ -40,10 +40,10 @@ PLUGIN_BEGIN_NAMESPACE
 //    Radar Control Dialog Specification
 //----------------------------------------------------------------------------------------------------------
 class NavicoControlsDialog : public ControlsDialog {
- public:
-  NavicoControlsDialog(size_t radarType);
+public:
+    NavicoControlsDialog(size_t radarType);
 
-  ~NavicoControlsDialog(){};
+    ~NavicoControlsDialog() {};
 };
 
 PLUGIN_END_NAMESPACE

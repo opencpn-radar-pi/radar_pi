@@ -42,31 +42,33 @@ PLUGIN_BEGIN_NAMESPACE
  =======================================================================================================================
  */
 class GuardZoneBogey : public wxDialog {
-  DECLARE_CLASS(GuardZoneBogey)
-  DECLARE_EVENT_TABLE()
+    DECLARE_CLASS(GuardZoneBogey)
+    DECLARE_EVENT_TABLE()
 
- public:
-  GuardZoneBogey();
+public:
+    GuardZoneBogey();
 
-  ~GuardZoneBogey();
+    ~GuardZoneBogey();
 
-  bool Create(wxWindow *parent, radar_pi *pi, wxWindowID id = wxID_ANY, const wxString &m_caption = _("Alarm"),
-              const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
-              long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
+    bool Create(wxWindow* parent, radar_pi* pi, wxWindowID id = wxID_ANY,
+        const wxString& m_caption = _("Alarm"),
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU);
 
-  void ShowBogeys(wxString &text, bool bogeys, bool confirmed);
+    void ShowBogeys(wxString& text, bool bogeys, bool confirmed);
 
- private:
-  void OnClose(wxCloseEvent &event);
-  void OnConfirmClick(wxCommandEvent &event);
-  void OnCloseClick(wxCommandEvent &event);
+private:
+    void OnClose(wxCloseEvent& event);
+    void OnConfirmClick(wxCommandEvent& event);
+    void OnCloseClick(wxCommandEvent& event);
 
-  wxWindow *m_parent;
-  radar_pi *m_pi;
+    wxWindow* m_parent;
+    radar_pi* m_pi;
 
-  /* Controls */
-  wxStaticText *m_bogey_text;
-  wxButton *m_confirm_button;
+    /* Controls */
+    wxStaticText* m_bogey_text;
+    wxButton* m_confirm_button;
 };
 
 PLUGIN_END_NAMESPACE

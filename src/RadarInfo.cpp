@@ -438,10 +438,10 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
     data[i] = 0;
   }
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
-  if (range_meters == 0){
+  if (range_meters == 0) {
     LOG_INFO(wxT("Error ProcessRadarSpoke range is zero"));
     return;
-    }
+  }
   double pixels_per_meter = (len / (double)range_meters) * (1. - (double)m_range_adjustment.GetValue() * 0.001);
 
   if (m_pixels_per_meter != pixels_per_meter) {

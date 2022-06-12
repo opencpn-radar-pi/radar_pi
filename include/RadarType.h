@@ -97,8 +97,7 @@
 #include "raymarine/RME120type.h"
 #include "raymarine/RMQuantumtype.h"
 
-
-#undef DEFINE_RADAR  // Prepare for next inclusion
+#undef DEFINE_RADAR // Prepare for next inclusion
 #undef INITIALIZE_RADAR
 #undef DEFINE_RANGE_METRIC
 #undef DEFINE_RANGE_MIXED

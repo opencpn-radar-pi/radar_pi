@@ -38,55 +38,60 @@
 PLUGIN_BEGIN_NAMESPACE
 
 class RadarControl {
- public:
-  RadarControl(){};
-  virtual ~RadarControl(){};
+public:
+    RadarControl() {};
+    virtual ~RadarControl() {};
 
-  /*
-   * Initialize any local data structures.
-   *
-   * @param pi                   The calling radar plugin instance
-   * @param ri                   The parent RadarInfo instance
-   * @param interfaceAddress     The IPv4 address of the ethernet card on this machine
-   * @param radarAddress         The IPV4 address of the radar scanner
-   */
-  virtual bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress) = 0;
+    /*
+     * Initialize any local data structures.
+     *
+     * @param pi                   The calling radar plugin instance
+     * @param ri                   The parent RadarInfo instance
+     * @param interfaceAddress     The IPv4 address of the ethernet card on this
+     * machine
+     * @param radarAddress         The IPV4 address of the radar scanner
+     */
+    virtual bool Init(radar_pi* pi, RadarInfo* ri,
+        NetworkAddress& interfaceAddress, NetworkAddress& radarAddress)
+        = 0;
 
-  /*
-   * Ask the radar to switch off.
-   */
-  virtual void RadarTxOff() = 0;
+    /*
+     * Ask the radar to switch off.
+     */
+    virtual void RadarTxOff() = 0;
 
-  /*
-   * Ask the radar to switch on.
-   */
-  virtual void RadarTxOn() = 0;
+    /*
+     * Ask the radar to switch on.
+     */
+    virtual void RadarTxOn() = 0;
 
-  /*
-   * Send a 'keepalive' message to the radar.
-   * This can be a null implementation if the radar does not need this.
-   *
-   * @returns   true on success, false on failure.
-   */
-  virtual bool RadarStayAlive() { return true; };
+    /*
+     * Send a 'keepalive' message to the radar.
+     * This can be a null implementation if the radar does not need this.
+     *
+     * @returns   true on success, false on failure.
+     */
+    virtual bool RadarStayAlive() { return true; };
 
-  /*
-   * Set the range to the given range in meters.
-   *
-   * @param     meters  Requested range in meters.
-   * @returns   true on success, false on failure.
-   */
-  virtual bool SetRange(int meters) = 0;
+    /*
+     * Set the range to the given range in meters.
+     *
+     * @param     meters  Requested range in meters.
+     * @returns   true on success, false on failure.
+     */
+    virtual bool SetRange(int meters) = 0;
 
-  /*
-   * Modify a radar setting.
-   *
-   * @param     controlType     Control such as CT_GAIN, etc.
-   * @param     item            Requested value and state.
-   * @param     button          Button that this originates from.
-   * @returns   true on success, false on failure.
-   */
-  virtual bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button) = 0;
+    /*
+     * Modify a radar setting.
+     *
+     * @param     controlType     Control such as CT_GAIN, etc.
+     * @param     item            Requested value and state.
+     * @param     button          Button that this originates from.
+     * @returns   true on success, false on failure.
+     */
+    virtual bool SetControlValue(ControlType controlType,
+        RadarControlItem& item, RadarControlButton* button)
+        = 0;
 };
 
 PLUGIN_END_NAMESPACE

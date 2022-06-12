@@ -10,14 +10,18 @@ static const NetworkAddress quantum_send(0, 0, 0, 0, 0);
 // Ranges below are indicative only, actual ranges are received from the radar
 // ranges are filled in RMEReceive.cpp, from SRadarFeedback
 // Received range values are divided by 2 before storing in the arrays below
-// This is because Raymarine displays a range value that is half of the actual transmit range
-// The actual range in the code is in m_range_meters, double the value of the arrays below
-#define RANGE_METRIC_RM_QUANTUM \
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-#define RANGE_MIXED_RM_QUANTUM \
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-#define RANGE_NAUTIC_RM_QUANTUM \
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
+// This is because Raymarine displays a range value that is half of the actual
+// transmit range The actual range in the code is in m_range_meters, double the
+// value of the arrays below
+#define RANGE_METRIC_RM_QUANTUM                                                \
+    {                                                                          \
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                                        \
+    }
+#define RANGE_MIXED_RM_QUANTUM                                                 \
+    {                                                                          \
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                                        \
+    }
+#define RANGE_NAUTIC_RM_QUANTUM { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 PLUGIN_END_NAMESPACE
 
@@ -42,12 +46,13 @@ PLUGIN_END_NAMESPACE
 #define SPOKE_LEN_MAX RM_E120_SPOKE_LEN
 #endif
 
-DEFINE_RADAR(RM_QUANTUM,                                   /* Type */
-             wxT("Raymarine Quantum"),                     /* Name */
-             RM_QUANTUM_SPOKES,                            /* Spokes */
-             RM_QUANTUM_SPOKE_LEN,                         /* Spoke length (max) */
-             RMQuantumControlsDialog(RM_QUANTUM),          /* ControlsDialog class constructor */
-             RaymarineReceive(pi, ri, quantum_report, quantum_data, quantum_send), /* Receive class constructor */
-             RMQuantumControl(pi, ri),                     /* Send/Control class constructor */
-             RO_SINGLE                                     /* This type only has a single radar and does not need locating */
+DEFINE_RADAR(RM_QUANTUM, /* Type */
+    wxT("Raymarine Quantum"), /* Name */
+    RM_QUANTUM_SPOKES, /* Spokes */
+    RM_QUANTUM_SPOKE_LEN, /* Spoke length (max) */
+    RMQuantumControlsDialog(RM_QUANTUM), /* ControlsDialog class constructor */
+    RaymarineReceive(pi, ri, quantum_report, quantum_data,
+        quantum_send), /* Receive class constructor */
+    RMQuantumControl(pi, ri), /* Send/Control class constructor */
+    RO_SINGLE /* This type only has a single radar and does not need locating */
 )

@@ -40,10 +40,10 @@ PLUGIN_BEGIN_NAMESPACE
 //    Radar Control Dialog Specification
 //----------------------------------------------------------------------------------------------------------
 class GarminHDControlsDialog : public ControlsDialog {
- public:
-  GarminHDControlsDialog();
+public:
+    GarminHDControlsDialog();
 
-  ~GarminHDControlsDialog(){};
+    ~GarminHDControlsDialog() {};
 };
 
 PLUGIN_END_NAMESPACE

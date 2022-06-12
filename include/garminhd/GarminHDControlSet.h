@@ -32,25 +32,39 @@
 #include "SoftwareControlSet.h"
 
 #ifndef AUTO_LOW_HIGH_NAMES
-#define AUTO_LOW_HIGH_NAMES \
-  { _("Low"), _("High") }
+#define AUTO_LOW_HIGH_NAMES                                                    \
+    {                                                                          \
+        _("Low"), _("High")                                                    \
+    }
 #endif
 
 #ifndef AUTO_CALM_MEDIUM_ROUGH_NAMES
-#define AUTO_CALM_MEDIUM_ROUGH_NAMES \
-  { _("Calm"), _("Medium"), _("Rough") }
+#define AUTO_CALM_MEDIUM_ROUGH_NAMES                                           \
+    {                                                                          \
+        _("Calm"), _("Medium"), _("Rough")                                     \
+    }
 #endif
 
 #ifndef SLOW_FAST_NAMES
-#define SLOW_FAST_NAMES \
-  { _("Slow"), _("Fast") }
+#define SLOW_FAST_NAMES                                                        \
+    {                                                                          \
+        _("Slow"), _("Fast")                                                   \
+    }
 #endif
 
-HAVE_CONTROL(CT_BEARING_ALIGNMENT, CTD_AUTO_NO, CTD_DEF_ZERO, -180, +180, CTD_STEP_1, CTD_NUMERIC)
-HAVE_CONTROL(CT_GAIN, AUTO_LOW_HIGH_NAMES, 50, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
-HAVE_CONTROL(CT_INTERFERENCE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, OFF_ON_NAMES)
-HAVE_CONTROL(CT_RAIN, CTD_AUTO_NO, CTD_DEF_OFF, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
-HAVE_CONTROL(CT_FTC, CTD_AUTO_NO, CTD_DEF_OFF, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
-HAVE_CONTROL(CT_RANGE, CTD_AUTO_YES, 1000, CTD_MIN_ZERO, 0, CTD_STEP_1, CTD_NUMERIC)
-HAVE_CONTROL(CT_SCAN_SPEED, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1, CTD_STEP_1, SLOW_FAST_NAMES)
-HAVE_CONTROL(CT_SEA, AUTO_CALM_MEDIUM_ROUGH_NAMES, CTD_DEF_OFF, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
+HAVE_CONTROL(CT_BEARING_ALIGNMENT, CTD_AUTO_NO, CTD_DEF_ZERO, -180, +180,
+    CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_GAIN, AUTO_LOW_HIGH_NAMES, 50, CTD_MIN_ZERO, CTD_MAX_100,
+    CTD_STEP_1, CTD_PERCENTAGE)
+HAVE_CONTROL(CT_INTERFERENCE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO,
+    1, CTD_STEP_1, OFF_ON_NAMES)
+HAVE_CONTROL(CT_RAIN, CTD_AUTO_NO, CTD_DEF_OFF, CTD_MIN_ZERO, CTD_MAX_100,
+    CTD_STEP_1, CTD_PERCENTAGE)
+HAVE_CONTROL(CT_FTC, CTD_AUTO_NO, CTD_DEF_OFF, CTD_MIN_ZERO, CTD_MAX_100,
+    CTD_STEP_1, CTD_PERCENTAGE)
+HAVE_CONTROL(
+    CT_RANGE, CTD_AUTO_YES, 1000, CTD_MIN_ZERO, 0, CTD_STEP_1, CTD_NUMERIC)
+HAVE_CONTROL(CT_SCAN_SPEED, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1,
+    CTD_STEP_1, SLOW_FAST_NAMES)
+HAVE_CONTROL(CT_SEA, AUTO_CALM_MEDIUM_ROUGH_NAMES, CTD_DEF_OFF, CTD_MIN_ZERO,
+    CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)

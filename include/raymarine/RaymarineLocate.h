@@ -46,65 +46,73 @@ PLUGIN_BEGIN_NAMESPACE
 // A single instance of this class will exist, and run a thread, if one or more
 // Navico radars of 4G or newer is selected.
 //
-// It will fill a map that given a radar IP address will give its listening ports.
-// The individual radars will then listen to multicast data on those ports.
+// It will fill a map that given a radar IP address will give its listening
+// ports. The individual radars will then listen to multicast data on those
+// ports.
 //
 
 class RaymarineLocate : public wxThread {
 #define MAX_REPORT 3
- public:
-  RaymarineLocate(radar_pi *pi) : wxThread(wxTHREAD_JOINABLE) {
-    Create(64 * 1024);  // Stack size
-    m_pi = pi;          // This allows you to access the main plugin stuff
-    m_shutdown = false;
-    m_is_shutdown = true;
+public:
+    RaymarineLocate(radar_pi* pi)
+        : wxThread(wxTHREAD_JOINABLE)
+    {
+        Create(64 * 1024); // Stack size
+        m_pi = pi; // This allows you to access the main plugin stuff
+        m_shutdown = false;
+        m_is_shutdown = true;
 
-    m_interface_addr = 0;
-    m_socket = 0;
-    m_interface_count = 0;
-    m_report_count = 0;
-    SetPriority(wxPRIORITY_MAX);
-    // LOG_INFO(wxT("RaymarineLocate thread created, prio= %i"), GetPriority());
-  }
-
-  /*
-   * Shutdown
-   *
-   * Called when the thread should stop.
-   * It should stop running.
-   */
-  void Shutdown(void) { m_shutdown = true; }
-
-  ~RaymarineLocate() {
-    while (!m_is_shutdown) {
-      wxMilliSleep(50);
+        m_interface_addr = 0;
+        m_socket = 0;
+        m_interface_count = 0;
+        m_report_count = 0;
+        SetPriority(wxPRIORITY_MAX);
+        // LOG_INFO(wxT("RaymarineLocate thread created, prio= %i"),
+        // GetPriority());
     }
-  }
 
-  volatile bool m_is_shutdown;
+    /*
+     * Shutdown
+     *
+     * Called when the thread should stop.
+     * It should stop running.
+     */
+    void Shutdown(void) { m_shutdown = true; }
 
- protected:
-  void *Entry(void);
+    ~RaymarineLocate()
+    {
+        while (!m_is_shutdown) {
+            wxMilliSleep(50);
+        }
+    }
 
- private:
-  bool ProcessReport(const NetworkAddress &radar_address, const NetworkAddress &interface_address, const uint8_t *data, size_t len);
-  bool DetectedRadar(const NetworkAddress &radar_address);
+    volatile bool m_is_shutdown;
 
-  void UpdateEthernetCards();
-  void CleanupCards();
-  void FoundRaymarineLocationInfo(const NetworkAddress &addr, const NetworkAddress &interface_addr, const RadarLocationInfo &info);
+protected:
+    void* Entry(void);
 
-  radar_pi *m_pi;
-  volatile bool m_shutdown;
+private:
+    bool ProcessReport(const NetworkAddress& radar_address,
+        const NetworkAddress& interface_address, const uint8_t* data,
+        size_t len);
+    bool DetectedRadar(const NetworkAddress& radar_address);
 
-  // Three arrays, all created on each call to UpdateEthernetCards.
-  // One entry for each ethernet card.
-  NetworkAddress *m_interface_addr;
-  SOCKET *m_socket;
-  size_t m_interface_count;
-  size_t m_report_count;
+    void UpdateEthernetCards();
+    void CleanupCards();
+    void FoundRaymarineLocationInfo(const NetworkAddress& addr,
+        const NetworkAddress& interface_addr, const RadarLocationInfo& info);
 
-  wxCriticalSection m_exclusive;
+    radar_pi* m_pi;
+    volatile bool m_shutdown;
+
+    // Three arrays, all created on each call to UpdateEthernetCards.
+    // One entry for each ethernet card.
+    NetworkAddress* m_interface_addr;
+    SOCKET* m_socket;
+    size_t m_interface_count;
+    size_t m_report_count;
+
+    wxCriticalSection m_exclusive;
 };
 
 PLUGIN_END_NAMESPACE

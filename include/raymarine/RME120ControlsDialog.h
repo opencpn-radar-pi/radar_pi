@@ -42,10 +42,10 @@ PLUGIN_BEGIN_NAMESPACE
 //    Radar Control Dialog Specification
 //----------------------------------------------------------------------------------------------------------
 class RME120ControlsDialog : public ControlsDialog {
- public:
-  RME120ControlsDialog(size_t radarType);
+public:
+    RME120ControlsDialog(size_t radarType);
 
-  ~RME120ControlsDialog(){};
+    ~RME120ControlsDialog() {};
 };
 
 PLUGIN_END_NAMESPACE

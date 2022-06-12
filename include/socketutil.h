@@ -39,132 +39,151 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-#define VALID_IPV4_ADDRESS(i)                                                                                                    \
-  (i && i->ifa_addr && i->ifa_addr->sa_family == AF_INET && (i->ifa_flags & IFF_UP) > 0 && (i->ifa_flags & IFF_LOOPBACK) == 0 && \
-   (i->ifa_flags & IFF_MULTICAST) > 0)
+#define VALID_IPV4_ADDRESS(i)                                                  \
+    (i && i->ifa_addr && i->ifa_addr->sa_family == AF_INET                     \
+        && (i->ifa_flags & IFF_UP) > 0 && (i->ifa_flags & IFF_LOOPBACK) == 0   \
+        && (i->ifa_flags & IFF_MULTICAST) > 0)
 
 // easy define of mcast addresses. Note that these are in network order already.
-#define IPV4_ADDR(a, b, c, d) ((uint32_t)(((a)&0xff) << 24) | (((b)&0xff) << 16) | (((c)&0xff) << 8) | ((d)&0xff))
+#define IPV4_ADDR(a, b, c, d)                                                  \
+    ((uint32_t)(((a)&0xff) << 24) | (((b)&0xff) << 16) | (((c)&0xff) << 8)     \
+        | ((d)&0xff))
 
 #define IPV4_PORT(p) (htons(p))
 
 #pragma pack(push, 1)
 struct PackedAddress {
-  struct in_addr addr;
-  uint16_t port;
+    struct in_addr addr;
+    uint16_t port;
 };
 #pragma pack(pop)
 
 class NetworkAddress {
- public:
-  NetworkAddress() {
-    addr.s_addr = 0;
-    port = 0;
-  }
-
-  NetworkAddress(PackedAddress packed) {
-    addr.s_addr = packed.addr.s_addr;
-    port = packed.port;
-  }
-
-  NetworkAddress(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t p) {
-    uint8_t *paddr = (uint8_t *)&addr;
-
-    paddr[0] = a;
-    paddr[1] = b;
-    paddr[2] = c;
-    paddr[3] = d;
-
-    port = htons(p);
-  }
-
-  NetworkAddress(const wxString str) {
-    uint8_t *paddr = (uint8_t *)&addr;
-    wxStringTokenizer tokenizer(str, wxT(".:"));
-
-    addr.s_addr = 0;
-    port = 0;
-
-    if (tokenizer.HasMoreTokens()) {
-      paddr[0] = wxAtoi(tokenizer.GetNextToken());
-    }
-    if (tokenizer.HasMoreTokens()) {
-      paddr[1] = wxAtoi(tokenizer.GetNextToken());
-    }
-    if (tokenizer.HasMoreTokens()) {
-      paddr[2] = wxAtoi(tokenizer.GetNextToken());
-    }
-    if (tokenizer.HasMoreTokens()) {
-      paddr[3] = wxAtoi(tokenizer.GetNextToken());
-    }
-    if (tokenizer.HasMoreTokens()) {
-      port = htons(wxAtoi(tokenizer.GetNextToken()));
-    }
-  }
-
-  bool operator<(const NetworkAddress &other) const {
-    if (other.addr.s_addr < this->addr.s_addr) {
-      return true;
+public:
+    NetworkAddress()
+    {
+        addr.s_addr = 0;
+        port = 0;
     }
 
-    return other.port < this->port;
-  }
-
-  bool operator==(const NetworkAddress &other) const { return other.addr.s_addr == this->addr.s_addr && other.port == this->port; }
-
-  NetworkAddress &operator=(const NetworkAddress &other) {
-    if (this != &other) {
-      addr.s_addr = other.addr.s_addr;
-      port = other.port;
+    NetworkAddress(PackedAddress packed)
+    {
+        addr.s_addr = packed.addr.s_addr;
+        port = packed.port;
     }
 
-    return *this;
-  }
+    NetworkAddress(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t p)
+    {
+        uint8_t* paddr = (uint8_t*)&addr;
 
-  wxString to_string() const {
-    if (addr.s_addr != 0) {
-      uint8_t *a = (uint8_t *)&addr;  // sin_addr is in network layout
-      return wxString::Format(wxT("%u.%u.%u.%u:%u"), a[0], a[1], a[2], a[3], ntohs(port));
+        paddr[0] = a;
+        paddr[1] = b;
+        paddr[2] = c;
+        paddr[3] = d;
+
+        port = htons(p);
     }
-    return wxT("");
-  }
 
-  wxString FormatNetworkAddress() const {
-    uint8_t *a = (uint8_t *)&addr;  // sin_addr is in network layout
-    return wxString::Format(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
-  }
+    NetworkAddress(const wxString str)
+    {
+        uint8_t* paddr = (uint8_t*)&addr;
+        wxStringTokenizer tokenizer(str, wxT(".:"));
 
-  wxString FormatNetworkAddressPort() const {
-    uint8_t *a = (uint8_t *)&addr;  // sin_addr is in network layout
-    return wxString::Format(wxT("%u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], ntohs(port));
-  }
+        addr.s_addr = 0;
+        port = 0;
 
-  struct sockaddr_in GetSockAddrIn() const {
-    struct sockaddr_in sin;
+        if (tokenizer.HasMoreTokens()) {
+            paddr[0] = wxAtoi(tokenizer.GetNextToken());
+        }
+        if (tokenizer.HasMoreTokens()) {
+            paddr[1] = wxAtoi(tokenizer.GetNextToken());
+        }
+        if (tokenizer.HasMoreTokens()) {
+            paddr[2] = wxAtoi(tokenizer.GetNextToken());
+        }
+        if (tokenizer.HasMoreTokens()) {
+            paddr[3] = wxAtoi(tokenizer.GetNextToken());
+        }
+        if (tokenizer.HasMoreTokens()) {
+            port = htons(wxAtoi(tokenizer.GetNextToken()));
+        }
+    }
 
-    sin.sin_family = AF_INET;
-    sin.sin_addr = this->addr;
-    sin.sin_port = this->port;
+    bool operator<(const NetworkAddress& other) const
+    {
+        if (other.addr.s_addr < this->addr.s_addr) {
+            return true;
+        }
+
+        return other.port < this->port;
+    }
+
+    bool operator==(const NetworkAddress& other) const
+    {
+        return other.addr.s_addr == this->addr.s_addr
+            && other.port == this->port;
+    }
+
+    NetworkAddress& operator=(const NetworkAddress& other)
+    {
+        if (this != &other) {
+            addr.s_addr = other.addr.s_addr;
+            port = other.port;
+        }
+
+        return *this;
+    }
+
+    wxString to_string() const
+    {
+        if (addr.s_addr != 0) {
+            uint8_t* a = (uint8_t*)&addr; // sin_addr is in network layout
+            return wxString::Format(
+                wxT("%u.%u.%u.%u:%u"), a[0], a[1], a[2], a[3], ntohs(port));
+        }
+        return wxT("");
+    }
+
+    wxString FormatNetworkAddress() const
+    {
+        uint8_t* a = (uint8_t*)&addr; // sin_addr is in network layout
+        return wxString::Format(wxT("%u.%u.%u.%u"), a[0], a[1], a[2], a[3]);
+    }
+
+    wxString FormatNetworkAddressPort() const
+    {
+        uint8_t* a = (uint8_t*)&addr; // sin_addr is in network layout
+        return wxString::Format(
+            wxT("%u.%u.%u.%u port %u"), a[0], a[1], a[2], a[3], ntohs(port));
+    }
+
+    struct sockaddr_in GetSockAddrIn() const
+    {
+        struct sockaddr_in sin;
+
+        sin.sin_family = AF_INET;
+        sin.sin_addr = this->addr;
+        sin.sin_port = this->port;
 #ifdef __WX_MAC__
-    sin.sin_len = sizeof(sockaddr_in);
+        sin.sin_len = sizeof(sockaddr_in);
 #endif
 
-    return sin;
-  }
+        return sin;
+    }
 
-  bool IsNull() const { return (addr.s_addr == 0); }
+    bool IsNull() const { return (addr.s_addr == 0); }
 
-  struct in_addr addr;
-  uint16_t port;
+    struct in_addr addr;
+    uint16_t port;
 };
 
-extern wxString FormatPackedAddress(const PackedAddress &addr);
+extern wxString FormatPackedAddress(const PackedAddress& addr);
 
 extern bool socketReady(SOCKET sockfd, int timeout);
 
-extern int radar_inet_aton(const char *cp, struct in_addr *addr);
-extern SOCKET startUDPMulticastReceiveSocket(const NetworkAddress &addr, const NetworkAddress &mcast_address,
-                                             wxString &error_message);
+extern int radar_inet_aton(const char* cp, struct in_addr* addr);
+extern SOCKET startUDPMulticastReceiveSocket(const NetworkAddress& addr,
+    const NetworkAddress& mcast_address, wxString& error_message);
 extern SOCKET GetLocalhostServerTCPSocket();
 extern SOCKET GetLocalhostSendTCPSocket(SOCKET receive_socket);
 
@@ -179,25 +198,24 @@ extern SOCKET GetLocalhostSendTCPSocket(SOCKET receive_socket);
 // Emulate (just enough of) ifaddrs on Windows
 // Thanks to
 // https://code.google.com/p/openpgm/source/browse/trunk/openpgm/pgm/getifaddrs.c?r=496&spec=svn496
-// Although that file has interesting new APIs the old ioctl works fine with XP and W7, and does
-// enough
-// for what we want to do.
+// Although that file has interesting new APIs the old ioctl works fine with XP
+// and W7, and does enough for what we want to do.
 
 struct ifaddrs {
-  struct ifaddrs *ifa_next;
-  struct sockaddr *ifa_addr;
-  struct sockaddr *ifa_netmask;
-  ULONG ifa_flags;
+    struct ifaddrs* ifa_next;
+    struct sockaddr* ifa_addr;
+    struct sockaddr* ifa_netmask;
+    ULONG ifa_flags;
 };
 
 struct ifaddrs_storage {
-  struct ifaddrs ifa;
-  struct sockaddr_storage addr;
-  struct sockaddr_storage netmask;
+    struct ifaddrs ifa;
+    struct sockaddr_storage addr;
+    struct sockaddr_storage netmask;
 };
 
-extern int getifaddrs(struct ifaddrs **ifap);
-extern void freeifaddrs(struct ifaddrs *ifa);
+extern int getifaddrs(struct ifaddrs** ifap);
+extern void freeifaddrs(struct ifaddrs* ifa);
 
 #endif
 

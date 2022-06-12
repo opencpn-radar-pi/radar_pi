@@ -41,39 +41,40 @@ typedef uint8_t TrailRevolutionsAge;
 #define MARGIN (100)
 
 class TrailBuffer {
- public:
-  TrailBuffer(RadarInfo *ri, size_t spokes, size_t max_spoke_len);
-  ~TrailBuffer();
+public:
+    TrailBuffer(RadarInfo* ri, size_t spokes, size_t max_spoke_len);
+    ~TrailBuffer();
 
-  void ClearTrails();
-  void UpdateTrailPosition();
-  void UpdateTrueTrails(SpokeBearing bearing, uint8_t *data, size_t len);
-  void UpdateRelativeTrails(SpokeBearing angle, uint8_t *data, size_t len);
+    void ClearTrails();
+    void UpdateTrailPosition();
+    void UpdateTrueTrails(SpokeBearing bearing, uint8_t* data, size_t len);
+    void UpdateRelativeTrails(SpokeBearing angle, uint8_t* data, size_t len);
 
-  struct GeoPositionPixels {
-    int lat;
-    int lon;
-  };
+    struct GeoPositionPixels {
+        int lat;
+        int lon;
+    };
 
-  GeoPosition m_pos;
-  GeoPosition m_dif;  // Fraction of a pixel expressed in lat/lon for True Motion Target Trails
-  GeoPositionPixels m_offset;
+    GeoPosition m_pos;
+    GeoPosition m_dif; // Fraction of a pixel expressed in lat/lon for True
+                       // Motion Target Trails
+    GeoPositionPixels m_offset;
 
- private:
-  void ShiftImageLonToCenter();
-  void ShiftImageLatToCenter();
-  void ZoomTrails(float zoom_factor);
+private:
+    void ShiftImageLonToCenter();
+    void ShiftImageLatToCenter();
+    void ZoomTrails(float zoom_factor);
 
-  RadarInfo *m_ri;
-  size_t m_spokes;
-  int m_max_spoke_len;
-  int m_trail_size;
-  double m_previous_pixels_per_meter;
+    RadarInfo* m_ri;
+    size_t m_spokes;
+    int m_max_spoke_len;
+    int m_trail_size;
+    double m_previous_pixels_per_meter;
 
-  TrailRevolutionsAge *m_true_trails;           // m_trails_size * m_trails_size
-  TrailRevolutionsAge *m_relative_trails;       // m_spokes * m_max_spoke_len
-  TrailRevolutionsAge *m_copy_true_trails;      // m_trails_size * m_trails_size
-  TrailRevolutionsAge *m_copy_relative_trails;  // m_spokes * m_max_spoke_len
+    TrailRevolutionsAge* m_true_trails; // m_trails_size * m_trails_size
+    TrailRevolutionsAge* m_relative_trails; // m_spokes * m_max_spoke_len
+    TrailRevolutionsAge* m_copy_true_trails; // m_trails_size * m_trails_size
+    TrailRevolutionsAge* m_copy_relative_trails; // m_spokes * m_max_spoke_len
 };
 
 PLUGIN_END_NAMESPACE

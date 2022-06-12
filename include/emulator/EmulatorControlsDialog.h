@@ -40,10 +40,10 @@ PLUGIN_BEGIN_NAMESPACE
 //    Radar Control Dialog Specification
 //----------------------------------------------------------------------------------------------------------
 class EmulatorControlsDialog : public ControlsDialog {
- public:
-  EmulatorControlsDialog();
+public:
+    EmulatorControlsDialog();
 
-  ~EmulatorControlsDialog(){};
+    ~EmulatorControlsDialog() {};
 };
 
 PLUGIN_END_NAMESPACE

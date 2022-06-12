@@ -32,9 +32,8 @@
 
 #define RADAR_PI_GLOBALS
 
-#include "nmea0183.h"
-#include "nmea0183.hpp"
 #include "radar_pi.h"
+
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
@@ -43,10 +42,9 @@
 #include "RadarMarpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
-
 #include "navico/NavicoLocate.h"
-
-
+#include "nmea0183.h"
+#include "nmea0183.hpp"
 #include "raymarine/RaymarineLocate.h"
 
 namespace RadarPlugin {
@@ -133,15 +131,12 @@ END_EVENT_TABLE()
 //
 //---------------------------------------------------------------------------------------------------------
 
-radar_pi::radar_pi(void *ppimgr) 
-  : opencpn_plugin_116(ppimgr)
-  , m_raymarine_locator(0) 
-{
+radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr), m_raymarine_locator(0) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
   m_predicted_position_initialised = false;
 
-  M_SETTINGS = { 0 };
+  M_SETTINGS = {0};
 
   // Create the PlugIn icons
   initialize_images();
@@ -1185,13 +1180,13 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   if (!m_initialized) {
     return;
   }
-  
-   //// for testing only, simple trick to get position and heading
-   //wxString nmea;
-   //nmea = wxT("$APHDM,000.0,M*33");
-   //PushNMEABuffer(nmea);
-   //nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-   //PushNMEABuffer(nmea);
+
+  //// for testing only, simple trick to get position and heading
+  // wxString nmea;
+  // nmea = wxT("$APHDM,000.0,M*33");
+  // PushNMEABuffer(nmea);
+  // nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+  // PushNMEABuffer(nmea);
 
   // update own ship position to best estimate
   ExtendedPosition intermediate_pos;
@@ -1233,34 +1228,33 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
     }
   }
 
-    UpdateHeadingPositionState();
+  UpdateHeadingPositionState();
 
-    // Check the age of "radar_seen", if too old radar_seen = false
-    bool any_data_seen = false;
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_radar[r]) {
-        wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
-        int state = m_radar[r]->m_state.GetValue();  // Safe, protected by lock
-        if (state == RADAR_TRANSMIT) {
-          any_data_seen = true;
-        }
-        if (!m_settings.show            // No radar shown
-            || state != RADAR_TRANSMIT  // Radar not transmitting
-            || !m_bpos_set) {           // No overlay possible (yet)
-                                        // Conditions for ARPA not fulfilled, delete all targets
-          m_radar[r]->m_arpa->RadarLost();
-        }
-        m_radar[r]->UpdateTransmitState();
+  // Check the age of "radar_seen", if too old radar_seen = false
+  bool any_data_seen = false;
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (m_radar[r]) {
+      wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
+      int state = m_radar[r]->m_state.GetValue();  // Safe, protected by lock
+      if (state == RADAR_TRANSMIT) {
+        any_data_seen = true;
       }
+      if (!m_settings.show            // No radar shown
+          || state != RADAR_TRANSMIT  // Radar not transmitting
+          || !m_bpos_set) {           // No overlay possible (yet)
+                                      // Conditions for ARPA not fulfilled, delete all targets
+        m_radar[r]->m_arpa->RadarLost();
+      }
+      m_radar[r]->UpdateTransmitState();
     }
-    if (any_data_seen && m_settings.show) {
-      CheckGuardZoneBogeys();
-    }
+  }
+  if (any_data_seen && m_settings.show) {
+    CheckGuardZoneBogeys();
+  }
 
-    if (m_settings.pass_heading_to_opencpn && m_heading_source >= HEADING_RADAR_HDM) {
-      PassHeadingToOpenCPN();
-    }
-  
+  if (m_settings.pass_heading_to_opencpn && m_heading_source >= HEADING_RADAR_HDM) {
+    PassHeadingToOpenCPN();
+  }
 }
 
 void radar_pi::UpdateAllControlStates(bool all) {
@@ -2118,4 +2112,4 @@ bool radar_pi::IsRadarOnScreen(int radar) {
   return m_settings.show && (m_settings.show_radar[radar] || m_radar[radar]->GetOverlayCanvasIndex() > -1);
 }
 
-}  // namespace
+}  // namespace RadarPlugin

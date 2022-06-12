@@ -39,21 +39,23 @@
 PLUGIN_BEGIN_NAMESPACE
 
 class EmulatorControl : public RadarControl {
- public:
-  EmulatorControl();
-  ~EmulatorControl();
+public:
+    EmulatorControl();
+    ~EmulatorControl();
 
-  bool Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &interfaceAddress, NetworkAddress &radarAddress);
-  void RadarTxOff();
-  void RadarTxOn();
-  bool RadarStayAlive();
-  bool SetRange(int meters);
-  bool SetControlValue(ControlType controlType, RadarControlItem &item, RadarControlButton *button);
+    bool Init(radar_pi* pi, RadarInfo* ri, NetworkAddress& interfaceAddress,
+        NetworkAddress& radarAddress);
+    void RadarTxOff();
+    void RadarTxOn();
+    bool RadarStayAlive();
+    bool SetRange(int meters);
+    bool SetControlValue(ControlType controlType, RadarControlItem& item,
+        RadarControlButton* button);
 
- private:
-  radar_pi *m_pi;
-  RadarInfo *m_ri;
-  wxString m_name;
+private:
+    radar_pi* m_pi;
+    RadarInfo* m_ri;
+    wxString m_name;
 };
 
 PLUGIN_END_NAMESPACE

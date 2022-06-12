@@ -46,163 +46,182 @@ class radar_pi;
 // Some other controls have state as well.
 
 enum RadarControlState {
-  RCS_OFF = -1,
-  RCS_MANUAL = 0,
-  RCS_AUTO_1,
-  RCS_AUTO_2,
-  RCS_AUTO_3,
-  RCS_AUTO_4,
-  RCS_AUTO_5,
-  RCS_AUTO_6,
-  RCS_AUTO_7,
-  RCS_AUTO_8,
-  RCS_AUTO_9
+    RCS_OFF = -1,
+    RCS_MANUAL = 0,
+    RCS_AUTO_1,
+    RCS_AUTO_2,
+    RCS_AUTO_3,
+    RCS_AUTO_4,
+    RCS_AUTO_5,
+    RCS_AUTO_6,
+    RCS_AUTO_7,
+    RCS_AUTO_8,
+    RCS_AUTO_9
 };
 
 class RadarControlItem {
- public:
-  static const int VALUE_NOT_SET = -10000;
+public:
+    static const int VALUE_NOT_SET = -10000;
 
-  RadarControlItem() {
-    m_value = 0;
-    m_state = RCS_OFF;
-    m_button_v = VALUE_NOT_SET;  // Unlikely value so that first actual set sets proper value + mod
-    m_button_s = RCS_OFF;
-    m_mod = true;
-    m_min = VALUE_NOT_SET;
-    m_max = VALUE_NOT_SET;
-    m_fraction = 0;
-  }
-
-  // The copy constructor
-  RadarControlItem(const RadarControlItem &other) { Update(other.m_value, other.m_state); }
-
-  // The assignment constructor
-  RadarControlItem &operator=(const RadarControlItem &other) {
-    if (this != &other) {  // self-assignment check expected
-      Update(other.m_value, other.m_state);
-    }
-    return *this;
-  }
-
-  // The assignment constructor to allow "item = value"
-  RadarControlItem &operator=(int v) {
-    Update(v, RCS_MANUAL);
-    return *this;
-  }
-
-  void Update(int v, RadarControlState s) {
-    wxCriticalSectionLocker lock(m_exclusive);
-    if (v != m_button_v || s != m_button_s) {
-      m_mod = true;
-      m_button_v = v;
-      m_button_s = s;
-    }
-    m_value = v;
-    m_state = s;
-  };
-
-  void UpdateState(RadarControlState s) {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    if (s != m_button_s) {
-      m_mod = true;
-      m_button_s = s;
-    }
-    m_state = s;
-  };
-
-  void Update(int v) { Update(v, RCS_MANUAL); };
-
-  bool GetButton(int *value, RadarControlState *state) {
-    wxCriticalSectionLocker lock(m_exclusive);
-    if (value) {
-      *value = this->m_button_v;
-    }
-    if (state) {
-      *state = this->m_button_s;
+    RadarControlItem()
+    {
+        m_value = 0;
+        m_state = RCS_OFF;
+        m_button_v = VALUE_NOT_SET; // Unlikely value so that first actual set
+                                    // sets proper value + mod
+        m_button_s = RCS_OFF;
+        m_mod = true;
+        m_min = VALUE_NOT_SET;
+        m_max = VALUE_NOT_SET;
+        m_fraction = 0;
     }
 
-    bool changed = m_mod;
-    m_mod = false;
-    return changed;
-  }
-
-  bool GetButton(int *value) {
-    wxCriticalSectionLocker lock(m_exclusive);
-    if (value) {
-      *value = this->m_button_v;
+    // The copy constructor
+    RadarControlItem(const RadarControlItem& other)
+    {
+        Update(other.m_value, other.m_state);
     }
 
-    bool changed = m_mod;
-    m_mod = false;
-    return changed;
-  }
-
-  int GetButton() {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    m_mod = false;
-    return m_button_v;
-  }
-
-  int GetValue() {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    return m_value;
-  }
-
-  RadarControlState GetState() {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    return m_state;
-  }
-
-  bool IsModified() {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    return m_mod;
-  }
-
-  void SetMax(int max) { m_max = max; }
-  void SetMin(int min) { m_min = min; }
-  int GetMax() { return m_max; }
-  int GetMin() { return m_min; }
-  
-    void TransformAndUpdate(int x) {  // Transforms the received value to the value shown on the button for Raymarine
-    if (m_max == VALUE_NOT_SET || m_min == VALUE_NOT_SET || m_max == m_min) {
-      Update(x);
-      return;
-      
+    // The assignment constructor
+    RadarControlItem& operator=(const RadarControlItem& other)
+    {
+        if (this != &other) { // self-assignment check expected
+            Update(other.m_value, other.m_state);
+        }
+        return *this;
     }
-    double new_value = (double)((x - m_min) * 100.) / (m_max - m_min) + .5;
-    Update((int)new_value);
-    m_fraction = new_value - (double)m_value;
-        // wxLogMessage(wxT("new_value=%f, m_value=%i, m_fraction=%f"), new_value, m_value, m_fraction);
-      
-  }
-  
-    int DeTransform(int value) {  // Reverse transform, transforms value to value to be transmitted to radar
-    if (m_max == VALUE_NOT_SET || m_min == VALUE_NOT_SET || m_max == m_min) {
-      return m_value;
-      
+
+    // The assignment constructor to allow "item = value"
+    RadarControlItem& operator=(int v)
+    {
+        Update(v, RCS_MANUAL);
+        return *this;
     }
-    return (int)(((double)(value)+m_fraction - .5) * (m_max - m_min) / 100. + m_min + .5);
-  }
-  
 
- protected:
-  wxCriticalSection m_exclusive;
-  int m_value;
-  int m_button_v;
-  RadarControlState m_state;
-  RadarControlState m_button_s;
-  bool m_mod;
-  int m_max;  // added for Raymarine
-  int m_min;
+    void Update(int v, RadarControlState s)
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
+        if (v != m_button_v || s != m_button_s) {
+            m_mod = true;
+            m_button_v = v;
+            m_button_s = s;
+        }
+        m_value = v;
+        m_state = s;
+    };
 
- public:
-  double m_fraction;
+    void UpdateState(RadarControlState s)
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
+
+        if (s != m_button_s) {
+            m_mod = true;
+            m_button_s = s;
+        }
+        m_state = s;
+    };
+
+    void Update(int v) { Update(v, RCS_MANUAL); };
+
+    bool GetButton(int* value, RadarControlState* state)
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
+        if (value) {
+            *value = this->m_button_v;
+        }
+        if (state) {
+            *state = this->m_button_s;
+        }
+
+        bool changed = m_mod;
+        m_mod = false;
+        return changed;
+    }
+
+    bool GetButton(int* value)
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
+        if (value) {
+            *value = this->m_button_v;
+        }
+
+        bool changed = m_mod;
+        m_mod = false;
+        return changed;
+    }
+
+    int GetButton()
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
+
+        m_mod = false;
+        return m_button_v;
+    }
+
+    int GetValue()
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
+
+        return m_value;
+    }
+
+    RadarControlState GetState()
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
+
+        return m_state;
+    }
+
+    bool IsModified()
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
+
+        return m_mod;
+    }
+
+    void SetMax(int max) { m_max = max; }
+    void SetMin(int min) { m_min = min; }
+    int GetMax() { return m_max; }
+    int GetMin() { return m_min; }
+
+    void TransformAndUpdate(int x)
+    { // Transforms the received value to the value shown on the button for
+      // Raymarine
+        if (m_max == VALUE_NOT_SET || m_min == VALUE_NOT_SET
+            || m_max == m_min) {
+            Update(x);
+            return;
+        }
+        double new_value = (double)((x - m_min) * 100.) / (m_max - m_min) + .5;
+        Update((int)new_value);
+        m_fraction = new_value - (double)m_value;
+        // wxLogMessage(wxT("new_value=%f, m_value=%i, m_fraction=%f"),
+        // new_value, m_value, m_fraction);
+    }
+
+    int DeTransform(int value)
+    { // Reverse transform, transforms value to value to be transmitted to radar
+        if (m_max == VALUE_NOT_SET || m_min == VALUE_NOT_SET
+            || m_max == m_min) {
+            return m_value;
+        }
+        return (
+            int)(((double)(value) + m_fraction - .5) * (m_max - m_min) / 100.
+            + m_min + .5);
+    }
+
+protected:
+    wxCriticalSection m_exclusive;
+    int m_value;
+    int m_button_v;
+    RadarControlState m_state;
+    RadarControlState m_button_s;
+    bool m_mod;
+    int m_max; // added for Raymarine
+    int m_min;
+
+public:
+    double m_fraction;
 };
 
 /*
@@ -212,24 +231,27 @@ class RadarControlItem {
  * to manual state (RCS_MANUAL.)
  */
 class RadarRangeControlItem : public RadarControlItem {
- public:
-  RadarRangeControlItem() {
-    m_value = 0;
-    m_state = RCS_OFF;
-    m_button_v = VALUE_NOT_SET;  // Unlikely value so that first actual set sets proper value + mod
-    m_button_s = RCS_OFF;
-    m_mod = true;
-  }
-
-  void Update(int v) {
-    wxCriticalSectionLocker lock(m_exclusive);
-
-    if (v != m_button_v) {
-      m_mod = true;
-      m_button_v = v;
+public:
+    RadarRangeControlItem()
+    {
+        m_value = 0;
+        m_state = RCS_OFF;
+        m_button_v = VALUE_NOT_SET; // Unlikely value so that first actual set
+                                    // sets proper value + mod
+        m_button_s = RCS_OFF;
+        m_mod = true;
     }
-    m_value = v;
-  };
+
+    void Update(int v)
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
+
+        if (v != m_button_v) {
+            m_mod = true;
+            m_button_v = v;
+        }
+        m_value = v;
+    };
 };
 
 PLUGIN_END_NAMESPACE

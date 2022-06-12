@@ -37,71 +37,72 @@
 PLUGIN_BEGIN_NAMESPACE
 
 class OptionsDialog : public wxDialog {
- public:
-  OptionsDialog(wxWindow* parent, PersistentSettings& settings, RadarType radar_type);
-  PersistentSettings GetSettings() { return m_settings; };
+public:
+    OptionsDialog(
+        wxWindow* parent, PersistentSettings& settings, RadarType radar_type);
+    PersistentSettings GetSettings() { return m_settings; };
 
- private:
-  void OnClose(wxCloseEvent& event);
-  void OnIdOKClick(wxCommandEvent& event);
-  void OnRangeUnitsClick(wxCommandEvent& event);
-  void OnDisplayOptionClick(wxCommandEvent& event);
-  void OnDisplayModeClick(wxCommandEvent& event);
-  void OnGuardZoneStyleClick(wxCommandEvent& event);
-  void OnGuardZoneOnOverlayClick(wxCommandEvent& event);
-  void OnOverlayOnStandbyClick(wxCommandEvent& event);
-  void OnGuardZoneTimeoutClick(wxCommandEvent& event);
-  void OnShowExtremeRangeClick(wxCommandEvent& event);
-  void OnTrailsOnOverlayClick(wxCommandEvent& event);
-  void OnTrailStartColourClick(wxCommandEvent& event);
-  void OnTrailEndColourClick(wxCommandEvent& event);
-  void OnWeakColourClick(wxCommandEvent& event);
-  void OnArpaColourClick(wxCommandEvent& event);
-  void OnDopplerApproachingColourClick(wxCommandEvent& event);
-  void OnDopplerRecedingColourClick(wxCommandEvent& event);
-  void OnPPIBackgroundColourClick(wxCommandEvent& event);
-  void OnAisTextColourClick(wxCommandEvent& event);
-  void OnIntermediateColourClick(wxCommandEvent& event);
-  void OnStrongColourClick(wxCommandEvent& event);
-  void OnSelectSoundClick(wxCommandEvent& event);
-  void OnTestSoundClick(wxCommandEvent& event);
-  void OnIgnoreHeadingClick(wxCommandEvent& event);
-  void OnPassHeadingClick(wxCommandEvent& event);
-  void OnDrawingMethodClick(wxCommandEvent& event);
-  void OnMenuAutoHideClick(wxCommandEvent& event);
-  void OnEnableCOGHeadingClick(wxCommandEvent& event);
-  void OnReverseZoomClick(wxCommandEvent& event);
-  void OnResetButtonClick(wxCommandEvent& event);
+private:
+    void OnClose(wxCloseEvent& event);
+    void OnIdOKClick(wxCommandEvent& event);
+    void OnRangeUnitsClick(wxCommandEvent& event);
+    void OnDisplayOptionClick(wxCommandEvent& event);
+    void OnDisplayModeClick(wxCommandEvent& event);
+    void OnGuardZoneStyleClick(wxCommandEvent& event);
+    void OnGuardZoneOnOverlayClick(wxCommandEvent& event);
+    void OnOverlayOnStandbyClick(wxCommandEvent& event);
+    void OnGuardZoneTimeoutClick(wxCommandEvent& event);
+    void OnShowExtremeRangeClick(wxCommandEvent& event);
+    void OnTrailsOnOverlayClick(wxCommandEvent& event);
+    void OnTrailStartColourClick(wxCommandEvent& event);
+    void OnTrailEndColourClick(wxCommandEvent& event);
+    void OnWeakColourClick(wxCommandEvent& event);
+    void OnArpaColourClick(wxCommandEvent& event);
+    void OnDopplerApproachingColourClick(wxCommandEvent& event);
+    void OnDopplerRecedingColourClick(wxCommandEvent& event);
+    void OnPPIBackgroundColourClick(wxCommandEvent& event);
+    void OnAisTextColourClick(wxCommandEvent& event);
+    void OnIntermediateColourClick(wxCommandEvent& event);
+    void OnStrongColourClick(wxCommandEvent& event);
+    void OnSelectSoundClick(wxCommandEvent& event);
+    void OnTestSoundClick(wxCommandEvent& event);
+    void OnIgnoreHeadingClick(wxCommandEvent& event);
+    void OnPassHeadingClick(wxCommandEvent& event);
+    void OnDrawingMethodClick(wxCommandEvent& event);
+    void OnMenuAutoHideClick(wxCommandEvent& event);
+    void OnEnableCOGHeadingClick(wxCommandEvent& event);
+    void OnReverseZoomClick(wxCommandEvent& event);
+    void OnResetButtonClick(wxCommandEvent& event);
 
-  PersistentSettings m_settings;
+    PersistentSettings m_settings;
 
-  // DisplayOptions
-  wxRadioBox* m_RangeUnits;
-  wxRadioBox* m_OverlayDisplayOptions;
-  wxRadioBox* m_DisplayMode;
-  wxRadioBox* m_GuardZoneStyle;
-  wxTextCtrl* m_GuardZoneTimeout;
-  wxColourPickerCtrl* m_TrailStartColour;
-  wxColourPickerCtrl* m_TrailEndColour;
-  wxColourPickerCtrl* m_WeakColour;
-  wxColourPickerCtrl* m_IntermediateColour;
-  wxColourPickerCtrl* m_StrongColour;
-  wxColourPickerCtrl* m_ArpaColour;
-  wxColourPickerCtrl* m_AisTextColour;
-  wxColourPickerCtrl* m_PPIBackgroundColour;
-  wxColourPickerCtrl* m_DopplerApproachingColour;
-  wxColourPickerCtrl* m_DopplerRecedingColour;
-  wxCheckBox* m_ShowExtremeRange;
-  wxCheckBox* m_GuardZoneOnOverlay;
-  wxCheckBox* m_TrailsOnOverlay;
-  wxCheckBox* m_OverlayStandby;
-  wxCheckBox* m_IgnoreHeading;
-  wxCheckBox* m_PassHeading;
-  wxCheckBox* m_COGHeading;
-  wxComboBox* m_DrawingMethod;
-  wxComboBox* m_MenuAutoHide;
-  wxCheckBox* m_EnableDualRadar;
-  wxCheckBox* m_ReverseZoom;
+    // DisplayOptions
+    wxRadioBox* m_RangeUnits;
+    wxRadioBox* m_OverlayDisplayOptions;
+    wxRadioBox* m_DisplayMode;
+    wxRadioBox* m_GuardZoneStyle;
+    wxTextCtrl* m_GuardZoneTimeout;
+    wxColourPickerCtrl* m_TrailStartColour;
+    wxColourPickerCtrl* m_TrailEndColour;
+    wxColourPickerCtrl* m_WeakColour;
+    wxColourPickerCtrl* m_IntermediateColour;
+    wxColourPickerCtrl* m_StrongColour;
+    wxColourPickerCtrl* m_ArpaColour;
+    wxColourPickerCtrl* m_AisTextColour;
+    wxColourPickerCtrl* m_PPIBackgroundColour;
+    wxColourPickerCtrl* m_DopplerApproachingColour;
+    wxColourPickerCtrl* m_DopplerRecedingColour;
+    wxCheckBox* m_ShowExtremeRange;
+    wxCheckBox* m_GuardZoneOnOverlay;
+    wxCheckBox* m_TrailsOnOverlay;
+    wxCheckBox* m_OverlayStandby;
+    wxCheckBox* m_IgnoreHeading;
+    wxCheckBox* m_PassHeading;
+    wxCheckBox* m_COGHeading;
+    wxComboBox* m_DrawingMethod;
+    wxComboBox* m_MenuAutoHide;
+    wxCheckBox* m_EnableDualRadar;
+    wxCheckBox* m_ReverseZoom;
 };
 
 PLUGIN_END_NAMESPACE

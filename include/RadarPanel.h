@@ -37,29 +37,29 @@
 PLUGIN_BEGIN_NAMESPACE
 
 class RadarPanel : public wxPanel {
- public:
-  RadarPanel(radar_pi* pi, RadarInfo* ri, wxWindow* parent);
-  bool Create();
-  virtual ~RadarPanel();
+public:
+    RadarPanel(radar_pi* pi, RadarInfo* ri, wxWindow* parent);
+    bool Create();
+    virtual ~RadarPanel();
 
-  void SetCaption(wxString name);  // Set the AUI caption
-  void ShowFrame(bool visible);
-  bool IsPaneShown();
+    void SetCaption(wxString name); // Set the AUI caption
+    void ShowFrame(bool visible);
+    bool IsPaneShown();
 
-  void close(wxAuiManagerEvent& event);
+    void close(wxAuiManagerEvent& event);
 
-  wxPoint GetPos();
-  wxAuiManager* m_aui_mgr;
-  wxString m_dock;
+    wxPoint GetPos();
+    wxAuiManager* m_aui_mgr;
+    wxString m_dock;
 
- private:
-  wxWindow* m_parent;
-  radar_pi* m_pi;
-  RadarInfo* m_ri;
-  wxString m_aui_name;
-  wxBoxSizer* m_sizer;
-  wxStaticText* m_text;
-  wxSize m_best_size;
+private:
+    wxWindow* m_parent;
+    radar_pi* m_pi;
+    RadarInfo* m_ri;
+    wxString m_aui_name;
+    wxBoxSizer* m_sizer;
+    wxStaticText* m_text;
+    wxSize m_best_size;
 };
 
 PLUGIN_END_NAMESPACE

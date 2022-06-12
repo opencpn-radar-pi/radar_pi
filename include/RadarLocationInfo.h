@@ -39,46 +39,53 @@
 PLUGIN_BEGIN_NAMESPACE
 
 class RadarLocationInfo {
- public:
-  wxString serialNr;                 // Serial # for this radar
-  NetworkAddress spoke_data_addr;    // Where the radar will send data spokes
-  NetworkAddress report_addr;        // Where the radar will send reports
-  NetworkAddress send_command_addr;  // Where displays will send commands to the radar
+public:
+    wxString serialNr; // Serial # for this radar
+    NetworkAddress spoke_data_addr; // Where the radar will send data spokes
+    NetworkAddress report_addr; // Where the radar will send reports
+    NetworkAddress
+        send_command_addr; // Where displays will send commands to the radar
 
-  wxString to_string() const {
-    if (spoke_data_addr.IsNull() && (serialNr.IsNull() || serialNr == wxT(" "))) {
-      return wxT(" ");  // empty strings don't work in wsWidgets (df)
+    wxString to_string() const
+    {
+        if (spoke_data_addr.IsNull()
+            && (serialNr.IsNull() || serialNr == wxT(" "))) {
+            return wxT(" "); // empty strings don't work in wsWidgets (df)
+        }
+        return wxString::Format(wxT("%s/%s/%s/%s"), serialNr,
+            spoke_data_addr.to_string(), report_addr.to_string(),
+            send_command_addr.to_string());
     }
-    return wxString::Format(wxT("%s/%s/%s/%s"), serialNr, spoke_data_addr.to_string(), report_addr.to_string(),
-                            send_command_addr.to_string());
-  }
 
-  RadarLocationInfo() {}
+    RadarLocationInfo() { }
 
-  RadarLocationInfo(wxString &str) {
-    wxStringTokenizer tokenizer(str, "/");
+    RadarLocationInfo(wxString& str)
+    {
+        wxStringTokenizer tokenizer(str, "/");
 
-    if (tokenizer.HasMoreTokens()) {
-      serialNr = tokenizer.GetNextToken();
+        if (tokenizer.HasMoreTokens()) {
+            serialNr = tokenizer.GetNextToken();
+        }
+        if (tokenizer.HasMoreTokens()) {
+            spoke_data_addr = NetworkAddress(tokenizer.GetNextToken());
+        }
+        if (tokenizer.HasMoreTokens()) {
+            report_addr = NetworkAddress(tokenizer.GetNextToken());
+        }
+        if (tokenizer.HasMoreTokens()) {
+            send_command_addr = NetworkAddress(tokenizer.GetNextToken());
+        }
     }
-    if (tokenizer.HasMoreTokens()) {
-      spoke_data_addr = NetworkAddress(tokenizer.GetNextToken());
-    }
-    if (tokenizer.HasMoreTokens()) {
-      report_addr = NetworkAddress(tokenizer.GetNextToken());
-    }
-    if (tokenizer.HasMoreTokens()) {
-      send_command_addr = NetworkAddress(tokenizer.GetNextToken());
-    }
-  }
-  bool operator==(RadarLocationInfo inf) {
-    if (serialNr == inf.serialNr && report_addr == inf.report_addr && spoke_data_addr == inf.spoke_data_addr &&
-        send_command_addr == inf.send_command_addr) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+    bool operator==(RadarLocationInfo inf)
+    {
+        if (serialNr == inf.serialNr && report_addr == inf.report_addr
+            && spoke_data_addr == inf.spoke_data_addr
+            && send_command_addr == inf.send_command_addr) {
+            return true;
+        } else {
+            return false;
+        }
+    };
 };
 
 PLUGIN_END_NAMESPACE

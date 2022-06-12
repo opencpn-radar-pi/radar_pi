@@ -37,55 +37,60 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-const double ZOOM_FACTOR_CENTER = .9;    // On how big a part of the PPI do we draw the radar picture
-const double ZOOM_FACTOR_OFFSET = 1.05;  // On how big a part of the PPI do we draw the radar picture
+const double ZOOM_FACTOR_CENTER
+    = .9; // On how big a part of the PPI do we draw the radar picture
+const double ZOOM_FACTOR_OFFSET
+    = 1.05; // On how big a part of the PPI do we draw the radar picture
 
 class RadarCanvas : public wxGLCanvas {
- public:
-  RadarCanvas(radar_pi* pi, RadarInfo* ri, wxWindow* parent, wxSize size);
-  virtual ~RadarCanvas();
+public:
+    RadarCanvas(radar_pi* pi, RadarInfo* ri, wxWindow* parent, wxSize size);
+    virtual ~RadarCanvas();
 
-  void Render(wxPaintEvent& evt);
-  void OnMove(wxMoveEvent& evt);
-  void OnSize(wxSizeEvent& evt);
-  void OnMouseClickDown(wxMouseEvent& event);
-  void OnMouseClickUp(wxMouseEvent& event);
-  void OnMouseMotion(wxMouseEvent& event);
-  void OnMouseWheel(wxMouseEvent& event);
+    void Render(wxPaintEvent& evt);
+    void OnMove(wxMoveEvent& evt);
+    void OnSize(wxSizeEvent& evt);
+    void OnMouseClickDown(wxMouseEvent& event);
+    void OnMouseClickUp(wxMouseEvent& event);
+    void OnMouseMotion(wxMouseEvent& event);
+    void OnMouseWheel(wxMouseEvent& event);
 
- private:
-  void FillCursorTexture();
-  void RenderTexts(const wxSize& location);
-  void RenderRangeRingsAndHeading(const wxSize& center, float radius);
-  void RenderCursor(const wxSize& clientSize, float radius, double range, double bearing);
-  void RenderCursor(const wxSize& clientSize, float radius, const GeoPosition& cursor);
-  void RenderCursor(const wxSize& clientSize, float radius);
-  void RenderChartCursor(const wxSize& clientSize, float radius);
-  void Render_EBL_VRM(const wxSize& clientSize, float radius);
-  wxSize RenderControlItem(const wxSize& loc, RadarControlItem& item, ControlType ct, const wxString& name);
-  wxSize GetScaledSize(wxSize size);
-  int GetScaledSize(int size);
+private:
+    void FillCursorTexture();
+    void RenderTexts(const wxSize& location);
+    void RenderRangeRingsAndHeading(const wxSize& center, float radius);
+    void RenderCursor(
+        const wxSize& clientSize, float radius, double range, double bearing);
+    void RenderCursor(
+        const wxSize& clientSize, float radius, const GeoPosition& cursor);
+    void RenderCursor(const wxSize& clientSize, float radius);
+    void RenderChartCursor(const wxSize& clientSize, float radius);
+    void Render_EBL_VRM(const wxSize& clientSize, float radius);
+    wxSize RenderControlItem(const wxSize& loc, RadarControlItem& item,
+        ControlType ct, const wxString& name);
+    wxSize GetScaledSize(wxSize size);
+    int GetScaledSize(int size);
 
-  wxWindow* m_parent;
-  radar_pi* m_pi;
-  RadarInfo* m_ri;
+    wxWindow* m_parent;
+    radar_pi* m_pi;
+    RadarInfo* m_ri;
 
-  wxGLContext* m_context;  // Our GL context
-  wxGLContext* m_zero_context;
+    wxGLContext* m_context; // Our GL context
+    wxGLContext* m_zero_context;
 
-  TextureFont m_FontNormal;
-  TextureFont m_FontBig;
-  TextureFont m_FontMenu;
-  TextureFont m_FontMenuBold;
-  wxSize m_menu_size;
-  wxSize m_zoom_size;
-  wxPoint m_mouse_down;
-  unsigned int m_cursor_texture;
+    TextureFont m_FontNormal;
+    TextureFont m_FontBig;
+    TextureFont m_FontMenu;
+    TextureFont m_FontMenuBold;
+    wxSize m_menu_size;
+    wxSize m_zoom_size;
+    wxPoint m_mouse_down;
+    unsigned int m_cursor_texture;
 
-  wxLongLong m_last_mousewheel_zoom_in;
-  wxLongLong m_last_mousewheel_zoom_out;
+    wxLongLong m_last_mousewheel_zoom_in;
+    wxLongLong m_last_mousewheel_zoom_out;
 
-  DECLARE_EVENT_TABLE();
+    DECLARE_EVENT_TABLE();
 };
 
 PLUGIN_END_NAMESPACE

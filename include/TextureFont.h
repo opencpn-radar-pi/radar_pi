@@ -30,7 +30,8 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-/* support ascii plus degree symbol for now pack font in a single texture 16x8 */
+/* support ascii plus degree symbol for now pack font in a single texture 16x8
+ */
 #define DEGREE_GLYPH 127
 #define MIN_GLYPH 32
 #define MAX_GLYPH 128
@@ -41,35 +42,36 @@ PLUGIN_BEGIN_NAMESPACE
 #define ROWS_GLYPHS ((NUM_GLYPHS / COLS_GLYPHS) + 1)
 
 struct TexGlyphInfo {
-  int x, y, width, height;
-  float advance;
+    int x, y, width, height;
+    float advance;
 };
 
 class TextureFont {
- public:
-  TextureFont() {
-    m_texobj = 0;
-    m_blur = false;
-  }
+public:
+    TextureFont()
+    {
+        m_texobj = 0;
+        m_blur = false;
+    }
 
-  void Build(wxFont &font, bool blur = false, bool luminance = false);
-  void Delete();
+    void Build(wxFont& font, bool blur = false, bool luminance = false);
+    void Delete();
 
-  void GetTextExtent(const wxString &string, int *width, int *height);
-  void RenderString(const wxString &string, int x = 0, int y = 0);
+    void GetTextExtent(const wxString& string, int* width, int* height);
+    void RenderString(const wxString& string, int x = 0, int y = 0);
 
- private:
-  void RenderGlyph(wchar_t c);
+private:
+    void RenderGlyph(wchar_t c);
 
-  wxFont m_font;
-  bool m_blur;
+    wxFont m_font;
+    bool m_blur;
 
-  TexGlyphInfo m_tgi[MAX_GLYPH];
+    TexGlyphInfo m_tgi[MAX_GLYPH];
 
-  unsigned int m_texobj;
-  int tex_w, tex_h;
+    unsigned int m_texobj;
+    int tex_w, tex_h;
 };
 
 PLUGIN_END_NAMESPACE
 
-#endif  // guard
+#endif // guard

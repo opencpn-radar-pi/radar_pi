@@ -38,72 +38,75 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-#define NOISE \
-  (0.015)                                               // Allowed covariance of target speed in lat and lon
-                                                        // critical for the performance of target tracking
-                                                        // lower value makes target go straight
-                                                        // higher values allow target to make curves
-#define CONVERT ((((1. / 1852.) / 1852.) / 60.) / 60.)  // converts meters ^ 2 to degrees ^ 2
+#define NOISE                                                                  \
+    (0.015) // Allowed covariance of target speed in lat and lon
+            // critical for the performance of target tracking
+            // lower value makes target go straight
+            // higher values allow target to make curves
+#define CONVERT                                                                \
+    ((((1. / 1852.) / 1852.) / 60.) / 60.) // converts meters ^ 2 to degrees ^ 2
 
 class Polar {
- public:
-  int angle;
-  int r;
-  wxLongLong time;  // wxGetUTCTimeMillis
+public:
+    int angle;
+    int r;
+    wxLongLong time; // wxGetUTCTimeMillis
 };
 
 class LocalPosition {
- public:
-  GeoPosition pos;
-  double dlat_dt;       // latitude  of speed vector, m/s
-  double dlon_dt;       // longitude of speed vector, m/s
-  double sd_speed_m_s;  // standard deviation of the speed, m/s
+public:
+    GeoPosition pos;
+    double dlat_dt; // latitude  of speed vector, m/s
+    double dlon_dt; // longitude of speed vector, m/s
+    double sd_speed_m_s; // standard deviation of the speed, m/s
 };
 
 class KalmanFilter {
- public:
-  KalmanFilter(size_t spokes);
-  ~KalmanFilter();
-  void SetMeasurement(Polar* p, LocalPosition* x, Polar* expected, double scale);
-  void Predict(LocalPosition* x, double delta_time);  // measured position and expected position
-  void ResetFilter();
-  void Update_P();
+public:
+    KalmanFilter(size_t spokes);
+    ~KalmanFilter();
+    void SetMeasurement(
+        Polar* p, LocalPosition* x, Polar* expected, double scale);
+    void Predict(LocalPosition* x,
+        double delta_time); // measured position and expected position
+    void ResetFilter();
+    void Update_P();
 
-  Matrix<double, 4> A;
-  Matrix<double, 4> AT;
-  Matrix<double, 4, 2> W;
-  Matrix<double, 2, 4> WT;
-  Matrix<double, 2, 4> H;
-  Matrix<double, 4, 2> HT;
-  Matrix<double, 4> P;
-  Matrix<double, 2> Q;
-  Matrix<double, 2> R;
-  Matrix<double, 4, 2> K;
-  Matrix<double, 4> I;
+    Matrix<double, 4> A;
+    Matrix<double, 4> AT;
+    Matrix<double, 4, 2> W;
+    Matrix<double, 2, 4> WT;
+    Matrix<double, 2, 4> H;
+    Matrix<double, 4, 2> HT;
+    Matrix<double, 4> P;
+    Matrix<double, 2> Q;
+    Matrix<double, 2> R;
+    Matrix<double, 4, 2> K;
+    Matrix<double, 4> I;
 
- private:
-  size_t m_spokes;
+private:
+    size_t m_spokes;
 };
 
 class GPSKalmanFilter {
- public:
-  GPSKalmanFilter();
-  ~GPSKalmanFilter();
-  void SetMeasurement(ExtendedPosition* gps, ExtendedPosition* updated);
-  void Predict(ExtendedPosition* old, ExtendedPosition* updated);
-  void Update_P();
+public:
+    GPSKalmanFilter();
+    ~GPSKalmanFilter();
+    void SetMeasurement(ExtendedPosition* gps, ExtendedPosition* updated);
+    void Predict(ExtendedPosition* old, ExtendedPosition* updated);
+    void Update_P();
 
-  Matrix<double, 4> A;
-  Matrix<double, 4> AT;
-  Matrix<double, 4, 2> W;
-  Matrix<double, 2, 4> WT;
-  Matrix<double, 2, 4> H;
-  Matrix<double, 4, 2> HT;
-  Matrix<double, 4> P;
-  Matrix<double, 2> Q;
-  Matrix<double, 2> R;
-  Matrix<double, 4, 2> K;
-  Matrix<double, 4> I;
+    Matrix<double, 4> A;
+    Matrix<double, 4> AT;
+    Matrix<double, 4, 2> W;
+    Matrix<double, 2, 4> WT;
+    Matrix<double, 2, 4> H;
+    Matrix<double, 4, 2> HT;
+    Matrix<double, 4> P;
+    Matrix<double, 2> Q;
+    Matrix<double, 2> R;
+    Matrix<double, 4, 2> K;
+    Matrix<double, 4> I;
 };
 
 PLUGIN_END_NAMESPACE

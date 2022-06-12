@@ -37,13 +37,17 @@
 PLUGIN_BEGIN_NAMESPACE
 
 class RadarFactory {
- public:
-  static ControlsDialog* MakeControlsDialog(size_t radarType, int radar);
-  static RadarReceive* MakeRadarReceive(size_t radarType, radar_pi* pi, RadarInfo* ri);
-  static RadarControl* MakeRadarControl(size_t radarType, radar_pi* pi, RadarInfo* ri);
-  static size_t GetRadarRanges(size_t radarType, RangeUnits units, const int** ranges);
-  static size_t GetRadarRanges(RadarInfo* ri, RangeUnits units, const int** ranges);
-  static void GetRadarTypes(wxArrayString& radarTypes);
+public:
+    static ControlsDialog* MakeControlsDialog(size_t radarType, int radar);
+    static RadarReceive* MakeRadarReceive(
+        size_t radarType, radar_pi* pi, RadarInfo* ri);
+    static RadarControl* MakeRadarControl(
+        size_t radarType, radar_pi* pi, RadarInfo* ri);
+    static size_t GetRadarRanges(
+        size_t radarType, RangeUnits units, const int** ranges);
+    static size_t GetRadarRanges(
+        RadarInfo* ri, RangeUnits units, const int** ranges);
+    static void GetRadarTypes(wxArrayString& radarTypes);
 };
 
 PLUGIN_END_NAMESPACE

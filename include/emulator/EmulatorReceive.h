@@ -42,35 +42,39 @@ PLUGIN_BEGIN_NAMESPACE
 //
 
 class EmulatorReceive : public RadarReceive {
- public:
-  EmulatorReceive(radar_pi *pi, RadarInfo *ri) : RadarReceive(pi, ri) {
-    m_shutdown = false;
-    m_next_spoke = 0;
-    m_next_rotation = 0;
-    m_receive_socket = GetLocalhostServerTCPSocket();
-    m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
-    LOG_RECEIVE(wxT("%s receive thread created"), m_ri->m_name.c_str());
-  };
+public:
+    EmulatorReceive(radar_pi* pi, RadarInfo* ri)
+        : RadarReceive(pi, ri)
+    {
+        m_shutdown = false;
+        m_next_spoke = 0;
+        m_next_rotation = 0;
+        m_receive_socket = GetLocalhostServerTCPSocket();
+        m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
+        LOG_RECEIVE(wxT("%s receive thread created"), m_ri->m_name.c_str());
+    };
 
-  ~EmulatorReceive() {
-    closesocket(m_receive_socket);
-    closesocket(m_send_socket);
-  }
+    ~EmulatorReceive()
+    {
+        closesocket(m_receive_socket);
+        closesocket(m_send_socket);
+    }
 
-  void *Entry(void);
-  void Shutdown(void);
-  wxString GetInfoStatus();
+    void* Entry(void);
+    void Shutdown(void);
+    wxString GetInfoStatus();
 
- private:
-  void EmulateFakeBuffer(void);
+private:
+    void EmulateFakeBuffer(void);
 
-  volatile bool m_shutdown;
+    volatile bool m_shutdown;
 
-  int m_next_spoke;     // emulator next spoke
-  int m_next_rotation;  // slowly rotate emulator
+    int m_next_spoke; // emulator next spoke
+    int m_next_rotation; // slowly rotate emulator
 
-  SOCKET m_receive_socket;  // Where we listen for message from m_send_socket
-  SOCKET m_send_socket;     // A message to this socket will interrupt select() and allow immediate shutdown
+    SOCKET m_receive_socket; // Where we listen for message from m_send_socket
+    SOCKET m_send_socket; // A message to this socket will interrupt select()
+                          // and allow immediate shutdown
 };
 
 PLUGIN_END_NAMESPACE
