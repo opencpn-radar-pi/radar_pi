@@ -127,7 +127,13 @@ void RadarControlButton::AdjustValue(int adjustment) {
   if (m_item->GetState() == RCS_OFF) {
     m_item->UpdateState(RCS_MANUAL);
   } else {
-    newValue += adjustment;
+    if (m_ci.names) {
+      do {
+        newValue += adjustment;
+      } while (m_ci.names[newValue].length() == 0 && newValue < m_ci.maxValue && newValue > m_ci.minValue);
+    } else {
+      newValue += adjustment;
+    }
     if (newValue < m_ci.minValue) {
       newValue = m_ci.minValue;
     } else if (newValue > m_ci.maxValue) {
@@ -943,9 +949,9 @@ void ControlsDialog::CreateControls() {
     m_adjust_sizer->Add(m_ftc_button, 0, wxALL, BORDER);
   }
 
-  // The MODE button (Quantum only)
+  // The MODE button (Quantum and HALO only)
   if (m_ctrl[CT_MODE].type) {
-    m_mode_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("MODE"), m_ctrl[CT_MODE], &m_ri->m_mode);
+    m_mode_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Mode"), m_ctrl[CT_MODE], &m_ri->m_mode);
     m_adjust_sizer->Add(m_mode_button, 0, wxALL, BORDER);
   }
 
@@ -1939,6 +1945,36 @@ void ControlsDialog::EnableRadarControls() {
   }
 }
 
+//
+// Radar is in an "automatic" mode, disable certain controls.
+//
+void ControlsDialog::LimitRadarControls() {
+  if (m_interference_rejection_button) {
+    m_interference_rejection_button->Disable();
+  }
+  if (m_target_separation_button) {
+    m_target_separation_button->Disable();
+  }
+  if (m_noise_rejection_button) {
+    m_noise_rejection_button->Disable();
+  }
+  if (m_target_boost_button) {
+    m_target_boost_button->Disable();
+  }
+  if (m_target_expansion_button) {
+    m_target_expansion_button->Disable();
+  }
+  if (m_scan_speed_button) {
+    m_scan_speed_button->Disable();
+  }
+  if (m_local_interference_rejection_button) {
+    m_local_interference_rejection_button->Disable();
+  }
+  if (m_side_lobe_suppression_button) {
+    m_side_lobe_suppression_button->Disable();
+  }
+}
+
 void ControlsDialog::UpdateControlValues(bool refreshAll) {
   wxString o;
   bool updateEditDialog = false;
@@ -1969,6 +2005,10 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     DisableRadarControls();
   } else {
     EnableRadarControls();
+    if ((m_ri->m_radar_type == RT_HaloA || m_ri->m_radar_type == RT_HaloB) && m_mode_button &&
+        m_mode_button->m_item->GetValue() > 0) {
+      LimitRadarControls();
+    }
   }
   m_power_button->SetLabel(o);
   if (m_power_sizer) {

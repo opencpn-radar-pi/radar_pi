@@ -958,7 +958,8 @@ struct RadarReport_02C4_99 {       // length 99
   uint8_t what;                    // 0   0x02
   uint8_t command;                 // 1 0xC4
   uint32_t range;                  //  2-3   0x06 0x09
-  uint16_t field4;                 // 6-7    0
+  uint8_t field4;                  // 6    0
+  uint8_t mode;                    // 7    mode (0 = custom, 1 = harbor, 2 = offshore, 4 = bird, 5 = weather)
   uint32_t field8;                 // 8-11   1
   uint8_t gain;                    // 12
   uint8_t sea_auto;                // 13  0 = off, 1 = harbour, 2 = offshore
@@ -1090,6 +1091,8 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
 
   m_ri->resetTimeout(now);
 
+  // LOG_BINARY_RECEIVE(wxT("received report"), report, len);
+
   if (report[1] == 0xC4) {
     // Looks like a radar report. Is it a known one?
     switch ((len << 8) + report[0]) {
@@ -1144,6 +1147,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         state = (RadarControlState)(RCS_MANUAL + s->sea_auto);
         m_ri->m_sea.Update(s->sea * 100 / 255, state);
 
+        m_ri->m_mode.Update(s->mode);
         m_ri->m_target_boost.Update(s->target_boost);
         m_ri->m_interference_rejection.Update(s->interference_rejection);
         m_ri->m_target_expansion.Update(s->target_expansion);

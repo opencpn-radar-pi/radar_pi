@@ -176,7 +176,6 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_MAIN_BANG_SIZE:
     case CT_MAIN_BANG_SUPPRESSION:
     case CT_MAX:
-    case CT_MODE:
     case CT_NONE:
     case CT_NO_TRANSMIT_END:
     case CT_NO_TRANSMIT_START:
@@ -298,6 +297,13 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_SCAN_SPEED: {
       uint8_t cmd[] = {0x0f, 0xc1, (uint8_t)value};
       LOG_VERBOSE(wxT("%s Scan speed: %d"), m_name.c_str(), value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
+
+    case CT_MODE: {
+      uint8_t cmd[] = {0x10, 0xc1, (uint8_t)value};
+      LOG_VERBOSE(wxT("%s Mode: %d"), m_name.c_str(), value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;
     }

@@ -75,7 +75,14 @@
 #define DOPPLER_NAMES \
   { _("Off"), _("Normal"), _("Approaching") }
 #endif
+#ifndef MODE_NAMES
+#define MODE_NAMES \
+  { _("Custom"), _("Harbor"), _("Offshore"), wxT(""), _("Weather"), _("Bird") }
+#endif
 
+if (radarType >= RT_HaloA) {
+HAVE_CONTROL(CT_MODE, CTD_AUTO_NO, 2, CTD_MIN_ZERO, 5, CTD_STEP_1, MODE_NAMES)
+}
 HAVE_CONTROL(CT_ANTENNA_HEIGHT, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 50, CTD_STEP_1, CTD_NUMERIC)
 HAVE_CONTROL(CT_BEARING_ALIGNMENT, CTD_AUTO_NO, CTD_DEF_ZERO, -180, +180, CTD_STEP_1, CTD_NUMERIC)
 HAVE_CONTROL(CT_GAIN, CTD_AUTO_YES, 50, CTD_MIN_ZERO, CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)

@@ -434,6 +434,7 @@ class ControlsDialog : public wxDialog {
   void CreateControls();
   void DisableRadarControls();
   void EnableRadarControls();
+  void LimitRadarControls();
 
   // Methods that we know that every radar must or may implement its own way
   virtual void UpdateRadarSpecificState(){};
