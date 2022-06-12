@@ -18,7 +18,7 @@ set -e -u # Fail on first error
 BUILD_TYPE="${1:-cli}"
 BUILDDIR="rel-`uname`-`uname -m`"
 STATE="Unofficial"
-TARGET="pkg"
+TARGET="tarball"
 CMAKE_OPTIONS=""
 MAKE_OPTIONS=""
 host=$(hostname)
@@ -26,20 +26,23 @@ host=$(hostname)
 echo "Adapting to $host-$BUILD_TYPE"
 case $host-$BUILD_TYPE in
 
-  kees-mbp*cli)
+  kees-m*cli)
     BUILDDIR=rel-mac
-    #CMAKE_OPTIONS=" -DwxWidgets_CONFIG_EXECUTABLE=$HOME/src/wx312_opencpn50_macos109/bin/wx-config
-    #                -DwxWidgets_CONFIG_OPTIONS='--prefix=$HOME/src/wx312_opencpn50_macos109'
-    #                -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9"
-    CMAKE_OPTIONS="-DCMAKE_OSX_DEPLOYMENT_TARGET=10.9"
+    WX="${HOME}/src/wx315_opencpn50_macos1010"
+    CMAKE_OPTIONS=" -DwxWidgets_CONFIG_EXECUTABLE=${WX}/bin/wx-config
+                    -DwxWidgets_CONFIG_OPTIONS='--prefix=${WX}'
+                    -DCMAKE_INSTALL_PREFIX=
+                    -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10
+                    -DCMAKE_OSX_ARCHITECTURES=x86_64
+                  "
     export CMAKE_BUILD_PARALLEL_LEVEL=8
     ;;
 
-  kees-mbp*ide)
+  kees-m*ide)
     BUILDDIR=rel-mac-xcode
-    CMAKE_OPTIONS=" -DwxWidgets_CONFIG_EXECUTABLE=$HOME/src/wx312_opencpn50_macos109/bin/wx-config
-                    -DwxWidgets_CONFIG_OPTIONS='--prefix=$HOME/src/wx312_opencpn50_macos109'
-                    -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -G Xcode"
+    CMAKE_OPTIONS=" -DwxWidgets_CONFIG_EXECUTABLE=$HOME/src/wx315_opencpn50_macos1010/bin/wx-config
+                    -DwxWidgets_CONFIG_OPTIONS='--prefix=$HOME/src/wx312_opencpn50_macos1010'
+                    -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 -G Xcode"
     export CMAKE_BUILD_PARALLEL_LEVEL=8
     ;;
 
