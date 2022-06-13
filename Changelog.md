@@ -4,6 +4,7 @@
 * Add @include, @app\_id and @plugin\_name support in flatpak .yaml mainfest.
 * opencpn-libs: Several new libraries, wxcurl update.
 * opencpn-libs: flatpak yaml snippets added for use via @include.
+* Don't restore drone.yml in update-templates (#443).
 
 3.1.3 May 11, 2022
 * Add a build for new Ubuntu LTS Jammy (22.04)
