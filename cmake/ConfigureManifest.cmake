@@ -46,8 +46,6 @@ function(configure_manifest manifest new_manifest_path)
   if ("${app_id}" STREQUAL "")
     message(FATAL_ERROR "Cannot find a proper id: line in ${manifest}")
   endif ()
-  message(STATUS "Using app_id: ${app_id}")
-
 
   # Process @include
   #
