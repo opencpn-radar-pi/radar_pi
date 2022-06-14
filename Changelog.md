@@ -1,5 +1,6 @@
 5.4.0   12 June 2022
 
+- #204: Add loglevel 64 for reports
 - #202: No longer show socket bind error when radar is found
 - #190: Show RPM for all radars on Info window
 - #179: Add support for HALO accent light

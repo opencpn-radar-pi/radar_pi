@@ -1114,7 +1114,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
 
   m_ri->resetTimeout(now);
 
-  LOG_BINARY_RECEIVE(wxT("received report"), report, len);
+  LOG_BINARY_REPORTS(wxString::Format(wxT("%s report"), m_ri->m_name.c_str()), report, len);
 
   if (report[1] == 0xC4) {
     // Looks like a radar report. Is it a known one?
@@ -1237,9 +1237,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
       }
 
       case (66 << 8) + 0x04: {  // 66 bytes starting with 04 C4
-        if (m_pi->m_settings.verbose >= 2) {
-          LOG_BINARY_RECEIVE(wxT("received RadarReport_04C4_66"), report, len);
-        }
         RadarReport_04C4_66 *data = (RadarReport_04C4_66 *)report;
 
         // bearing alignment
@@ -1305,9 +1302,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         m_ri->m_side_lobe_suppression.Update(s08->side_lobe_suppression * 100 / 255, s08->sls_auto ? RCS_AUTO_1 : RCS_MANUAL);
         m_ri->m_local_interference_rejection.Update(s08->local_interference_rejection);
 
-        if (m_pi->m_settings.verbose >= 2) {
-          LOG_BINARY_RECEIVE(wxT("received RadarReport_08C4_18"), report, len);
-        }
         break;
       }
 
@@ -1325,7 +1319,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
           wxString rep;
 
           rep << m_ri->m_name << wxT(" received unknown report");
-          LOG_BINARY_RECEIVE(rep, report, len);
         }
         break;
       }
@@ -1336,9 +1329,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
     // Looks like a radar report. Is it a known one?
     switch ((len << 8) + report[0]) {
       case (16 << 8) + 0x0f:
-        if (m_pi->m_settings.verbose >= 2) {
-          LOG_BINARY_RECEIVE(wxT("received BR24 report"), report, len);
-        }
         if (m_ri->m_radar_type == RT_UNKNOWN) {
           LOG_INFO(wxT("%s radar report tells us this a Navico BR24"), m_ri->m_name.c_str());
           m_ri->m_radar_type = RT_BR24;
@@ -1351,15 +1341,9 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
       case (10 << 8) + 0x12:
       case (46 << 8) + 0x13:
         // Content unknown, but we know that BR24 radomes send this
-        if (m_pi->m_settings.verbose >= 2) {
-          LOG_BINARY_RECEIVE(wxT("received familiar report"), report, len);
-        }
         break;
 
       default:
-        if (m_pi->m_settings.verbose >= 2) {
-          LOG_BINARY_RECEIVE(wxT("received unknown report"), report, len);
-        }
         break;
     }
 #endif
@@ -1367,9 +1351,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
   } else if (report[0] == 0x11 && report[1] == 0xC6) {
     LOG_RECEIVE(wxT("%s received heartbeat"), m_ri->m_name.c_str());
   } else if (report[0] == 01 && report[1] == 0xB2) {  // Common Navico message from 4G++
-    if (m_pi->m_settings.verbose >= 2) {
-      LOG_BINARY_RECEIVE(wxT("received RadarReport_01B2"), report, len);
-    }
     RadarReport_01B2 *data = (RadarReport_01B2 *)report;
 
 #define LOG_ADDR_N(n) LOG_RECEIVE(wxT("%s addr%d = %s"), m_ri->m_name.c_str(), n, FormatPackedAddress(data->addr##n));

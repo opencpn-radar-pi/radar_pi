@@ -544,7 +544,7 @@ bool GarminxHDReceive::UpdateScannerStatus(int status) {
 }
 
 bool GarminxHDReceive::ProcessReport(const uint8_t *report, size_t len) {
-  LOG_BINARY_RECEIVE(wxT("ProcessReport"), report, len);
+  LOG_BINARY_REPORTS(wxString::Format(wxT("%s report"), m_ri->m_name.c_str()), report, len);
 
   time_t now = time(0);
 

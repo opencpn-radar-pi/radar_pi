@@ -289,13 +289,11 @@ struct RadarReport_01B2 {
 
 bool NavicoLocate::ProcessReport(const NetworkAddress &radar_address, const NetworkAddress &interface_address,
                                  const uint8_t *report, size_t len) {
+  LOG_BINARY_REPORTS(wxT("Navico locator report"), report, len);
   if (report[0] == 01 && report[1] == 0xB1) {  // Wake radar
     LOG_VERBOSE(wxT("Wake radar request from %s"), radar_address.FormatNetworkAddress());
   }
   if (report[0] == 01 && report[1] == 0xB2) {  // Common Navico message from 4G++
-    if (m_pi->m_settings.verbose >= 2) {
-      LOG_BINARY_RECEIVE(wxT("received RadarReport_01B2"), report, len);
-    }
     RadarReport_01B2 *data = (RadarReport_01B2 *)report;
     wxCriticalSectionLocker lock(m_exclusive);
 

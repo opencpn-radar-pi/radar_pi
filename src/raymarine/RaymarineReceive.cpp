@@ -563,6 +563,8 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
   QuantumRadarReport *bl_pter = (QuantumRadarReport *)data;
   wxString s;
 
+  LOG_BINARY_REPORTS(wxString::Format(wxT("%s QuantumReport"), m_ri->m_name.c_str()), data, len);
+
   switch (bl_pter->status) {
     case 0:
       LOG_RECEIVE(wxT("%s received transmit off from %s"), m_ri->m_name.c_str(), "--" /*addr.c_str()*/);
@@ -681,6 +683,8 @@ void RaymarineReceive::ProcessRMReport(const UINT8 *data, int len) {
   RMRadarReport *bl_pter = (RMRadarReport *)data;
   wxString s;
   bool HDtype = bl_pter->field01 == 0x00018801;
+
+  LOG_BINARY_REPORTS(wxString::Format(wxT("%s RMReport"), m_ri->m_name.c_str()), data, len);
 
   if (bl_pter->field01 == 0x00018801 || bl_pter->field01 == 0x010001) {  // HD radar or analog
     switch (bl_pter->status) {
@@ -823,6 +827,8 @@ void RaymarineReceive::ProcessRMReport(const UINT8 *data, int len) {
 }
 
 void RaymarineReceive::ProcessFixedReport(const UINT8 *data, int len) {
+  LOG_BINARY_REPORTS(wxString::Format(wxT("%s FixedReport"), m_ri->m_name.c_str()), data, len);
+
   if (len == sizeof(RMRadarFixedReport)) {
     RMRadarFixedReport *bl_pter = (RMRadarFixedReport *)data;
     RadarControlState state;
@@ -832,7 +838,6 @@ void RaymarineReceive::ProcessFixedReport(const UINT8 *data, int len) {
     LOG_RECEIVE(wxT("bl_pter->sea_min=%i , bl_pter->sea_max=%i"), bl_pter->sea_min, bl_pter->sea_max);
     LOG_RECEIVE(wxT("bl_pter->rain_min=%i , bl_pter->rain_max=%i"), bl_pter->rain_min, bl_pter->rain_max);
     LOG_RECEIVE(wxT("bl_pter->ftc_min=%i , bl_pter->ftc_maxn=%i"), bl_pter->ftc_min, bl_pter->ftc_max);
-
     m_ri->m_gain.SetMin(bl_pter->gain_min);
     m_ri->m_gain.SetMax(bl_pter->gain_max);
     m_ri->m_sea.SetMin(bl_pter->sea_min);

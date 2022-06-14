@@ -143,6 +143,7 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
 #define LOGLEVEL_RECEIVE 8
 #define LOGLEVEL_GUARD 16
 #define LOGLEVEL_ARPA 32
+#define LOGLEVEL_REPORTS 64
 #define IF_LOG_AT_LEVEL(x) if ((M_SETTINGS.verbose & (x)) != 0)
 #define IF_LOG_AT(x, y)                                                        \
     do {                                                                       \
@@ -155,6 +156,7 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
 #define LOG_RECEIVE IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) wxLogMessage
 #define LOG_GUARD IF_LOG_AT_LEVEL(LOGLEVEL_GUARD) wxLogMessage
 #define LOG_ARPA IF_LOG_AT_LEVEL(LOGLEVEL_ARPA) wxLogMessage
+#define LOG_REPORTS IF_LOG_AT_LEVEL(LOGLEVEL_REPORTS) wxLogMessage
 
 #define LOG_BINARY_VERBOSE(what, data, size)                                   \
     IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE)                                          \
@@ -183,6 +185,11 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
     }
 #define LOG_BINARY_ARPA(what, data, size)                                      \
     IF_LOG_AT_LEVEL(LOGLEVEL_ARPA) { M_PLUGIN logBinaryData(what, data, size); }
+#define LOG_BINARY_REPORTS(what, data, size)                                   \
+    IF_LOG_AT_LEVEL(LOGLEVEL_REPORTS)                                          \
+    {                                                                          \
+        M_PLUGIN logBinaryData(what, data, size);                              \
+    }
 
 enum {
     BM_ID_RED,
