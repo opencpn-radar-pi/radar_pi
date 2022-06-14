@@ -18,6 +18,9 @@
 # Copy the contents of the filename mentioned after @include into the new
 # manifest.
 #  - Filename is relative to the project top-level directory.
+#  - The line with @include must start with a '-'.
+#  - The included file must have a hyphen ('-') at column 0 in the first
+#    non-comment line.
 #  - The indentation of the '-' char is added to each line in the included
 #    file.
 
