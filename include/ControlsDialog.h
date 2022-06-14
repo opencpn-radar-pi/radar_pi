@@ -189,6 +189,7 @@ public:
         m_timed_idle_button = 0;
         m_timed_run_button = 0;
         m_interference_rejection_button = 0;
+        m_threshold_button = 0;
         m_target_separation_button = 0;
         m_noise_rejection_button = 0;
         m_target_boost_button = 0;
@@ -382,12 +383,13 @@ protected:
     RadarControlButton* m_timed_run_button;
 
     // Advanced controls
-    RadarControlButton* m_interference_rejection_button;
-    RadarControlButton* m_target_separation_button;
     RadarControlButton* m_noise_rejection_button;
+    RadarControlButton* m_threshold_button;
+    RadarControlButton* m_target_separation_button;
     RadarControlButton* m_target_boost_button;
     RadarControlButton* m_target_expansion_button;
     RadarControlButton* m_scan_speed_button;
+    RadarControlButton* m_interference_rejection_button;
     RadarControlButton* m_stc_button;
     RadarControlButton* m_fine_tune_button;
     RadarControlButton* m_coarse_tune_button;

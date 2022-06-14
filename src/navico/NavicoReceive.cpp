@@ -208,45 +208,65 @@ enum LookupSpokeEnum {
 
 static uint8_t lookupData[6][256];
 
+// Make space for BLOB_HISTORY_COLORS
+static const uint8_t lookupNibbleToByte[16] = {
+    0,     // 0
+    0x32,  // 1
+    0x40,  // 2
+    0x4e,  // 3
+    0x5c,  // 4
+    0x6a,  // 5
+    0x78,  // 6
+    0x86,  // 7
+    0x94,  // 8
+    0xa2,  // 9
+    0xb0,  // a
+    0xbe,  // b
+    0xcc,  // c
+    0xda,  // d
+    0xe8,  // e
+    0xf4,  // f
+};
+
 void NavicoReceive::InitializeLookupData() {
   if (lookupData[5][255] == 0) {
     for (int j = 0; j <= UINT8_MAX; j++) {
-      uint8_t low = (j & 0x0f) << 4;
-      uint8_t high = (j & 0xf0);
+      uint8_t low = lookupNibbleToByte[(j & 0x0f)];
+      uint8_t high = lookupNibbleToByte[(j & 0xf0) >> 4];
 
-      lookupData[LOOKUP_SPOKE_LOW_NORMAL][j] = low;
-      lookupData[LOOKUP_SPOKE_HIGH_NORMAL][j] = high;
+      lookupData[LOOKUP_SPOKE_LOW_NORMAL][j] = (uint8_t)low;
+      lookupData[LOOKUP_SPOKE_HIGH_NORMAL][j] = (uint8_t)high;
 
       switch (low) {
-        case 0xf0:
+        case 0xf4:
           lookupData[LOOKUP_SPOKE_LOW_BOTH][j] = 0xff;
           lookupData[LOOKUP_SPOKE_LOW_APPROACHING][j] = 0xff;
           break;
 
-        case 0xe0:
+        case 0xe8:
           lookupData[LOOKUP_SPOKE_LOW_BOTH][j] = 0xfe;
-          lookupData[LOOKUP_SPOKE_LOW_APPROACHING][j] = low;
+          lookupData[LOOKUP_SPOKE_LOW_APPROACHING][j] = (uint8_t)low;
           break;
 
         default:
-          lookupData[LOOKUP_SPOKE_LOW_BOTH][j] = low;
-          lookupData[LOOKUP_SPOKE_LOW_APPROACHING][j] = low;
+          lookupData[LOOKUP_SPOKE_LOW_BOTH][j] = (uint8_t)low;
+          lookupData[LOOKUP_SPOKE_LOW_APPROACHING][j] = (uint8_t)low;
       }
 
       switch (high) {
-        case 0xf0:
+        case 0xf4:
           lookupData[LOOKUP_SPOKE_HIGH_BOTH][j] = 0xff;
           lookupData[LOOKUP_SPOKE_HIGH_APPROACHING][j] = 0xff;
           break;
 
-        case 0xe0:
+        case 0xe8:
           lookupData[LOOKUP_SPOKE_HIGH_BOTH][j] = 0xfe;
-          lookupData[LOOKUP_SPOKE_HIGH_APPROACHING][j] = high;
+          lookupData[LOOKUP_SPOKE_HIGH_APPROACHING][j] = (uint8_t)high;
           break;
 
         default:
-          lookupData[LOOKUP_SPOKE_HIGH_BOTH][j] = high;
-          lookupData[LOOKUP_SPOKE_HIGH_APPROACHING][j] = high;
+          lookupData[LOOKUP_SPOKE_HIGH_BOTH][j] = (uint8_t)high;
+          lookupData[LOOKUP_SPOKE_HIGH_APPROACHING][j] = (uint8_t)high;
       }
     }
   }

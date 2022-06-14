@@ -1503,6 +1503,8 @@ bool radar_pi::LoadConfig(void) {
       if (ri->m_min_contour_length > 10) ri->m_min_contour_length = 6;  // Prevent user and system error
       pConf->Read(wxString::Format(wxT("Radar%dDopplerAutoTrack"), r), &v, 0);
       ri->m_autotrack_doppler.Update(v);
+      pConf->Read(wxString::Format(wxT("Radar%dThreshold"), r), &v, 0);
+      ri->m_threshold.Update(v);
 
       RadarControlItem item;
       pConf->Read(wxString::Format(wxT("Radar%dTrailsState"), r), &state, RCS_OFF);
@@ -1675,6 +1677,7 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dWindowDock"), r), m_settings.dock_radar[r]);
       pConf->Write(wxString::Format(wxT("Radar%dControlShow"), r), m_settings.show_radar_control[r]);
       pConf->Write(wxString::Format(wxT("Radar%dTargetShow"), r), m_radar[r]->m_target_on_ppi.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dThreshold"), r), m_radar[r]->m_threshold.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTrailsState"), r), (int)m_radar[r]->m_target_trails.GetState());
       pConf->Write(wxString::Format(wxT("Radar%dTrails"), r), m_radar[r]->m_target_trails.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dTrueTrailsMotion"), r), m_radar[r]->m_trails_motion.GetValue());

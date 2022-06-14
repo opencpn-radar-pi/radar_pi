@@ -664,10 +664,14 @@ void ControlsDialog::CreateControls() {
   m_advanced_sizer->Add(bAdvancedBack, 0, wxALL, BORDER);
 
   if (m_ctrl[CT_NOISE_REJECTION].type) {
-    // The NOISE REJECTION button
     m_noise_rejection_button =
         new RadarControlButton(this, ID_CONTROL_BUTTON, _("Noise rejection"), m_ctrl[CT_NOISE_REJECTION], &m_ri->m_noise_rejection);
     m_advanced_sizer->Add(m_noise_rejection_button, 0, wxALL, BORDER);
+  }
+
+  if (m_ctrl[CT_THRESHOLD].type) {
+    m_threshold_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Threshold"), m_ctrl[CT_THRESHOLD], &m_ri->m_threshold);
+    m_advanced_sizer->Add(m_threshold_button, 0, wxALL, BORDER);
   }
 
   // The TARGET EXPANSION button
@@ -1399,7 +1403,7 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
   } else {
     m_auto_button->Hide();
   }
-  if (m_from_control->m_ci.maxValue > 20) {
+  if (m_from_control->m_ci.maxValue / m_from_control->m_ci.stepValue >= 20) {
     m_plus_ten_button->Show();
     m_minus_ten_button->Show();
   } else {
@@ -1784,6 +1788,9 @@ void ControlsDialog::DisableRadarControls() {
   if (m_interference_rejection_button) {
     m_interference_rejection_button->Disable();
   }
+  if (m_threshold_button) {
+    m_threshold_button->Disable();
+  }
   if (m_target_separation_button) {
     m_target_separation_button->Disable();
   }
@@ -1880,6 +1887,9 @@ void ControlsDialog::EnableRadarControls() {
   if (m_interference_rejection_button) {
     m_interference_rejection_button->Enable();
   }
+  if (m_threshold_button) {
+    m_threshold_button->Enable();
+  }
   if (m_target_separation_button) {
     m_target_separation_button->Enable();
   }
@@ -1955,8 +1965,33 @@ void ControlsDialog::EnableRadarControls() {
 // Radar is in an "automatic" mode, disable certain controls.
 //
 void ControlsDialog::LimitRadarControls() {
+  ModeType mode = (ModeType)m_ri->m_mode.GetValue();
+
+  int threshold = -1;
+  switch (mode) {
+    case MODE_CUSTOM:
+    case MODE_UNUSED:
+      break;
+    case MODE_HARBOR:
+    case MODE_OFFSHORE:
+      threshold = 30;
+      break;
+      threshold = 30;
+    case MODE_WEATHER:
+    case MODE_BIRD:
+      threshold = 0;
+      break;
+  }
+  if (threshold >= 0) {
+    LOG_DIALOG(wxT("%s mode %d -> threshold %d"), m_log_name.c_str(), (int)mode, threshold);
+    m_ri->m_threshold.Update(threshold);
+  }
+
   if (m_interference_rejection_button) {
     m_interference_rejection_button->Disable();
+  }
+  if (m_threshold_button) {
+    m_threshold_button->Disable();
   }
   if (m_target_separation_button) {
     m_target_separation_button->Disable();

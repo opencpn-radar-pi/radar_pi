@@ -149,6 +149,7 @@ public:
     RadarControlItem m_timed_run; // CT_TIMED_RUN
     RadarControlItem m_doppler;
     RadarControlItem m_autotrack_doppler;
+    RadarControlItem m_threshold;
     RadarControlItem m_tune_fine; // Following added for Raymarine E120
     RadarControlItem m_tune_coarse;
     RadarControlItem

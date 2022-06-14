@@ -186,6 +186,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_TARGET_ON_PPI:
     case CT_TARGET_SEPARATION:
     case CT_TARGET_TRAILS:
+    case CT_THRESHOLD:
     case CT_TIMED_IDLE:
     case CT_TIMED_RUN:
     case CT_TRAILS_MOTION:

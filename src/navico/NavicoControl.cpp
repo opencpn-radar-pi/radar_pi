@@ -188,6 +188,7 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_STC_CURVE:
     case CT_TARGET_ON_PPI:
     case CT_TARGET_TRAILS:
+    case CT_THRESHOLD:
     case CT_TIMED_IDLE:
     case CT_TIMED_RUN:
     case CT_TRAILS_MOTION:

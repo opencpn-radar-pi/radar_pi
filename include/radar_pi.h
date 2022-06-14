@@ -239,6 +239,15 @@ static ToolbarIconColor g_toolbarIconColor[9] = { TB_SEARCHING, TB_STANDBY,
     TB_SEEN, TB_SEEN, TB_SEEN, TB_SEEN, TB_ACTIVE, TB_ACTIVE, TB_ACTIVE };
 #endif
 
+typedef enum ModeType {
+    MODE_CUSTOM,
+    MODE_HARBOR,
+    MODE_OFFSHORE,
+    MODE_UNUSED,
+    MODE_WEATHER,
+    MODE_BIRD
+} ModeType;
+
 struct receive_statistics {
     int packets;
     int broken_packets;
@@ -466,6 +475,8 @@ struct PersistentSettings {
     int threshold_blue; // Radar data has to be this strong to show as WEAK
     int threshold_multi_sweep; // Radar data has to be this strong not to be
                                // ignored in multisweep
+    int threshold; // Radar pixels below this value are ignored (0..100% in
+                   // steps of 10%)
     int type_detection_method; // 0 = default, 1 = ignore reports
     int AISatARPAoffset; // Rectangle side where to search AIS targets at ARPA
                          // position

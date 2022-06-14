@@ -449,18 +449,29 @@ void RadarInfo::CalculateRotationSpeed(SpokeBearing angle) {
 void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint8_t *data, size_t len, int range_meters,
                                   wxLongLong time_rec) {
   int orientation;
+  int i;
 
   SampleCourse(angle);            // Calculate course as the moving average of m_hdt over one revolution
   CalculateRotationSpeed(angle);  // Find out how fast the radar is rotating
 
-  for (int i = 0; i < m_main_bang_size.GetValue(); i++) {
-    data[i] = 0;
-  }
   // Recompute 'pixels_per_meter' based on the actual spoke length and range in meters.
   if (range_meters == 0) {
     LOG_INFO(wxT("Error ProcessRadarSpoke range is zero"));
     return;
   }
+
+  for (i = 0; i < m_main_bang_size.GetValue(); i++) {
+    data[i] = 0;
+  }
+  int threshold = m_threshold.GetValue() * 256 / 100;
+  if (threshold > 0) {
+    for (; i < len; i++) {
+      if (data[i] < threshold) {
+        data[i] = 0;
+      }
+    }
+  }
+
   double pixels_per_meter = (len / (double)range_meters) * (1. - (double)m_range_adjustment.GetValue() * 0.001);
 
   if (m_pixels_per_meter != pixels_per_meter) {

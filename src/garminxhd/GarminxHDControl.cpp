@@ -210,6 +210,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_REFRESHRATE:
     case CT_TARGET_ON_PPI:
     case CT_TARGET_TRAILS:
+    case CT_THRESHOLD:
     case CT_TRAILS_MOTION:
     case CT_TRANSPARENCY:
 
