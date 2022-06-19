@@ -54,15 +54,19 @@ if (COMMAND late_init)
   late_init()
 endif ()
 
+# Configure the flatpak manifest
+file(
+  GLOB manifest ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
+)
+include(ConfigureManifest)
+configure_manifest(${manifest} _new_manifest)
+
 # Set up targets. Targets sets up new targets with BUILD_TYPE set to
 # 'flatpak', 'android' or 'tarball'. The initial call without BUILD_TYPE ends
 # here.
 #
-file(GLOB FLATPAK_MANIFEST
-  ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
-)
 include(Targets)
-create_targets(${FLATPAK_MANIFEST})
+create_targets(${_new_manifest})
 
 if ("${BUILD_TYPE}" STREQUAL "")
   return ()

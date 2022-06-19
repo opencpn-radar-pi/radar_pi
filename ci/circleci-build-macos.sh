@@ -41,6 +41,8 @@ for pkg in $(sed '/#/d' < $here/../build-deps/macos-deps);  do
     brew link --overwrite $pkg || brew install $pkg
 done
 
+export OPENSSL_ROOT_DIR='/usr/local/opt/openssl'
+
 # Install the pre-built wxWidgets package
 
 wget -q https://download.opencpn.org/s/MCiRiq4fJcKD56r/download \

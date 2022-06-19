@@ -1,9 +1,11 @@
 Source: opencpn
 Build-Depends: debhelper (>= 9),
  git,
+ libcurl-dev,
  libgtk2.0-dev,
  libgl-dev,
  libjsoncpp-dev,
+ libssl-dev,
  libtinyxml-dev,
  libunarr-dev | base-files (<< 11),
  base-files (>=11) | libwxgtk3.0-dev,

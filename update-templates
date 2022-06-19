@@ -150,7 +150,6 @@ for f in \
     .circleci \
     .clang-format \
     .cmake-format.yaml \
-    .drone.yml \
     .gitattributes \
     .gitignore \
     INSTALL.md \

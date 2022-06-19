@@ -4,7 +4,19 @@
 #   - beta       Flathub beta branch, aarch64 with 20.08 runtime.
 #   - stable     Flathub main branch, x86_64 with 20.08 runtime.
 #
-id: org.opencpn.OpenCPN.Plugin.shipdriver
+# This is a template used to create a complete manifest in the build
+# directory. Doing so, it handles three tokens:
+# @plugin_name
+#    is replaced with PKG_NAME from Plugin.cmake
+# @app_id
+#    is  replaced with the last part of the initial id: line
+#    after substituting possible @plugin_name.
+# @include  <file>
+#    Replaces the line with @include with the contents of <file>,
+#
+# See cmake/ConfigureManifest.cmake for details.
+#
+id: org.opencpn.OpenCPN.Plugin.@plugin_name
 runtime: org.opencpn.OpenCPN
 runtime-version: stable
 #runtime-version: devel   # for nightly builds
@@ -19,11 +31,13 @@ finish-args:
     - --device=all
 
 modules:
-    - name: shipdriver
+    - @include opencpn-libs/flatpak/glu.yaml
+
+    - name: @app_id
       no-autogen: true
       buildsystem: cmake
       config-opts:
-          - -DCMAKE_INSTALL_PREFIX=/app/extensions/shipdriver/
+          - -DCMAKE_INSTALL_PREFIX=/app/extensions/@app_id
           - -DCMAKE_BUILD_TYPE:STRING=Release
           - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
           - -DBUILD_TYPE:STRING=tarball
@@ -35,4 +49,4 @@ modules:
       sources:
           - type: git
             url: ..
-            branch: master
+            branch: HEAD
