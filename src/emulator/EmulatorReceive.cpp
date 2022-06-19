@@ -114,12 +114,16 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
       for (size_t range = 0; range < sizeof(data); range++) {
         size_t bit = range >> 7;
         // use bit 'bit' of angle_raw
-        uint8_t colour = (((angle + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
+        uint8_t colour;
         if (range > sizeof(data) - 10) {
           colour = ((angle + m_next_rotation) % EMULATOR_SPOKES) <= 8 ? 255 : 0;
+        } else if (range > sizeof(data) - 20) {
+          colour = (angle * 256 / EMULATOR_SPOKES);
+        } else {
+          colour = (((angle + m_next_rotation) >> 5) & (2 << bit)) > 0 ? (range / 2) : 0;
         }
         data[range] = colour;
-        if (colour > 0) {
+        if (colour >= M_SETTINGS.threshold_blue) {
           spots++;
         }
       }

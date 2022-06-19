@@ -245,7 +245,6 @@ int radar_pi::Init(void) {
   m_settings.threshold_blue = 255;
   m_settings.threshold_red = 255;
   m_settings.threshold_green = 255;
-  m_settings.radar_count = 0;
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
@@ -1596,7 +1595,7 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ScanMaxAge"), &m_settings.max_age, 6);
     pConf->Read(wxT("Show"), &m_settings.show, true);
     pConf->Read(wxT("SkewFactor"), &m_settings.skew_factor, 1);
-    pConf->Read(wxT("ThresholdBlue"), &m_settings.threshold_blue, 50);
+    pConf->Read(wxT("ThresholdBlue"), &m_settings.threshold_blue, 32);
     // Make room for BLOB_HISTORY_MAX history values
     m_settings.threshold_blue = MAX(m_settings.threshold_blue, BLOB_HISTORY_MAX + 1);
     pConf->Read(wxT("ThresholdGreen"), &m_settings.threshold_green, 100);
