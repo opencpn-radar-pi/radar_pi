@@ -87,6 +87,20 @@ jobs:
       - run: cd build-debian; /bin/bash < upload.sh
       - run: ci/git-push.sh build-debian
 
+  build-bullseye-arm64:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+    environment:
+      - OCPN_TARGET: bullseye-arm64
+      - TARGET_TUPLE: debian;11;arm64
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-arm64.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
+
   build-flatpak-arm64:
     machine:
       image: ubuntu-2004:202101-01
@@ -251,6 +265,9 @@ workflows:
           <<: *std-filters
 
       - build-bullseye-armhf:
+          <<: *std-filters
+
+      - build-bullseye-arm64:
           <<: *std-filters
 
       - build-buster-armhf:
