@@ -267,6 +267,8 @@ int radar_pi::Init(void) {
     m_settings.show_radar[r] = true;
     m_settings.dock_radar[r] = false;
     m_settings.window_pos[r] = wxPoint(30 + 540 * r, 120);
+    RadarInfo * rinit = m_radar[r];
+    rinit->m_min_contour_length = 6;
   }
 
   m_GPS_filter = new GPSKalmanFilter();

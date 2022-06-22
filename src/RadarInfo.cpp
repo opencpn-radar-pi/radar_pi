@@ -137,7 +137,6 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   for (int i = 0; i < MAX_CHART_CANVAS; i++) {
     m_overlay_canvas[i].Update(0);
   }
-  
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(m_pi, this, z);
