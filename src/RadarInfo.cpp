@@ -128,6 +128,16 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_range_adjustment.Update(0, RCS_MANUAL);
   m_quantum2type = false;
   m_min_contour_length = 6;
+  m_threshold.Update(0);
+  m_main_bang_size.Update(0);
+  m_antenna_forward.Update(0);
+  m_antenna_starboard.Update(0);
+  m_range_adjustment.Update(0);
+  m_timed_run.Update(1);
+  for (int i = 0; i < MAX_CHART_CANVAS; i++) {
+    m_overlay_canvas[i].Update(0);
+  }
+  
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(m_pi, this, z);

@@ -245,6 +245,8 @@ int radar_pi::Init(void) {
   m_settings.threshold_blue = 255;
   m_settings.threshold_red = 255;
   m_settings.threshold_green = 255;
+  m_settings.enable_cog_heading = false;
+  m_settings.AISatARPAoffset = 50;
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
