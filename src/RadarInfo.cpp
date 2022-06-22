@@ -127,6 +127,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
 
   m_range_adjustment.Update(0, RCS_MANUAL);
   m_quantum2type = false;
+  m_min_contour_length = 6;
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     m_guard_zone[z] = new GuardZone(m_pi, this, z);
