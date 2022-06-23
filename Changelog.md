@@ -1,3 +1,7 @@
+5.4.1   23 June 2022
+
+- #205: ARPA initialization so ARPA works first time
+
 5.4.0   12 June 2022
 
 - #204: Add loglevel 64 for reports
