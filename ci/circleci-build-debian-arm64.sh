@@ -35,8 +35,6 @@ mk-build-deps /ci-source/build-deps/control
 apt install -q -y ./opencpn-build-deps*deb
 apt-get -q --allow-unauthenticated install -f
 
-debian_rel=$(lsb_release -sc)
-
 echo "deb http://deb.debian.org/debian bullseye-backports main" \
   >> /etc/apt/sources.list
 apt update
