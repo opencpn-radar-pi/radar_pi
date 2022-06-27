@@ -1,6 +1,7 @@
 3.1.4-beta1 June 13, 2022
 * Fix bad bugs in Flatpak builds resulting in empty tarball (#453, 454).
 * Drop focal-wx31 build.
+* Add a debian-arm64 build (bullseye/11 only).
 * Add @include, @app\_id and @plugin\_name support in flatpak .yaml mainfest.
 * opencpn-libs: Several new libraries, wxcurl update.
 * opencpn-libs: flatpak yaml snippets added for use via @include.
