@@ -1,4 +1,7 @@
-3.1.4-beta2 June 23, 2022
+3.1.4-beta3 June 29, 2022
+* More Flatpak FTBFS fixes for manifest comment lines.
+
+3.1.4-beta2 June 29, 2022
 * Fix a bug when configuring Flatpak manifests causing FTBFS errors.
 * Flatpak manifest: Handle @include in comments when configuring.
 
