@@ -54,7 +54,7 @@ function(configure_manifest manifest new_manifest_path)
   #
   file(STRINGS ${manifest} lines)
   foreach (line ${lines})
-    if ("${line}" MATCHES "[ \t]*\#")
+    if ("${line}" MATCHES "^[ \t]*\#")
       continue ()
     endif ()
     if ("${line}" MATCHES "@include")
