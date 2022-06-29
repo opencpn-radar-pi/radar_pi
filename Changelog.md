@@ -1,3 +1,7 @@
+3.1.4-beta2 June 23, 2022
+* Fix a bug when configuring Flatpak manifests causing FTBFS errors.
+* Flatpak manifest: Handle @include in comments when configuring.
+
 3.1.4-beta1 June 13, 2022
 * Fix bad bugs in Flatpak builds resulting in empty tarball (#453, 454).
 * Drop focal-wx31 build.
