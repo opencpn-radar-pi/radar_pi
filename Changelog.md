@@ -1,3 +1,6 @@
+3.1.4 June 29, 2022.
+* Probably last release in the 3.1 series
+
 3.1.4-beta3 June 29, 2022
 * More Flatpak FTBFS fixes for manifest comment lines.
 
