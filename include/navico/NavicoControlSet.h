@@ -74,10 +74,10 @@
         _("Harbour"), _("Offshore")                                            \
     }
 #endif
-#ifndef NAVICO_HALO_SEA_AUTO_NAMES
-#define NAVICO_HALO_SEA_AUTO_NAMES                                             \
+#ifndef NAVICO_HALO_SEA_STATE_NAMES
+#define NAVICO_HALO_SEA_STATE_NAMES                                            \
     {                                                                          \
-        _("Harbour"), _("Offshore"), _("Weather"), _("Bird")                   \
+        _("Calm"), _("Moderate"), _("Rough")                                   \
     }
 #endif
 #ifndef DOPPLER_NAMES
@@ -111,7 +111,7 @@ HAVE_CONTROL(CT_INTERFERENCE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO,
 HAVE_CONTROL(CT_LOCAL_INTERFERENCE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO,
     CTD_MIN_ZERO, 3, CTD_STEP_1, OFF_LOW_MEDIUM_HIGH_NAMES)
 HAVE_CONTROL(CT_RAIN, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100,
-    CTD_STEP_1, CTD_PERCENTAGE)
+    CTD_STEP_1, CTD_NUMERIC)
 HAVE_CONTROL(
     CT_RANGE, CTD_AUTO_YES, 1000, CTD_MIN_ZERO, 0, CTD_STEP_1, CTD_NUMERIC)
 if (radarType >= RT_HaloA) {
@@ -122,8 +122,10 @@ if (radarType >= RT_HaloA) {
         CTD_STEP_1, SLOW_FAST_NAMES)
 }
 if (radarType >= RT_HaloA) {
-    HAVE_CONTROL(CT_SEA, NAVICO_HALO_SEA_AUTO_NAMES, CTD_DEF_ZERO, CTD_MIN_ZERO,
-        CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)
+    HAVE_CONTROL(CT_SEA_STATE, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2,
+        CTD_STEP_1, NAVICO_HALO_SEA_STATE_NAMES)
+    HAVE_CONTROL(CT_SEA, CTD_AUTO_YES, CTD_DEF_ZERO, CTD_MIN_ZERO, CTD_MAX_100,
+        CTD_STEP_1, CTD_NUMERIC)
 } else {
     HAVE_CONTROL(CT_SEA, NAVICO_SEA_AUTO_NAMES, CTD_DEF_ZERO, CTD_MIN_ZERO,
         CTD_MAX_100, CTD_STEP_1, CTD_PERCENTAGE)

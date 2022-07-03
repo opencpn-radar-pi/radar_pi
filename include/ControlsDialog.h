@@ -109,9 +109,12 @@ public:
     int autoValues;
     wxString* autoNames;
     bool hasOff;
+    bool hasAutoAdjustable;
     int defaultValue;
     int minValue;
     int maxValue;
+    int minAdjustValue;
+    int maxAdjustValue;
     int stepValue;
     int nameCount;
     wxString unit;
@@ -213,6 +216,7 @@ public:
         m_refresh_rate_button = 0; // TODO: Set it on change
         m_gain_button = 0;
         m_sea_button = 0;
+        m_sea_state_button = 0;
         m_mode_button = 0;
         m_all_to_auto_button = 0;
         m_rain_button = 0;
@@ -234,6 +238,7 @@ public:
             m_ctrl[i].names = 0;
             m_ctrl[i].autoNames = 0;
             m_ctrl[i].hasOff = false;
+            m_ctrl[i].hasAutoAdjustable = false;
         }
     };
     ~ControlsDialog();
@@ -421,6 +426,7 @@ protected:
     RadarControlButton* m_refresh_rate_button;
     RadarControlButton* m_gain_button;
     RadarControlButton* m_sea_button;
+    RadarControlButton* m_sea_state_button;
     RadarControlButton* m_rain_button;
     RadarControlButton* m_ftc_button;
     RadarControlButton* m_mode_button;
@@ -604,6 +610,9 @@ public:
 
         this->SetFont(m_parent->m_pi->m_font);
         m_item = item;
+        if (m_ci.names) {
+            SetState(RCS_MANUAL);
+        }
         UpdateLabel(true);
     }
 

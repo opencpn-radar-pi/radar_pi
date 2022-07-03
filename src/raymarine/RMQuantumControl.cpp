@@ -180,6 +180,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_REFRESHRATE:
     case CT_SCAN_SPEED:
     case CT_SIDE_LOBE_SUPPRESSION:
+    case CT_SEA_STATE:
     case CT_STC:
     case CT_STC_CURVE:
     case CT_TARGET_BOOST:

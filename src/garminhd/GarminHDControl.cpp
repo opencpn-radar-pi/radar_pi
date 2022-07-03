@@ -237,6 +237,7 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
     case CT_NOISE_REJECTION:
     case CT_NO_TRANSMIT_END:
     case CT_NO_TRANSMIT_START:
+    case CT_SEA_STATE:
     case CT_SIDE_LOBE_SUPPRESSION:
     case CT_STC:
     case CT_STC_CURVE:

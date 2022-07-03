@@ -125,6 +125,7 @@ public:
     RadarControlItem m_target_boost;
     RadarControlItem m_target_expansion;
     RadarControlItem m_sea;
+    RadarControlItem m_sea_state; // Halo only, 0=Calm 1=Moderate 2=Rough
     RadarControlItem m_rain;
     RadarControlItem m_ftc;
     RadarControlItem m_mode;

@@ -985,7 +985,7 @@ struct RadarReport_02C4_99 {       // length 99
   uint8_t sea_auto;                // 13  0 = off, 1 = harbour, 2 = offshore
   uint8_t field14;                 // 14
   uint16_t field15;                // 15-16
-  uint32_t sea;                    // 17-20   sea state (17)
+  uint32_t sea;                    // 17-20   sea clutter (17)
   uint8_t field21;                 // 21
   uint8_t rain;                    // 22   rain clutter
   uint8_t field23;                 // 23
@@ -1034,7 +1034,7 @@ struct RadarReport_04C4_66 {   // 04 C4 with length 66
 struct RadarReport_08C4_18 {             // 08 c4  length 18
   uint8_t what;                          // 0  0x08
   uint8_t command;                       // 1  0xC4
-  uint8_t field2;                        // 2
+  uint8_t sea_state;                     // 2
   uint8_t local_interference_rejection;  // 3
   uint8_t scan_speed;                    // 4
   uint8_t sls_auto;                      // 5 installation: sidelobe suppression auto
@@ -1045,8 +1045,8 @@ struct RadarReport_08C4_18 {             // 08 c4  length 18
   uint16_t field10;                      // 10-11
   uint8_t noise_rejection;               // 12    noise rejection
   uint8_t target_sep;                    // 13
-  uint8_t field11;                       // 14
-  uint8_t field12;                       // 15
+  uint8_t sea_clutter;                   // 14 sea clutter on Halo
+  int8_t auto_sea_clutter;               // 15 auto sea clutter on Halo
   uint8_t field13;                       // 16
   uint8_t field14;                       // 17
 };
@@ -1271,31 +1271,41 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
       }
 #endif
 
+        /* Over time we have seen this report with 3 various lengths!!
+         */
+
+      case (22 << 8) + 0x08:    // FALLTHRU
       case (21 << 8) + 0x08: {  // length 21, 08 C4
                                 // contains Doppler data in extra 3 bytes
         RadarReport_08C4_21 *s08 = (RadarReport_08C4_21 *)report;
 
-        LOG_RECEIVE(wxT("%s %u 08C4: doppler=%d speed=%d, state=%d"), m_ri->m_name.c_str(), m_ri->m_radar, s08->doppler_state,
+        LOG_RECEIVE(wxT("%s %u 08C4: doppler=%d speed=%d, state=%d"), m_ri->m_name.c_str(), len, s08->doppler_state,
                     s08->doppler_speed, s08->doppler_state);
         // TODO: Doppler speed
 
         m_ri->m_doppler.Update(s08->doppler_state);
         m_ri->ComputeColourMap();
-      }  // FALLTHRU to old length
+      }  // FALLTHRU to old length, no break!
 
       case (18 << 8) + 0x08: {  // length 18, 08 C4
         // contains scan speed, noise rejection and target_separation and sidelobe suppression
         RadarReport_08C4_18 *s08 = (RadarReport_08C4_18 *)report;
 
-        LOG_RECEIVE(wxT("%s %u 08C4: scanspeed=%d noise=%u target_sep=%u"), m_ri->m_name.c_str(), m_ri->m_radar, s08->scan_speed,
-                    s08->noise_rejection, s08->target_sep);
-        LOG_RECEIVE(wxT("%s %u 08C4: f2=%u f6=%u f7=%u f8=%u f10=%u"), m_ri->m_name.c_str(), m_ri->m_radar, s08->field2,
-                    s08->field6, s08->field7, s08->field8, s08->field10);
-        LOG_RECEIVE(wxT("%s %u 08C4: f11=%u f12=%u f13=%u f14=%u"), m_ri->m_name.c_str(), m_ri->m_radar, s08->field11, s08->field12,
-                    s08->field13, s08->field14);
+        LOG_RECEIVE(wxT("%s %u 08C4: seastate=%u scanspeed=%d noise=%u target_sep=%u seaclutter=%u auto-seaclutter=%d"),
+                    m_ri->m_name.c_str(), len, s08->sea_state, s08->scan_speed, s08->noise_rejection, s08->target_sep,
+                    s08->sea_clutter, (int)s08->auto_sea_clutter);
+        LOG_RECEIVE(wxT("%s %u 08C4: f6=%u f7=%u f8=%u f10=%u"), m_ri->m_name.c_str(), len, s08->field6, s08->field7, s08->field8,
+                    s08->field10);
+        LOG_RECEIVE(wxT("%s %u 08C4: f12=%u f13=%u f14=%u"), m_ri->m_name.c_str(), m_ri->m_radar, s08->field13, s08->field14);
         LOG_RECEIVE(wxT("%s %u 08C4: if=%u slsa=%u sls=%u"), m_ri->m_name.c_str(), m_ri->m_radar, s08->local_interference_rejection,
                     s08->sls_auto, s08->side_lobe_suppression);
 
+        m_ri->m_sea_state.Update(s08->sea_state);
+        if (m_ri->m_sea.GetState() == RCS_MANUAL) {
+          m_ri->m_sea.Update(s08->sea_clutter);
+        } else {
+          m_ri->m_sea.Update(s08->auto_sea_clutter, RCS_AUTO_1);
+        }
         m_ri->m_scan_speed.Update(s08->scan_speed);
         m_ri->m_noise_rejection.Update(s08->noise_rejection);
         m_ri->m_target_separation.Update(s08->target_sep);

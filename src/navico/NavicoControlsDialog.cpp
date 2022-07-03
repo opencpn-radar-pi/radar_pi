@@ -35,10 +35,14 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-NavicoControlsDialog::NavicoControlsDialog(size_t radarType){
-
+NavicoControlsDialog::NavicoControlsDialog(size_t radarType) {
 #include "navico/NavicoControlSet.h"
 
+  if (radarType >= RT_HaloA) {
+    m_ctrl[CT_SEA].hasAutoAdjustable = true;
+    m_ctrl[CT_SEA].minAdjustValue = -50;
+    m_ctrl[CT_SEA].maxAdjustValue = +50;
+  }
 }
 
 PLUGIN_END_NAMESPACE

@@ -223,6 +223,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_LOCAL_INTERFERENCE_REJECTION:
     case CT_MAIN_BANG_SUPPRESSION:
     case CT_NOISE_REJECTION:
+    case CT_SEA_STATE:
     case CT_SIDE_LOBE_SUPPRESSION:
     case CT_STC:
     case CT_STC_CURVE:

@@ -123,8 +123,16 @@ wxString guard_zone_names[2];
 void RadarControlButton::AdjustValue(int adjustment) {
   int oldValue = m_item->GetValue();
   int newValue = oldValue;
+  int minValue = m_ci.minValue;
+  int maxValue = m_ci.maxValue;
+  RadarControlState state = m_item->GetState();
 
-  if (m_item->GetState() == RCS_OFF) {
+  if (m_ci.hasAutoAdjustable && state > RCS_MANUAL) {
+    minValue = m_ci.minAdjustValue;
+    maxValue = m_ci.maxAdjustValue;
+  }
+
+  if (state == RCS_OFF) {
     m_item->UpdateState(RCS_MANUAL);
   } else {
     if (m_ci.names) {
@@ -134,12 +142,16 @@ void RadarControlButton::AdjustValue(int adjustment) {
     } else {
       newValue += adjustment;
     }
-    if (newValue < m_ci.minValue) {
-      newValue = m_ci.minValue;
-    } else if (newValue > m_ci.maxValue) {
-      newValue = m_ci.maxValue;
+    if (newValue < minValue) {
+      newValue = minValue;
+    } else if (newValue > maxValue) {
+      newValue = maxValue;
     }
-    m_item->Update(newValue, RCS_MANUAL);
+    if (m_ci.hasAutoAdjustable) {
+      m_item->Update(newValue, state);
+    } else {
+      m_item->Update(newValue, RCS_MANUAL);
+    }
   }
 
   if (m_item->IsModified()) {
@@ -174,11 +186,21 @@ bool RadarControlButton::ToggleValue() {
 bool RadarControlButton::ToggleState() {
   RadarControlState state = m_item->GetState();
 
+  LOG_VERBOSE(wxT("%s Button '%s' ToggleState %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type], state,
+              m_ci.autoValues);
+
   if (m_ci.autoValues == 0) {
     if (state != RCS_MANUAL) {
       state = RCS_MANUAL;
     } else {
       state = RCS_OFF;
+    }
+  } else if (m_ci.hasAutoAdjustable) {
+    if (state > RCS_MANUAL) {
+      state = RCS_MANUAL;
+    } else {
+      state = RCS_AUTO_1;
+      m_item->Update(0, state);
     }
   } else if (state >= RCS_AUTO_1 && state < RCS_MANUAL + m_ci.autoValues) {
     state = (RadarControlState)(state + 1);
@@ -190,9 +212,10 @@ bool RadarControlButton::ToggleState() {
 }
 
 void RadarControlButton::SetState(RadarControlState state) {
-  m_item->UpdateState(state);
   LOG_VERBOSE(wxT("%s Button '%s' SetState %d value %d, max=%d"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type], state,
               m_item->GetValue(), m_ci.autoValues);
+
+  m_item->UpdateState(state);
   m_parent->m_ri->SetControlValue(m_ci.type, *m_item, this);
 }
 
@@ -257,8 +280,8 @@ void RadarControlButton::UpdateLabel(bool force) {
         } else {
           label << _("Auto");
         }
-        if (m_parent->m_ri->m_showManualValueInAuto) {
-          label << wxString::Format(wxT(" %d"), value);
+        if ((value != 0 && m_ci.hasAutoAdjustable) || m_parent->m_ri->m_showManualValueInAuto) {
+          label << wxString::Format(wxT("%+d"), value);
           if (m_ci.unit.length() > 0) {
             label << wxT(" ") << m_ci.unit;
           }
@@ -947,6 +970,12 @@ void ControlsDialog::CreateControls() {
     m_adjust_sizer->Add(m_sea_button, 0, wxALL, BORDER);
   }
 
+  // The SEA STATE button
+  if (m_ctrl[CT_SEA_STATE].type) {
+    m_sea_state_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Sea state"), m_ctrl[CT_SEA_STATE], &m_ri->m_sea_state);
+    m_adjust_sizer->Add(m_sea_state_button, 0, wxALL, BORDER);
+  }
+
   // The RAIN button
   if (m_ctrl[CT_RAIN].type) {
     m_rain_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Rain clutter"), m_ctrl[CT_RAIN], &m_ri->m_rain);
@@ -1269,7 +1298,7 @@ void ControlsDialog::OnBackClick(wxCommandEvent& event) {
 }
 
 void ControlsDialog::OnAutoClick(wxCommandEvent& event) {
-  if (m_from_control->ToggleState()) {
+  if (m_from_control->ToggleState() || m_from_control->m_ci.hasAutoAdjustable) {
     m_auto_button->Enable();
   } else {
     m_auto_button->Disable();
@@ -1395,7 +1424,7 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
 
   if (hasAuto) {
     m_auto_button->Show();
-    if (state > RCS_MANUAL && m_from_control->m_ci.autoValues == 1) {
+    if (state > RCS_MANUAL && m_from_control->m_ci.autoValues == 1 && !m_from_control->m_ci.hasAutoAdjustable) {
       m_auto_button->Disable();
     } else {
       m_auto_button->Enable();
@@ -1770,6 +1799,9 @@ void ControlsDialog::DisableRadarControls() {
   if (m_sea_button) {
     m_sea_button->Disable();
   }
+  if (m_sea_state_button) {
+    m_sea_state_button->Disable();
+  }
   if (m_gain_button) {
     m_gain_button->Disable();
   }
@@ -1868,6 +1900,9 @@ void ControlsDialog::EnableRadarControls() {
   }
   if (m_sea_button) {
     m_sea_button->Enable();
+  }
+  if (m_sea_state_button) {
+    m_sea_state_button->Enable();
   }
   if (m_gain_button) {
     m_gain_button->Enable();
@@ -2111,6 +2146,11 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   //   sea
   if (m_sea_button) {
     m_sea_button->UpdateLabel();
+  }
+
+  //   sea state
+  if (m_sea_state_button) {
+    m_sea_state_button->UpdateLabel();
   }
 
   //   mode (RM_Quantum)
