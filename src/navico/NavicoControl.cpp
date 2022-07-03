@@ -297,6 +297,10 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
 
     case CT_TARGET_EXPANSION: {
       uint8_t cmd[] = {0x09, 0xc1, (uint8_t)value};
+
+      if (m_ri->m_radar_type >= RT_HaloA) {
+        cmd[0] = 0x12;
+      }
       LOG_VERBOSE(wxT("%s Target expansion: %d"), m_name.c_str(), value);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;

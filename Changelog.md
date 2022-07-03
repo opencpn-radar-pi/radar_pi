@@ -1,5 +1,8 @@
-5.4.1   23 June 2022
 
+5.4.1   3 July 2022
+
+- #207: Fix target expansion for HALO
+- #206: Fix sea clutter and sea state for HALO
 - #205: ARPA initialization so ARPA works first time
 
 5.4.0   12 June 2022
