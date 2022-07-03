@@ -56,16 +56,16 @@
         _("Off"), _("Low"), _("Medium"), _("High")                             \
     }
 #endif
+#ifndef OFF_MEDIUM_SKIP_HIGH_NAMES
+#define OFF_MEDIUM_SKIP_HIGH_NAMES                                             \
+    {                                                                          \
+        _("Off"), _("Medium"), wxT(""), _("High")                              \
+    }
+#endif
 #ifndef OFF_LOW_HIGH_NAMES
 #define OFF_LOW_HIGH_NAMES                                                     \
     {                                                                          \
         _("Off"), _("Low"), _("High")                                          \
-    }
-#endif
-#ifndef SLOW_FAST_NAMES
-#define SLOW_FAST_NAMES                                                        \
-    {                                                                          \
-        _("Slow"), _("Fast")                                                   \
     }
 #endif
 #ifndef NAVICO_SEA_AUTO_NAMES
@@ -116,10 +116,10 @@ HAVE_CONTROL(
     CT_RANGE, CTD_AUTO_YES, 1000, CTD_MIN_ZERO, 0, CTD_STEP_1, CTD_NUMERIC)
 if (radarType >= RT_HaloA) {
     HAVE_CONTROL(CT_SCAN_SPEED, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 3,
-        CTD_STEP_1, OFF_LOW_MEDIUM_HIGH_NAMES)
+        CTD_STEP_1, OFF_MEDIUM_SKIP_HIGH_NAMES)
 } else {
     HAVE_CONTROL(CT_SCAN_SPEED, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 1,
-        CTD_STEP_1, SLOW_FAST_NAMES)
+        CTD_STEP_1, OFF_ON_NAMES)
 }
 if (radarType >= RT_HaloA) {
     HAVE_CONTROL(CT_SEA_STATE, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2,
@@ -141,7 +141,10 @@ if (radarType >= RT_HaloA) {
     HAVE_CONTROL(CT_TARGET_EXPANSION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO,
         1, CTD_STEP_1, OFF_ON_NAMES)
 }
-if (radarType != RT_BR24) {
+if (radarType >= RT_HaloA) {
+    HAVE_CONTROL(CT_NOISE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 3,
+        CTD_STEP_1, OFF_LOW_MEDIUM_HIGH_NAMES)
+} else if (radarType != RT_BR24) {
     HAVE_CONTROL(CT_NOISE_REJECTION, CTD_AUTO_NO, CTD_DEF_ZERO, CTD_MIN_ZERO, 2,
         CTD_STEP_1, OFF_LOW_HIGH_NAMES)
 }

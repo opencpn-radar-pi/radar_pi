@@ -1,6 +1,7 @@
 
 5.4.1   3 July 2022
 
+- #208: Fast scan, target expansion and other advanced settings on HALO
 - #207: Fix target expansion for HALO
 - #206: Fix sea clutter and sea state for HALO
 - #205: ARPA initialization so ARPA works first time

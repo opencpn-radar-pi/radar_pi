@@ -135,18 +135,23 @@ void RadarControlButton::AdjustValue(int adjustment) {
   if (state == RCS_OFF) {
     m_item->UpdateState(RCS_MANUAL);
   } else {
+    LOG_VERBOSE(wxT("%s Button '%s' changing %d to %d"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type], newValue,
+                newValue + adjustment);
+    newValue += adjustment;
     if (m_ci.names) {
-      do {
+      while (m_ci.names[newValue].length() == 0 && newValue < m_ci.maxValue && newValue > m_ci.minValue) {
+        LOG_VERBOSE(wxT("%s Button '%s' skipping empty name for %d"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type],
+                    newValue);
         newValue += adjustment;
-      } while (m_ci.names[newValue].length() == 0 && newValue < m_ci.maxValue && newValue > m_ci.minValue);
-    } else {
-      newValue += adjustment;
+      }
     }
-    if (newValue < minValue) {
+
+    if (newValue < minValue || (m_no_edit && newValue > maxValue)) {
       newValue = minValue;
     } else if (newValue > maxValue) {
       newValue = maxValue;
     }
+
     if (m_ci.hasAutoAdjustable) {
       m_item->Update(newValue, state);
     } else {
@@ -165,16 +170,9 @@ void RadarControlButton::AdjustValue(int adjustment) {
 bool RadarControlButton::ToggleValue() {
   if (m_no_edit) {
     int oldValue = m_item->GetValue();
-    int newValue = oldValue;
 
     if (m_item->GetState() == RCS_MANUAL) {
-      newValue += 1;
-      if (newValue < m_ci.minValue) {
-        newValue = m_ci.minValue;
-      } else if (newValue > m_ci.maxValue) {
-        newValue = m_ci.minValue;
-      }
-      m_item->Update(newValue);
+      AdjustValue(m_ci.stepValue);
     }
     SetState(RCS_MANUAL);
     UpdateLabel();
@@ -747,7 +745,7 @@ void ControlsDialog::CreateControls() {
   // The SCAN SPEED button
   if (m_ctrl[CT_SCAN_SPEED].type) {
     m_scan_speed_button =
-        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Scan speed"), m_ctrl[CT_SCAN_SPEED], &m_ri->m_scan_speed);
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Fast scan"), m_ctrl[CT_SCAN_SPEED], &m_ri->m_scan_speed);
     m_advanced_sizer->Add(m_scan_speed_button, 0, wxALL, BORDER);
   }
 

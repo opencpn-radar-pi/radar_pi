@@ -595,7 +595,7 @@ public:
         if (label.StartsWith(wxT("-"))) {
             firstLine = label.Mid(1);
             m_no_edit = true;
-        } else if (m_ci.maxValue < m_ci.minValue + 4) {
+        } else if (m_ci.maxValue < m_ci.minValue + 5) {
             firstLine = label;
             m_no_edit = true;
         } else {
