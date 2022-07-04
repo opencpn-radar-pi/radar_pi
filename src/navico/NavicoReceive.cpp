@@ -1284,7 +1284,9 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         // TODO: Doppler speed
 
         m_ri->m_doppler.Update(s08->doppler_state);
-        m_ri->ComputeColourMap();
+        if (m_ri->m_doppler.IsModified()) {
+          m_ri->ComputeColourMap();
+        }
       }  // FALLTHRU to old length, no break!
 
       case (18 << 8) + 0x08: {  // length 18, 08 C4
@@ -1300,11 +1302,13 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         LOG_RECEIVE(wxT("%s %u 08C4: if=%u slsa=%u sls=%u"), m_ri->m_name.c_str(), m_ri->m_radar, s08->local_interference_rejection,
                     s08->sls_auto, s08->side_lobe_suppression);
 
-        m_ri->m_sea_state.Update(s08->sea_state);
-        if (m_ri->m_sea.GetState() == RCS_MANUAL) {
-          m_ri->m_sea.Update(s08->sea_clutter);
-        } else {
-          m_ri->m_sea.Update(s08->auto_sea_clutter, RCS_AUTO_1);
+        if (IS_HALO) {
+          m_ri->m_sea_state.Update(s08->sea_state);
+          if (m_ri->m_sea.GetState() == RCS_MANUAL) {
+            m_ri->m_sea.Update(s08->sea_clutter);
+          } else {
+            m_ri->m_sea.Update(s08->auto_sea_clutter, RCS_AUTO_1);
+          }
         }
         m_ri->m_scan_speed.Update(s08->scan_speed);
         m_ri->m_noise_rejection.Update(s08->noise_rejection);
