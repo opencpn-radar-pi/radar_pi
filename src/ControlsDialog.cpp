@@ -133,9 +133,11 @@ void RadarControlButton::AdjustValue(int adjustment) {
   }
 
   if (state == RCS_OFF) {
+    LOG_VERBOSE(wxT("%s Button '%s' changing state from OFF to MANUAL (value is still %d"), m_parent->m_log_name.c_str(),
+                ControlTypeNames[m_ci.type], m_item->GetValue());
     m_item->UpdateState(RCS_MANUAL);
   } else {
-    LOG_VERBOSE(wxT("%s Button '%s' changing %d to %d"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type], newValue,
+    LOG_VERBOSE(wxT("%s Button '%s' changing value %d to %d"), m_parent->m_log_name.c_str(), ControlTypeNames[m_ci.type], newValue,
                 newValue + adjustment);
     newValue += adjustment;
     if (m_ci.names) {
@@ -169,8 +171,6 @@ void RadarControlButton::AdjustValue(int adjustment) {
 
 bool RadarControlButton::ToggleValue() {
   if (m_no_edit) {
-    int oldValue = m_item->GetValue();
-
     if (m_item->GetState() == RCS_MANUAL) {
       AdjustValue(m_ci.stepValue);
     }

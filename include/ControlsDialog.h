@@ -610,9 +610,6 @@ public:
 
         this->SetFont(m_parent->m_pi->m_font);
         m_item = item;
-        if (m_ci.names) {
-            SetState(RCS_MANUAL);
-        }
         UpdateLabel(true);
     }
 
