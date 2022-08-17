@@ -1,3 +1,4 @@
+- #210: Fix memory leak
 - #209: Fix button behavior broken in fix for #206
 
 5.4.1   3 July 2022

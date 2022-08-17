@@ -241,6 +241,7 @@ public:
             m_ctrl[i].hasAutoAdjustable = false;
         }
     };
+
     ~ControlsDialog();
 
     bool Create(wxWindow* parent, radar_pi* pi, RadarInfo* ri,

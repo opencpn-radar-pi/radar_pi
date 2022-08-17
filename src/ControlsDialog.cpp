@@ -350,6 +350,15 @@ ControlsDialog::~ControlsDialog() {
     m_pi->m_settings.control_pos[m_ri->m_radar] = pos;
     LOG_DIALOG(wxT("%s saved position %d,%d"), m_log_name.c_str(), pos.x, pos.y);
   }
+
+  for (size_t i = 0; i < ARRAY_SIZE(m_ctrl); i++) {
+    if (m_ctrl[i].names) {
+      delete[] m_ctrl[i].names;
+    }
+    if (m_ctrl[i].autoNames) {
+      delete[] m_ctrl[i].autoNames;
+    }
+  }
 }
 
 bool ControlsDialog::Create(wxWindow* parent, radar_pi* ppi, RadarInfo* ri, wxWindowID id, const wxString& caption,
