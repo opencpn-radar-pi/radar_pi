@@ -385,14 +385,17 @@ bool ArpaTarget::FindContourFromInside(Polar* pol) {  // moves pol to contour of
   // false when failed
   int ang = pol->angle;
   int rad = pol->r;
+  int limit = m_ri->m_spokes;
+
   if (rad >= (int)m_ri->m_spoke_len_max || rad < 3) {
     return false;
   }
   if (!(Pix(ang, rad))) {
     return false;
   }
-  while (Pix(ang, rad)) {
+  while (limit >= 0 && Pix(ang, rad)) {
     ang--;
+    limit--;
   }
   ang++;
   pol->angle = ang;

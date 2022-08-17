@@ -1,3 +1,6 @@
+5.4.2   17 August 2022
+
+- #211: Fix spin loop when guard zone target covers 360 degrees
 - #210: Fix memory leak
 - #209: Fix button behavior broken in fix for #206
 
