@@ -4,7 +4,7 @@ shallow_clone: false
 clone_depth: 10
 
 image:
-  - Visual Studio 2017
+  - Visual Studio 2019
 
 platform:
   - Win32
@@ -13,7 +13,7 @@ configuration: RelWithDebInfo
 test: false
 
 install:
-  - set VS_HOME=C:\Program Files (x86)\Microsoft Visual Studio\2017
+  - set VS_HOME=C:\Program Files (x86)\Microsoft Visual Studio\2019
   - call "%VS_HOME%\Community\VC\Auxiliary\Build\vcvars32.bat"
 
 before_build:
@@ -28,7 +28,7 @@ before_build:
 build_script:
   - call buildwin\win_deps.bat
   - mkdir build && cd build
-  - cmake -T v141_xp -G "Visual Studio 15 2017" ..
+  - cmake -A Win32 -G "Visual Studio 16 2019" ..
   - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
   - cmake --build . --target tarball --config RelWithDebInfo
 
