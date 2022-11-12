@@ -44,15 +44,15 @@ python -m pip install -q cryptography
 :: Install pre-compiled wxWidgets and other DLL; add required paths.
 ::
 set SCRIPTDIR=%~dp0
-set WXWIN=%SCRIPTDIR%..\cache\wxWidgets-3.1.2
+set WXWIN=%SCRIPTDIR%..\cache\wxWidgets-3.2.1
 set wxWidgets_ROOT_DIR=%WXWIN%
 set wxWidgets_LIB_DIR=%WXWIN%\lib\vc_dll
 if not exist "%WXWIN%" (
   wget --version > nul 2>&1 || choco install -y wget
-  wget https://download.opencpn.org/s/E2p4nLDzeqx4SdX/download ^
-      -O wxWidgets-3.1.2.7z
+  wget https://download.opencpn.org/s/mKn7bczRPSJXBtF/download ^
+      -O wxWidgets-3.2.1.7z
   7z i > nul 2>&1 || choco install -y 7zip
-  7z x wxWidgets-3.1.2.7z -o%WXWIN%
+  7z x wxWidgets-3.2.1.7z -o%WXWIN%
 )
 pathman add "%WXWIN%" > nul
 pathman add "%wxWidgets_LIB_DIR%" > nul
