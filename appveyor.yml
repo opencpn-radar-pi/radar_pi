@@ -21,8 +21,6 @@ before_build:
   - rmdir /Q /S C:\Python38-x64
   - rmdir /Q /S C:\Python27
   - cmd: SET PATH=C:\Python38;C:\Python38\Scripts;%PATH%
-  # And check out submodules:
-  - git submodule update --init opencpn-libs
 
 build_script:
   - call buildwin\win_deps.bat
