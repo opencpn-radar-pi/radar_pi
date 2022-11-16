@@ -246,12 +246,6 @@ workflows:
       - build-jammy:
           <<: *std-filters
 
-      - build-buster:
-          <<: *std-filters
-
-      - build-bullseye:
-          <<: *std-filters
-
       - build-android-arm64:
           <<: *std-filters
 
@@ -264,6 +258,9 @@ workflows:
       - build-focal-armhf:
           <<: *std-filters
 
+      - build-bullseye:
+          <<: *std-filters
+
       - build-bullseye-armhf:
           <<: *std-filters
 
@@ -271,4 +268,7 @@ workflows:
           <<: *std-filters
 
       - build-buster-armhf:
+          <<: *std-filters
+
+      - build-buster:
           <<: *std-filters
