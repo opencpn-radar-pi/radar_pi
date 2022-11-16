@@ -175,6 +175,16 @@ git diff-index --quiet --cached HEAD -- || {
     git commit -m "opencpn-libs: Update to latest version."
 }
 
+# Update flatpak runtime version as required:
+sed -i '/sdk: org.freedesktop.Sdk/s/20.08/22.08' \
+   flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
+git add flatpak
+git diff-index --quiet --cached HEAD -- || {
+    echo "Updating Updating flatpak runtime version to 22.08"
+    git commit -m "opencpn-libs: Update to latest version."
+}
+
+
 
 # Check for files/dirs which are private, but should be copied on first run.
 for f in config.h.in build-deps libs; do
