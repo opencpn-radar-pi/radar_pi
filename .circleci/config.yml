@@ -23,20 +23,13 @@ flatpak-steps: &flatpak-steps
     - run: ci/git-push.sh /build-flatpak
 
 jobs:
-
-  build-bullseye-armhf:
-    machine:
-      image: ubuntu-2004:202101-01
-    resource_class: arm.medium
+  build-buster:
+    docker:
+      - image: circleci/buildpack-deps:buster-scm
     environment:
-      - TARGET_TUPLE: debian;11;armhf
-      - OCPN_TARGET: bullseye
+      - OCPN_TARGET: buster
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    steps:
-      - checkout
-      - run: ci/circleci-build-debian-armhf.sh
-      - run: cd build-debian; /bin/bash < upload.sh
-      - run: ci/git-push.sh build-debian
+    <<: *debian-steps
 
   build-buster-armhf:
     machine:
@@ -52,17 +45,81 @@ jobs:
       - run: cd build-debian; /bin/bash < upload.sh
       - run: ci/git-push.sh build-debian
 
+  build-bullseye:
+    docker:
+      - image: circleci/buildpack-deps:bullseye-scm
+    environment:
+      - OCPN_TARGET: bullseye
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    <<: *debian-steps
+
+  build-bullseye-armhf:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    environment:
+      - TARGET_TUPLE: debian;11;armhf
+      - OCPN_TARGET: bullseye
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-armhf.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
+
   build-bullseye-arm64:
     machine:
       image: ubuntu-2004:2022.04.1
     resource_class: arm.medium
     environment:
-      - OCPN_TARGET: bullseye-arm64
+      - OCPN_TARGET: bullseye
       - TARGET_TUPLE: debian;11;arm64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - checkout
-      - run: ci/circleci-build-debian-arm64.sh
+      - run: ci/circleci-build-debian-docker.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
+
+  build-bookworm:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: medium
+    environment:
+      - OCPN_TARGET: bookworm
+      - TARGET_TUPLE: debian;12;x86_64
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-docker.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
+
+  build-bookworm-arm64:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+    environment:
+      - OCPN_TARGET: bookworm
+      - TARGET_TUPLE: debian;12;arm64
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-docker.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
+
+  build-bookworm-armhf:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    environment:
+      - TARGET_TUPLE: debian;12;armhf
+      - OCPN_TARGET: bookworm
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-armhf.sh
       - run: cd build-debian; /bin/bash < upload.sh
       - run: ci/git-push.sh build-debian
 
@@ -105,21 +162,6 @@ jobs:
       - run: cd build-osx; /bin/bash < upload.sh
       - run: ci/git-push.sh  build-osx
 
-  build-buster:
-    docker:
-      - image: circleci/buildpack-deps:buster-scm
-    environment:
-      - OCPN_TARGET: buster
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    <<: *debian-steps
-
-  build-bullseye:
-    docker:
-      - image: circleci/buildpack-deps:bullseye-scm
-    environment:
-      - OCPN_TARGET: bullseye
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    <<: *debian-steps
 
   build-android-arm64:
     docker:
@@ -185,3 +227,13 @@ workflows:
           <<: *std-filters
 
       - build-buster:
+          <<: *std-filters
+
+      - build-bookworm-arm64:
+          <<: *std-filters
+
+      - build-bookworm-armhf:
+          <<: *std-filters
+
+      - build-bookworm:
+          <<: *std-filters

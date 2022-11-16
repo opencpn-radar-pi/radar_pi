@@ -36,8 +36,9 @@ apt install -q -y ./opencpn-build-deps*deb
 apt-get -q --allow-unauthenticated install -f
 
 debian_rel=$(lsb_release -sc)
-
-if [ "$debian_rel" = bullseye ]; then
+if [ "$debian_rel" = bookworm ]; then
+    apt-get install -y cmake
+elif [ "$debian_rel" = bullseye ]; then
     echo "deb http://deb.debian.org/debian bullseye-backports main" \
       >> /etc/apt/sources.list
     apt update

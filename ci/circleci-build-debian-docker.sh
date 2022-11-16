@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Build for Debian 11 arm64/aarch64 in a docker container
+# Build for Debian in a docker container
 #
 # Copyright (c) 2021 Alec Leamas
 #
@@ -35,10 +35,16 @@ mk-build-deps /ci-source/build-deps/control
 apt install -q -y ./opencpn-build-deps*deb
 apt-get -q --allow-unauthenticated install -f
 
-echo "deb http://deb.debian.org/debian bullseye-backports main" \
-  >> /etc/apt/sources.list
-apt update
-apt install -y cmake/bullseye-backports
+debian_rel=$(lsb_release -sc)
+if [ "$debian_rel" = bullseye ]; then
+    echo "deb http://deb.debian.org/debian bullseye-backports main" \
+      >> /etc/apt/sources.list
+    apt update
+    apt install -y cmake/bullseye-backports
+else
+    apt-get install -y cmake
+fi
+
 
 cd /ci-source
 rm -rf build-debian; mkdir build-debian; cd build-debian
@@ -60,7 +66,7 @@ docker run \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
-    debian:11 /bin/bash -xe /ci-source/build.sh
+    debian:$OCPN_TARGET /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
 
