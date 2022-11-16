@@ -24,41 +24,6 @@ flatpak-steps: &flatpak-steps
 
 jobs:
 
-  build-bionic-armhf:
-    machine:
-      image: ubuntu-2004:202101-01
-    resource_class: arm.medium
-    environment:
-      - DOCKER_IMAGE: opencpn/ubuntu-bionic-armhf:v1
-      - TARGET_TUPLE: ubuntu;18.04;armhf
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    parameters:
-      cache-key:
-        type: string
-        default: "fp-arm20-v2"
-    steps:
-      - checkout
-      - run: ci/circleci-build-ubuntu-armhf.sh
-      - run: cd build-ubuntu; /bin/bash < upload.sh
-      - run: ci/git-push.sh build-ubuntu
-
-  build-focal-armhf:
-    machine:
-      image: ubuntu-2004:202101-01
-    resource_class: arm.medium
-    environment:
-      - TARGET_TUPLE: ubuntu;20.04;armhf
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    parameters:
-      cache-key:
-        type: string
-        default: "fp-arm20-v2"
-    steps:
-      - checkout
-      - run: ci/circleci-build-ubuntu-armhf.sh
-      - run: cd build-ubuntu; /bin/bash < upload.sh
-      - run: ci/git-push.sh build-ubuntu
-
   build-bullseye-armhf:
     machine:
       image: ubuntu-2004:202101-01
@@ -140,39 +105,6 @@ jobs:
       - run: cd build-osx; /bin/bash < upload.sh
       - run: ci/git-push.sh  build-osx
 
-  build-bionic:
-    docker:
-      - image: cimg/base:stable-18.04
-    environment:
-      - OCPN_TARGET: bionic
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    <<: *debian-steps
-
-  build-bionic-gtk3:
-    docker:
-      - image: cimg/base:stable-18.04
-    environment:
-      - BUILD_GTK3: true
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-      - OCPN_TARGET: bionic-gtk3
-    <<: *debian-steps
-
-  build-focal:
-    docker:
-      - image: cimg/base:stable-20.04
-    environment:
-      - OCPN_TARGET: focal
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    <<: *debian-steps
-
-  build-jammy:
-    docker:
-      - image: cimg/base:edge-22.04
-    environment:
-      - OCPN_TARGET: jammy
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    <<: *debian-steps
-
   build-buster:
     docker:
       - image: circleci/buildpack-deps:buster-scm
@@ -234,28 +166,10 @@ workflows:
       - build-macos:
           <<: *std-filters
 
-      - build-bionic-gtk3:
-          <<: *std-filters
-
-      - build-bionic:
-          <<: *std-filters
-
-      - build-focal:
-          <<: *std-filters
-
-      - build-jammy:
-          <<: *std-filters
-
       - build-android-arm64:
           <<: *std-filters
 
       - build-android-armhf:
-          <<: *std-filters
-
-      - build-bionic-armhf:
-          <<: *std-filters
-
-      - build-focal-armhf:
           <<: *std-filters
 
       - build-bullseye:
@@ -271,4 +185,3 @@ workflows:
           <<: *std-filters
 
       - build-buster:
-          <<: *std-filters
