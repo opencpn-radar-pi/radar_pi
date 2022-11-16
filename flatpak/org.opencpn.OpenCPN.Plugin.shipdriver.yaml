@@ -20,7 +20,7 @@ id: org.opencpn.OpenCPN.Plugin.@plugin_name
 runtime: org.opencpn.OpenCPN
 runtime-version: stable
 #runtime-version: devel   # for nightly builds
-sdk: org.freedesktop.Sdk//20.08
+sdk: org.freedesktop.Sdk//22.08
 build-extension: true
 separate-locales: false
 appstream-compose: false
