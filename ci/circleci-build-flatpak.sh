@@ -59,7 +59,7 @@ flatpak remote-add --user --if-not-exists \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 flatpak install --user -y --noninteractive \
-    flathub org.freedesktop.Sdk//20.08
+    flathub org.freedesktop.Sdk//22.08
 
 # Configure and build the plugin tarball and metadata.
 cd $builddir
