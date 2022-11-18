@@ -133,10 +133,11 @@ jobs:
     parameters:
       cache-key:
         type: string
+        # Update the last part, here v2, to invalidate cache
         default: "fp-arm20-v2"
     <<: *flatpak-steps
 
-  build-flatpak-x86-2008:
+  build-flatpak-x86:
     machine:
       image: ubuntu-2004:202010-01
     environment:
@@ -145,6 +146,7 @@ jobs:
     parameters:
       cache-key:
         type: string
+        # Update the last part, here v2, to invalidate cache
         default: "fp-x86-20-v2"
     <<: *flatpak-steps
 
@@ -202,7 +204,7 @@ workflows:
       - build-flatpak-arm64:
           <<: *std-filters
 
-      - build-flatpak-x86-2008:
+      - build-flatpak-x86:
           <<: *std-filters
 
       - build-macos:
