@@ -18,6 +18,7 @@ installer available from OpenCPN 5.2.0 is built using:
 To build the flatpak tarball:
 
     $ cmake ..
+    $ git config --global protocol.file.allow always
     $ make flatpak
 
 Historically, it has been possible to build legacy packages like
