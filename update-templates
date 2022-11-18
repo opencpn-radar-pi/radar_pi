@@ -176,8 +176,10 @@ git diff-index --quiet --cached HEAD -- || {
 }
 
 # Update flatpak runtime version as required:
-sed -i '/sdk: org.freedesktop.Sdk/s/20.08/22.08' \
-   flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
+sed -i \
+    -e '/sdk: org.freedesktop.Sdk/s/20.08/22.08/' \
+    -e '/^runtime-version:/s/:.*/: beta/' \
+  flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
 git add flatpak
 git diff-index --quiet --cached HEAD -- || {
     echo "Updating Updating flatpak runtime version to 22.08"
