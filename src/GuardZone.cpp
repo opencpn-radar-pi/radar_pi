@@ -198,8 +198,6 @@ void GuardZone::SearchTargets() {
             return;
           }
           if (m_ri->m_arpa->MultiPix(angle, rrr, 0)) {
-            bool next_r = false;
-            if (next_r) continue;
             // pixel found that does not belong to a known target
             Polar pol;
             pol.angle = angle;
