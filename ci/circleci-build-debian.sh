@@ -11,6 +11,50 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 
+
+# Remove existing wx30 packages
+function remove_wx30() {
+  sudo apt remove \
+      libwxsvg3 \
+      wx3.0-i18n \
+      wx-common \
+      libwxgtk3.0-gtk3-0v5 \
+      libwxbase3.0-0v5 \
+      libwxsvg3 wx3.0-i18n \
+      wx-common \
+      libwxgtk3.0-gtk3-0v5 \
+      libwxbase3.0-0v5 wx3.0-headers \
+      libwxsvg3 \
+      libwxsvg-dev
+}
+
+# Install generated packages
+function install_wx32() {
+  test -d /usr/local/pkg || sudo mkdir /usr/local/pkg
+  sudo chmod a+w /usr/local/pkg
+  repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets"
+  head="deb/debian/pool/bullseye/main"
+  vers="3.2.1+dfsg-1~bpo11+1"
+  pushd /usr/local/pkg
+  wget -q $repo/$head/w/wx/wx-common_${vers}/wx-common_${vers}_amd64.deb
+  wget -q $repo/$head/w/wx/wx3.2-i18n_${vers}/wx3.2-i18n_${vers}_all.deb
+  wget -q $repo/$head/w/wx/wx3.2-headers_${vers}/wx3.2-headers_${vers}_all.deb
+  wget -q $repo/$head/l/li/libwxgtk-webview3.2-dev_${vers}/libwxgtk-webview3.2-dev_${vers}_amd64.deb
+  wget -q $repo/$head/l/li/libwxgtk-webview3.2-0_${vers}/libwxgtk-webview3.2-0_${vers}_amd64.deb
+  wget -q $repo/$head/l/li/libwxgtk-media3.2-dev_${vers}/libwxgtk-media3.2-dev_${vers}_amd64.deb
+  wget -q $repo/$head/l/li/libwxgtk3.2-dev_${vers}/libwxgtk3.2-dev_${vers}_amd64.deb
+  wget -q $repo/$head/l/li/libwxgtk3.2-0_${vers}/libwxgtk3.2-0_${vers}_amd64.deb
+  wget -q $repo/$head/l/li/libwxbase3.2-0_${vers}/libwxbase3.2-0_${vers}_amd64.deb
+  wget -q $repo/$head/l/li/libwxgtk-media3.2-0_${vers}/libwxgtk-media3.2-0_${vers}_amd64.deb
+  wget -q $repo/$head/l/li/libwxsvg-dev_2:1.5.23+dfsg-1~bpo11+1/libwxsvg-dev_1.5.23+dfsg-1~bpo11+1_amd64.deb
+  wget -q $repo/$head/l/li/libwxsvg3_2:1.5.23+dfsg-1~bpo11+1/libwxsvg3_1.5.23+dfsg-1~bpo11+1_amd64.deb
+  sudo dpkg -i --force-depends $(ls /usr/local/pkg/*deb)
+  sudo apt --fix-broken install
+  sudo sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
+      /usr/lib/$(uname -m)-linux-gnu/wx/config/gtk3-unicode-3.2
+  popd
+}
+
 set -xe
 
 # Load local environment if it exists i. e., this is a local build
@@ -31,12 +75,17 @@ exec > >(tee $builddir/build.log) 2>&1;
 sudo apt -qq update || apt update
 sudo apt-get -qq install devscripts equivs software-properties-common
 
-sudo mk-build-deps -ir build-deps/control
-sudo apt-get -q --allow-unauthenticated install -f
+mk-build-deps --root-cmd=sudo -ir build-deps/control
+rm -f *changes  *buildinfo
 
-if [ -n "$BUILD_GTK3" ]; then
-    sudo update-alternatives --set wx-config \
-        /usr/lib/*-linux-*/wx/config/gtk3-unicode-3.0
+if [ -n "$BUILD_WX32" ]; then
+  remove_wx30;
+  install_wx32;
+  OCPN_WX_ABI_OPT="-DOCPN_WX_ABI=wx32"
+fi
+
+if [ -n "$TARGET_TUPLE" ]; then
+  TARGET_OPT="-DOCPN_TARGET_TUPLE=$TARGET_TUPLE";
 fi
 
 sudo apt install -q \
@@ -48,7 +97,7 @@ python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
 cd $builddir
 
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo $OCPN_WX_ABI_OPT $TARGET_OPT ..
 make VERBOSE=1 tarball
 ldd app/*/lib/opencpn/*.so
 if [ -d /ci-source ]; then
