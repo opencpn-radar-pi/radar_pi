@@ -91,6 +91,22 @@ jobs:
       - run: cd build-debian; /bin/bash < upload.sh
       - run: ci/git-push.sh build-debian
 
+  build-bullseye-wx32-arm64:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+    environment:
+      - OCPN_TARGET: bullseye
+      - BUILD_WX32: true
+      - TARGET_TUPLE: debian-wx32;11;arm64
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-docker.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
+
+
   build-bookworm:
     machine:
       image: ubuntu-2004:2022.04.1
@@ -226,10 +242,13 @@ workflows:
       - build-android-armhf:
           <<: *std-filters
 
-      - build-bullseye:
+      - build-bullseye-wx32:
           <<: *std-filters
 
-      - build-bullseye-wx32:
+      - build-bullseye-wx32-arm64:
+          <<: *std-filters
+
+      - build-bullseye:
           <<: *std-filters
 
       - build-bullseye-armhf:

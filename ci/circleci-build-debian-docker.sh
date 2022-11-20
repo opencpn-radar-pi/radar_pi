@@ -25,6 +25,46 @@ cd $ci_source
 git submodule update --init opencpn-libs
 
 cat > $ci_source/build.sh << "EOF"
+function remove_wx30() {
+  apt remove -y \
+      libwxsvg3 \
+      wx3.0-i18n \
+      wx-common \
+      libwxgtk3.0-gtk3-0v5 \
+      libwxbase3.0-0v5 \
+      libwxsvg3 wx3.0-i18n \
+      wx-common \
+      libwxgtk3.0-gtk3-0v5 \
+      libwxbase3.0-0v5 wx3.0-headers \
+      libwxsvg3 \
+      libwxsvg-dev
+}
+
+# Install generated packages
+function install_wx32() {
+  test -d /usr/local/pkg || mkdir /usr/local/pkg
+  chmod a+w /usr/local/pkg
+  repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets"
+  head="deb/debian/pool/bullseye/main"
+  vers="3.2.1+dfsg-1~bpo11+1"
+  pushd /usr/local/pkg
+  wget  $repo/$head/w/wx/wx3.2-i18n_${vers}/wx3.2-i18n_${vers}_all.deb
+  wget  $repo/$head/w/wx/wx3.2-headers_${vers}/wx3.2-headers_${vers}_all.deb
+  wget  $repo/$head/w/wx/wx-common_3.2.1+dfsg-1/wx-common_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxgtk-webview3.2-dev_3.2.1+dfsg-1/libwxgtk-webview3.2-dev_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxgtk-webview3.2-0_3.2.1+dfsg-1/libwxgtk-webview3.2-0_3.2.1+dfsg-1_arm64.deb 
+  wget  $repo/$head/l/li/libwxgtk-media3.2-dev_3.2.1+dfsg-1/libwxgtk-media3.2-dev_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxgtk3.2-dev_3.2.1+dfsg-1/libwxgtk3.2-dev_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxgtk3.2-0_3.2.1+dfsg-1/libwxgtk3.2-0_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxbase3.2-0_3.2.1+dfsg-1/libwxbase3.2-0_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxgtk-media3.2-dev_3.2.1+dfsg-1/libwxgtk-media3.2-dev_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxsvg-dev_2:1.5.23+dfsg-1~bpo11+1/libwxsvg-dev_1.5.23+dfsg-1~bpo11+1_arm64.deb
+  wget  $repo/$head/l/li/libwxsvg3_2:1.5.23+dfsg-1~bpo11+1/libwxsvg3_1.5.23+dfsg-1~bpo11+1_arm64.deb
+  dpkg -i --force-depends $(ls /usr/local/pkg/*deb)
+  sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
+      /usr/lib/*-linux-gnu/wx/config/gtk3-unicode-3.2
+  popd
+}
 
 set -x
 
@@ -46,20 +86,26 @@ else
 fi
 
 if [ -n "@BUILD_WX32@" ]; then
-  exit 1
+  remove_wx30  
+  install_wx32
 fi
-
 
 cd /ci-source
 rm -rf build-debian; mkdir build-debian; cd build-debian
-cmake -DCMAKE_BUILD_TYPE=Release -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" ..
+cmake -DCMAKE_BUILD_TYPE=Release\
+   -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" \
+    ..
+
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 chown --reference=.. .
 EOF
 
+if [ -n "$BUILD_WX32" ]; then OCPN_WX_ABI_OPT="-DOCPN_WX_ABI=wx32"; fi
+
 sed -i "s/@TARGET_TUPLE@/$TARGET_TUPLE/" $ci_source/build.sh
 sed -i "s/@BUILD_WX32@/$BUILD_WX32/" $ci_source/build.sh
+#sed -i "s/@OCPN_WX_ABI_OPT@/$OCPN_WX_ABI_OPT/" $ci_source/build.sh
 
 
 # Run script in docker image
