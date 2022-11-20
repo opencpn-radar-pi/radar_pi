@@ -55,6 +55,22 @@ jobs:
       - run: cd build-debian; /bin/bash < upload.sh
       - run: ci/git-push.sh build-debian
 
+  build-bullseye-wx32-armhf:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    environment:
+      - TARGET_TUPLE: debian;11;armhf
+      - OCPN_TARGET: bullseye
+      - BUILD_WX32: true
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    steps:
+      - checkout
+      - run: ci/circleci-build-debian-armhf.sh
+      - run: cd build-debian; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-debian
+
+
   build-bullseye-arm64:
     machine:
       image: ubuntu-2004:2022.04.1
@@ -224,6 +240,9 @@ workflows:
           <<: *std-filters
 
       - build-bullseye-wx32-arm64:
+          <<: *std-filters
+
+      - build-bullseye-wx32-armhf:
           <<: *std-filters
 
       - build-bullseye:
