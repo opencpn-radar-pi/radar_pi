@@ -63,6 +63,10 @@ function install_wx32() {
   dpkg -i --force-depends $(ls /usr/local/pkg/*deb)
   sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
       /usr/lib/*-linux-gnu/wx/config/gtk3-unicode-3.2
+
+  # See wxWidgets#22790. FIXME (leamas) To be removed after wxw 3.2.3
+  cd /usr/include/wx-3.2/wx/
+  patch -p1 < /ci-source/build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
   popd
 }
 
@@ -89,6 +93,7 @@ if [ -n "@BUILD_WX32@" ]; then
   remove_wx30  
   install_wx32
 fi
+
 
 cd /ci-source
 rm -rf build-debian; mkdir build-debian; cd build-debian

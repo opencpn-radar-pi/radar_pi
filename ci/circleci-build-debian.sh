@@ -52,10 +52,15 @@ function install_wx32() {
   sudo apt --fix-broken install
   sudo sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
       /usr/lib/$(uname -m)-linux-gnu/wx/config/gtk3-unicode-3.2
+  # See wxWidgets#22790. To be removed after wxw 3.2.3
+  cd /usr/include/wx-3.2/wx/
+  sudo patch -p1 \
+    < $here/../build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
   popd
 }
 
 set -xe
+here=$(cd $(dirname $0); pwd -P)
 
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
