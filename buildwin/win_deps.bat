@@ -11,7 +11,10 @@
 ::
 if not exist "%HomeDrive%%HomePath%\.local\bin\pathman.exe" (
     pushd "%HomeDrive%%HomePath%"
-    curl.exe -sA "MS" https://webinstall.dev/pathman | powershell
+    curl.exe -sA "windows/10 x86"  -o webi-pwsh-install.ps1 ^
+        https://webi.ms/packages/_webi/webi-pwsh.ps1 
+    powershell.exe -ExecutionPolicy Bypass -File webi-pwsh-install.ps1
+    webi pathman 
     popd
 )
 pathman list > nul 2>&1
@@ -49,8 +52,8 @@ set wxWidgets_ROOT_DIR=%WXWIN%
 set wxWidgets_LIB_DIR=%WXWIN%\lib\vc_dll
 if not exist "%WXWIN%" (
   wget --version > nul 2>&1 || choco install -y wget
-  wget https://download.opencpn.org/s/mKn7bczRPSJXBtF/download ^
-      -O wxWidgets-3.2.1.7z
+  wget --no-verbose  -O wxWidgets-3.2.1.7z ^
+      https://download.opencpn.org/s/mKn7bczRPSJXBtF/download
   7z i > nul 2>&1 || choco install -y 7zip
   7z x wxWidgets-3.2.1.7z -o%WXWIN%
 )
