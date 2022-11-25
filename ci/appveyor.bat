@@ -10,6 +10,7 @@ setlocal enabledelayedexpansion
 set "SCRIPTDIR=%~dp0"
 set "GIT_HOME=C:\Program Files\Git"
 if "%CONFIGURATION%" == "" set "CONFIGURATION=RelWithDebInfo"
+
 ::   wxWidgets 3.2 version
 ::
 echo Building using wxWidgets 3.2
@@ -36,10 +37,11 @@ cmake -A Win32 -G "Visual Studio 17 2022" ^
     ..
 cmake --build . --target tarball --config %CONFIGURATION%
 
-if exist "%GIT_HOME%\bin\bash.exe" (
-  echo Library runtime linkage:
-  "%GIT_HOME%\bin\bash" -c "ldd app/*/plugins/*dll"
-)
+:: Display dependencies debug info
+echo import glob; import subprocess > ldd.py
+echo lib = glob.glob("app/*/plugins/*.dll")[0] >> ldd.py
+echo subprocess.call(['dumpbin', '/dependents', lib]) >> ldd.py
+python ldd.py
 
 echo Uploading artifact
 call upload.bat
@@ -73,10 +75,12 @@ cmake -A Win32 -G "Visual Studio 17 2022" ^
     ..
 cmake --build . --target tarball --config %CONFIGURATION%
 
-if exist "%GIT_HOME%\bin\bash.exe" (
-  echo Library runtime linkage: 
-  "%GIT_HOME%\bin\bash" -c "ldd app/*/plugins/*dll"
-)
+
+:: Display dependencies debug info
+echo import glob; import subprocess > ldd.py
+echo lib = glob.glob("app/*/plugins/*.dll")[0] >> ldd.py
+echo subprocess.call(['dumpbin', '/dependents', lib]) >> ldd.py
+python ldd.py
 
 echo Uploading artifact
 call %SCRIPTDIR%..\build\upload.bat
