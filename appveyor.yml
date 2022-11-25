@@ -12,22 +12,8 @@ platform:
 configuration: RelWithDebInfo
 test: false
 
-install:
-  - set VS_HOME=C:\Program Files\Microsoft Visual Studio\2022
-  - call "%VS_HOME%\Community\VC\Auxiliary\Build\vcvars32.bat"
-
 before_build:
   - git submodule update --init opencpn-libs
 
 build_script:
-  - call buildwin\win_deps.bat
-  - mkdir build && cd build
-  - cmake -A Win32 -G "Visual Studio 17 2022" ..
-  - cmake -DCMAKE_GENERATOR_PLATFORM=Win32 ..
-  - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-  - cmake --build . --target tarball --config RelWithDebInfo
-
-after_build:
-  - python ..\ci\windows-ldd
-  - call upload.bat
-  - python ..\ci\git-push
+  - call ci\appveyor.bat
