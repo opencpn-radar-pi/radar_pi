@@ -34,11 +34,11 @@ mkdir build-wx32 && cd build-wx32
 set "WXWIN=!wxWidgets_ROOT_DIR!
 cmake -A Win32 -G "Visual Studio 17 2022" ^
     -DCMAKE_GENERATOR_PLATFORM=Win32 ^
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
+    -DCMAKE_BUILD_TYPE=%CONFIGURATION% ^
     -DwxWidgets_LIB_DIR=!wxWidgets_LIB_DIR! ^
     -DwxWidgets_ROOT_DIR=!wxWidgets_ROOT_DIR! ^
     ..
-cmake --build . --target tarball --config RelWithDebInfo
+cmake --build . --target tarball --config %CONFIGURATION%
 
 if exist "%GIT_HOME%\bin\bash.exe" (
   echo Library runtime linkage:
@@ -71,11 +71,11 @@ if exist build (rmdir /s /q build)
 mkdir build && cd build
 cmake -A Win32 -G "Visual Studio 17 2022" ^
     -DCMAKE_GENERATOR_PLATFORM=Win32 ^
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
+    -DCMAKE_BUILD_TYPE=%CONFIGURATION% ^
     -DwxWidgets_LIB_DIR=%wxWidgets_LIB_DIR% ^
     -DwxWidgets_ROOT_DIR=%wxWidgets_ROOT_DIR% ^
     ..
-cmake --build . --target tarball --config RelWithDebInfo
+cmake --build . --target tarball --config %CONFIGURATION%
 
 if exist "%GIT_HOME%\bin\bash.exe" (
   echo Library runtime linkage: 
