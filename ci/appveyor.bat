@@ -7,10 +7,6 @@
 @echo off
 setlocal enabledelayedexpansion
 
-if not exist opencpn-libs\README.md (
-  git submodule update --init opencpn-libs
-)
-
 set "SCRIPTDIR=%~dp0"
 set "GIT_HOME=C:\Program Files\Git"
 
