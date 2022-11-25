@@ -12,79 +12,45 @@ set "GIT_HOME=C:\Program Files\Git"
 if "%CONFIGURATION%" == "" set "CONFIGURATION=RelWithDebInfo"
 
 ::   wxWidgets 3.2 version
-::
-echo Building using wxWidgets 3.2
-
-call %SCRIPTDIR%..\buildwin\win_deps.bat wx32
-call %SCRIPTDIR%..\cache\wx-config.bat
-echo USING wxWidgets_LIB_DIR: !wxWidgets_LIB_DIR!
-echo USING wxWidgets_ROOT_DIR: !wxWidgets_ROOT_DIR!
-
-nmake /?  >nul 2>&1
-if errorlevel 1 (
-  set "VS_HOME=C:\Program Files\Microsoft Visual Studio\2022"
-  call "%VS_HOME%\Community\VC\Auxiliary\Build\vcvars32.bat"
+set "wx_vers=wx32"
+:loop
+  echo Building !wx_vers!
+  
+  call %SCRIPTDIR%..\buildwin\win_deps.bat !wx_vers!
+  call %SCRIPTDIR%..\cache\wx-config.bat
+  echo USING wxWidgets_LIB_DIR: !wxWidgets_LIB_DIR!
+  echo USING wxWidgets_ROOT_DIR: !wxWidgets_ROOT_DIR!
+  
+  nmake /?  >nul 2>&1
+  if errorlevel 1 (
+    set "VS_HOME=C:\Program Files\Microsoft Visual Studio\2022"
+    call "%VS_HOME%\Community\VC\Auxiliary\Build\vcvars32.bat"
+  )
+  
+  if exist build (rmdir /s /q build)
+  mkdir build && cd build
+  
+  cmake -A Win32 -G "Visual Studio 17 2022" ^
+      -DCMAKE_GENERATOR_PLATFORM=Win32 ^
+      -DCMAKE_BUILD_TYPE=%CONFIGURATION% ^
+      -DwxWidgets_LIB_DIR=!wxWidgets_LIB_DIR! ^
+      -DwxWidgets_ROOT_DIR=!wxWidgets_ROOT_DIR! ^
+      ..
+  cmake --build . --target tarball --config %CONFIGURATION%
+  
+  :: Display dependencies debug info
+  echo import glob; import subprocess > ldd.py
+  echo lib = glob.glob("app/*/plugins/*.dll")[0] >> ldd.py
+  echo subprocess.call(['dumpbin', '/dependents', lib]) >> ldd.py
+  python ldd.py
+  
+  echo Uploading artifact
+  call upload.bat
+  
+  echo Pushing updates to catalog
+  python %SCRIPTDIR%..\ci\git-push
+  cd ..
+if "!wx_vers!" == "wx32" (
+  set "wx_vers=wx31"
+  goto loop
 )
-
-if exist build-wx32 (rmdir /s /q build-wx32)
-mkdir build-wx32 && cd build-wx32
-set "WXWIN=!wxWidgets_ROOT_DIR!
-cmake -A Win32 -G "Visual Studio 17 2022" ^
-    -DCMAKE_GENERATOR_PLATFORM=Win32 ^
-    -DCMAKE_BUILD_TYPE=%CONFIGURATION% ^
-    -DwxWidgets_LIB_DIR=!wxWidgets_LIB_DIR! ^
-    -DwxWidgets_ROOT_DIR=!wxWidgets_ROOT_DIR! ^
-    ..
-cmake --build . --target tarball --config %CONFIGURATION%
-
-:: Display dependencies debug info
-echo import glob; import subprocess > ldd.py
-echo lib = glob.glob("app/*/plugins/*.dll")[0] >> ldd.py
-echo subprocess.call(['dumpbin', '/dependents', lib]) >> ldd.py
-python ldd.py
-
-echo Uploading artifact
-call upload.bat
-
-echo Pushing updates to catalog
-python %SCRIPTDIR%..\ci\git-push
-cd ..
-
-::   wxWidgets 3.1 version
-::
-echo Building using wxWidgets 3.1
-call %SCRIPTDIR%..\buildwin\win_deps.bat
-call %SCRIPTDIR%..\cache\wx-config.bat
-
-nmake /? >nul 2>&1
-if errorlevel 1 (
-  set "VS_HOME=C:\Program Files\Microsoft Visual Studio\2022"
-  call "%VS_HOME%\Community\VC\Auxiliary\Build\vcvars32.bat"
-)
-
-echo USING wxWidgets_ROOT_DIR: %wxWidgets_ROOT_DIR%
-echo USING wxWidgets_LIB_DIR: %wxWidgets_LIB_DIR%
-
-if exist build (rmdir /s /q build)
-mkdir build && cd build
-cmake -A Win32 -G "Visual Studio 17 2022" ^
-    -DCMAKE_GENERATOR_PLATFORM=Win32 ^
-    -DCMAKE_BUILD_TYPE=%CONFIGURATION% ^
-    -DwxWidgets_LIB_DIR=%wxWidgets_LIB_DIR% ^
-    -DwxWidgets_ROOT_DIR=%wxWidgets_ROOT_DIR% ^
-    ..
-cmake --build . --target tarball --config %CONFIGURATION%
-
-
-:: Display dependencies debug info
-echo import glob; import subprocess > ldd.py
-echo lib = glob.glob("app/*/plugins/*.dll")[0] >> ldd.py
-echo subprocess.call(['dumpbin', '/dependents', lib]) >> ldd.py
-python ldd.py
-
-echo Uploading artifact
-call %SCRIPTDIR%..\build\upload.bat
-
-echo Pushing updates to catalog
-python %SCRIPTDIR%..\ci\git-push
-cd ..
