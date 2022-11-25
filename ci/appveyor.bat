@@ -11,7 +11,7 @@ set "SCRIPTDIR=%~dp0"
 set "GIT_HOME=C:\Program Files\Git"
 if "%CONFIGURATION%" == "" set "CONFIGURATION=RelWithDebInfo"
 
-::   wxWidgets 3.2 version
+:: Loop to build two versions
 set "wx_vers=wx32"
 :loop
   echo Building !wx_vers!
@@ -50,7 +50,4 @@ set "wx_vers=wx32"
   echo Pushing updates to catalog
   python %SCRIPTDIR%..\ci\git-push
   cd ..
-if "!wx_vers!" == "wx32" (
-  set "wx_vers=wx31"
-  goto loop
-)
+if "!wx_vers!" == "wx32" (set "wx_vers=wx31" && goto loop)

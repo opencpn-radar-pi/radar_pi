@@ -5,21 +5,26 @@
 ::      win_deps.bat [wx32]
 ::
 :: Arguments:
-::     wx32: If present install dependencies for building against
-::           wxWidgets 3.2 for building against wxWidgets 3.1
+::     wx32:
+::          If present install dependencies for building against
+::          wxWidgets 3.2. If non-existing or anything but wx32
+::          build using 3.1
+:: Output:
+::     cache\wx-config.bat:
+::          Script which set wxWidgets_LIB_DIR and wxWidgets_ROOT_DIR
 ::
 :: Initial run will do choco installs requiring administrative
 :: privileges.
 ::
 :: NOTE: at the very end, this script runs refreshenv. This clears the
-:: process's environment and replaces it with a fresh copy from the
+:: process's PATH and replaces it with a fresh copy from the
 :: registry. This means that any "set PATH=..." is lost for caller.
 
 :: Install the pathman tool: https://github.com/therootcompany/pathman
 :: Fix PATH so it can be used in this script
 ::
 
-@echo on
+@echo off
 
 setlocal enabledelayedexpansion
 
@@ -36,7 +41,6 @@ if not exist "%HomeDrive%%HomePath%\.local\bin\pathman.exe" (
 pathman list > nul 2>&1
 if errorlevel 1 set "PATH=%PATH%;%HomeDrive%\%HomePath%\.local\bin"
 pathman add %HomeDrive%%HomePath%\.local\bin >nul
-@echo off
 
 git --version > nul 2>&1
 if errorlevel 1 (
