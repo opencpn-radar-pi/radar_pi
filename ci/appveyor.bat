@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
 
 set "SCRIPTDIR=%~dp0"
 set "GIT_HOME=C:\Program Files\Git"
-
+if "%CONFIGURATION%" == "" set "CONFIGURATION=RelWithDebInfo"
 ::   wxWidgets 3.2 version
 ::
 echo Building using wxWidgets 3.2
