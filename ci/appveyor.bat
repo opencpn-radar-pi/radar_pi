@@ -43,7 +43,7 @@ set "wx_vers=wx32"
   :: Display dependencies debug info
   echo import glob; import subprocess > ldd.py
   echo lib = glob.glob("app/*/plugins/*.dll")[0] >> ldd.py
-  echo subprocess.call(['dumpbin', '/dependents', lib]) >> ldd.py
+  echo subprocess.call(['dumpbin', '/dependents', lib], shell=True) >> ldd.py
   python ldd.py
   
   echo Uploading artifact
