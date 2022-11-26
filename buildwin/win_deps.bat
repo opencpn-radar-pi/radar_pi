@@ -83,17 +83,19 @@ if "%~1"=="wx32" (
   set "WXWIN=%SCRIPTDIR%..\cache\wxWidgets-3.2.1"
   set "wxWidgets_ROOT_DIR=!WXWIN!"
   set "wxWidgets_LIB_DIR=!WXWIN!\lib\vc14x_dll"
+  set "TARGET_TUPLE=msvc-wx32;10;x86_64"
 ) else (
   set "WXWIN=%SCRIPTDIR%..\cache\wxWidgets-3.1.2"
   set "wxWidgets_ROOT_DIR=!WXWIN!"
   set "wxWidgets_LIB_DIR=!WXWIN!\lib\vc_dll"
+  set "TARGET_TUPLE=msvc;10;x86_64"
 )
 
 if not exist %SCRIPTDIR%\..\cache ( mkdir %SCRIPTDIR%\..\cache )
-echo set "wxWidgets_ROOT_DIR=%wxWidgets_ROOT_DIR%" ^
-    >%SCRIPTDIR%\..\cache\wx-config.bat
-echo set "wxWidgets_LIB_DIR=%wxWidgets_LIB_DIR%" ^
-    >>%SCRIPTDIR%\..\cache\wx-config.bat
+set "CONFIG_FILE=%SCRIPTDIR%\..\cache\wx-config.bat"
+echo set "wxWidgets_ROOT_DIR=%wxWidgets_ROOT_DIR%" > %CONFIG_FILE%
+echo set "wxWidgets_LIB_DIR=%wxWidgets_LIB_DIR%" >> %CONFIG_FILE%
+echo set "TARGET_TUPLE=%TARGET_TUPLE%" >> %CONFIG_FILE%
 
 if not exist "%WXWIN%" (
   wget --version > nul 2>&1 || choco install -y wget

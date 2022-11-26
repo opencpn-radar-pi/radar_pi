@@ -20,6 +20,7 @@ set "wx_vers=wx32"
   call %SCRIPTDIR%..\cache\wx-config.bat
   echo USING wxWidgets_LIB_DIR: !wxWidgets_LIB_DIR!
   echo USING wxWidgets_ROOT_DIR: !wxWidgets_ROOT_DIR!
+  echo USING OCPN_TARGET_TUPLE: !TARGET_TUPLE!
   
   nmake /?  >nul 2>&1
   if errorlevel 1 (
@@ -35,6 +36,7 @@ set "wx_vers=wx32"
       -DCMAKE_BUILD_TYPE=%CONFIGURATION% ^
       -DwxWidgets_LIB_DIR=!wxWidgets_LIB_DIR! ^
       -DwxWidgets_ROOT_DIR=!wxWidgets_ROOT_DIR! ^
+      -DOCPN_TARGET_TUPLE=!TARGET_TUPLE! ^
       ..
   cmake --build . --target tarball --config %CONFIGURATION%
   
