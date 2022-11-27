@@ -43,7 +43,11 @@ add_library(${CMAKE_PROJECT_NAME} SHARED EXCLUDE_FROM_ALL ${SRC})
 include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
 add_subdirectory("opencpn-libs/${PKG_API_LIB}")
-target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
+if (${PKG_NAME} MATCHES wx32)
+  target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api_wx32)
+else ()
+  target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
+endif ()
 
 set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(VERSION_MINOR ${PROJECT_VERSION_MINOR})
