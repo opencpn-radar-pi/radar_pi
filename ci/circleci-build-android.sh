@@ -14,6 +14,10 @@
 set -xe
 
 uname -m
+# Read configuration end exit if android is disabled
+here=$(cd $(dirname $0); pwd -P)
+source $here/../build-conf.rc
+if [ "$android_disable" = "true" ]; then exit 0; fi
 
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
@@ -45,7 +49,7 @@ sudo apt remove python3-six python3-colorama python3-urllib3
 export LC_ALL=C.UTF-8  LANG=C.UTF-8
 python3 -m pip install --user -q cloudsmith-cli cryptography
 
-# Building using NDK requries a recent cmake, the packaged is too old
+# Building using NDK requires a recent cmake, the packaged is too old
 python3 -m pip install --user -q cmake
 
 # Build tarball

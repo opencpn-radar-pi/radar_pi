@@ -205,8 +205,7 @@ jobs:
     steps:
       - checkout
       - run: ci/circleci-build-android.sh
-      - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
-      - run: sh -c "ci/git-push.sh /build-$OCPN_TARGET"
+      - run: ci/maybe-push-upload.sh
 
   build-android-armhf:
     docker:
@@ -217,8 +216,7 @@ jobs:
     steps:
       - checkout
       - run: ci/circleci-build-android.sh
-      - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
-      - run: sh -c "ci/git-push.sh /build-$OCPN_TARGET"
+      - run: ci/maybe-push-upload.sh
 
 std-filters: &std-filters
   filters:
