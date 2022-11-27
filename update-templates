@@ -186,10 +186,8 @@ git diff-index --quiet --cached HEAD -- || {
     git commit -m "opencpn-libs: Update to latest version."
 }
 
-
-
 # Check for files/dirs which are private, but should be copied on first run.
-for f in config.h.in build-deps libs; do
+for f in config.h.in build-deps build-conf.sh libs; do
     if test -e $f; then continue; fi
     git checkout $source_treeish $f
 done
