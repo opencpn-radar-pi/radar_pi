@@ -5,10 +5,12 @@
 oldstable_build_rate=10
 
 #  Should oldstable build be uploaded to cloudsmith? <true|false>
-oldstable_upload="true"
+oldstable_upload="false"
 
 # Should oldstable builds be pushed to catalog clone? <true|false>
-oldstable_git_push="true"
+oldstable_git_push="false"
 
-# Should android builds be disabled?  <true|false>
-android_disable="false"
+# Same as for oldstable above.
+android_build_rate=1
+android_upload="true"
+android_git_push="true"

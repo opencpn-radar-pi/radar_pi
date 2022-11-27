@@ -13,11 +13,13 @@
 
 set -xe
 
-uname -m
-# Read configuration end exit if android is disabled
+# Read configuration and check if we should really build this
 here=$(cd $(dirname $0); pwd -P)
 source $here/../build-conf.rc
-if [ "$android_disable" = "true" ]; then exit 0; fi
+if [ "$android_build_rate" -eq 0 ]; then exit 0; fi
+if [ $((CIRCLE_BUILD_NUM % android_build_rate)) -ne 0 ]; then
+    exit 0
+fi
 
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
