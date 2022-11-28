@@ -31,11 +31,6 @@ include(Plugin.cmake)
 
 # -------- Setup completed, build the plugin --------
 #
-if ("${OCPN_TARGET_TUPLE}" MATCHES wx32)
-  # Evil, dirty hack to force a different name for wx32 builds. We
-  # need a cleaner solution here. FIXME(leamas)
-  set(PKG_NAME "${PKG_NAME}-wx32")
-endif ()
 project(${PKG_NAME} VERSION ${PKG_VERSION})
 include(PluginCompiler)
 
