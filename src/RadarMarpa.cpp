@@ -1272,8 +1272,10 @@ void RadarArpa::SearchDopplerTargets() {
     LOG_INFO(wxT("No more scanning for ARPA targets, maximum number of targets reached"));
     return;
   }
-  if (!m_pi->m_settings.show                       // No radar shown
-      || !m_ri->GetRadarPosition(&own_pos.pos)) {  // No position
+  if (!m_pi->m_settings.show                          // No radar shown
+    || !m_ri->GetRadarPosition(&own_pos.pos)        // No position
+    || m_pi->GetHeadingSource() == HEADING_NONE    // No heading
+    || (m_pi->GetHeadingSource() == HEADING_FIX_HDM && m_pi->m_var_source == VARIATION_SOURCE_NONE)) {
     return;
   }
 
