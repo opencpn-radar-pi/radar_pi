@@ -262,9 +262,6 @@ workflows:
       - build-bullseye-wx32-arm64:
           <<: *std-filters
 
-      - build-bullseye-wx32-armhf:
-          <<: *std-filters
-
       - build-bullseye:
           <<: *std-filters
 
