@@ -39,6 +39,20 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
+//
+// Navico radars use an internal spoke ID that has range [0..4096> but they
+// only send half of them
+//
+#define NAVICO_SPOKES_RAW 4096
+#define SCALE_RAW_TO_DEGREES(raw)                                              \
+    ((raw) * (double)DEGREES_PER_ROTATION / NAVICO_SPOKES_RAW)
+#define SCALE_DEGREES_TO_RAW(angle)                                            \
+    ((int)((angle) * (double)NAVICO_SPOKES_RAW / DEGREES_PER_ROTATION))
+
+// Some items are sent in tenths of degrees (!)
+#define SCALE_DECIDEGREES_TO_DEGREES(n) (((int)n) / 10)
+#define SCALE_DEGREES_TO_DECIDEGREES(n) (((int)n) * 10)
+
 extern SOCKET g_HaloInfoSocket;
 
 //

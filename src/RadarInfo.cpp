@@ -89,6 +89,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_radar_address = NetworkAddress();
   m_last_rotation_time = 0;
   m_last_angle = 0;
+  m_no_transmit_zones = 0;
 
   m_mouse_pos.lat = NAN;
   m_mouse_pos.lon = NAN;
@@ -685,18 +686,27 @@ void RadarInfo::RenderGuardZone() {
     blue = 200;
   }
 
-  start_bearing = m_no_transmit_start.GetValue();
-  end_bearing = m_no_transmit_end.GetValue();
   int range = m_range.GetValue();
-  if (start_bearing != end_bearing && start_bearing >= -180 && end_bearing >= -180 && range != 0) {
-    if (start_bearing < 0) {
-      start_bearing += 360;
+  if (range == 0) {
+    range = 4000;
+  }
+
+  for (size_t z = 0; z < m_no_transmit_zones; z++) {
+    if (m_no_transmit_start[z].GetState() != RCS_OFF) {
+      start_bearing = m_no_transmit_start[z].GetValue();
+      end_bearing = m_no_transmit_end[z].GetValue();
+
+      if (start_bearing != end_bearing && start_bearing >= -180 && end_bearing >= -180) {
+        if (start_bearing < 0) {
+          start_bearing += 360;
+        }
+        if (end_bearing < 0) {
+          end_bearing += 360;
+        }
+        glColor4ub(250, 255, 255, alpha);
+        DrawFilledArc(range, 0, start_bearing, end_bearing);
+      }
     }
-    if (end_bearing < 0) {
-      end_bearing += 360;
-    }
-    glColor4ub(250, 255, 255, alpha);
-    DrawFilledArc(range, 0, m_no_transmit_start.GetValue(), m_no_transmit_end.GetValue());
   }
 }
 

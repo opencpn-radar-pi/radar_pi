@@ -171,8 +171,14 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_MAX:
     case CT_NOISE_REJECTION:
     case CT_NONE:
-    case CT_NO_TRANSMIT_END:
-    case CT_NO_TRANSMIT_START:
+    case CT_NO_TRANSMIT_END_1:
+    case CT_NO_TRANSMIT_END_2:
+    case CT_NO_TRANSMIT_END_3:
+    case CT_NO_TRANSMIT_END_4:
+    case CT_NO_TRANSMIT_START_1:
+    case CT_NO_TRANSMIT_START_2:
+    case CT_NO_TRANSMIT_START_3:
+    case CT_NO_TRANSMIT_START_4:
     case CT_ORIENTATION:
     case CT_OVERLAY_CANVAS:
     case CT_RANGE:

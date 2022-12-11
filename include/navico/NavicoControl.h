@@ -33,6 +33,7 @@
 #define _NAVICOCONTROL_H_
 
 #include "RadarInfo.h"
+#include "navico/NavicoReceive.h"
 #include "pi_common.h"
 #include "socketutil.h"
 

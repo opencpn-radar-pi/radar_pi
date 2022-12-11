@@ -53,6 +53,7 @@ enum { // process ID's
     ID_CONTROL_BUTTON,
 
     ID_INSTALLATION,
+    ID_NO_TRANSMIT,
     ID_PREFERENCES,
 
     ID_GAIN,
@@ -152,6 +153,7 @@ public:
         m_adjust_sizer = 0;
         m_cursor_sizer = 0;
         m_installation_sizer = 0;
+        m_no_transmit_sizer = 0;
         m_power_sizer = 0;
         m_transmit_sizer = 0; // Controls disabled if not transmitting
         m_from_sizer
@@ -200,8 +202,11 @@ public:
         m_scan_speed_button = 0;
         m_bearing_alignment_button = 0;
         m_range_adjustment_button = 0;
-        m_no_transmit_start_button = 0;
-        m_no_transmit_end_button = 0;
+        m_no_transmit_button = 0;
+        for (int i = 0; i < NO_TRANSMIT_ZONES; i++) {
+            m_no_transmit_start_button[i] = 0;
+            m_no_transmit_end_button[i] = 0;
+        }
         m_antenna_height_button = 0;
         m_antenna_forward_button = 0;
         m_antenna_starboard_button = 0;
@@ -328,6 +333,7 @@ protected:
     wxBoxSizer* m_adjust_sizer;
     wxBoxSizer* m_cursor_sizer;
     wxBoxSizer* m_installation_sizer;
+    wxBoxSizer* m_no_transmit_sizer;
     wxBoxSizer* m_power_sizer;
     wxBoxSizer* m_transmit_sizer; // Controls disabled if not transmitting
     wxBoxSizer*
@@ -404,8 +410,9 @@ protected:
     // Installation controls
     RadarControlButton* m_bearing_alignment_button;
     RadarControlButton* m_range_adjustment_button;
-    RadarControlButton* m_no_transmit_start_button;
-    RadarControlButton* m_no_transmit_end_button;
+    RadarButton* m_no_transmit_button;
+    RadarControlButton* m_no_transmit_start_button[NO_TRANSMIT_ZONES];
+    RadarControlButton* m_no_transmit_end_button[NO_TRANSMIT_ZONES];
     RadarControlButton* m_antenna_height_button;
     RadarControlButton* m_antenna_forward_button;
     RadarControlButton* m_antenna_starboard_button;
@@ -477,6 +484,8 @@ public:
     void OnWindowButtonClick(wxCommandEvent& event);
     void OnViewButtonClick(wxCommandEvent& event);
     void OnInstallationButtonClick(wxCommandEvent& event);
+    void OnNoTransmitButtonClick(wxCommandEvent& event);
+    void OnSectorBlankButtonClick(wxCommandEvent& event);
     void OnPreferencesButtonClick(wxCommandEvent& event);
 
     void OnRadarGainButtonClick(wxCommandEvent& event);

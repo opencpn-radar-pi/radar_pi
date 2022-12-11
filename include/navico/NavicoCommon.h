@@ -1,11 +1,6 @@
-
-#ifndef NAVICO_SPOKES
 #define NAVICO_SPOKES 2048
-#endif
 
-#ifndef NAVICO_SPOKE_LEN
 #define NAVICO_SPOKE_LEN 1024
-#endif
 
 #if SPOKES_MAX < NAVICO_SPOKES
 #undef SPOKES_MAX

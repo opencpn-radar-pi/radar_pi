@@ -48,14 +48,6 @@ PLUGIN_BEGIN_NAMESPACE
 #define SECONDS_SELECT(x) ((x)*MILLISECONDS_PER_SECOND / MILLIS_PER_SELECT)
 #define IS_HALO (m_ri->m_radar_type == RT_HaloA || m_ri->m_radar_type == RT_HaloB)
 
-//
-// Navico radars use an internal spoke ID that has range [0..4096> but they
-// only send half of them
-//
-#define SPOKES (4096)
-#define SCALE_RAW_TO_DEGREES(raw) ((raw) * (double)DEGREES_PER_ROTATION / SPOKES)
-#define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)SPOKES / DEGREES_PER_ROTATION))
-
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
 // Note that 3G scanners are BR24's with better power, so they are more BR24+ than 4G-.
 // As far as we know they 3G's use exactly the same command set.
@@ -70,7 +62,7 @@ PLUGIN_BEGIN_NAMESPACE
  Known values for heading value:
 */
 #define HEADING_TRUE_FLAG 0x4000
-#define HEADING_MASK (SPOKES - 1)
+#define HEADING_MASK (NAVICO_SPOKES_RAW - 1)
 #define HEADING_VALID(x) (((x) & ~(HEADING_TRUE_FLAG | HEADING_MASK)) == 0)
 
 // One MFD or OpenCPN shall send the radar timing and heading info
@@ -417,7 +409,7 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, size_t len) {
     // Guess the heading for the spoke. This is updated much less frequently than the
     // data from the radar (which is accurate 10x per second), likely once per second.
     bearing_raw = angle_raw + heading_raw;
-    // until here all is based on 4096 (SPOKES) scanlines
+    // until here all is based on 4096 (NAVICO_SPOKES_RAW) scanlines
 
     SpokeBearing a = MOD_SPOKES(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
     SpokeBearing b = MOD_SPOKES(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
@@ -816,7 +808,7 @@ void *NavicoReceive::Entry(void) {
           halo_heading_packet *msg = (halo_heading_packet *)data;
 
           if (msg->u02[0] == 0x12 && msg->u02[1] == 0xf1) {
-            double heading = (double)msg->heading * 360.0 / 63488.0;  // assume that this is a true heading ?
+            double heading = (double)msg->heading * 360.0 / ((double)0xf800);  // assume that this is a true heading ?
             if (m_pi->m_heading_source <= HEADING_FIX_COG || m_pi->m_heading_source >= HEADING_RADAR_HDM) {
               LOG_RECEIVE(wxT("Received and set radar_heading from network %f"), heading);
               m_pi->SetRadarHeading(heading, true);  // only set HEADING_RADAR_HDT if nothing better is available
@@ -824,7 +816,7 @@ void *NavicoReceive::Entry(void) {
 
             LOG_RECEIVE(wxT("msg.counter = %u"), msg->counter);
             LOG_RECEIVE(wxT("msg.epoch   = %lld"), msg->epoch);
-            LOG_RECEIVE(wxT("msg.heading = %u -> %f"), msg->heading, (double)msg->heading * 360.0 / 63488.0);
+            LOG_RECEIVE(wxT("msg.heading = %u -> %f"), msg->heading, heading);
             LOG_RECEIVE(wxT("msg.u05a    = %x"), msg->u05a);
             LOG_RECEIVE(wxT("msg.u05b    = %x"), msg->u05b);
           } else {
@@ -1029,6 +1021,22 @@ struct RadarReport_04C4_66 {   // 04 C4 with length 66
   uint32_t field12;            // 12-15  0x00
   uint8_t field16[3];          // 16-18  0x00
   uint8_t accent_light;        // 19     accent light 0..3
+};
+
+struct SectorBlankingReport {
+  uint8_t enabled;
+  uint16_t start_angle;
+  uint16_t end_angle;
+};
+
+struct RadarReport_06C4_74 {         // 06 C4 with length 74
+  uint8_t what;                      // 0   0x04
+  uint8_t command;                   // 1   0xC4
+  uint32_t field1;                   // 2-5
+  char name[6];                      // 6-11 "Halo;\0"
+  uint8_t field2[30];                // 12-41 unknown
+  SectorBlankingReport blanking[4];  // 42-61
+  uint8_t field3[12];                // 62-73
 };
 
 struct RadarReport_08C4_18 {             // 08 c4  length 18
@@ -1241,10 +1249,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
 
         // bearing alignment
         int ba = (int)data->bearing_alignment / 10;
-        if (ba > 180) {
-          ba = ba - 360;
-        }
-        m_ri->m_bearing_alignment.Update(ba);
+        m_ri->m_bearing_alignment.Update(MOD_DEGREES_180(ba));
 
         // antenna height
         m_ri->m_antenna_height.Update(data->antenna_height / 1000);
@@ -1270,6 +1275,20 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         break;
       }
 #endif
+
+      case (74 << 8) + 0x06: {  // 66 bytes starting with 04 C4
+        RadarReport_06C4_74 *data = (RadarReport_06C4_74 *)report;
+        for (int i = 0; i <= 3; i++) {
+          LOG_INFO(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
+                   data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
+          m_ri->m_no_transmit_start[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].start_angle)),
+                                              data->blanking[i].enabled ? RCS_MANUAL : RCS_OFF);
+          m_ri->m_no_transmit_end[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].end_angle)),
+                                            data->blanking[i].enabled ? RCS_MANUAL : RCS_OFF);
+        }
+        LOG_BINARY_RECEIVE(wxT("received sector blanking message"), report, len);
+        break;
+      }
 
         /* Over time we have seen this report with 3 various lengths!!
          */

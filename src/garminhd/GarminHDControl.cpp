@@ -235,8 +235,6 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
     case CT_LOCAL_INTERFERENCE_REJECTION:
     case CT_MAIN_BANG_SUPPRESSION:
     case CT_NOISE_REJECTION:
-    case CT_NO_TRANSMIT_END:
-    case CT_NO_TRANSMIT_START:
     case CT_SEA_STATE:
     case CT_SIDE_LOBE_SUPPRESSION:
     case CT_STC:
@@ -246,6 +244,14 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
     case CT_TARGET_SEPARATION:
     case CT_TUNE_COARSE:
     case CT_TUNE_FINE:
+    case CT_NO_TRANSMIT_END_1:
+    case CT_NO_TRANSMIT_END_2:
+    case CT_NO_TRANSMIT_END_3:
+    case CT_NO_TRANSMIT_END_4:
+    case CT_NO_TRANSMIT_START_1:
+    case CT_NO_TRANSMIT_START_2:
+    case CT_NO_TRANSMIT_START_3:
+    case CT_NO_TRANSMIT_START_4:
 
       break;
 

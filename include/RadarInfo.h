@@ -77,6 +77,7 @@ public:
     RadarType m_radar_type; // Which radar type
     size_t m_spokes; // # of spokes per rotation
     size_t m_spoke_len_max; // Max # of bytes per spoke
+    size_t m_no_transmit_zones;
     int m_radar_ranges[21]; // Ranges actually in use (values displayed). Always
                             // in meters, also if units is NM. Currently only
                             // used for Raymarine.
@@ -133,8 +134,8 @@ public:
     RadarControlItem m_scan_speed;
     RadarControlItem m_bearing_alignment;
     RadarControlItem m_range_adjustment;
-    RadarControlItem m_no_transmit_start;
-    RadarControlItem m_no_transmit_end;
+    RadarControlItem m_no_transmit_start[NO_TRANSMIT_ZONES];
+    RadarControlItem m_no_transmit_end[NO_TRANSMIT_ZONES];
     RadarControlItem m_antenna_height;
     RadarControlItem m_antenna_forward;
     RadarControlItem m_antenna_starboard;

@@ -694,22 +694,22 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, size_t len) {
         // parm1 = 0 = Zone off, in that case we want AUTO_RANGE - 1 = 'Off'.
         // parm1 = 1 = Zone on, in that case we will receive 0x0940+0x0941.
         if (!m_no_transmit_zone_mode) {
-          m_ri->m_no_transmit_start.Update(0, RCS_OFF);
-          m_ri->m_no_transmit_end.Update(0, RCS_OFF);
+          m_ri->m_no_transmit_start[0].Update(0, RCS_OFF);
+          m_ri->m_no_transmit_end[0].Update(0, RCS_OFF);
         }
         return true;
       }
       case 0x0940: {
         LOG_VERBOSE(wxT("Garmin xHD 0x0940: no transmit zone start %d"), (int32_t)packet12->parm1 / 32);
         if (m_no_transmit_zone_mode) {
-          m_ri->m_no_transmit_start.Update((int32_t)packet12->parm1 / 32, RCS_MANUAL);
+          m_ri->m_no_transmit_start[0].Update((int32_t)packet12->parm1 / 32, RCS_MANUAL);
         }
         return true;
       }
       case 0x0941: {
         LOG_VERBOSE(wxT("Garmin xHD 0x0941: no transmit zone end %d"), (int32_t)packet12->parm1 / 32);
         if (m_no_transmit_zone_mode) {
-          m_ri->m_no_transmit_end.Update((int32_t)packet12->parm1 / 32, RCS_MANUAL);
+          m_ri->m_no_transmit_end[0].Update((int32_t)packet12->parm1 / 32, RCS_MANUAL);
         }
         return true;
       }

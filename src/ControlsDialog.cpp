@@ -73,6 +73,7 @@ EVT_BUTTON(ID_OFF, ControlsDialog::OnOffClick)
 EVT_BUTTON(ID_CONTROL_BUTTON, ControlsDialog::OnRadarControlButtonClick)
 
 EVT_BUTTON(ID_INSTALLATION, ControlsDialog::OnInstallationButtonClick)
+EVT_BUTTON(ID_NO_TRANSMIT, ControlsDialog::OnNoTransmitButtonClick)
 EVT_BUTTON(ID_PREFERENCES, ControlsDialog::OnPreferencesButtonClick)
 
 EVT_BUTTON(ID_POWER, ControlsDialog::OnPowerButtonClick)
@@ -813,18 +814,60 @@ void ControlsDialog::CreateControls() {
     m_installation_sizer->Add(m_main_bang_suppression_button, 0, wxALL, BORDER);
   }
 
-  // The NO TRANSMIT START button
-  if (m_ctrl[CT_NO_TRANSMIT_START].type) {
-    m_no_transmit_start_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("No transmit start"),
-                                                        m_ctrl[CT_NO_TRANSMIT_START], &m_ri->m_no_transmit_start);
-    m_installation_sizer->Add(m_no_transmit_start_button, 0, wxALL, BORDER);
-  }
+  // When there are two or more NO TRANSMIT ZONES, we put them on a separate sizer
+  if (m_ctrl[CT_NO_TRANSMIT_START_1 + 1].type) {
+    m_no_transmit_sizer = new wxBoxSizer(wxVERTICAL);
+    m_top_sizer->Add(m_no_transmit_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, BORDER);
 
-  // The NO TRANSMIT END button
-  if (m_ctrl[CT_NO_TRANSMIT_END].type) {
-    m_no_transmit_end_button =
-        new RadarControlButton(this, ID_CONTROL_BUTTON, _("No transmit end"), m_ctrl[CT_NO_TRANSMIT_END], &m_ri->m_no_transmit_end);
-    m_installation_sizer->Add(m_no_transmit_end_button, 0, wxALL, BORDER);
+    // The NO TRANSMIT button
+    m_no_transmit_button = new RadarButton(this, ID_NO_TRANSMIT, g_buttonSize, _("No-transmit Zones"));
+    m_installation_sizer->Add(m_no_transmit_button, 0, wxALL, BORDER);
+
+    // The Back button
+    RadarButton* bNoTransmitBack = new RadarButton(this, ID_BACK, g_buttonSize, backButtonStr);
+    m_no_transmit_sizer->Add(bNoTransmitBack, 0, wxALL, BORDER);
+
+    for (size_t z = 0; z < NO_TRANSMIT_ZONES; z++) {
+      // The NO TRANSMIT START button
+      if (m_ctrl[CT_NO_TRANSMIT_START_1 + z].type) {
+        wxString label = _("No transmit start");
+        label << wxString::Format(wxT("%d"), z + 1);
+
+        m_no_transmit_start_button[z] = new RadarControlButton(this, ID_CONTROL_BUTTON, label, m_ctrl[CT_NO_TRANSMIT_START_1 + z],
+                                                               &m_ri->m_no_transmit_start[z]);
+        m_no_transmit_sizer->Add(m_no_transmit_start_button[z], 0, wxALL, BORDER);
+        m_ri->m_no_transmit_zones = wxMax(m_ri->m_no_transmit_zones, z + 1);
+      }
+
+      // The NO TRANSMIT END button
+      if (m_ctrl[CT_NO_TRANSMIT_END_1 + z].type) {
+        wxString label = _("No transmit end");
+        label << wxString::Format(wxT("%d"), z + 1);
+
+        m_no_transmit_end_button[z] =
+            new RadarControlButton(this, ID_CONTROL_BUTTON, label, m_ctrl[CT_NO_TRANSMIT_END_1 + z], &m_ri->m_no_transmit_end[z]);
+        m_no_transmit_sizer->Add(m_no_transmit_end_button[z], 0, wxALL, BORDER);
+      }
+    }
+    m_top_sizer->Hide(m_no_transmit_sizer);
+  } else {
+    if (m_ctrl[CT_NO_TRANSMIT_START_1].type) {
+      wxString label = _("No transmit start");
+
+      m_no_transmit_start_button[0] =
+          new RadarControlButton(this, ID_CONTROL_BUTTON, label, m_ctrl[CT_NO_TRANSMIT_START_1], &m_ri->m_no_transmit_start[0]);
+      m_installation_sizer->Add(m_no_transmit_start_button[0], 0, wxALL, BORDER);
+      m_ri->m_no_transmit_zones = 1;
+    }
+
+    // The NO TRANSMIT END button
+    if (m_ctrl[CT_NO_TRANSMIT_END_1].type) {
+      wxString label = _("No transmit end");
+
+      m_no_transmit_end_button[0] =
+          new RadarControlButton(this, ID_CONTROL_BUTTON, label, m_ctrl[CT_NO_TRANSMIT_END_1], &m_ri->m_no_transmit_end[0]);
+      m_installation_sizer->Add(m_no_transmit_end_button[0], 0, wxALL, BORDER);
+    }
   }
 
   // The ANTENNA HEIGHT button
@@ -1297,6 +1340,8 @@ void ControlsDialog::OnBackClick(wxCommandEvent& event) {
   if (m_current_sizer == m_edit_sizer) {
     SwitchTo(m_from_sizer, wxT("from (back click)"));
     m_from_control = 0;
+  } else if (m_current_sizer == m_no_transmit_sizer) {
+    SwitchTo(m_installation_sizer, wxT("installation (back click)"));
   } else if (m_current_sizer == m_installation_sizer) {
     SwitchTo(m_advanced_sizer, wxT("advanced (back click)"));
   } else {
@@ -1348,6 +1393,7 @@ void ControlsDialog::OnWindowButtonClick(wxCommandEvent& event) { SwitchTo(m_win
 void ControlsDialog::OnViewButtonClick(wxCommandEvent& event) { SwitchTo(m_view_sizer, wxT("view")); }
 
 void ControlsDialog::OnInstallationButtonClick(wxCommandEvent& event) { SwitchTo(m_installation_sizer, wxT("installation")); }
+void ControlsDialog::OnNoTransmitButtonClick(wxCommandEvent& event) { SwitchTo(m_no_transmit_sizer, wxT("no transmit")); }
 
 void ControlsDialog::OnPowerButtonClick(wxCommandEvent& event) { SwitchTo(m_power_sizer, wxT("power")); }
 
@@ -1851,11 +1897,16 @@ void ControlsDialog::DisableRadarControls() {
   if (m_range_adjustment_button) {
     m_range_adjustment_button->Disable();
   }
-  if (m_no_transmit_start_button) {
-    m_no_transmit_start_button->Disable();
+  if (m_no_transmit_button) {
+    m_no_transmit_button->Disable();
   }
-  if (m_no_transmit_end_button) {
-    m_no_transmit_end_button->Disable();
+  for (size_t z = 0; z < NO_TRANSMIT_ZONES; z++) {
+    if (m_no_transmit_start_button[z]) {
+      m_no_transmit_start_button[z]->Disable();
+    }
+    if (m_no_transmit_end_button[z]) {
+      m_no_transmit_end_button[z]->Disable();
+    }
   }
   if (m_antenna_height_button) {
     m_antenna_height_button->Disable();
@@ -1898,6 +1949,9 @@ void ControlsDialog::DisableRadarControls() {
   }
   if (m_main_bang_suppression_button) {
     m_main_bang_suppression_button->Disable();
+  }
+  if (m_accent_light_button) {
+    m_accent_light_button->Disable();
   }
 }
 
@@ -1953,11 +2007,16 @@ void ControlsDialog::EnableRadarControls() {
   if (m_range_adjustment_button) {
     m_range_adjustment_button->Enable();
   }
-  if (m_no_transmit_start_button) {
-    m_no_transmit_start_button->Enable();
+  if (m_no_transmit_button) {
+    m_no_transmit_button->Enable();
   }
-  if (m_no_transmit_end_button) {
-    m_no_transmit_end_button->Enable();
+  for (size_t z = 0; z < NO_TRANSMIT_ZONES; z++) {
+    if (m_no_transmit_start_button[z]) {
+      m_no_transmit_start_button[z]->Enable();
+    }
+    if (m_no_transmit_end_button[z]) {
+      m_no_transmit_end_button[z]->Enable();
+    }
   }
   if (m_antenna_height_button) {
     m_antenna_height_button->Enable();
@@ -2000,6 +2059,9 @@ void ControlsDialog::EnableRadarControls() {
   }
   if (m_main_bang_suppression_button) {
     m_main_bang_suppression_button->Enable();
+  }
+  if (m_accent_light_button) {
+    m_accent_light_button->Enable();
   }
 }
 
@@ -2216,11 +2278,13 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
 
   //  no transmit zone
-  if (m_no_transmit_start_button) {
-    m_no_transmit_start_button->UpdateLabel();
-  }
-  if (m_no_transmit_end_button) {
-    m_no_transmit_end_button->UpdateLabel();
+  for (size_t z = 0; z < NO_TRANSMIT_ZONES; z++) {
+    if (m_no_transmit_start_button[z]) {
+      m_no_transmit_start_button[z]->UpdateLabel();
+    }
+    if (m_no_transmit_end_button[z]) {
+      m_no_transmit_end_button[z]->UpdateLabel();
+    }
   }
 
   //  local interference rejection
@@ -2338,9 +2402,9 @@ void ControlsDialog::UpdateDialogShown(bool resize) {
   if (!IsShown()) {
     if (!m_top_sizer->IsShown(m_control_sizer) && !m_top_sizer->IsShown(m_advanced_sizer) && !m_top_sizer->IsShown(m_view_sizer) &&
         !m_top_sizer->IsShown(m_edit_sizer) && !m_top_sizer->IsShown(m_installation_sizer) &&
-        !m_top_sizer->IsShown(m_window_sizer) && !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_guardzone_sizer) &&
-        !m_top_sizer->IsShown(m_adjust_sizer) && !m_top_sizer->IsShown(m_cursor_sizer) &&
-        (m_power_sizer && !m_top_sizer->IsShown(m_power_sizer))) {
+        (m_no_transmit_sizer != 0 && !m_top_sizer->IsShown(m_no_transmit_sizer)) && !m_top_sizer->IsShown(m_window_sizer) &&
+        !m_top_sizer->IsShown(m_guard_sizer) && !m_top_sizer->IsShown(m_guardzone_sizer) && !m_top_sizer->IsShown(m_adjust_sizer) &&
+        !m_top_sizer->IsShown(m_cursor_sizer) && (m_power_sizer && !m_top_sizer->IsShown(m_power_sizer))) {
       SwitchTo(m_control_sizer, wxT("main (manual open)"));
     }
     Show();

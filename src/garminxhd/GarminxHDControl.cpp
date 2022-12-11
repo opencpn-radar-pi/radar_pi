@@ -232,6 +232,12 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_TARGET_SEPARATION:
     case CT_TUNE_COARSE:
     case CT_TUNE_FINE:
+    case CT_NO_TRANSMIT_END_2:
+    case CT_NO_TRANSMIT_END_3:
+    case CT_NO_TRANSMIT_END_4:
+    case CT_NO_TRANSMIT_START_2:
+    case CT_NO_TRANSMIT_START_3:
+    case CT_NO_TRANSMIT_START_4:
 
       break;
 
@@ -247,7 +253,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
       break;
     }
 
-    case CT_NO_TRANSMIT_START: {
+    case CT_NO_TRANSMIT_START_1: {
       // value is already in range -180 .. +180 which is what I think radar wants...
       if (state == RCS_OFF) {  // OFF
         pck_9.packet_type = 0x93f;
@@ -260,13 +266,13 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
         pck_12.packet_type = 0x940;
         pck_12.parm1 = value * 32;
         r = TransmitCmd(&pck_12, sizeof(pck_12));
-        m_ri->m_no_transmit_start.Update(value);  // necessary because we hacked "off" as auto value
+        m_ri->m_no_transmit_start[0].Update(value);  // necessary because we hacked "off" as auto value
       }
       LOG_VERBOSE(wxT("%s No Transmit Start: value=%d state=%d"), m_name.c_str(), value, (int)state);
       break;
     }
 
-    case CT_NO_TRANSMIT_END: {
+    case CT_NO_TRANSMIT_END_1: {
       // value is already in range -180 .. +180 which is what I think radar wants...
       if (state == RCS_OFF) {  // OFF
         pck_9.packet_type = 0x93f;
@@ -279,6 +285,7 @@ bool GarminxHDControl::SetControlValue(ControlType controlType, RadarControlItem
         pck_12.packet_type = 0x941;
         pck_12.parm1 = value * 32;
         r = TransmitCmd(&pck_12, sizeof(pck_12));
+        m_ri->m_no_transmit_end[0].Update(value);  // necessary because we hacked "off" as auto value
       }
       LOG_VERBOSE(wxT("%s No Transmit End: value=%d state=%d"), m_name.c_str(), value, (int)state);
       break;

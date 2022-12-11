@@ -86,6 +86,8 @@ class NavicoLocate;
     (4) // Arbitrary limit, anyone running this many is already crazy!
 #define GUARD_ZONES (2) // Could be increased if wanted
 #define BEARING_LINES (2) // And these as well
+#define NO_TRANSMIT_ZONES                                                      \
+    (4) // Max that any radar supports, currently xHD=1 HALO=4
 
 #define CANVAS_COUNT (wxMin(MAX_CHART_CANVAS, GetCanvasCount()))
 
@@ -117,9 +119,10 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
     ((raw) * (double)DEGREES_PER_ROTATION / m_ri->m_spokes)
 #define MOD_SPOKES(raw) (((raw) + 2 * m_ri->m_spokes) % m_ri->m_spokes)
 #define MOD_DEGREES(angle)                                                     \
-    ((angle + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
+    (((angle) + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
 #define MOD_DEGREES_FLOAT(angle)                                               \
-    (fmod((double)angle + 2 * DEGREES_PER_ROTATION, DEGREES_PER_ROTATION))
+    (fmod((double)(angle) + 2 * DEGREES_PER_ROTATION, DEGREES_PER_ROTATION))
+#define MOD_DEGREES_180(angle) (((int)(angle) + 900) % 360 - 180)
 
 #define WATCHDOG_TIMEOUT                                                       \
     (10) // After 10s assume GPS and heading data is invalid

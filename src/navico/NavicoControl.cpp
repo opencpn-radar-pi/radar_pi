@@ -177,8 +177,6 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_MAIN_BANG_SUPPRESSION:
     case CT_MAX:
     case CT_NONE:
-    case CT_NO_TRANSMIT_END:
-    case CT_NO_TRANSMIT_START:
     case CT_ORIENTATION:
     case CT_OVERLAY_CANVAS:
     case CT_RANGE:
@@ -313,7 +311,67 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       break;
     }
 
-      // What would command b through d be?
+      // What would command b through c be?
+
+    case CT_NO_TRANSMIT_START_1:
+    case CT_NO_TRANSMIT_START_2:
+    case CT_NO_TRANSMIT_START_3:
+    case CT_NO_TRANSMIT_START_4: {
+      uint8_t sector = (controlType - CT_NO_TRANSMIT_START_1);
+      uint8_t enable = (state >= RCS_MANUAL) ? 1 : 0;
+      int valueEnd = m_ri->m_no_transmit_end[sector].GetValue();
+      uint16_t start_raw = SCALE_DEGREES_TO_DECIDEGREES((value + 360 % 360));
+      uint16_t end_raw = SCALE_DEGREES_TO_DECIDEGREES((valueEnd + 360 % 360));
+      uint8_t enable_cmd[] = {0x0d, 0xc1, sector, 0, 0, 0, enable};
+      uint8_t angle_cmd[] = {
+          0xc0,
+          0xc1,
+          sector,
+          0,
+          0,
+          0,
+          enable,
+          (uint8_t)start_raw,
+          (uint8_t)(start_raw >> 8),
+          (uint8_t)end_raw,
+          (uint8_t)(end_raw >> 8),
+      };
+
+      LOG_VERBOSE(wxT("%s Sector %u blanking start: %d / %d"), m_name.c_str(), sector, value, state);
+      r = TransmitCmd(enable_cmd, sizeof(enable_cmd));
+      r = TransmitCmd(angle_cmd, sizeof(angle_cmd));
+      break;
+    }
+
+    case CT_NO_TRANSMIT_END_1:
+    case CT_NO_TRANSMIT_END_2:
+    case CT_NO_TRANSMIT_END_3:
+    case CT_NO_TRANSMIT_END_4: {
+      uint8_t sector = (controlType - CT_NO_TRANSMIT_END_1);
+      uint8_t enable = (state >= RCS_MANUAL) ? 1 : 0;
+      int valueStart = m_ri->m_no_transmit_start[sector].GetValue();
+      uint16_t start_raw = SCALE_DEGREES_TO_DECIDEGREES((valueStart + 360 % 360));
+      uint16_t end_raw = SCALE_DEGREES_TO_DECIDEGREES((value + 360 % 360));
+      uint8_t enable_cmd[] = {0x0d, 0xc1, sector, 0, 0, 0, enable};
+      uint8_t angle_cmd[] = {
+          0xc0,
+          0xc1,
+          sector,
+          0,
+          0,
+          0,
+          enable,
+          (uint8_t)start_raw,
+          (uint8_t)(start_raw >> 8),
+          (uint8_t)end_raw,
+          (uint8_t)(end_raw >> 8),
+      };
+
+      LOG_VERBOSE(wxT("%s Sector %u blanking end: %d / %d"), m_name.c_str(), sector, value, state);
+      r = TransmitCmd(enable_cmd, sizeof(enable_cmd));
+      r = TransmitCmd(angle_cmd, sizeof(angle_cmd));
+      break;
+    }
 
     case CT_LOCAL_INTERFERENCE_REJECTION: {
       if (value < 0) value = 0;
