@@ -5,3 +5,4 @@ libexif
 python
 wget
 openssl@3
+wxwidgets
