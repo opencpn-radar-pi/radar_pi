@@ -477,7 +477,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   int threshold = m_threshold.GetValue();
   if (threshold > 0) {
     threshold = threshold * (255 - BLOB_HISTORY_MAX) / 100 + BLOB_HISTORY_MAX;
-    for (; i < len; i++) {
+    for (; i < (int)len; i++) {
       if (data[i] < threshold) {
         data[i] = 0;
       }
