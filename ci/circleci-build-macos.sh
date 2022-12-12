@@ -49,6 +49,7 @@ cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX= \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 \
+  -DOCPN_TARGET_TUPLE="darwin-wx32;10;x86_64" \
   ..
 
 if [[ -z "$CI" ]]; then
