@@ -132,7 +132,9 @@ void MessageBox::CreateControls() {
 
     wxString presence;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      presence << m_pi->m_radar[r]->GetInfoStatus() << wxT("\n");
+      if (m_pi->m_radar[r]) {
+        presence << m_pi->m_radar[r]->GetInfoStatus() << wxT("\n");
+      }
     }
     m_radar_text[i] = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0);
     m_radar_text[i]->SetFont(m_pi->m_font);
@@ -146,7 +148,8 @@ void MessageBox::CreateControls() {
   wxStaticBoxSizer *optionsSizer = new wxStaticBoxSizer(optionsBox, wxVERTICAL);
   m_message_sizer->Add(optionsSizer, 0, wxEXPAND | wxALL, BORDER * 2);
 
-  m_have_open_gl = new wxCheckBox(this, ID_BPOS, _("Accelerated Graphics (OpenGL)"), wxDefaultPosition, wxDefaultSize,
+  // Use the same string as OpenCPN so it gets translated by the Core translation files
+  m_have_open_gl = new wxCheckBox(this, ID_BPOS, _("Use Accelerated Graphics (OpenGL)"), wxDefaultPosition, wxDefaultSize,
                                   wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   optionsSizer->Add(m_have_open_gl, 0, wxALL, BORDER);
   m_have_open_gl->SetFont(m_pi->m_font);
@@ -275,9 +278,11 @@ bool MessageBox::UpdateMessage(bool force) {
   }
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    int state = m_pi->m_radar[r]->m_state.GetValue();
-    if (state != RADAR_OFF) {
-      radarSeen = true;
+    if (m_pi->m_radar[r]) {
+      int state = m_pi->m_radar[r]->m_state.GetValue();
+      if (state != RADAR_OFF) {
+        radarSeen = true;
+      }
     }
   }
 
@@ -326,12 +331,14 @@ bool MessageBox::UpdateMessage(bool force) {
   m_have_variation->SetValue(haveVariation);
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    wxString info = m_pi->m_radar[r]->GetInfoStatus();
-    m_radar_text[r]->SetLabel(info);
-    m_radar_text[r]->Show();
-    m_radar_box[r]->SetLabel(m_pi->m_radar[r]->m_name);
-    m_radar_box[r]->Show();
-    m_radar_box[r]->Layout();
+    if (m_pi->m_radar[r]) {
+      wxString info = m_pi->m_radar[r]->GetInfoStatus();
+      m_radar_text[r]->SetLabel(info);
+      m_radar_text[r]->Show();
+      m_radar_box[r]->SetLabel(m_pi->m_radar[r]->m_name);
+      m_radar_box[r]->Show();
+      m_radar_box[r]->Layout();
+    }
   }
   for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
     m_radar_text[r]->Hide();

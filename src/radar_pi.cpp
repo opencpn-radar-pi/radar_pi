@@ -383,6 +383,22 @@ void radar_pi::StartRadarLocators(size_t r) {
   }
 }
 
+void radar_pi::StopRadarLocators() {
+  if (m_navico_locator) {
+    m_navico_locator->Shutdown();
+    m_navico_locator->Wait();
+    delete m_navico_locator;
+    m_navico_locator = 0;
+  }
+
+  if (m_raymarine_locator) {
+    m_raymarine_locator->Shutdown();
+    m_raymarine_locator->Wait();
+    delete m_raymarine_locator;
+    m_raymarine_locator = 0;
+  }
+}
+
 /**
  * DeInit() is called when OpenCPN is quitting or when the user disables the plugin.
  *
@@ -409,25 +425,16 @@ bool radar_pi::DeInit(void) {
     m_update_timer = 0;
   }
 
-  if (m_navico_locator) {
-    m_navico_locator->Shutdown();
-    m_navico_locator->Wait();
-  }
-  delete m_navico_locator;
-  m_navico_locator = 0;
+  StopRadarLocators();
 
-  if (m_raymarine_locator) {
-    m_raymarine_locator->Shutdown();
-    m_raymarine_locator->Wait();
-  }
-  delete m_raymarine_locator;
-  m_raymarine_locator = 0;
   // Stop processing in all radars.
   // This waits for the receive threads to stop and removes the dialog, so that its settings
   // can be saved.
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     m_radar[r]->Shutdown();
   }
+
+  StopRadarLocators();
 
   if (m_bogey_dialog) {
     delete m_bogey_dialog;  // This will also save its current pos in m_settings
@@ -443,20 +450,13 @@ bool radar_pi::DeInit(void) {
   LOG_INFO(wxT("radar_pi Context menus removed"));
 
   // Delete the RadarInfo objects. This will call their destructor and delete all data.
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+  // To guard against recursive entry for redraw set the global radar_count to zero.
+  size_t radar_count = M_SETTINGS.radar_count;
+  for (size_t r = 0; r < radar_count; r++) {
     delete m_radar[r];
     m_radar[r] = 0;
   }
-
-  if (m_navico_locator != NULL) {
-    delete m_navico_locator;
-    m_navico_locator = 0;
-  }
-
-  if (m_raymarine_locator != NULL) {
-    delete m_raymarine_locator;
-    m_raymarine_locator = 0;
-  }
+  M_SETTINGS.radar_count = 0;
 
   if (m_pMessageBox) {
     delete m_pMessageBox;
@@ -518,29 +518,16 @@ bool radar_pi::EnsureRadarSelectionComplete(bool force) {
 bool radar_pi::MakeRadarSelection() {
   bool ret = false;
 
+  size_t radar_count;
   size_t r;
 
   m_initialized = false;
   SelectDialog dlg(m_parent_window, this);
   if (dlg.ShowModal() == wxID_OK) {
-    // stop the locators, otherwise they keep running without radars
-    if (m_navico_locator) {
-      m_navico_locator->Shutdown();
-      m_navico_locator->Wait();
-    }
-    delete m_navico_locator;
-    m_navico_locator = 0;
-    LOG_INFO(wxT("Navico locator deleted by MakeRadarSelection"));
-    if (m_raymarine_locator) {
-      m_raymarine_locator->Shutdown();
-      m_raymarine_locator->Wait();
-    }
-    delete m_raymarine_locator;
-    m_raymarine_locator = 0;
-    LOG_INFO(wxT("Raymarine locator deleted by MakeRadarSelection"));
-
+    StopRadarLocators();
     // delete all radars
-    for (size_t r = 0; r < m_settings.radar_count; r++) {
+    radar_count = m_settings.radar_count;
+    for (size_t r = 0; r < radar_count; r++) {
       if (m_radar[r]) {
         m_radar[r]->Shutdown();
         LOG_INFO(wxT("Shutdown radar %i done"), r);
@@ -564,7 +551,7 @@ bool radar_pi::MakeRadarSelection() {
         m_radar[r]->m_radar_type = (RadarType)i;  // modify type of existing radar ?
         StartRadarLocators(r);
         r++;
-        m_settings.radar_count = r;
+        M_SETTINGS.radar_count = r;
         ret = true;
       }
     }
@@ -1195,11 +1182,11 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   }
 
   //// for testing only, simple trick to get position and heading
-   /*wxString nmea;
-   nmea = wxT("$APHDM,000.0,M*33");
-   PushNMEABuffer(nmea);
-   nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-   PushNMEABuffer(nmea);*/
+  /*wxString nmea;
+  nmea = wxT("$APHDM,000.0,M*33");
+  PushNMEABuffer(nmea);
+  nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+  PushNMEABuffer(nmea);*/
 
   // update own ship position to best estimate
   ExtendedPosition intermediate_pos;
@@ -1463,15 +1450,16 @@ bool radar_pi::LoadConfig(void) {
 
     pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
 
-    pConf->Read(wxT("RadarCount"), &v, 0);
-    M_SETTINGS.radar_count = v;
-
     pConf->Read(wxT("DockSize"), &v, 0);
     m_settings.dock_size = v;
 
     size_t n = 0;
-    for (int r = 0; r < (int)M_SETTINGS.radar_count; r++) {
+    for (int r = 0; r < RADARS; r++) {
       RadarInfo *ri = m_radar[n];
+      if (ri == NULL) {
+        wxLogError(wxT("Cannot load radar %d as the object is not initialised"), r + 1);
+        continue;
+      }
       pConf->Read(wxString::Format(wxT("Radar%dType"), r), &s, "unknown");
       ri->m_radar_type = RT_MAX;  // = not used
       for (int i = 0; i < RT_MAX; i++) {
@@ -1566,6 +1554,8 @@ bool radar_pi::LoadConfig(void) {
       n++;
     }
     m_settings.radar_count = n;
+    wxLogError(wxT("Config Loaded RadarCount=%d"), v);
+
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
     pConf->Read(wxT("ColourStrong"), &s, "red");
     m_settings.strong_colour = wxColour(s);
@@ -1670,6 +1660,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("RadarCount"), m_settings.radar_count);
     pConf->Write(wxT("DockSize"), m_settings.dock_size);
 
+    wxLogError(wxT("Config Save RadarCount=%d"), m_settings.radar_count);
     for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
       pConf->Write(wxString::Format(wxT("Radar%dLocationInfo"), r), m_radar[r]->GetRadarLocationInfo().to_string());

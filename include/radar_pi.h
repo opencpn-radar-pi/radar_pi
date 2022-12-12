@@ -595,6 +595,7 @@ public:
     void ResetOpenGLContext();
     void logBinaryData(const wxString& what, const uint8_t* data, int size);
     void StartRadarLocators(size_t r);
+    void StopRadarLocators();
 
     void UpdateAllControlStates(bool all);
 
