@@ -76,9 +76,13 @@ if ("${BUILD_TYPE}" STREQUAL "")
   return ()
 endif ()
 
+ 
 if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   # Build package as required (flatpak already dealt with).
   #
+  if (APPLE)
+    include(MacosWxwidgets)
+  endif ()
   include(PluginInstall)
   if (QT_ANDROID)
     include(AndroidLibs)
@@ -88,7 +92,7 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   include(PluginLocalization)
 
   include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
-
+ 
   if (COMMAND add_plugin_libraries)
     add_plugin_libraries()
   endif ()

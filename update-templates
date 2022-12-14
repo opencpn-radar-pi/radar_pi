@@ -191,7 +191,9 @@ grep -q wxwidgets build-deps/macos-deps || \
     echo wxwidgets >> build-deps/macos-deps
 
 # Check for files/dirs which are private, but should be copied on first run.
-for f in config.h.in build-deps build-conf.sh libs; do
+for f in  \
+    config.h.in build-deps build-conf.sh libs build-deps/macos-cache-stamp
+do
     if test -e $f; then continue; fi
     git checkout $source_treeish $f
 done
