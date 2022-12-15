@@ -11,7 +11,7 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 
-set -xe
+set -x
 
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
@@ -63,7 +63,9 @@ if [[ -z "$CI" ]]; then
     exit 0
 fi
 
-make VERBOSE=1 tarball
+# nor-reproducible error on first invocation, seemingly tarball-conf-stamp
+# is not created as required.
+make VERBOSE=1 tarball || make VERBOSE=1 tarball
 
 # Install cloudsmith needed by upload script
 python3 -m pip install -q --user cloudsmith-cli
