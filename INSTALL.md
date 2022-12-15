@@ -57,3 +57,20 @@ The initial `set PATH=...` file strips down %PATH% to a very small path,
 excluding most if not all otherwise available tools. In many cases this is
 neither required nor convenient and can be excluded. However, doing it
 represents a tested baseline.
+
+#### Building for Buster (Debian 9)
+
+The Buster builds are targeting Ubuntu Bionic besides Debian Buster. These
+are kept in a legacy state, the basic idea is that buster builds in the
+catalog should not be updated except in case of serious bug fixes.
+
+Plugins could either disable buster builds completely, always run them or
+just run them for example every tenth build. This is configured in the file
+_build-conf.rc_, see comments in this file for details.
+
+#### Building for Macos
+
+The macos build uses a quite aggressive caching scheme. In case of problems
+it might be necessary to invalidate the cache so new dependencies are
+downloaded and built from source. This is done in the file
+_build-deps/macos-cache-stamp_, see comments in that file.
