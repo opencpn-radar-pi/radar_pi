@@ -12,8 +12,7 @@ flatpak-steps: &flatpak-steps
   steps:
     - checkout
     - restore_cache:
-        keys:
-          - <<parameters.cache-key>>-{{ checksum "ci/circleci-build-flatpak.sh" }}
+        key: <<parameters.cache-key>>-{{ checksum "ci/circleci-build-flatpak.sh" }}
     - run: ci/circleci-build-flatpak.sh
     - save_cache:
         key: <<parameters.cache-key>>-{{ checksum "ci/circleci-build-flatpak.sh" }}
@@ -200,7 +199,18 @@ jobs:
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - checkout
+      - run: sudo chmod go+w /usr/local
+      - restore_cache:
+          key: "{{checksum \"build-deps/macos-cache-stamp\"}}\
+            -{{checksum \"cmake/MacosWxwidgets.cmake\"}}\
+            -{{checksum \"ci/circleci-build-macos.sh\"}}"
       - run: ci/circleci-build-macos.sh
+      - save_cache:
+          key: "{{checksum \"build-deps/macos-cache-stamp\"}}\
+            -{{checksum \"cmake/MacosWxwidgets.cmake\"}}\
+            -{{checksum \"ci/circleci-build-macos.sh\"}}"
+          paths:
+            - /tmp/local.cache.tar
       - run: >
           sh -c "otool -L build-osx/app/*/OpenCPN.app/Contents/PlugIns/*.dylib"
       - run: cd build-osx; /bin/bash < upload.sh

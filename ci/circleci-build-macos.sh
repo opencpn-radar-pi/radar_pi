@@ -18,8 +18,13 @@ if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 
 git submodule update --init opencpn-libs
 
+# If applicable,  restore /usr/local from cache.
+if [[ -n "$CI" && -f /tmp/local.cache.tar ]]; then
+  sudo rm -rf /usr/local/*
+  sudo tar -C /usr -xf /tmp/local.cache.tar
+fi
+
 # Set up build directory
-if [ -n "$TRAVIS_BUILD_DIR" ]; then cd $TRAVIS_BUILD_DIR; fi
 rm -rf build-osx  && mkdir build-osx
 
 # Create a log file.
@@ -27,7 +32,7 @@ exec > >(tee build-osx/build.log) 2>&1
 
 export MACOSX_DEPLOYMENT_TARGET=10.10
 
-# Return latest version of $1, optiomally using option $2
+# Return latest version of $1, optionally using option $2
 pkg_version() { brew list --versions $2 $1 | tail -1 | awk '{print $2}'; }
 
 #
@@ -71,3 +76,8 @@ pyvers=$(python3 --version | awk '{ print $2 }')
 pyvers=$(echo $pyvers | sed -E 's/[\.][0-9]+$//')    # drop last .z in x.y.z
 py_dir=$(ls -d  /Users/*/Library/Python/$pyvers/bin)
 echo "export PATH=\$PATH:$py_dir" >> ~/.uploadrc
+
+# Create the cached /usr/local archive
+if [ -n "$CI"  ]; then
+  tar -C /usr -cf /tmp/local.cache.tar  local
+fi
