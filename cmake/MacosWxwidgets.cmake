@@ -47,7 +47,7 @@ execute_process(
       --with-opengl
       --without-subdirs
       --prefix=/usr/local
-      WORKING_DIRECTORY ${wxwidgets_src_dir}
+ WORKING_DIRECTORY ${wxwidgets_src_dir}
 )
 math(_nproc ${OPCN_NPROC} * 2)    # Assuming two threads/cpu
 execute_process(
