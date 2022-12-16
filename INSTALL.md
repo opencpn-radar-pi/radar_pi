@@ -40,6 +40,10 @@ To build an android armhf tarball
     $ cmake -DCMAKE_TOOLCHAIN_FILE=cmake/android-armhf-toolchain.cmake ..
     $ make
 
+The Android builds are governed by _build-conf.rc_ and can be disabled or
+just work in dry-run mode without uploading anything. See the file for
+details.
+
 #### Building on windows (MSVC)
 On Windows, build is performed in the _build_ directory using a CMD shell:
 
@@ -68,9 +72,14 @@ Plugins could either disable buster builds completely, always run them or
 just run them for example every tenth build. This is configured in the file
 _build-conf.rc_, see comments in this file for details.
 
-#### Building for Macos
+By default, these builds runs every tenth build without uploading anything.
+
+#### Building for MacOS
 
 The macos build uses a quite aggressive caching scheme. In case of problems
 it might be necessary to invalidate the cache so new dependencies are
 downloaded and built from source. This is done in the file
 _build-deps/macos-cache-stamp_, see comments in that file.
+
+Note that the initial MacOS build takes a long time. However, subsequent
+builds runs at roughly the same time as other platforms.
