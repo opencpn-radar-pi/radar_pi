@@ -192,7 +192,12 @@ grep -q wxwidgets build-deps/macos-deps || \
 
 # Check for files/dirs which are private, but should be copied on first run.
 for f in  \
-    config.h.in build-deps build-conf.rc libs build-deps/macos-cache-stamp
+    config.h.in \
+    build-deps \
+    build-conf.rc \
+    libs \
+    build-deps/macos-cache-stamp \
+    build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
 do
     if test -e $f; then continue; fi
     git checkout $source_treeish $f
