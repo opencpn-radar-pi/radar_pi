@@ -186,10 +186,6 @@ git diff-index --quiet --cached HEAD -- || {
     git commit -m "opencpn-libs: Update to latest version."
 }
 
-# Macos: make sure that required wxwidgets is present in build-deps/macos-deps
-grep -q wxwidgets build-deps/macos-deps || \
-    echo wxwidgets >> build-deps/macos-deps
-
 # Check for files/dirs which are private, but should be copied on first run.
 for f in  \
     config.h.in \
