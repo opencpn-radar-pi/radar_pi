@@ -1,3 +1,6 @@
+3.2.1  Dec 18, 2022
+* New release afrter some release problems of the 3.2.0 tag
+
 3.2.0  Dec 18, 2022
 * Drop all ubuntu builds according to OpenCPN#2502.
 * Update builds according to OpenCPN#2797:
