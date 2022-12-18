@@ -77,7 +77,7 @@ flatpak remote-add --user --if-not-exists \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 # Configure and build the plugin tarball and metadata.
-cmake -DCMAKE_BUILD_TYPE=Release -DOCPN_WX_ABI=wx32 ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc) VERBOSE=1 flatpak
 
 # Restore permissions and owner in build tree.
