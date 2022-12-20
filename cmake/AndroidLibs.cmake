@@ -36,7 +36,7 @@ if (NOT EXISTS ${OCPN_ANDROID_CACHEDIR}/master.zip)
       https://github.com/bdbcat/OCPNAndroidCommon/archive/master.zip
       ${OCPN_ANDROID_CACHEDIR}/master.zip
     EXPECTED_HASH
-      SHA256=ac36afaf4f026e9b2624a963f5356f5b1fb2c45dec1134209333a8b46fb05ca0
+      SHA256=a15ebd49fd4e7c0f2d6e99328ed6a9fdb8ed7c8fcaa993cab585fc9d8aab4f56
     SHOW_PROGRESS
   )
 endif ()
@@ -100,9 +100,6 @@ target_link_libraries(${PACKAGE_NAME}
 )
 add_compile_definitions(
   __WXQT__
-  __OCPN__ANDROID__
-  ANDROID
-  ARMHF
   BUILDING_PLUGIN
   OCPN_USE_WRAPPER
   ocpnUSE_GLES
