@@ -1,0 +1,59 @@
+From 03eca5af92d4a395efc65dd8a6e936e33293f5b8 Mon Sep 17 00:00:00 2001
+From: Alec Leamas <leamas.alec@gmail.com>
+Date: Mon, 21 Nov 2022 14:20:15 +0100
+Subject: [PATCH] matrix.h: Patch attributes handling (wxwidgets#22790).
+
+---
+ defs.h   | 21 +++++++++++++++++++++
+ matrix.h |  3 ++-
+ 2 files changed, 23 insertions(+), 1 deletion(-)
+
+diff --git a/defs.h b/defs.h
+index e048cb7..d491939 100644
+--- a/defs.h
++++ b/defs.h
+@@ -169,6 +169,27 @@
+ #else /* !g++ */
+ #   define wxSUPPRESS_GCC_PRIVATE_DTOR_WARNING(name)
+ #endif
++/*
++    Some gcc versions choke on __has_cpp_attribute(gnu::visibility) due to the
++    presence of the colon, but we only need this macro in C++ code, so just
++    don't define it when using C.
++ */
++
++#ifdef __cplusplus
++
++/*
++    Special macro used for the classes that are exported and deprecated.
++    It exists because standard [[deprecated]] attribute can't be combined with
++    legacy __attribute__((visibility)), but we can't use [[visibility]] instead
++    of the latter because it can't be use in the same place in the declarations
++    where we use WXDLLIMPEXP_CORE. So we define this special macro which uses
++    the standard visibility attribute just where we can't do otherwise.
++
++    Heavily simplified for wxWidgets and gcc -- Alec Leamas
++ */
++    #define wxDEPRECATED_EXPORT_CORE(msg) \
++	__attribute__((visibility("default")))
++#endif
+ 
+ /*
+    Clang Support
+diff --git a/matrix.h b/matrix.h
+index d18a0d2..a3392b5 100644
+--- a/matrix.h
++++ b/matrix.h
+@@ -41,7 +41,8 @@ class
+ #ifndef WXBUILDING
+ wxDEPRECATED_MSG("use wxAffineMatrix2D instead")
+ #endif
+-WXDLLIMPEXP_CORE wxTransformMatrix: public wxObject
++wxDEPRECATED_EXPORT_CORE("use wxAffineMatrix2D instead")
++wxTransformMatrix: public wxObject
+ {
+ public:
+     wxTransformMatrix();
+-- 
+2.30.2
+

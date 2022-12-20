@@ -1,0 +1,16 @@
+#  How often oldstable is built. 
+#    0: never
+#    1: always
+#    other numbers: For example 10 means every tenth build.
+oldstable_build_rate=10
+
+#  Should oldstable build be uploaded to cloudsmith? <true|false>
+oldstable_upload="false"
+
+# Should oldstable builds be pushed to catalog clone? <true|false>
+oldstable_git_push="false"
+
+# Same as for oldstable above.
+android_build_rate=1
+android_upload="true"
+android_git_push="true"
