@@ -150,7 +150,6 @@ for f in \
     .circleci \
     .clang-format \
     .cmake-format.yaml \
-    .drone.yml \
     .gitattributes \
     .gitignore \
     INSTALL.md \
@@ -176,9 +175,26 @@ git diff-index --quiet --cached HEAD -- || {
     git commit -m "opencpn-libs: Update to latest version."
 }
 
+# Update flatpak runtime version as required:
+sed -i \
+    -e '/sdk: org.freedesktop.Sdk/s/20.08/22.08/' \
+    -e '/^runtime-version:/s/:.*/: beta/' \
+  flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
+git add flatpak
+git diff-index --quiet --cached HEAD -- || {
+    echo "Updating Updating flatpak runtime version to 22.08"
+    git commit -m "opencpn-libs: Update to latest version."
+}
 
 # Check for files/dirs which are private, but should be copied on first run.
-for f in config.h.in build-deps libs; do
+for f in  \
+    config.h.in \
+    build-deps \
+    build-conf.rc \
+    libs \
+    build-deps/macos-cache-stamp \
+    build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
+do
     if test -e $f; then continue; fi
     git checkout $source_treeish $f
 done
@@ -194,7 +210,7 @@ if [ -e update-ignored ]; then
     done
 fi
 
-for f in buildosx buildwin/NSIS* libs/AndroidLibs.cmake mingw; do
+for f in buildosx buildwin/NSIS* libs/AndroidLibs.cmake mingw .drone.yml; do
     if test -e $f; then git rm -rf $f; fi
 done
 git diff-index --quiet --cached HEAD -- || {
