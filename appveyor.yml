@@ -4,7 +4,7 @@ shallow_clone: false
 clone_depth: 10
 
 image:
-  - Visual Studio 2017
+  - Visual Studio 2022
 
 platform:
   - Win32
@@ -12,30 +12,10 @@ platform:
 configuration: RelWithDebInfo
 test: false
 
-install:
-  - set VS_HOME=C:\Program Files (x86)\Microsoft Visual Studio\2017
+before_build:
+  - git submodule update --init opencpn-libs
+  - set "VS_HOME=C:\Program Files\Microsoft Visual Studio\2022"
   - call "%VS_HOME%\Community\VC\Auxiliary\Build\vcvars32.bat"
 
-before_build:
-  # Ensure there is a working python installation. Unless removed,
-  # Python38-64 and Python27 interferes with the 32-bit 3.8 installation
-  - rmdir /Q /S C:\Python38-x64
-  - rmdir /Q /S C:\Python27
-  - cmd: SET PATH=C:\Python38;C:\Python38\Scripts;%PATH%
-  # And check out submodules:
-  - git submodule update --init opencpn-libs
-
 build_script:
-  - call buildwin\win_deps.bat
-  - mkdir build && cd build
-  - cmake -T v141_xp -G "Visual Studio 15 2017" ..
-  - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-  - cmake --build . --target tarball --config RelWithDebInfo
-
-after_build:
-  # Something in build_script messes with %PATH%:
-  - cmd: SET PATH=C:\Python38;C:\Python38\Scripts;%PATH%
-
-  - python ..\ci\windows-ldd
-  - call upload.bat
-  - python ..\ci\git-push
+  - call ci\appveyor.bat

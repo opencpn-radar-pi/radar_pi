@@ -38,7 +38,11 @@ add_library(${CMAKE_PROJECT_NAME} SHARED EXCLUDE_FROM_ALL ${SRC})
 include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
 add_subdirectory("opencpn-libs/${PKG_API_LIB}")
-target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
+if (${PKG_NAME} MATCHES wx32)
+  target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api_wx32)
+else ()
+  target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
+endif ()
 
 set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(VERSION_MINOR ${PROJECT_VERSION_MINOR})
@@ -54,23 +58,31 @@ if (COMMAND late_init)
   late_init()
 endif ()
 
+# Configure the flatpak manifest
+file(
+  GLOB manifest ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
+)
+include(ConfigureManifest)
+configure_manifest(${manifest} _new_manifest)
+
 # Set up targets. Targets sets up new targets with BUILD_TYPE set to
 # 'flatpak', 'android' or 'tarball'. The initial call without BUILD_TYPE ends
 # here.
 #
-file(GLOB FLATPAK_MANIFEST
-  ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
-)
 include(Targets)
-create_targets(${FLATPAK_MANIFEST})
+create_targets(${_new_manifest})
 
 if ("${BUILD_TYPE}" STREQUAL "")
   return ()
 endif ()
 
+ 
 if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   # Build package as required (flatpak already dealt with).
   #
+  if (APPLE)
+    include(MacosWxwidgets)
+  endif ()
   include(PluginInstall)
   if (QT_ANDROID)
     include(AndroidLibs)
@@ -80,7 +92,7 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   include(PluginLocalization)
 
   include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
-
+ 
   if (COMMAND add_plugin_libraries)
     add_plugin_libraries()
   endif ()
