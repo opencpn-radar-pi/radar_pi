@@ -112,6 +112,9 @@ bool ArpaTarget::Pix(int ang, int rad) {
     return false;
   }
   int angle = MOD_SPOKES(ang);
+  if (angle >= m_ri->m_spokes || angle < 0) {
+    return false;
+  }
   bool bit0 = (m_ri->m_history[angle].line[rad] & 128) > 0;
   bool bit1 = (m_ri->m_history[angle].line[rad] & 64) > 0;
   bool bit2 = (m_ri->m_history[angle].line[rad] & 32) > 0;
