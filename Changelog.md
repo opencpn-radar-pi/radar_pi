@@ -1,4 +1,7 @@
-3.2.2  TBD
+3.2.2 Jan 16, 2023
+* ci: flatpak: Update google packages signing key (#487)
+* ci: android: Handle missing google packages signing key (#487)
+* Context menu only appears when dialog started (#488)
 
 3.2.1  Dec 18, 2022
 * New release afrter some release problems of the 3.2.0 tag
