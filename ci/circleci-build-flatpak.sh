@@ -39,6 +39,11 @@ if [ -n "$CI" ]; then
     # Avoid using outdated TLS certificates, see #210.
     sudo apt install --reinstall  ca-certificates
 
+    # Handle possible outdated key for google packages, see #486
+    curl https://cli-assets.heroku.com/apt/release.key | sudo apt-key add -
+    wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
+        | sudo apt-key add -
+
     # Use updated flatpak (#457)
     sudo add-apt-repository -y ppa:alexlarsson/flatpak
     sudo apt update
