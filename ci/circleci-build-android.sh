@@ -25,6 +25,10 @@ fi
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 if [ -d /ci-source ]; then cd /ci-source; fi
 
+# Handle possible outdated key for google packages, see #487
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+    | sudo apt-key add -
+
 git submodule update --init opencpn-libs
 
 # Set up build directory and a visible link in /
