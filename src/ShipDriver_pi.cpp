@@ -165,11 +165,6 @@ int ShipDriver_pi::Init(void)
             ShipDriver_TOOL_POSITION, 0, this);
 #endif
     }
-    wxMenu dummy_menu;
-    m_position_menu_id = AddCanvasContextMenuItem(
-        new wxMenuItem(&dummy_menu, -1, _("Select Vessel Start Position")),
-        this);
-    SetCanvasContextMenuItemViz(m_position_menu_id, true);
 
     m_pDialog = NULL;
 
@@ -293,6 +288,13 @@ void ShipDriver_pi::OnToolbarToolCallback(int id)
         m_pDialog->m_Timer = new wxTimer(m_pDialog);
         m_pDialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));
         m_pDialog->SetSize(m_hr_dialog_sx, m_hr_dialog_sy);
+
+        wxMenu dummy_menu;
+        m_position_menu_id = AddCanvasContextMenuItem(
+            new wxMenuItem(&dummy_menu, -1, _("Select Vessel Start Position")),
+            this);
+        SetCanvasContextMenuItemViz(m_position_menu_id, true);
+
     }
 
     // m_pDialog->Fit();
