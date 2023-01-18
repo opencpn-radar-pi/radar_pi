@@ -203,6 +203,32 @@ git diff-index --quiet --cached HEAD -- || {
     git commit -m "Adding initial versions of private data"
 }
 
+# Update wxwidgets deps in build-deps/control to handle wxwidgets 3.2
+wxtemp=$(mktemp)
+cat >$wxtemp << EOF
+ base-files (>=11) | libwxgtk3.0-dev,
+ base-files (>=11) | libwxgtk3.0-0v5 | libwxgtk3.0-0,
+ base-files (>=10) | libwxgtk-webview3.0-dev,
+ base-files (<< 10) | libwxgtk3.2-dev | libwxgtk3.0-gtk3-dev,
+ base-files (<< 10) | libwxgtk-webview3.2-dev | libwxgtk-webview3.0-gtk3-dev,
+EOF
+
+grep -q "libwxgtk3.2" build-deps/control || {
+    sed -i -e '/libwxgtk/s/^.*$/LIBWXGTK/' \
+           -e '1,/LIBWXGTK/s/LIBWXGTK/WX_DEPS/' \
+           -e "/WX_DEPS/r$wxtemp" \
+           -e '/WX_DEPS/d' -e '/LIBWXGTK/d' \
+           -e '/Build-Depends/,/python/s/^$/FOO/' -e '/^FOO/d' \
+      build-deps/control
+}
+rm -f $wxtemp
+
+git diff --quiet build-deps/control || {
+    echo "Updating wxwidgets dependencies in build-deps/control"
+    git add build-deps/control
+    git commit -m "build-deps/control: Updating wxwidgets dependencies"
+}
+
 if [ -e update-ignored ]; then
     echo "Revert changes in blacklisted files."
     for f in $(cat update-ignored); do
