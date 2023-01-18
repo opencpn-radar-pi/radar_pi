@@ -101,6 +101,8 @@ cmake -DCMAKE_BUILD_TYPE=Release\
    -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" \
     ..
 
+git config --global --add safe.directory /ci-source
+
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 chown --reference=.. .
