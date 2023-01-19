@@ -112,7 +112,6 @@ sed -i "s/@TARGET_TUPLE@/$TARGET_TUPLE/" $ci_source/build.sh
 sed -i "s/@BUILD_WX32@/$BUILD_WX32/" $ci_source/build.sh
 #sed -i "s/@OCPN_WX_ABI_OPT@/$OCPN_WX_ABI_OPT/" $ci_source/build.sh
 
-git config --global --add safe.directory /ci-source
 
 # Run script in docker image
 #
@@ -124,6 +123,9 @@ docker run \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
     debian:$OCPN_TARGET /bin/bash -xe /ci-source/build.sh
+    
+git config --global --add safe.directory /ci-source/build-debian
+
 rm -f $ci_source/build.sh
 
 
