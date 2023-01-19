@@ -23,7 +23,7 @@ fi
 
 cd $ci_source
 git submodule update --init opencpn-libs
-git config --global --add safe.directory /ci-source
+git config --global --add safe.directory /%ci_source
 
 cat > $ci_source/build.sh << "EOF"
 function remove_wx30() {
