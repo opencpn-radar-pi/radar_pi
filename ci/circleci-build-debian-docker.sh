@@ -122,10 +122,7 @@ docker run \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
-    debian:$OCPN_TARGET /bin/bash -xe /ci-source/build.sh
-    
-git config --global --add safe.directory /ci-source/build-debian
-
+    debian:$OCPN_TARGET /bin/bash -xe /ci-source/build.sh    
 rm -f $ci_source/build.sh
 
 
