@@ -23,7 +23,6 @@ fi
 
 cd $ci_source
 git submodule update --init opencpn-libs
-git config --global --add safe.directory /%ci_source
 
 cat > $ci_source/build.sh << "EOF"
 function remove_wx30() {
@@ -113,6 +112,7 @@ sed -i "s/@TARGET_TUPLE@/$TARGET_TUPLE/" $ci_source/build.sh
 sed -i "s/@BUILD_WX32@/$BUILD_WX32/" $ci_source/build.sh
 #sed -i "s/@OCPN_WX_ABI_OPT@/$OCPN_WX_ABI_OPT/" $ci_source/build.sh
 
+git config --global --add safe.directory /%ci_source
 
 # Run script in docker image
 #
