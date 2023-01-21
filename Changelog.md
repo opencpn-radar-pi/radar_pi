@@ -1,4 +1,6 @@
 3.3.0 TBD
+* Fix wrong upload directory for bookworm plugins (#492).
+* Fix handling of wxWidgets 3.2 build deps in update-templates (#490).
 
 3.2.1  Dec 18, 2022
 * New release afrter some release problems of the 3.2.0 tag
