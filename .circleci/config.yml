@@ -213,6 +213,7 @@ jobs:
             -{{checksum \"ci/circleci-build-macos.sh\"}}"
           paths:
             - /tmp/local.cache.tar
+            - /Users/distiller/project/cache
       - run: >
           sh -c "otool -L build-osx/app/*/OpenCPN.app/Contents/PlugIns/*.dylib"
       - run: cd build-osx; /bin/bash < upload.sh
