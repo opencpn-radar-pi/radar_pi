@@ -96,7 +96,7 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
 endif ()
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include//config.h
+  ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include/config.h
   @ONLY
 )
 
