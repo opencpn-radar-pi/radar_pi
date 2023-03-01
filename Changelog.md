@@ -1,3 +1,6 @@
+3.2.3 TBD
+* Fix a typo in MacosWxwidgets affecting parallel make (#502)
+
 3.2.3-beta1 Feb 14, 2023
 * ci: debian, armhf builds: Fix handling of CLOUDSMITH_BETA_REPO 
   environment variable (#498)
