@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-07-05 11:37+0200\n"
-"PO-Revision-Date: 2021-07-10 10:55\n"
+"PO-Revision-Date: 2023-02-22 08:44\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -99,7 +99,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:668
 msgid "Target expansion"
-msgstr ""
+msgstr "Estensione target"
 
 #: src\ControlsDialog.cpp:675
 msgid "STC"
@@ -131,7 +131,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:723
 msgid "Target boost"
-msgstr ""
+msgstr "Rafforzare gli targets"
 
 #: src\ControlsDialog.cpp:728
 msgid "Installation"
@@ -264,15 +264,15 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:953
 msgid "Acquire Target"
-msgstr ""
+msgstr "Acquisizione target"
 
 #: src\ControlsDialog.cpp:957
 msgid "Delete target"
-msgstr ""
+msgstr "Elimina target"
 
 #: src\ControlsDialog.cpp:961
 msgid "Delete all targets"
-msgstr ""
+msgstr "Elimina tutti i target"
 
 #: src\ControlsDialog.cpp:966 src\ControlsDialog.cpp:1950
 msgid "Place EBL/VRM"
@@ -300,7 +300,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:1046 src\OptionsDialog.cpp:134
 msgid "Target trails"
-msgstr ""
+msgstr "Tracce delle targets"
 
 #: src\ControlsDialog.cpp:1053
 msgid "Trails motion"
@@ -421,7 +421,7 @@ msgstr ""
 
 #: src\MessageBox.cpp:163
 msgid "Boat position"
-msgstr ""
+msgstr "Posizione barca"
 
 #: src\MessageBox.cpp:169
 msgid "and"
@@ -561,7 +561,7 @@ msgstr ""
 
 #: src\OptionsDialog.cpp:168
 msgid "Target colors"
-msgstr ""
+msgstr "Colori targets"
 
 #: src\OptionsDialog.cpp:171
 msgid "Weak return color"
@@ -625,7 +625,7 @@ msgstr ""
 
 #: src\OptionsDialog.cpp:275
 msgid "Show Target trails on overlay"
-msgstr ""
+msgstr "Traccia targetsvi sovrastampati: Mostrare"
 
 #: src\OptionsDialog.cpp:281
 msgid "Show data on overlay when radar is standby"
@@ -661,7 +661,7 @@ msgstr ""
 
 #: src\RadarCanvas.cpp:650
 msgid "AIS Target Name"
-msgstr ""
+msgstr "Nome della target"
 
 #: src\RadarDraw.cpp:55
 msgid "Vertex Array"
@@ -736,7 +736,7 @@ msgstr ""
 
 #: src\RadarInfo.cpp:1509
 msgid "for targets"
-msgstr ""
+msgstr "per le targets"
 
 #: src\RadarInfo.cpp:1514 src\garminxhd\GarminxHDReceive.cpp:523
 msgid "Stopping"

@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-07-05 11:37+0200\n"
-"PO-Revision-Date: 2021-11-25 16:43\n"
+"PO-Revision-Date: 2023-02-24 14:31\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -24,13 +24,13 @@ msgstr ""
 #: include\navico\NavicoControlSet.h:56 include\navico\NavicoControlSet.h:60
 #: include\navico\NavicoControlSet.h:76 src\raymarine\RME120Receive.cpp:531
 msgid "Off"
-msgstr "Выкл"
+msgstr "ВЫКЛ"
 
 #: src\ControlsDialog.cpp:248 src\ControlsDialog.cpp:252
 #: src\ControlsDialog.cpp:640 src\RadarCanvas.cpp:220 src\RadarInfo.cpp:1205
 #: include\SoftwareControlSet.h:41
 msgid "Auto"
-msgstr "Авто"
+msgstr "АВТО"
 
 #: src\ControlsDialog.cpp:351
 msgid "Arc"
@@ -42,11 +42,11 @@ msgstr "Круг"
 
 #: src\ControlsDialog.cpp:432
 msgid "Guard Zone 1 Green"
-msgstr "Зона РЛ налюдения 1 Зеленая"
+msgstr "Охранная зона 1 Зеленая"
 
 #: src\ControlsDialog.cpp:435
 msgid "Guard Zone 2 Blue"
-msgstr "Зона РЛ налюдения 2 Синяя"
+msgstr "Охранная зона 2 Синяя"
 
 #: src\ControlsDialog.cpp:482 src\ControlsDialog.cpp:492
 #: include\GuardZoneBogey.h:53
@@ -59,7 +59,7 @@ msgstr "САРП"
 
 #: src\ControlsDialog.cpp:488 src\ControlsDialog.cpp:498
 msgid " Off"
-msgstr " Выкл"
+msgstr " ВЫКЛ"
 
 #: src\ControlsDialog.cpp:501 src\ControlsDialog.cpp:504
 msgid "Guard zone"
@@ -67,11 +67,11 @@ msgstr "Охранная Зона"
 
 #: src\ControlsDialog.cpp:533
 msgid "Back"
-msgstr "Назад"
+msgstr "НАЗАД"
 
 #: src\ControlsDialog.cpp:551
 msgid "Antenna starboard of GPS"
-msgstr ""
+msgstr "Антенна от GPS по правому борту"
 
 #: src\ControlsDialog.cpp:552 src\ControlsDialog.cpp:814
 msgid "Local interference rej."
@@ -79,11 +79,11 @@ msgstr "Подавление помех."
 
 #: src\ControlsDialog.cpp:553
 msgid "Off/Relative/True trails"
-msgstr "Выкл/Относит/Истинй следы"
+msgstr "Выкл/Относительные/Истинные следы"
 
 #: src\ControlsDialog.cpp:554 src\ControlsDialog.cpp:1005
 msgid "Overlay transparency"
-msgstr "Прозрачность наложения"
+msgstr "Прозрачность Наложения"
 
 #: src\ControlsDialog.cpp:555 src\ControlsDialog.cpp:1104
 msgid "Timed Transmit"
@@ -103,19 +103,19 @@ msgstr "Разделение целей"
 
 #: src\ControlsDialog.cpp:675
 msgid "STC"
-msgstr ""
+msgstr "ВАРУ"
 
 #: src\ControlsDialog.cpp:681
 msgid "Fine tune"
-msgstr ""
+msgstr "Тонкая настройка"
 
 #: src\ControlsDialog.cpp:688
 msgid "Coarse tune"
-msgstr ""
+msgstr "Грубая настройка"
 
 #: src\ControlsDialog.cpp:694
 msgid "STC curve"
-msgstr ""
+msgstr "Кривая ВАРУ"
 
 #: src\ControlsDialog.cpp:701
 msgid "Interference rejection"
@@ -127,7 +127,7 @@ msgstr "Разделение целей"
 
 #: src\ControlsDialog.cpp:716
 msgid "Scan speed"
-msgstr "Скорость вращения антенны"
+msgstr "Скорость сканирования"
 
 #: src\ControlsDialog.cpp:723
 msgid "Target boost"
@@ -143,11 +143,11 @@ msgstr "Настройки"
 
 #: src\ControlsDialog.cpp:749
 msgid "Bearing alignment"
-msgstr "Выравнивание Пеленга"
+msgstr "Рнгулировка Пеленга"
 
 #: src\ControlsDialog.cpp:756
 msgid "Range adjustment"
-msgstr ""
+msgstr "Регулировка Дальности"
 
 #: src\ControlsDialog.cpp:763
 msgid "Display timing"
@@ -155,11 +155,11 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:769
 msgid "Main bang suppression"
-msgstr ""
+msgstr "Подавление основного импульса"
 
 #: src\ControlsDialog.cpp:776
 msgid "No transmit start"
-msgstr ""
+msgstr "Без старта передачи"
 
 #: src\ControlsDialog.cpp:784
 msgid "No transmit end"
@@ -176,7 +176,7 @@ msgstr "м"
 
 #: src\ControlsDialog.cpp:798
 msgid "Antenna forward"
-msgstr "Антенна относительна носа"
+msgstr "Антенна от носа"
 
 #: src\ControlsDialog.cpp:799 src\ControlsDialog.cpp:807
 msgid "relative to GPS"
@@ -188,7 +188,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:806
 msgid "Antenna starboard"
-msgstr ""
+msgstr "Антенна от правого борта"
 
 #: src\ControlsDialog.cpp:807
 msgid "negative = port"
@@ -200,7 +200,7 @@ msgstr "Подавление боковых искажений"
 
 #: src\ControlsDialog.cpp:828
 msgid "Main bang size"
-msgstr "Размер импульса локатора"
+msgstr "Размер импульса"
 
 #: src\ControlsDialog.cpp:829
 msgid "pixels"
@@ -208,7 +208,7 @@ msgstr ""
 
 #: src\ControlsDialog.cpp:844 src\ControlsDialog.cpp:1168
 msgid "Guard zones"
-msgstr "Охранные зоны"
+msgstr "Охранные Зоны"
 
 #: src\ControlsDialog.cpp:847
 msgid "Zone type"
@@ -256,15 +256,15 @@ msgstr "Помехи от дождя"
 
 #: src\ControlsDialog.cpp:933
 msgid "FTC"
-msgstr ""
+msgstr "МПВ"
 
 #: src\ControlsDialog.cpp:949
 msgid "Clear cursor"
-msgstr "Очистить курсор"
+msgstr "Очистить Курсор"
 
 #: src\ControlsDialog.cpp:953
 msgid "Acquire Target"
-msgstr "Сопровождение цели"
+msgstr "Захват Цели"
 
 #: src\ControlsDialog.cpp:957
 msgid "Delete target"
@@ -276,7 +276,7 @@ msgstr "Удалить все цели"
 
 #: src\ControlsDialog.cpp:966 src\ControlsDialog.cpp:1950
 msgid "Place EBL/VRM"
-msgstr "Место EBL/VRM"
+msgstr "ЭВН/ПКД "
 
 #: src\ControlsDialog.cpp:996
 msgid "Overlay "
@@ -284,11 +284,11 @@ msgstr "Наложение "
 
 #: src\ControlsDialog.cpp:1010
 msgid "Info"
-msgstr "Статус радара"
+msgstr "Статус Радара"
 
 #: src\ControlsDialog.cpp:1027
 msgid "AIS/ARPA on PPI"
-msgstr "Цели АИС/САРП на экране радара"
+msgstr "Цели АИС/САРП"
 
 #: src\ControlsDialog.cpp:1032
 msgid "Doppler"
@@ -296,7 +296,7 @@ msgstr "Допплер"
 
 #: src\ControlsDialog.cpp:1038
 msgid "DopplerAutoTrack"
-msgstr ""
+msgstr "Доплеровское слежение"
 
 #: src\ControlsDialog.cpp:1046 src\OptionsDialog.cpp:134
 msgid "Target trails"
@@ -312,11 +312,11 @@ msgstr "Очистить следы"
 
 #: src\ControlsDialog.cpp:1065
 msgid "Orientation"
-msgstr "Ориентация"
+msgstr "Режим Ориентации"
 
 #: src\ControlsDialog.cpp:1071
 msgid "PPI Forward Aft View"
-msgstr ""
+msgstr "Смещение Центра"
 
 #: src\ControlsDialog.cpp:1077
 msgid "Refresh rate"
@@ -336,7 +336,7 @@ msgstr "Дополнительно"
 
 #: src\ControlsDialog.cpp:1160
 msgid "View"
-msgstr "Вид"
+msgstr "Отображение"
 
 #: src\ControlsDialog.cpp:1164
 msgid "Cursor"
@@ -344,11 +344,11 @@ msgstr "Курсор"
 
 #: src\ControlsDialog.cpp:1172
 msgid "Window"
-msgstr "Окно"
+msgstr "Экран Радара"
 
 #: src\ControlsDialog.cpp:1177
 msgid "Timed transmit"
-msgstr ""
+msgstr "Тайминг передачи"
 
 #: src\ControlsDialog.cpp:1182 src\RadarInfo.cpp:1035
 #: include\SoftwareControlSet.h:104
@@ -357,43 +357,43 @@ msgstr "Неизвестно"
 
 #: src\ControlsDialog.cpp:1658
 msgid "Radar Overlay"
-msgstr "Радарное наложение"
+msgstr "Радарное Наложение"
 
 #: src\ControlsDialog.cpp:1663
 msgid "Overlay 1"
-msgstr "Наложение  1"
+msgstr "Наложение 1"
 
 #: src\ControlsDialog.cpp:1926
 msgid "Start/Stop radar"
-msgstr "Вкл/Выкл радар"
+msgstr "Вкл/Выкл Радар"
 
 #: src\ControlsDialog.cpp:1937
 msgid "Hide/Show PPI"
-msgstr "Скрыть/Показать экран радара"
+msgstr "Экран Радара"
 
 #: src\ControlsDialog.cpp:1938
 msgid "Shown"
-msgstr ""
+msgstr "ПОКАЗАТЬ"
 
 #: src\ControlsDialog.cpp:1938
 msgid "Hidden"
-msgstr ""
+msgstr "СКРЫТЬ"
 
 #: src\ControlsDialog.cpp:1941
 msgid "Float/Dock PPI"
-msgstr "Открепить/Закрепить экран радара"
+msgstr "Экран Радара"
 
 #: src\ControlsDialog.cpp:1942
 msgid "Docked"
-msgstr "Закреплено"
+msgstr "ЗАКРЕПЛЕНО"
 
 #: src\ControlsDialog.cpp:1942
 msgid "Floating"
-msgstr "Откреплено"
+msgstr "ОТКРЕПЛЕНО"
 
 #: src\ControlsDialog.cpp:1947
 msgid "Clear EBL/VRM"
-msgstr "Очистить EBL/VRM"
+msgstr "Очистить ЭВН/ПКД "
 
 #: include\ControlsDialog.h:234
 msgid "Radar"
@@ -409,7 +409,7 @@ msgstr "Закрыть"
 
 #: src\MessageBox.cpp:144
 msgid "Required OpenCPN option"
-msgstr ""
+msgstr "Требуемая опция OpenCPN"
 
 #: src\MessageBox.cpp:149
 msgid "Accelerated Graphics (OpenGL)"
@@ -417,7 +417,7 @@ msgstr "Аппаратное ускорение OpenGL"
 
 #: src\MessageBox.cpp:155
 msgid "For radar overlay also required"
-msgstr "Для наложения радарного изображения требуется"
+msgstr "Для радарного наложения требуется"
 
 #: src\MessageBox.cpp:163
 msgid "Boat position"
@@ -449,7 +449,7 @@ msgstr "Статистика"
 
 #: src\MessageBox.cpp:205 src\OptionsDialog.cpp:292
 msgid "Select radar types"
-msgstr "Выберите типы радара"
+msgstr "Выберите тип РЛС"
 
 #: src\MessageBox.cpp:210
 msgid "&Hide Radar"
@@ -469,7 +469,7 @@ msgstr "Настройки отображения радара"
 
 #: src\OptionsDialog.cpp:61
 msgid "Mixed NM / short range m"
-msgstr ""
+msgstr "Смешанный ММ / короткий диапазон М"
 
 #: src\OptionsDialog.cpp:62
 msgid "Kilometers"
@@ -481,7 +481,7 @@ msgstr "Морские Мили"
 
 #: src\OptionsDialog.cpp:66
 msgid "Range Units"
-msgstr "Единицы измерения"
+msgstr "Единицы измерения дальности"
 
 #: src\OptionsDialog.cpp:74
 msgid "Shading"
@@ -525,7 +525,7 @@ msgstr "Метод Отрисовки"
 
 #: src\OptionsDialog.cpp:122
 msgid "Control Menu Auto Hide"
-msgstr "Элементы управления меню Автоскрытие"
+msgstr "Автоскрытие Меню"
 
 #: src\OptionsDialog.cpp:125
 msgid "Never"
@@ -553,7 +553,7 @@ msgstr "Цвет конца следа"
 
 #: src\OptionsDialog.cpp:150
 msgid "Doppler Approaching color"
-msgstr ""
+msgstr "Цвет доплеровского слежения"
 
 #: src\OptionsDialog.cpp:158
 msgid "Doppler Receding color"
@@ -577,19 +577,19 @@ msgstr "Цвет сильного эха"
 
 #: src\OptionsDialog.cpp:190
 msgid "ARPA edge color"
-msgstr ""
+msgstr "Цвет края САРП"
 
 #: src\OptionsDialog.cpp:198
 msgid "Radar window colors"
-msgstr ""
+msgstr "Цвет окна радара"
 
 #: src\OptionsDialog.cpp:201
 msgid "Background color"
-msgstr ""
+msgstr "Цвет фона"
 
 #: src\OptionsDialog.cpp:209
 msgid "AIS text color"
-msgstr ""
+msgstr "Цвет текста АИС"
 
 #: src\OptionsDialog.cpp:229
 msgid "Options"
@@ -605,7 +605,7 @@ msgstr "Передавать направление радара в OpenCPN"
 
 #: src\OptionsDialog.cpp:245
 msgid "Enable COG as heading"
-msgstr "Включите COG в качестве направления"
+msgstr "Включить COG как Направление"
 
 #: src\OptionsDialog.cpp:251
 msgid "Reverse mouse wheel zoom direction"
@@ -613,27 +613,27 @@ msgstr "Реверс масштабирования колеса мыши"
 
 #: src\OptionsDialog.cpp:259
 msgid "Display options"
-msgstr ""
+msgstr "Параметры отображения"
 
 #: src\OptionsDialog.cpp:263
 msgid "Show ring at extreme range"
-msgstr ""
+msgstr "Кольца на предельной дальности"
 
 #: src\OptionsDialog.cpp:269
 msgid "Show Guard Zone on overlay"
-msgstr "Показ зоны РЛ наблюдения на оверлее"
+msgstr "Охранные зоны на радарном наложении"
 
 #: src\OptionsDialog.cpp:275
 msgid "Show Target trails on overlay"
-msgstr "Показ РЛ следов на оверлее"
+msgstr "Следы целей на радарном наложении"
 
 #: src\OptionsDialog.cpp:281
 msgid "Show data on overlay when radar is standby"
-msgstr ""
+msgstr "Данные о наложении, когда радар находится в режиме ожидания"
 
 #: src\OptionsDialog.cpp:288
 msgid "Radar types"
-msgstr "Типы радара"
+msgstr "Типы РЛС"
 
 #: src\OptionsDialog.cpp:362
 msgid "Select Sound File"
@@ -657,7 +657,7 @@ msgstr "Дождь"
 
 #: src\RadarCanvas.cpp:182
 msgid "Sea"
-msgstr "Море"
+msgstr "Волнение"
 
 #: src\RadarCanvas.cpp:650
 msgid "AIS Target Name"
@@ -673,27 +673,27 @@ msgstr "Шейдер"
 
 #: src\RadarInfo.cpp:231
 msgid "Control "
-msgstr "Управление"
+msgstr "Управление "
 
 #: src\RadarInfo.cpp:1023 src\RadarInfo.cpp:1026
 msgid "Head Up"
-msgstr "Курс вверх"
+msgstr "По Направлению"
 
 #: src\RadarInfo.cpp:1023
 msgid "Relative Bearings"
-msgstr ""
+msgstr "Относительный пеленг"
 
 #: src\RadarInfo.cpp:1026
 msgid "Stabilized"
-msgstr ""
+msgstr "Истинный"
 
 #: src\RadarInfo.cpp:1029
 msgid "COG Up"
-msgstr "COG вверх"
+msgstr "По Курсу"
 
 #: src\RadarInfo.cpp:1032
 msgid "North Up"
-msgstr "Север вверх"
+msgstr "По Северу"
 
 #: src\RadarInfo.cpp:1120
 msgid "Zone"
@@ -705,11 +705,11 @@ msgstr "(Подтверждено)"
 
 #: src\RadarInfo.cpp:1190
 msgid "No radar"
-msgstr "Нет Радара"
+msgstr "НЕ ПОДКЛЮЧЕН"
 
 #: src\RadarInfo.cpp:1418
 msgid "Uninitialized"
-msgstr ""
+msgstr "Неинициализировано"
 
 #: src\RadarInfo.cpp:1494 src\garminhd\GarminHDReceive.cpp:469
 #: src\garminxhd\GarminxHDReceive.cpp:506 src\navico\NavicoReceive.cpp:1101
@@ -719,11 +719,11 @@ msgstr "РЕЖИМ ОЖИДАНИЯ"
 
 #: src\RadarInfo.cpp:1497 src\raymarine\RME120Receive.cpp:541
 msgid "Warming up"
-msgstr "Разогрев"
+msgstr "ПРОГРЕВ"
 
 #: src\RadarInfo.cpp:1500
 msgid "Timed idle"
-msgstr ""
+msgstr "Время простоя"
 
 #: src\RadarInfo.cpp:1503 src\garminhd\GarminHDReceive.cpp:475
 #: src\garminxhd\GarminxHDReceive.cpp:512
@@ -732,28 +732,28 @@ msgstr ""
 
 #: src\RadarInfo.cpp:1506
 msgid "Transmitting"
-msgstr "Передача"
+msgstr "ПЕРЕДАЧА"
 
 #: src\RadarInfo.cpp:1509
 msgid "for targets"
-msgstr ""
+msgstr "для целей"
 
 #: src\RadarInfo.cpp:1514 src\garminxhd\GarminxHDReceive.cpp:523
 msgid "Stopping"
-msgstr ""
+msgstr "Остановка"
 
 #: src\RadarInfo.cpp:1517 src\garminxhd\GarminxHDReceive.cpp:533
 msgid "Starting"
-msgstr ""
+msgstr "Запуск"
 
 #: src\RadarInfo.cpp:1520 src\garminxhd\GarminxHDReceive.cpp:528
 msgid "Spinning down"
-msgstr ""
+msgstr "Прокрутка вниз"
 
 #: src\RadarInfo.cpp:1524
 #, c-format
 msgid "for %ds"
-msgstr ""
+msgstr "для %dс"
 
 #: src\RadarPanel.cpp:40 src\radar_pi.cpp:1137 src\radar_pi.cpp:1160
 msgid "RADAR"
@@ -769,11 +769,11 @@ msgstr "Не удается получить OpenGL представление"
 
 #: src\radar_pi.cpp:298
 msgid "Radar plugin with support for multiple radars"
-msgstr ""
+msgstr "Модуль радара с поддержкой нескольких радаров"
 
 #: src\radar_pi.cpp:326
 msgid "Show radar"
-msgstr "Показать радар"
+msgstr "Показать Радар"
 
 #: src\radar_pi.cpp:327
 msgid "Hide radar"
@@ -781,23 +781,23 @@ msgstr "Скрыть радар"
 
 #: src\radar_pi.cpp:329
 msgid "Acquire radar target"
-msgstr "Сопровождение цели"
+msgstr "Захват Цели РЛС"
 
 #: src\radar_pi.cpp:330
 msgid "Delete radar target"
-msgstr ""
+msgstr "Удалить цель САРП"
 
 #: src\radar_pi.cpp:331
 msgid "Delete all radar targets"
-msgstr ""
+msgstr "Удалить все цели САРП"
 
 #: src\radar_pi.cpp:481
 msgid "Radar PlugIn"
-msgstr "Плагин Радара"
+msgstr "Модуль Радара"
 
 #: src\radar_pi.cpp:484
 msgid "Radar PlugIn with support for Garmin, Raymarine and Navico radars"
-msgstr ""
+msgstr "Модуль Радара с поддержкой радаров Garmin, Raymarine, Navico"
 
 #: src\radar_pi.cpp:861
 msgid " Zone"
@@ -838,7 +838,7 @@ msgstr "Выбор радара"
 #: src\SelectDialog.cpp:54
 #, c-format
 msgid "Select (max) %d radar scanner types"
-msgstr ""
+msgstr "Выберите (макс) %d типа РЛС"
 
 #: src\socketutil.cpp:180
 msgid "Cannot create UDP socket"
@@ -862,35 +862,35 @@ msgstr "мин"
 
 #: include\SoftwareControlSet.h:104
 msgid "Head up"
-msgstr "Курс вверх"
+msgstr "По Направлению"
 
 #: include\SoftwareControlSet.h:104
 msgid "Head up (Stabilized)"
-msgstr "По Носу (Стабилизация)"
+msgstr "По Направлению (Истинное)"
 
 #: include\SoftwareControlSet.h:104
 msgid "North up"
-msgstr "Север вверх"
+msgstr "По Северу"
 
 #: include\SoftwareControlSet.h:104
 msgid "Course up"
-msgstr "По курсу"
+msgstr "По Курсу"
 
 #: include\SoftwareControlSet.h:117
 msgid "Dragged View"
-msgstr ""
+msgstr "Ручной Сдвиг"
 
 #: include\SoftwareControlSet.h:117
 msgid "Center View"
-msgstr "Вид по центру"
+msgstr "По Центру"
 
 #: include\SoftwareControlSet.h:117
 msgid "Forward View"
-msgstr "Вид вперед"
+msgstr "По Носу"
 
 #: include\SoftwareControlSet.h:117
 msgid "Aft View"
-msgstr ""
+msgstr "По Корме"
 
 #: include\SoftwareControlSet.h:126
 msgid "15 sec"
@@ -926,7 +926,7 @@ msgstr "Истинный"
 
 #: include\SoftwareControlSet.h:136 include\SoftwareControlSet.h:140
 msgid "On"
-msgstr "Вкл"
+msgstr "ВКЛ"
 
 #: include\SoftwareControlSet.h:154
 msgid "* 0.1 %"
@@ -978,11 +978,11 @@ msgstr "Быстро"
 
 #: src\garminhd\GarminHDReceive.cpp:212 src\garminxhd\GarminxHDReceive.cpp:185
 msgid "No interface found"
-msgstr ""
+msgstr "Интерфейс не найден"
 
 #: src\garminhd\GarminHDReceive.cpp:213 src\garminxhd\GarminxHDReceive.cpp:186
 msgid "Interface must match"
-msgstr ""
+msgstr "Интерфейс должен совпадать"
 
 #: src\garminhd\GarminHDReceive.cpp:239 src\garminxhd\GarminxHDReceive.cpp:212
 #: src\navico\NavicoReceive.cpp:487 src\raymarine\RME120Receive.cpp:139
@@ -1001,7 +1001,7 @@ msgstr "ПЕРЕДАЧА"
 #: src\garminhd\GarminHDReceive.cpp:483 src\garminxhd\GarminxHDReceive.cpp:537
 #: src\navico\NavicoReceive.cpp:1115 src\raymarine\RME120Receive.cpp:551
 msgid "Unknown status"
-msgstr ""
+msgstr "Неизвестный статус"
 
 #: include\garminhd\GarminHDReceive.h:58 include\garminxhd\GarminxHDReceive.h:57
 #: include\navico\NavicoReceive.h:68 include\raymarine\RME120Receive.h:66
@@ -1014,7 +1014,7 @@ msgstr "Порт"
 
 #: include\navico\NavicoControlSet.h:68 include\navico\NavicoControlSet.h:72
 msgid "Offshore"
-msgstr "Открытая вода"
+msgstr "Открытая Вода"
 
 #: include\navico\NavicoControlSet.h:72
 msgid "Weather"
@@ -1035,7 +1035,7 @@ msgstr "Подход"
 #: src\navico\NavicoReceive.cpp:475 src\navico\NavicoReceive.cpp:1122
 #: src\raymarine\RME120Receive.cpp:129
 msgid "Serial #"
-msgstr ""
+msgstr "Серийный №"
 
 #: src\navico\NavicoReceive.cpp:1111
 msgid "Waking up"
@@ -1043,5 +1043,5 @@ msgstr "Пробуждение"
 
 #: src\raymarine\RME120Receive.cpp:558
 msgid "IF-Serial #"
-msgstr ""
+msgstr "IF-Serial #"
 

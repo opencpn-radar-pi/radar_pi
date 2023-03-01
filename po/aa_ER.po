@@ -4,17 +4,17 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-07-05 11:37+0200\n"
-"PO-Revision-Date: 2023-02-22 08:44\n"
+"PO-Revision-Date: 2022-02-06 16:42\n"
 "Last-Translator: \n"
-"Language-Team: Hungarian\n"
-"Language: hu_HU\n"
+"Language-Team: Afar\n"
+"Language: aa_ER\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: opencpn\n"
 "X-Crowdin-Project-ID: 49843\n"
-"X-Crowdin-Language: hu\n"
+"X-Crowdin-Language: aa\n"
 "X-Crowdin-File: /plugins/radar_pi/po/radar_pi.pot\n"
 "X-Crowdin-File-ID: 272\n"
 
@@ -24,1024 +24,1024 @@ msgstr ""
 #: include\navico\NavicoControlSet.h:56 include\navico\NavicoControlSet.h:60
 #: include\navico\NavicoControlSet.h:76 src\raymarine\RME120Receive.cpp:531
 msgid "Off"
-msgstr "Ki"
+msgstr "crwdns11780:0crwdne11780:0"
 
 #: src\ControlsDialog.cpp:248 src\ControlsDialog.cpp:252
 #: src\ControlsDialog.cpp:640 src\RadarCanvas.cpp:220 src\RadarInfo.cpp:1205
 #: include\SoftwareControlSet.h:41
 msgid "Auto"
-msgstr "Auto"
+msgstr "crwdns11782:0crwdne11782:0"
 
 #: src\ControlsDialog.cpp:351
 msgid "Arc"
-msgstr "Ív"
+msgstr "crwdns11784:0crwdne11784:0"
 
 #: src\ControlsDialog.cpp:352
 msgid "Circle"
-msgstr "Kör"
+msgstr "crwdns11786:0crwdne11786:0"
 
 #: src\ControlsDialog.cpp:432
 msgid "Guard Zone 1 Green"
-msgstr ""
+msgstr "crwdns11788:0crwdne11788:0"
 
 #: src\ControlsDialog.cpp:435
 msgid "Guard Zone 2 Blue"
-msgstr ""
+msgstr "crwdns11790:0crwdne11790:0"
 
 #: src\ControlsDialog.cpp:482 src\ControlsDialog.cpp:492
 #: include\GuardZoneBogey.h:53
 msgid "Alarm"
-msgstr "Riasztás"
+msgstr "crwdns11792:0crwdne11792:0"
 
 #: src\ControlsDialog.cpp:485 src\ControlsDialog.cpp:495
 msgid "Arpa"
-msgstr "Arpa"
+msgstr "crwdns11794:0crwdne11794:0"
 
 #: src\ControlsDialog.cpp:488 src\ControlsDialog.cpp:498
 msgid " Off"
-msgstr " Ki"
+msgstr "crwdns11796:0crwdne11796:0"
 
 #: src\ControlsDialog.cpp:501 src\ControlsDialog.cpp:504
 msgid "Guard zone"
-msgstr ""
+msgstr "crwdns11798:0crwdne11798:0"
 
 #: src\ControlsDialog.cpp:533
 msgid "Back"
-msgstr "Vissza"
+msgstr "crwdns11800:0crwdne11800:0"
 
 #: src\ControlsDialog.cpp:551
 msgid "Antenna starboard of GPS"
-msgstr ""
+msgstr "crwdns11810:0crwdne11810:0"
 
 #: src\ControlsDialog.cpp:552 src\ControlsDialog.cpp:814
 msgid "Local interference rej."
-msgstr ""
+msgstr "crwdns11812:0crwdne11812:0"
 
 #: src\ControlsDialog.cpp:553
 msgid "Off/Relative/True trails"
-msgstr ""
+msgstr "crwdns11830:0crwdne11830:0"
 
 #: src\ControlsDialog.cpp:554 src\ControlsDialog.cpp:1005
 msgid "Overlay transparency"
-msgstr ""
+msgstr "crwdns11836:0crwdne11836:0"
 
 #: src\ControlsDialog.cpp:555 src\ControlsDialog.cpp:1104
 msgid "Timed Transmit"
-msgstr ""
+msgstr "crwdns11848:0crwdne11848:0"
 
 #: src\ControlsDialog.cpp:621
 msgid "Value"
-msgstr "Érték"
+msgstr "crwdns11852:0crwdne11852:0"
 
 #: src\ControlsDialog.cpp:662
 msgid "Noise rejection"
-msgstr "Zajcsökkentés"
+msgstr "crwdns11854:0crwdne11854:0"
 
 #: src\ControlsDialog.cpp:668
 msgid "Target expansion"
-msgstr ""
+msgstr "crwdns11856:0crwdne11856:0"
 
 #: src\ControlsDialog.cpp:675
 msgid "STC"
-msgstr ""
+msgstr "crwdns21110:0crwdne21110:0"
 
 #: src\ControlsDialog.cpp:681
 msgid "Fine tune"
-msgstr "Finomhangolás"
+msgstr "crwdns21112:0crwdne21112:0"
 
 #: src\ControlsDialog.cpp:688
 msgid "Coarse tune"
-msgstr ""
+msgstr "crwdns21114:0crwdne21114:0"
 
 #: src\ControlsDialog.cpp:694
 msgid "STC curve"
-msgstr ""
+msgstr "crwdns21116:0crwdne21116:0"
 
 #: src\ControlsDialog.cpp:701
 msgid "Interference rejection"
-msgstr ""
+msgstr "crwdns11858:0crwdne11858:0"
 
 #: src\ControlsDialog.cpp:708
 msgid "Target separation"
-msgstr ""
+msgstr "crwdns11860:0crwdne11860:0"
 
 #: src\ControlsDialog.cpp:716
 msgid "Scan speed"
-msgstr ""
+msgstr "crwdns11802:0crwdne11802:0"
 
 #: src\ControlsDialog.cpp:723
 msgid "Target boost"
-msgstr ""
+msgstr "crwdns11862:0crwdne11862:0"
 
 #: src\ControlsDialog.cpp:728
 msgid "Installation"
-msgstr ""
+msgstr "crwdns11804:0crwdne11804:0"
 
 #: src\ControlsDialog.cpp:732
 msgid "Preferences"
-msgstr "Beállítások"
+msgstr "crwdns11864:0crwdne11864:0"
 
 #: src\ControlsDialog.cpp:749
 msgid "Bearing alignment"
-msgstr ""
+msgstr "crwdns11866:0crwdne11866:0"
 
 #: src\ControlsDialog.cpp:756
 msgid "Range adjustment"
-msgstr ""
+msgstr "crwdns21118:0crwdne21118:0"
 
 #: src\ControlsDialog.cpp:763
 msgid "Display timing"
-msgstr ""
+msgstr "crwdns21120:0crwdne21120:0"
 
 #: src\ControlsDialog.cpp:769
 msgid "Main bang suppression"
-msgstr ""
+msgstr "crwdns21122:0crwdne21122:0"
 
 #: src\ControlsDialog.cpp:776
 msgid "No transmit start"
-msgstr ""
+msgstr "crwdns11868:0crwdne11868:0"
 
 #: src\ControlsDialog.cpp:784
 msgid "No transmit end"
-msgstr ""
+msgstr "crwdns11870:0crwdne11870:0"
 
 #: src\ControlsDialog.cpp:790
 msgid "Antenna height"
-msgstr "Antenna magasság"
+msgstr "crwdns11806:0crwdne11806:0"
 
 #: src\ControlsDialog.cpp:791 src\ControlsDialog.cpp:799
 #: src\ControlsDialog.cpp:807
 msgid "m"
-msgstr ""
+msgstr "crwdns11874:0crwdne11874:0"
 
 #: src\ControlsDialog.cpp:798
 msgid "Antenna forward"
-msgstr ""
+msgstr "crwdns11872:0crwdne11872:0"
 
 #: src\ControlsDialog.cpp:799 src\ControlsDialog.cpp:807
 msgid "relative to GPS"
-msgstr ""
+msgstr "crwdns11876:0crwdne11876:0"
 
 #: src\ControlsDialog.cpp:799
 msgid "negative = behind"
-msgstr ""
+msgstr "crwdns11878:0crwdne11878:0"
 
 #: src\ControlsDialog.cpp:806
 msgid "Antenna starboard"
-msgstr ""
+msgstr "crwdns11880:0crwdne11880:0"
 
 #: src\ControlsDialog.cpp:807
 msgid "negative = port"
-msgstr ""
+msgstr "crwdns11882:0crwdne11882:0"
 
 #: src\ControlsDialog.cpp:821
 msgid "Side lobe suppression"
-msgstr ""
+msgstr "crwdns11884:0crwdne11884:0"
 
 #: src\ControlsDialog.cpp:828
 msgid "Main bang size"
-msgstr ""
+msgstr "crwdns11886:0crwdne11886:0"
 
 #: src\ControlsDialog.cpp:829
 msgid "pixels"
-msgstr "pixel"
+msgstr "crwdns11888:0crwdne11888:0"
 
 #: src\ControlsDialog.cpp:844 src\ControlsDialog.cpp:1168
 msgid "Guard zones"
-msgstr ""
+msgstr "crwdns11814:0crwdne11814:0"
 
 #: src\ControlsDialog.cpp:847
 msgid "Zone type"
-msgstr ""
+msgstr "crwdns11816:0crwdne11816:0"
 
 #: src\ControlsDialog.cpp:858
 msgid "Inner range"
-msgstr ""
+msgstr "crwdns11818:0crwdne11818:0"
 
 #: src\ControlsDialog.cpp:865
 msgid "Outer range"
-msgstr ""
+msgstr "crwdns11820:0crwdne11820:0"
 
 #: src\ControlsDialog.cpp:872
 msgid "Start bearing"
-msgstr ""
+msgstr "crwdns11822:0crwdne11822:0"
 
 #: src\ControlsDialog.cpp:879
 msgid "End bearing"
-msgstr ""
+msgstr "crwdns11824:0crwdne11824:0"
 
 #: src\ControlsDialog.cpp:887
 msgid "ARPA On"
-msgstr "ARPA be"
+msgstr "crwdns11890:0crwdne11890:0"
 
 #: src\ControlsDialog.cpp:892
 msgid "Alarm On"
-msgstr ""
+msgstr "crwdns11892:0crwdne11892:0"
 
 #: src\ControlsDialog.cpp:909
 msgid "Range"
-msgstr ""
+msgstr "crwdns11894:0crwdne11894:0"
 
 #: src\ControlsDialog.cpp:915 src\RadarCanvas.cpp:184
 msgid "Gain"
-msgstr ""
+msgstr "crwdns11896:0crwdne11896:0"
 
 #: src\ControlsDialog.cpp:921
 msgid "Sea clutter"
-msgstr ""
+msgstr "crwdns11898:0crwdne11898:0"
 
 #: src\ControlsDialog.cpp:927
 msgid "Rain clutter"
-msgstr ""
+msgstr "crwdns11900:0crwdne11900:0"
 
 #: src\ControlsDialog.cpp:933
 msgid "FTC"
-msgstr ""
+msgstr "crwdns11902:0crwdne11902:0"
 
 #: src\ControlsDialog.cpp:949
 msgid "Clear cursor"
-msgstr ""
+msgstr "crwdns11826:0crwdne11826:0"
 
 #: src\ControlsDialog.cpp:953
 msgid "Acquire Target"
-msgstr ""
+msgstr "crwdns11904:0crwdne11904:0"
 
 #: src\ControlsDialog.cpp:957
 msgid "Delete target"
-msgstr ""
+msgstr "crwdns11906:0crwdne11906:0"
 
 #: src\ControlsDialog.cpp:961
 msgid "Delete all targets"
-msgstr ""
+msgstr "crwdns11908:0crwdne11908:0"
 
 #: src\ControlsDialog.cpp:966 src\ControlsDialog.cpp:1950
 msgid "Place EBL/VRM"
-msgstr ""
+msgstr "crwdns11828:0crwdne11828:0"
 
 #: src\ControlsDialog.cpp:996
 msgid "Overlay "
-msgstr ""
+msgstr "crwdns12644:0crwdne12644:0"
 
 #: src\ControlsDialog.cpp:1010
 msgid "Info"
-msgstr "Infó"
+msgstr "crwdns11850:0crwdne11850:0"
 
 #: src\ControlsDialog.cpp:1027
 msgid "AIS/ARPA on PPI"
-msgstr ""
+msgstr "crwdns11914:0crwdne11914:0"
 
 #: src\ControlsDialog.cpp:1032
 msgid "Doppler"
-msgstr "Doppler"
+msgstr "crwdns16920:0crwdne16920:0"
 
 #: src\ControlsDialog.cpp:1038
 msgid "DopplerAutoTrack"
-msgstr ""
+msgstr "crwdns21124:0crwdne21124:0"
 
 #: src\ControlsDialog.cpp:1046 src\OptionsDialog.cpp:134
 msgid "Target trails"
-msgstr ""
+msgstr "crwdns11916:0crwdne11916:0"
 
 #: src\ControlsDialog.cpp:1053
 msgid "Trails motion"
-msgstr ""
+msgstr "crwdns11918:0crwdne11918:0"
 
 #: src\ControlsDialog.cpp:1059
 msgid "Clear trails"
-msgstr ""
+msgstr "crwdns11832:0crwdne11832:0"
 
 #: src\ControlsDialog.cpp:1065
 msgid "Orientation"
-msgstr ""
+msgstr "crwdns11834:0crwdne11834:0"
 
 #: src\ControlsDialog.cpp:1071
 msgid "PPI Forward Aft View"
-msgstr ""
+msgstr "crwdns11920:0crwdne11920:0"
 
 #: src\ControlsDialog.cpp:1077
 msgid "Refresh rate"
-msgstr ""
+msgstr "crwdns11922:0crwdne11922:0"
 
 #: src\ControlsDialog.cpp:1098
 msgid "Timed Standby"
-msgstr ""
+msgstr "crwdns11924:0crwdne11924:0"
 
 #: src\ControlsDialog.cpp:1152
 msgid "Adjust"
-msgstr ""
+msgstr "crwdns11840:0crwdne11840:0"
 
 #: src\ControlsDialog.cpp:1156
 msgid "Advanced"
-msgstr "Haladó"
+msgstr "crwdns11842:0crwdne11842:0"
 
 #: src\ControlsDialog.cpp:1160
 msgid "View"
-msgstr "Nézet"
+msgstr "crwdns11844:0crwdne11844:0"
 
 #: src\ControlsDialog.cpp:1164
 msgid "Cursor"
-msgstr "Kurzor"
+msgstr "crwdns11926:0crwdne11926:0"
 
 #: src\ControlsDialog.cpp:1172
 msgid "Window"
-msgstr "Ablak"
+msgstr "crwdns11928:0crwdne11928:0"
 
 #: src\ControlsDialog.cpp:1177
 msgid "Timed transmit"
-msgstr ""
+msgstr "crwdns11930:0crwdne11930:0"
 
 #: src\ControlsDialog.cpp:1182 src\RadarInfo.cpp:1035
 #: include\SoftwareControlSet.h:104
 msgid "Unknown"
-msgstr "Ismeretlen"
+msgstr "crwdns11932:0crwdne11932:0"
 
 #: src\ControlsDialog.cpp:1658
 msgid "Radar Overlay"
-msgstr "Radar átfedés"
+msgstr "crwdns12646:0crwdne12646:0"
 
 #: src\ControlsDialog.cpp:1663
 msgid "Overlay 1"
-msgstr ""
+msgstr "crwdns12648:0crwdne12648:0"
 
 #: src\ControlsDialog.cpp:1926
 msgid "Start/Stop radar"
-msgstr ""
+msgstr "crwdns11934:0crwdne11934:0"
 
 #: src\ControlsDialog.cpp:1937
 msgid "Hide/Show PPI"
-msgstr ""
+msgstr "crwdns16922:0crwdne16922:0"
 
 #: src\ControlsDialog.cpp:1938
 msgid "Shown"
-msgstr "Látható"
+msgstr "crwdns16924:0crwdne16924:0"
 
 #: src\ControlsDialog.cpp:1938
 msgid "Hidden"
-msgstr "Rejtett"
+msgstr "crwdns16926:0crwdne16926:0"
 
 #: src\ControlsDialog.cpp:1941
 msgid "Float/Dock PPI"
-msgstr ""
+msgstr "crwdns16928:0crwdne16928:0"
 
 #: src\ControlsDialog.cpp:1942
 msgid "Docked"
-msgstr ""
+msgstr "crwdns16930:0crwdne16930:0"
 
 #: src\ControlsDialog.cpp:1942
 msgid "Floating"
-msgstr ""
+msgstr "crwdns16932:0crwdne16932:0"
 
 #: src\ControlsDialog.cpp:1947
 msgid "Clear EBL/VRM"
-msgstr ""
+msgstr "crwdns11946:0crwdne11946:0"
 
 #: include\ControlsDialog.h:234
 msgid "Radar"
-msgstr "Radar"
+msgstr "crwdns11948:0crwdne11948:0"
 
 #: src\GuardZoneBogey.cpp:95
 msgid "Confirm"
-msgstr "Megerősít"
+msgstr "crwdns11950:0crwdne11950:0"
 
 #: src\GuardZoneBogey.cpp:98
 msgid "Close"
-msgstr "Bezár"
+msgstr "crwdns11952:0crwdne11952:0"
 
 #: src\MessageBox.cpp:144
 msgid "Required OpenCPN option"
-msgstr ""
+msgstr "crwdns11954:0crwdne11954:0"
 
 #: src\MessageBox.cpp:149
 msgid "Accelerated Graphics (OpenGL)"
-msgstr ""
+msgstr "crwdns11956:0crwdne11956:0"
 
 #: src\MessageBox.cpp:155
 msgid "For radar overlay also required"
-msgstr ""
+msgstr "crwdns11958:0crwdne11958:0"
 
 #: src\MessageBox.cpp:163
 msgid "Boat position"
-msgstr ""
+msgstr "crwdns11960:0crwdne11960:0"
 
 #: src\MessageBox.cpp:169
 msgid "and"
-msgstr "és"
+msgstr "crwdns11962:0crwdne11962:0"
 
 #: src\MessageBox.cpp:174
 msgid "True Heading"
-msgstr ""
+msgstr "crwdns11964:0crwdne11964:0"
 
 #: src\MessageBox.cpp:179
 msgid "or"
-msgstr "vagy"
+msgstr "crwdns11966:0crwdne11966:0"
 
 #: src\MessageBox.cpp:183 src\MessageBox.cpp:431
 msgid "Magnetic heading"
-msgstr "Mágneses irány"
+msgstr "crwdns11968:0crwdne11968:0"
 
 #: src\MessageBox.cpp:190 src\MessageBox.cpp:438
 msgid "Variation"
-msgstr "Variáció"
+msgstr "crwdns11970:0crwdne11970:0"
 
 #: src\MessageBox.cpp:195 src\MessageBox.cpp:200
 msgid "Statistics"
-msgstr "Statsiztika"
+msgstr "crwdns11972:0crwdne11972:0"
 
 #: src\MessageBox.cpp:205 src\OptionsDialog.cpp:292
 msgid "Select radar types"
-msgstr ""
+msgstr "crwdns12062:0crwdne12062:0"
 
 #: src\MessageBox.cpp:210
 msgid "&Hide Radar"
-msgstr ""
+msgstr "crwdns11976:0crwdne11976:0"
 
 #: src\MessageBox.cpp:216
 msgid "&Close"
-msgstr ""
+msgstr "crwdns11974:0crwdne11974:0"
 
 #: src\MessageBox.cpp:424
 msgid "True heading"
-msgstr ""
+msgstr "crwdns11978:0crwdne11978:0"
 
 #: src\OptionsDialog.cpp:40
 msgid "Radar Display Preferences"
-msgstr ""
+msgstr "crwdns11980:0crwdne11980:0"
 
 #: src\OptionsDialog.cpp:61
 msgid "Mixed NM / short range m"
-msgstr ""
+msgstr "crwdns11982:0crwdne11982:0"
 
 #: src\OptionsDialog.cpp:62
 msgid "Kilometers"
-msgstr "Kilométer"
+msgstr "crwdns11984:0crwdne11984:0"
 
 #: src\OptionsDialog.cpp:63
 msgid "Nautical Miles"
-msgstr "Tengeri mérföld"
+msgstr "crwdns11986:0crwdne11986:0"
 
 #: src\OptionsDialog.cpp:66
 msgid "Range Units"
-msgstr ""
+msgstr "crwdns11988:0crwdne11988:0"
 
 #: src\OptionsDialog.cpp:74
 msgid "Shading"
-msgstr ""
+msgstr "crwdns11990:0crwdne11990:0"
 
 #: src\OptionsDialog.cpp:75
 msgid "Outline"
-msgstr "Körvonal"
+msgstr "crwdns11992:0crwdne11992:0"
 
 #: src\OptionsDialog.cpp:76
 msgid "Shading + Outline"
-msgstr ""
+msgstr "crwdns11994:0crwdne11994:0"
 
 #: src\OptionsDialog.cpp:78
 msgid "Guard Zone Styling"
-msgstr ""
+msgstr "crwdns11996:0crwdne11996:0"
 
 #: src\OptionsDialog.cpp:87
 msgid "Guard Zone Sound"
-msgstr ""
+msgstr "crwdns11998:0crwdne11998:0"
 
 #: src\OptionsDialog.cpp:90
 msgid "Select Alert Sound"
-msgstr ""
+msgstr "crwdns12000:0crwdne12000:0"
 
 #: src\OptionsDialog.cpp:94
 msgid "Test Alert Sound"
-msgstr ""
+msgstr "crwdns12002:0crwdne12002:0"
 
 #: src\OptionsDialog.cpp:99
 msgid "Repeat alarm after (sec)"
-msgstr ""
+msgstr "crwdns12004:0crwdne12004:0"
 
 #: src\OptionsDialog.cpp:110
 msgid "GPU drawing method"
-msgstr ""
+msgstr "crwdns12006:0crwdne12006:0"
 
 #: src\OptionsDialog.cpp:116
 msgid "Drawing Method"
-msgstr ""
+msgstr "crwdns12008:0crwdne12008:0"
 
 #: src\OptionsDialog.cpp:122
 msgid "Control Menu Auto Hide"
-msgstr ""
+msgstr "crwdns12010:0crwdne12010:0"
 
 #: src\OptionsDialog.cpp:125
 msgid "Never"
-msgstr "Soha"
+msgstr "crwdns12012:0crwdne12012:0"
 
 #: src\OptionsDialog.cpp:125
 msgid "10 sec"
-msgstr "10 mp"
+msgstr "crwdns12014:0crwdne12014:0"
 
 #: src\OptionsDialog.cpp:125 include\SoftwareControlSet.h:126
 msgid "30 sec"
-msgstr "30 mp"
+msgstr "crwdns12016:0crwdne12016:0"
 
 #: src\OptionsDialog.cpp:128
 msgid "Auto hide after"
-msgstr ""
+msgstr "crwdns12018:0crwdne12018:0"
 
 #: src\OptionsDialog.cpp:137
 msgid "Trail start color"
-msgstr ""
+msgstr "crwdns12020:0crwdne12020:0"
 
 #: src\OptionsDialog.cpp:144
 msgid "Trail end color"
-msgstr ""
+msgstr "crwdns12022:0crwdne12022:0"
 
 #: src\OptionsDialog.cpp:150
 msgid "Doppler Approaching color"
-msgstr ""
+msgstr "crwdns16934:0crwdne16934:0"
 
 #: src\OptionsDialog.cpp:158
 msgid "Doppler Receding color"
-msgstr ""
+msgstr "crwdns16936:0crwdne16936:0"
 
 #: src\OptionsDialog.cpp:168
 msgid "Target colors"
-msgstr ""
+msgstr "crwdns12024:0crwdne12024:0"
 
 #: src\OptionsDialog.cpp:171
 msgid "Weak return color"
-msgstr ""
+msgstr "crwdns12026:0crwdne12026:0"
 
 #: src\OptionsDialog.cpp:177
 msgid "Intermediate return color"
-msgstr ""
+msgstr "crwdns12028:0crwdne12028:0"
 
 #: src\OptionsDialog.cpp:184
 msgid "Strong return color"
-msgstr ""
+msgstr "crwdns12030:0crwdne12030:0"
 
 #: src\OptionsDialog.cpp:190
 msgid "ARPA edge color"
-msgstr ""
+msgstr "crwdns12032:0crwdne12032:0"
 
 #: src\OptionsDialog.cpp:198
 msgid "Radar window colors"
-msgstr ""
+msgstr "crwdns12034:0crwdne12034:0"
 
 #: src\OptionsDialog.cpp:201
 msgid "Background color"
-msgstr ""
+msgstr "crwdns12036:0crwdne12036:0"
 
 #: src\OptionsDialog.cpp:209
 msgid "AIS text color"
-msgstr ""
+msgstr "crwdns12038:0crwdne12038:0"
 
 #: src\OptionsDialog.cpp:229
 msgid "Options"
-msgstr "Beállítások"
+msgstr "crwdns12040:0crwdne12040:0"
 
 #: src\OptionsDialog.cpp:233
 msgid "Ignore radar heading"
-msgstr ""
+msgstr "crwdns12042:0crwdne12042:0"
 
 #: src\OptionsDialog.cpp:239
 msgid "Pass radar heading to OpenCPN"
-msgstr ""
+msgstr "crwdns12044:0crwdne12044:0"
 
 #: src\OptionsDialog.cpp:245
 msgid "Enable COG as heading"
-msgstr ""
+msgstr "crwdns12046:0crwdne12046:0"
 
 #: src\OptionsDialog.cpp:251
 msgid "Reverse mouse wheel zoom direction"
-msgstr ""
+msgstr "crwdns12048:0crwdne12048:0"
 
 #: src\OptionsDialog.cpp:259
 msgid "Display options"
-msgstr "Megjelenítési beállítások"
+msgstr "crwdns12050:0crwdne12050:0"
 
 #: src\OptionsDialog.cpp:263
 msgid "Show ring at extreme range"
-msgstr ""
+msgstr "crwdns12052:0crwdne12052:0"
 
 #: src\OptionsDialog.cpp:269
 msgid "Show Guard Zone on overlay"
-msgstr ""
+msgstr "crwdns12054:0crwdne12054:0"
 
 #: src\OptionsDialog.cpp:275
 msgid "Show Target trails on overlay"
-msgstr ""
+msgstr "crwdns12056:0crwdne12056:0"
 
 #: src\OptionsDialog.cpp:281
 msgid "Show data on overlay when radar is standby"
-msgstr ""
+msgstr "crwdns12058:0crwdne12058:0"
 
 #: src\OptionsDialog.cpp:288
 msgid "Radar types"
-msgstr "Radar típusok"
+msgstr "crwdns12060:0crwdne12060:0"
 
 #: src\OptionsDialog.cpp:362
 msgid "Select Sound File"
-msgstr "Hang fájl kiválasztása"
+msgstr "crwdns12064:0crwdne12064:0"
 
 #: src\OptionsDialog.cpp:363
 msgid "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
-msgstr "WAV fájlok (*.wav)|*.wav|Minden fájl (*.*)|*.*"
+msgstr "crwdns12066:0crwdne12066:0"
 
 #: src\RadarCanvas.cpp:119 src\RadarInfo.cpp:235 src\radar_pi.cpp:334
 msgid "Menu"
-msgstr "Menü"
+msgstr "crwdns12068:0crwdne12068:0"
 
 #: src\RadarCanvas.cpp:121
 msgid "Menu "
-msgstr "Menü "
+msgstr "crwdns16938:0crwdne16938:0"
 
 #: src\RadarCanvas.cpp:180
 msgid "Rain"
-msgstr "Eső"
+msgstr "crwdns12070:0crwdne12070:0"
 
 #: src\RadarCanvas.cpp:182
 msgid "Sea"
-msgstr "Tenger"
+msgstr "crwdns12072:0crwdne12072:0"
 
 #: src\RadarCanvas.cpp:650
 msgid "AIS Target Name"
-msgstr "AIS célpont név"
+msgstr "crwdns12074:0crwdne12074:0"
 
 #: src\RadarDraw.cpp:55
 msgid "Vertex Array"
-msgstr ""
+msgstr "crwdns12076:0crwdne12076:0"
 
 #: src\RadarDraw.cpp:55
 msgid "Shader"
-msgstr ""
+msgstr "crwdns12078:0crwdne12078:0"
 
 #: src\RadarInfo.cpp:231
 msgid "Control "
-msgstr ""
+msgstr "crwdns12650:0crwdne12650:0"
 
 #: src\RadarInfo.cpp:1023 src\RadarInfo.cpp:1026
 msgid "Head Up"
-msgstr ""
+msgstr "crwdns12080:0crwdne12080:0"
 
 #: src\RadarInfo.cpp:1023
 msgid "Relative Bearings"
-msgstr ""
+msgstr "crwdns12082:0crwdne12082:0"
 
 #: src\RadarInfo.cpp:1026
 msgid "Stabilized"
-msgstr ""
+msgstr "crwdns12084:0crwdne12084:0"
 
 #: src\RadarInfo.cpp:1029
 msgid "COG Up"
-msgstr ""
+msgstr "crwdns12086:0crwdne12086:0"
 
 #: src\RadarInfo.cpp:1032
 msgid "North Up"
-msgstr ""
+msgstr "crwdns12088:0crwdne12088:0"
 
 #: src\RadarInfo.cpp:1120
 msgid "Zone"
-msgstr ""
+msgstr "crwdns12090:0crwdne12090:0"
 
 #: src\RadarInfo.cpp:1122
 msgid "(Confirmed)"
-msgstr "(Megerősített)"
+msgstr "crwdns12092:0crwdne12092:0"
 
 #: src\RadarInfo.cpp:1190
 msgid "No radar"
-msgstr "Nincs radar"
+msgstr "crwdns12094:0crwdne12094:0"
 
 #: src\RadarInfo.cpp:1418
 msgid "Uninitialized"
-msgstr "Nem inicializált"
+msgstr "crwdns12096:0crwdne12096:0"
 
 #: src\RadarInfo.cpp:1494 src\garminhd\GarminHDReceive.cpp:469
 #: src\garminxhd\GarminxHDReceive.cpp:506 src\navico\NavicoReceive.cpp:1101
 #: src\raymarine\RME120Receive.cpp:536
 msgid "Standby"
-msgstr "Készenlét"
+msgstr "crwdns12098:0crwdne12098:0"
 
 #: src\RadarInfo.cpp:1497 src\raymarine\RME120Receive.cpp:541
 msgid "Warming up"
-msgstr "Bemelegedés"
+msgstr "crwdns12100:0crwdne12100:0"
 
 #: src\RadarInfo.cpp:1500
 msgid "Timed idle"
-msgstr ""
+msgstr "crwdns12102:0crwdne12102:0"
 
 #: src\RadarInfo.cpp:1503 src\garminhd\GarminHDReceive.cpp:475
 #: src\garminxhd\GarminxHDReceive.cpp:512
 msgid "Spinning up"
-msgstr ""
+msgstr "crwdns12104:0crwdne12104:0"
 
 #: src\RadarInfo.cpp:1506
 msgid "Transmitting"
-msgstr ""
+msgstr "crwdns12106:0crwdne12106:0"
 
 #: src\RadarInfo.cpp:1509
 msgid "for targets"
-msgstr ""
+msgstr "crwdns12108:0crwdne12108:0"
 
 #: src\RadarInfo.cpp:1514 src\garminxhd\GarminxHDReceive.cpp:523
 msgid "Stopping"
-msgstr ""
+msgstr "crwdns12110:0crwdne12110:0"
 
 #: src\RadarInfo.cpp:1517 src\garminxhd\GarminxHDReceive.cpp:533
 msgid "Starting"
-msgstr ""
+msgstr "crwdns12112:0crwdne12112:0"
 
 #: src\RadarInfo.cpp:1520 src\garminxhd\GarminxHDReceive.cpp:528
 msgid "Spinning down"
-msgstr ""
+msgstr "crwdns12114:0crwdne12114:0"
 
 #: src\RadarInfo.cpp:1524
 #, c-format
 msgid "for %ds"
-msgstr ""
+msgstr "crwdns12116:0%dcrwdne12116:0"
 
 #: src\RadarPanel.cpp:40 src\radar_pi.cpp:1137 src\radar_pi.cpp:1160
 msgid "RADAR"
-msgstr "RADAR"
+msgstr "crwdns12118:0crwdne12118:0"
 
 #: src\RadarPanel.cpp:175
 msgid "OpenGL mode required"
-msgstr ""
+msgstr "crwdns12120:0crwdne12120:0"
 
 #: src\RadarPanel.cpp:186
 msgid "Unable to create OpenGL canvas"
-msgstr ""
+msgstr "crwdns12122:0crwdne12122:0"
 
 #: src\radar_pi.cpp:298
 msgid "Radar plugin with support for multiple radars"
-msgstr ""
+msgstr "crwdns12124:0crwdne12124:0"
 
 #: src\radar_pi.cpp:326
 msgid "Show radar"
-msgstr ""
+msgstr "crwdns12126:0crwdne12126:0"
 
 #: src\radar_pi.cpp:327
 msgid "Hide radar"
-msgstr ""
+msgstr "crwdns12128:0crwdne12128:0"
 
 #: src\radar_pi.cpp:329
 msgid "Acquire radar target"
-msgstr ""
+msgstr "crwdns12132:0crwdne12132:0"
 
 #: src\radar_pi.cpp:330
 msgid "Delete radar target"
-msgstr ""
+msgstr "crwdns12134:0crwdne12134:0"
 
 #: src\radar_pi.cpp:331
 msgid "Delete all radar targets"
-msgstr ""
+msgstr "crwdns12136:0crwdne12136:0"
 
 #: src\radar_pi.cpp:481
 msgid "Radar PlugIn"
-msgstr ""
+msgstr "crwdns12138:0crwdne12138:0"
 
 #: src\radar_pi.cpp:484
 msgid "Radar PlugIn with support for Garmin, Raymarine and Navico radars"
-msgstr ""
+msgstr "crwdns21126:0crwdne21126:0"
 
 #: src\radar_pi.cpp:861
 msgid " Zone"
-msgstr ""
+msgstr "crwdns12142:0crwdne12142:0"
 
 #: src\radar_pi.cpp:905
 msgid "Next alarm in"
-msgstr ""
+msgstr "crwdns12144:0crwdne12144:0"
 
 #: src\radar_pi.cpp:1130
 msgid "COG"
-msgstr ""
+msgstr "crwdns12146:0crwdne12146:0"
 
 #: src\radar_pi.cpp:1134
 msgid "HDT"
-msgstr ""
+msgstr "crwdns12148:0crwdne12148:0"
 
 #: src\radar_pi.cpp:1154
 msgid "HDM"
-msgstr ""
+msgstr "crwdns12150:0crwdne12150:0"
 
 #: src\radar_pi.cpp:1718
 msgid "GPS"
-msgstr ""
+msgstr "crwdns12152:0crwdne12152:0"
 
 #: src\radar_pi.cpp:1880
 msgid "WMM"
-msgstr ""
+msgstr "crwdns12154:0crwdne12154:0"
 
 #: src\radar_pi.cpp:2029
 msgid "NMEA"
-msgstr ""
+msgstr "crwdns12156:0crwdne12156:0"
 
 #: src\SelectDialog.cpp:40
 msgid "Radar Selection"
-msgstr ""
+msgstr "crwdns12158:0crwdne12158:0"
 
 #: src\SelectDialog.cpp:54
 #, c-format
 msgid "Select (max) %d radar scanner types"
-msgstr ""
+msgstr "crwdns12160:0%dcrwdne12160:0"
 
 #: src\socketutil.cpp:180
 msgid "Cannot create UDP socket"
-msgstr ""
+msgstr "crwdns12162:0crwdne12162:0"
 
 #: src\socketutil.cpp:184
 msgid "Cannot set reuse address option on socket"
-msgstr ""
+msgstr "crwdns12164:0crwdne12164:0"
 
 #: src\socketutil.cpp:189
 msgid "Cannot bind UDP socket to port "
-msgstr ""
+msgstr "crwdns12166:0crwdne12166:0"
 
 #: src\socketutil.cpp:194
 msgid "Invalid IP address for UDP multicast"
-msgstr ""
+msgstr "crwdns12168:0crwdne12168:0"
 
 #: include\SoftwareControlSet.h:81
 msgid "min"
-msgstr ""
+msgstr "crwdns12170:0crwdne12170:0"
 
 #: include\SoftwareControlSet.h:104
 msgid "Head up"
-msgstr ""
+msgstr "crwdns12172:0crwdne12172:0"
 
 #: include\SoftwareControlSet.h:104
 msgid "Head up (Stabilized)"
-msgstr ""
+msgstr "crwdns12174:0crwdne12174:0"
 
 #: include\SoftwareControlSet.h:104
 msgid "North up"
-msgstr ""
+msgstr "crwdns12176:0crwdne12176:0"
 
 #: include\SoftwareControlSet.h:104
 msgid "Course up"
-msgstr ""
+msgstr "crwdns12178:0crwdne12178:0"
 
 #: include\SoftwareControlSet.h:117
 msgid "Dragged View"
-msgstr ""
+msgstr "crwdns12180:0crwdne12180:0"
 
 #: include\SoftwareControlSet.h:117
 msgid "Center View"
-msgstr ""
+msgstr "crwdns12182:0crwdne12182:0"
 
 #: include\SoftwareControlSet.h:117
 msgid "Forward View"
-msgstr ""
+msgstr "crwdns12184:0crwdne12184:0"
 
 #: include\SoftwareControlSet.h:117
 msgid "Aft View"
-msgstr ""
+msgstr "crwdns12186:0crwdne12186:0"
 
 #: include\SoftwareControlSet.h:126
 msgid "15 sec"
-msgstr "15 mp"
+msgstr "crwdns12188:0crwdne12188:0"
 
 #: include\SoftwareControlSet.h:126
 msgid "1 min"
-msgstr "1 perc"
+msgstr "crwdns12190:0crwdne12190:0"
 
 #: include\SoftwareControlSet.h:126
 msgid "3 min"
-msgstr "3 perc"
+msgstr "crwdns12192:0crwdne12192:0"
 
 #: include\SoftwareControlSet.h:126
 msgid "5 min"
-msgstr "5 perc"
+msgstr "crwdns12194:0crwdne12194:0"
 
 #: include\SoftwareControlSet.h:126
 msgid "10 min"
-msgstr "10 perc"
+msgstr "crwdns12196:0crwdne12196:0"
 
 #: include\SoftwareControlSet.h:126
 msgid "Continuous"
-msgstr "Folyamatos"
+msgstr "crwdns12198:0crwdne12198:0"
 
 #: include\SoftwareControlSet.h:130
 msgid "Relative"
-msgstr "Relatív"
+msgstr "crwdns12200:0crwdne12200:0"
 
 #: include\SoftwareControlSet.h:130
 msgid "True"
-msgstr "Valós"
+msgstr "crwdns12202:0crwdne12202:0"
 
 #: include\SoftwareControlSet.h:136 include\SoftwareControlSet.h:140
 msgid "On"
-msgstr "Be"
+msgstr "crwdns12204:0crwdne12204:0"
 
 #: include\SoftwareControlSet.h:154
 msgid "* 0.1 %"
-msgstr "* 0.1 %"
+msgstr "crwdns21128:0crwdne21128:0"
 
 #: src\emulator\EmulatorReceive.cpp:206
 msgid "OK"
-msgstr "Rendben"
+msgstr "crwdns12206:0crwdne12206:0"
 
 #: include\garminhd\GarminHDControlSet.h:36
 #: include\garminxhd\GarminxHDControlSet.h:36
 #: include\navico\NavicoControlSet.h:56 include\navico\NavicoControlSet.h:60
 msgid "Low"
-msgstr "Alacsony"
+msgstr "crwdns12208:0crwdne12208:0"
 
 #: include\garminhd\GarminHDControlSet.h:36
 #: include\garminxhd\GarminxHDControlSet.h:36
 #: include\navico\NavicoControlSet.h:56 include\navico\NavicoControlSet.h:60
 msgid "High"
-msgstr "Magas"
+msgstr "crwdns12210:0crwdne12210:0"
 
 #: include\garminhd\GarminHDControlSet.h:41
 #: include\garminxhd\GarminxHDControlSet.h:41
 msgid "Calm"
-msgstr "Nyugodt"
+msgstr "crwdns12212:0crwdne12212:0"
 
 #: include\garminhd\GarminHDControlSet.h:41
 #: include\garminxhd\GarminxHDControlSet.h:41
 #: include\navico\NavicoControlSet.h:56
 msgid "Medium"
-msgstr "Közepes"
+msgstr "crwdns12214:0crwdne12214:0"
 
 #: include\garminhd\GarminHDControlSet.h:41
 #: include\garminxhd\GarminxHDControlSet.h:41
 msgid "Rough"
-msgstr ""
+msgstr "crwdns12216:0crwdne12216:0"
 
 #: include\garminhd\GarminHDControlSet.h:46
 #: include\garminxhd\GarminxHDControlSet.h:46
 #: include\navico\NavicoControlSet.h:64
 msgid "Slow"
-msgstr "Lassú"
+msgstr "crwdns12218:0crwdne12218:0"
 
 #: include\garminhd\GarminHDControlSet.h:46
 #: include\garminxhd\GarminxHDControlSet.h:46
 #: include\navico\NavicoControlSet.h:64
 msgid "Fast"
-msgstr "Gyors"
+msgstr "crwdns12220:0crwdne12220:0"
 
 #: src\garminhd\GarminHDReceive.cpp:212 src\garminxhd\GarminxHDReceive.cpp:185
 msgid "No interface found"
-msgstr ""
+msgstr "crwdns21130:0crwdne21130:0"
 
 #: src\garminhd\GarminHDReceive.cpp:213 src\garminxhd\GarminxHDReceive.cpp:186
 msgid "Interface must match"
-msgstr ""
+msgstr "crwdns21132:0crwdne21132:0"
 
 #: src\garminhd\GarminHDReceive.cpp:239 src\garminxhd\GarminxHDReceive.cpp:212
 #: src\navico\NavicoReceive.cpp:487 src\raymarine\RME120Receive.cpp:139
 msgid "Scanning interface"
-msgstr ""
+msgstr "crwdns12222:0crwdne12222:0"
 
 #: src\garminhd\GarminHDReceive.cpp:464 src\garminxhd\GarminxHDReceive.cpp:501
 msgid "Warmup"
-msgstr ""
+msgstr "crwdns12224:0crwdne12224:0"
 
 #: src\garminhd\GarminHDReceive.cpp:480 src\garminxhd\GarminxHDReceive.cpp:517
 #: src\navico\NavicoReceive.cpp:1106 src\raymarine\RME120Receive.cpp:546
 msgid "Transmit"
-msgstr ""
+msgstr "crwdns12226:0crwdne12226:0"
 
 #: src\garminhd\GarminHDReceive.cpp:483 src\garminxhd\GarminxHDReceive.cpp:537
 #: src\navico\NavicoReceive.cpp:1115 src\raymarine\RME120Receive.cpp:551
 msgid "Unknown status"
-msgstr ""
+msgstr "crwdns12228:0crwdne12228:0"
 
 #: include\garminhd\GarminHDReceive.h:58 include\garminxhd\GarminxHDReceive.h:57
 #: include\navico\NavicoReceive.h:68 include\raymarine\RME120Receive.h:66
 msgid "Initializing"
-msgstr ""
+msgstr "crwdns12230:0crwdne12230:0"
 
 #: include\navico\NavicoControlSet.h:68 include\navico\NavicoControlSet.h:72
 msgid "Harbour"
-msgstr ""
+msgstr "crwdns12232:0crwdne12232:0"
 
 #: include\navico\NavicoControlSet.h:68 include\navico\NavicoControlSet.h:72
 msgid "Offshore"
-msgstr ""
+msgstr "crwdns12234:0crwdne12234:0"
 
 #: include\navico\NavicoControlSet.h:72
 msgid "Weather"
-msgstr "Időjárás"
+msgstr "crwdns12236:0crwdne12236:0"
 
 #: include\navico\NavicoControlSet.h:72
 msgid "Bird"
-msgstr "Madár"
+msgstr "crwdns12238:0crwdne12238:0"
 
 #: include\navico\NavicoControlSet.h:76
 msgid "Normal"
-msgstr "Normál"
+msgstr "crwdns16940:0crwdne16940:0"
 
 #: include\navico\NavicoControlSet.h:76
 msgid "Approaching"
-msgstr "Megközelítés"
+msgstr "crwdns16942:0crwdne16942:0"
 
 #: src\navico\NavicoReceive.cpp:475 src\navico\NavicoReceive.cpp:1122
 #: src\raymarine\RME120Receive.cpp:129
 msgid "Serial #"
-msgstr "Sorozatszám"
+msgstr "crwdns16944:0crwdne16944:0"
 
 #: src\navico\NavicoReceive.cpp:1111
 msgid "Waking up"
-msgstr ""
+msgstr "crwdns12240:0crwdne12240:0"
 
 #: src\raymarine\RME120Receive.cpp:558
 msgid "IF-Serial #"
-msgstr ""
+msgstr "crwdns21134:0crwdne21134:0"
 

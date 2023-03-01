@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-07-05 11:37+0200\n"
-"PO-Revision-Date: 2021-11-01 01:11\n"
+"PO-Revision-Date: 2023-02-22 08:45\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
 "Language: en_GB\n"
@@ -24,126 +24,126 @@ msgstr ""
 #: include\navico\NavicoControlSet.h:56 include\navico\NavicoControlSet.h:60
 #: include\navico\NavicoControlSet.h:76 src\raymarine\RME120Receive.cpp:531
 msgid "Off"
-msgstr ""
+msgstr "Off"
 
 #: src\ControlsDialog.cpp:248 src\ControlsDialog.cpp:252
 #: src\ControlsDialog.cpp:640 src\RadarCanvas.cpp:220 src\RadarInfo.cpp:1205
 #: include\SoftwareControlSet.h:41
 msgid "Auto"
-msgstr ""
+msgstr "Auto"
 
 #: src\ControlsDialog.cpp:351
 msgid "Arc"
-msgstr ""
+msgstr "Arc"
 
 #: src\ControlsDialog.cpp:352
 msgid "Circle"
-msgstr ""
+msgstr "Circle"
 
 #: src\ControlsDialog.cpp:432
 msgid "Guard Zone 1 Green"
-msgstr ""
+msgstr "Guard Zone 1 Green"
 
 #: src\ControlsDialog.cpp:435
 msgid "Guard Zone 2 Blue"
-msgstr ""
+msgstr "Guard Zone 2 Blue"
 
 #: src\ControlsDialog.cpp:482 src\ControlsDialog.cpp:492
 #: include\GuardZoneBogey.h:53
 msgid "Alarm"
-msgstr ""
+msgstr "Alarm"
 
 #: src\ControlsDialog.cpp:485 src\ControlsDialog.cpp:495
 msgid "Arpa"
-msgstr ""
+msgstr "Arpa"
 
 #: src\ControlsDialog.cpp:488 src\ControlsDialog.cpp:498
 msgid " Off"
-msgstr ""
+msgstr " Off"
 
 #: src\ControlsDialog.cpp:501 src\ControlsDialog.cpp:504
 msgid "Guard zone"
-msgstr ""
+msgstr "Guard zone"
 
 #: src\ControlsDialog.cpp:533
 msgid "Back"
-msgstr ""
+msgstr "Back"
 
 #: src\ControlsDialog.cpp:551
 msgid "Antenna starboard of GPS"
-msgstr ""
+msgstr "Antenna starboard of GPS"
 
 #: src\ControlsDialog.cpp:552 src\ControlsDialog.cpp:814
 msgid "Local interference rej."
-msgstr ""
+msgstr "Local interference rej."
 
 #: src\ControlsDialog.cpp:553
 msgid "Off/Relative/True trails"
-msgstr ""
+msgstr "Off/Relative/True trails"
 
 #: src\ControlsDialog.cpp:554 src\ControlsDialog.cpp:1005
 msgid "Overlay transparency"
-msgstr ""
+msgstr "Overlay transparency"
 
 #: src\ControlsDialog.cpp:555 src\ControlsDialog.cpp:1104
 msgid "Timed Transmit"
-msgstr ""
+msgstr "Timed Transmit"
 
 #: src\ControlsDialog.cpp:621
 msgid "Value"
-msgstr ""
+msgstr "Value"
 
 #: src\ControlsDialog.cpp:662
 msgid "Noise rejection"
-msgstr ""
+msgstr "Noise rejection"
 
 #: src\ControlsDialog.cpp:668
 msgid "Target expansion"
-msgstr ""
+msgstr "Target expansion"
 
 #: src\ControlsDialog.cpp:675
 msgid "STC"
-msgstr ""
+msgstr "STC"
 
 #: src\ControlsDialog.cpp:681
 msgid "Fine tune"
-msgstr ""
+msgstr "Fine tune"
 
 #: src\ControlsDialog.cpp:688
 msgid "Coarse tune"
-msgstr ""
+msgstr "Coarse tune"
 
 #: src\ControlsDialog.cpp:694
 msgid "STC curve"
-msgstr ""
+msgstr "STC curve"
 
 #: src\ControlsDialog.cpp:701
 msgid "Interference rejection"
-msgstr ""
+msgstr "Interference rejection"
 
 #: src\ControlsDialog.cpp:708
 msgid "Target separation"
-msgstr ""
+msgstr "Target separation"
 
 #: src\ControlsDialog.cpp:716
 msgid "Scan speed"
-msgstr ""
+msgstr "Scan speed"
 
 #: src\ControlsDialog.cpp:723
 msgid "Target boost"
-msgstr ""
+msgstr "Target boost"
 
 #: src\ControlsDialog.cpp:728
 msgid "Installation"
-msgstr ""
+msgstr "Installation"
 
 #: src\ControlsDialog.cpp:732
 msgid "Preferences"
-msgstr ""
+msgstr "Preferences"
 
 #: src\ControlsDialog.cpp:749
 msgid "Bearing alignment"
-msgstr ""
+msgstr "Bearing alignment"
 
 #: src\ControlsDialog.cpp:756
 msgid "Range adjustment"
@@ -709,7 +709,7 @@ msgstr ""
 
 #: src\RadarInfo.cpp:1418
 msgid "Uninitialized"
-msgstr ""
+msgstr "Uninitialised"
 
 #: src\RadarInfo.cpp:1494 src\garminhd\GarminHDReceive.cpp:469
 #: src\garminxhd\GarminxHDReceive.cpp:506 src\navico\NavicoReceive.cpp:1101
@@ -866,7 +866,7 @@ msgstr ""
 
 #: include\SoftwareControlSet.h:104
 msgid "Head up (Stabilized)"
-msgstr ""
+msgstr "Head up (Stabilised)"
 
 #: include\SoftwareControlSet.h:104
 msgid "North up"
@@ -882,7 +882,7 @@ msgstr ""
 
 #: include\SoftwareControlSet.h:117
 msgid "Center View"
-msgstr ""
+msgstr "Centre View"
 
 #: include\SoftwareControlSet.h:117
 msgid "Forward View"
@@ -918,130 +918,130 @@ msgstr ""
 
 #: include\SoftwareControlSet.h:130
 msgid "Relative"
-msgstr ""
+msgstr "Relative"
 
 #: include\SoftwareControlSet.h:130
 msgid "True"
-msgstr ""
+msgstr "True"
 
 #: include\SoftwareControlSet.h:136 include\SoftwareControlSet.h:140
 msgid "On"
-msgstr ""
+msgstr "On"
 
 #: include\SoftwareControlSet.h:154
 msgid "* 0.1 %"
-msgstr ""
+msgstr "* 0.1 %"
 
 #: src\emulator\EmulatorReceive.cpp:206
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: include\garminhd\GarminHDControlSet.h:36
 #: include\garminxhd\GarminxHDControlSet.h:36
 #: include\navico\NavicoControlSet.h:56 include\navico\NavicoControlSet.h:60
 msgid "Low"
-msgstr ""
+msgstr "Low"
 
 #: include\garminhd\GarminHDControlSet.h:36
 #: include\garminxhd\GarminxHDControlSet.h:36
 #: include\navico\NavicoControlSet.h:56 include\navico\NavicoControlSet.h:60
 msgid "High"
-msgstr ""
+msgstr "High"
 
 #: include\garminhd\GarminHDControlSet.h:41
 #: include\garminxhd\GarminxHDControlSet.h:41
 msgid "Calm"
-msgstr ""
+msgstr "Calm"
 
 #: include\garminhd\GarminHDControlSet.h:41
 #: include\garminxhd\GarminxHDControlSet.h:41
 #: include\navico\NavicoControlSet.h:56
 msgid "Medium"
-msgstr ""
+msgstr "Medium"
 
 #: include\garminhd\GarminHDControlSet.h:41
 #: include\garminxhd\GarminxHDControlSet.h:41
 msgid "Rough"
-msgstr ""
+msgstr "Rough"
 
 #: include\garminhd\GarminHDControlSet.h:46
 #: include\garminxhd\GarminxHDControlSet.h:46
 #: include\navico\NavicoControlSet.h:64
 msgid "Slow"
-msgstr ""
+msgstr "Slow"
 
 #: include\garminhd\GarminHDControlSet.h:46
 #: include\garminxhd\GarminxHDControlSet.h:46
 #: include\navico\NavicoControlSet.h:64
 msgid "Fast"
-msgstr ""
+msgstr "Fast"
 
 #: src\garminhd\GarminHDReceive.cpp:212 src\garminxhd\GarminxHDReceive.cpp:185
 msgid "No interface found"
-msgstr ""
+msgstr "No interface found"
 
 #: src\garminhd\GarminHDReceive.cpp:213 src\garminxhd\GarminxHDReceive.cpp:186
 msgid "Interface must match"
-msgstr ""
+msgstr "Interface must match"
 
 #: src\garminhd\GarminHDReceive.cpp:239 src\garminxhd\GarminxHDReceive.cpp:212
 #: src\navico\NavicoReceive.cpp:487 src\raymarine\RME120Receive.cpp:139
 msgid "Scanning interface"
-msgstr ""
+msgstr "Scanning interface"
 
 #: src\garminhd\GarminHDReceive.cpp:464 src\garminxhd\GarminxHDReceive.cpp:501
 msgid "Warmup"
-msgstr ""
+msgstr "Warmup"
 
 #: src\garminhd\GarminHDReceive.cpp:480 src\garminxhd\GarminxHDReceive.cpp:517
 #: src\navico\NavicoReceive.cpp:1106 src\raymarine\RME120Receive.cpp:546
 msgid "Transmit"
-msgstr ""
+msgstr "Transmit"
 
 #: src\garminhd\GarminHDReceive.cpp:483 src\garminxhd\GarminxHDReceive.cpp:537
 #: src\navico\NavicoReceive.cpp:1115 src\raymarine\RME120Receive.cpp:551
 msgid "Unknown status"
-msgstr ""
+msgstr "Unknown status"
 
 #: include\garminhd\GarminHDReceive.h:58 include\garminxhd\GarminxHDReceive.h:57
 #: include\navico\NavicoReceive.h:68 include\raymarine\RME120Receive.h:66
 msgid "Initializing"
-msgstr ""
+msgstr "Initialising"
 
 #: include\navico\NavicoControlSet.h:68 include\navico\NavicoControlSet.h:72
 msgid "Harbour"
-msgstr ""
+msgstr "Harbour"
 
 #: include\navico\NavicoControlSet.h:68 include\navico\NavicoControlSet.h:72
 msgid "Offshore"
-msgstr ""
+msgstr "Offshore"
 
 #: include\navico\NavicoControlSet.h:72
 msgid "Weather"
-msgstr ""
+msgstr "Weather"
 
 #: include\navico\NavicoControlSet.h:72
 msgid "Bird"
-msgstr ""
+msgstr "Bird"
 
 #: include\navico\NavicoControlSet.h:76
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: include\navico\NavicoControlSet.h:76
 msgid "Approaching"
-msgstr ""
+msgstr "Approaching"
 
 #: src\navico\NavicoReceive.cpp:475 src\navico\NavicoReceive.cpp:1122
 #: src\raymarine\RME120Receive.cpp:129
 msgid "Serial #"
-msgstr ""
+msgstr "Serial #"
 
 #: src\navico\NavicoReceive.cpp:1111
 msgid "Waking up"
-msgstr ""
+msgstr "Waking up"
 
 #: src\raymarine\RME120Receive.cpp:558
 msgid "IF-Serial #"
-msgstr ""
+msgstr "IF-Serial #"
 
