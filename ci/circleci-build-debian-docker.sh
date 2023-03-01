@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Build for Debian armhf in a docker container
+# Build for Debian in a docker container
 #
 # Copyright (c) 2021 Alec Leamas
 #
@@ -50,28 +50,25 @@ function install_wx32() {
   pushd /usr/local/pkg
   wget  $repo/$head/w/wx/wx3.2-i18n_${vers}/wx3.2-i18n_${vers}_all.deb
   wget  $repo/$head/w/wx/wx3.2-headers_${vers}/wx3.2-headers_${vers}_all.deb
-  wget  $repo/$head/w/wx/wx-common_3.2.1+dfsg-1~bpo11+1/wx-common_3.2.1+dfsg-1~bpo11+1_armhf.deb
-  wget  $repo/$head/l/li/libwxgtk-webview3.2-dev_3.2.1+dfsg-1~bpo11+1/libwxgtk-webview3.2-dev_3.2.1+dfsg-1~bpo11+1_armhf.deb
-  wget  $repo/$head/l/li/libwxgtk-webview3.2-0_3.2.1+dfsg-1~bpo11+1/libwxgtk-webview3.2-0_3.2.1+dfsg-1~bpo11+1_armhf.deb
-  wget  $repo/$head/l/li/libwxgtk-media3.2-dev_3.2.1+dfsg-1~bpo11+1/libwxgtk-media3.2-dev_3.2.1+dfsg-1~bpo11+1_armhf.deb
-  wget  $repo/$head/l/li/libwxgtk3.2-dev_3.2.1+dfsg-1~bpo11+1/libwxgtk3.2-dev_3.2.1+dfsg-1~bpo11+1_armhf.deb
-  wget  $repo/$head/l/li/libwxgtk3.2-0_3.2.1+dfsg-1~bpo11+1/libwxgtk3.2-0_3.2.1+dfsg-1~bpo11+1_armhf.deb
-  wget  $repo/$head/l/li/libwxbase3.2-0_3.2.1+dfsg-1~bpo11+1/libwxbase3.2-0_3.2.1+dfsg-1~bpo11+1_armhf.deb
-  wget  $repo/$head/l/li/libwxgtk-media3.2-dev_3.2.1+dfsg-1~bpo11+1/libwxgtk-media3.2-dev_3.2.1+dfsg-1~bpo11+1_armhf.deb
-  wget  $repo/$head/l/li/libwxsvg-dev_2:1.5.23+dfsg-1~bpo11+1/libwxsvg-dev_1.5.23+dfsg-1~bpo11+1_armhf.deb
-  wget  $repo/$head/l/li/libwxsvg3_2:1.5.23+dfsg-1~bpo11+1/libwxsvg3_1.5.23+dfsg-1~bpo11+1_armhf.deb
-
+  wget  $repo/$head/w/wx/wx-common_3.2.1+dfsg-1/wx-common_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxgtk-webview3.2-dev_3.2.1+dfsg-1/libwxgtk-webview3.2-dev_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxgtk-webview3.2-0_3.2.1+dfsg-1/libwxgtk-webview3.2-0_3.2.1+dfsg-1_arm64.deb 
+  wget  $repo/$head/l/li/libwxgtk-media3.2-dev_3.2.1+dfsg-1/libwxgtk-media3.2-dev_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxgtk3.2-dev_3.2.1+dfsg-1/libwxgtk3.2-dev_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxgtk3.2-0_3.2.1+dfsg-1/libwxgtk3.2-0_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxbase3.2-0_3.2.1+dfsg-1/libwxbase3.2-0_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxgtk-media3.2-dev_3.2.1+dfsg-1/libwxgtk-media3.2-dev_3.2.1+dfsg-1_arm64.deb
+  wget  $repo/$head/l/li/libwxsvg-dev_2:1.5.23+dfsg-1~bpo11+1/libwxsvg-dev_1.5.23+dfsg-1~bpo11+1_arm64.deb
+  wget  $repo/$head/l/li/libwxsvg3_2:1.5.23+dfsg-1~bpo11+1/libwxsvg3_1.5.23+dfsg-1~bpo11+1_arm64.deb
   dpkg -i --force-depends $(ls /usr/local/pkg/*deb)
   sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
-      /usr/lib/*-linux-*/wx/config/gtk3-unicode-3.2
+      /usr/lib/*-linux-gnu/wx/config/gtk3-unicode-3.2
 
   # See wxWidgets#22790. FIXME (leamas) To be removed after wxw 3.2.3
   cd /usr/include/wx-3.2/wx/
   patch -p1 < /ci-source/build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
-
   popd
 }
-
 
 set -x
 
@@ -83,51 +80,49 @@ apt install -q -y ./opencpn-build-deps*deb
 apt-get -q --allow-unauthenticated install -f
 
 debian_rel=$(lsb_release -sc)
-if [ "$debian_rel" = bookworm ]; then
-    apt-get install -y cmake
-elif [ "$debian_rel" = bullseye ]; then
+if [ "$debian_rel" = bullseye ]; then
     echo "deb http://deb.debian.org/debian bullseye-backports main" \
       >> /etc/apt/sources.list
     apt update
     apt install -y cmake/bullseye-backports
 else
-    echo "Unknown debian release: $debian_rel"
+    apt-get install -y cmake
 fi
 
 if [ -n "@BUILD_WX32@" ]; then
-  remove_wx30
+  remove_wx30  
   install_wx32
 fi
 
 
 cd /ci-source
 rm -rf build-debian; mkdir build-debian; cd build-debian
-cmake -DCMAKE_BUILD_TYPE=Release -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" ..
+cmake -DCMAKE_BUILD_TYPE=Release\
+   -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" \
+    ..
+
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 chown --reference=.. .
 EOF
 
+if [ -n "$BUILD_WX32" ]; then OCPN_WX_ABI_OPT="-DOCPN_WX_ABI=wx32"; fi
+
 sed -i "s/@TARGET_TUPLE@/$TARGET_TUPLE/" $ci_source/build.sh
 sed -i "s/@BUILD_WX32@/$BUILD_WX32/" $ci_source/build.sh
+#sed -i "s/@OCPN_WX_ABI_OPT@/$OCPN_WX_ABI_OPT/" $ci_source/build.sh
 
 
 # Run script in docker image
 #
-if [ -n "$CI" ]; then
-    sudo apt -q update
-    sudo apt install qemu-user-static
-fi
-docker run --rm --privileged multiarch/qemu-user-static:register --reset || :
-docker run --platform linux/arm/v7 --privileged \
+docker run \
     -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
     -e "CLOUDSMITH_BETA_REPO=$OCPN_BETA_REPO" \
     -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
-    -v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static \
-    arm32v7/debian:$OCPN_TARGET /bin/bash -xe /ci-source/build.sh
+    debian:$OCPN_TARGET /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
 

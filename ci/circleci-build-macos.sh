@@ -11,15 +11,20 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 
-set -xe
+set -x
 
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 
 git submodule update --init opencpn-libs
 
+# If applicable,  restore /usr/local from cache.
+if [[ -n "$CI" && -f /tmp/local.cache.tar ]]; then
+  sudo rm -rf /usr/local/*
+  sudo tar -C /usr -xf /tmp/local.cache.tar
+fi
+
 # Set up build directory
-if [ -n "$TRAVIS_BUILD_DIR" ]; then cd $TRAVIS_BUILD_DIR; fi
 rm -rf build-osx  && mkdir build-osx
 
 # Create a log file.
@@ -27,7 +32,7 @@ exec > >(tee build-osx/build.log) 2>&1
 
 export MACOSX_DEPLOYMENT_TARGET=10.10
 
-# Return latest version of $1, optiomally using option $2
+# Return latest version of $1, optionally using option $2
 pkg_version() { brew list --versions $2 $1 | tail -1 | awk '{print $2}'; }
 
 #
@@ -41,20 +46,15 @@ for pkg in $(sed '/#/d' < $here/../build-deps/macos-deps);  do
     brew link --overwrite $pkg || brew install $pkg
 done
 
-# Install the pre-built wxWidgets package
-
-wget -q https://download.opencpn.org/s/MCiRiq4fJcKD56r/download \
-    -O /tmp/wx315_opencpn50_macos1010.tar.xz
-tar -C /tmp -xJf /tmp/wx315_opencpn50_macos1010.tar.xz
+export OPENSSL_ROOT_DIR='/usr/local/opt/openssl'
 
 # Build and package
 cd build-osx
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DwxWidgets_CONFIG_EXECUTABLE=/tmp/wx315_opencpn50_macos1010/bin/wx-config \
-  -DwxWidgets_CONFIG_OPTIONS="--prefix=/tmp/wx315_opencpn50_macos1010" \
   -DCMAKE_INSTALL_PREFIX= \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 \
+  -DOCPN_TARGET_TUPLE="darwin-wx32;10;x86_64" \
   ..
 
 if [[ -z "$CI" ]]; then
@@ -63,7 +63,9 @@ if [[ -z "$CI" ]]; then
     exit 0
 fi
 
-make VERBOSE=1 tarball
+# nor-reproducible error on first invocation, seemingly tarball-conf-stamp
+# is not created as required.
+make VERBOSE=1 tarball || make VERBOSE=1 tarball
 
 # Install cloudsmith needed by upload script
 python3 -m pip install -q --user cloudsmith-cli
@@ -76,3 +78,8 @@ pyvers=$(python3 --version | awk '{ print $2 }')
 pyvers=$(echo $pyvers | sed -E 's/[\.][0-9]+$//')    # drop last .z in x.y.z
 py_dir=$(ls -d  /Users/*/Library/Python/$pyvers/bin)
 echo "export PATH=\$PATH:$py_dir" >> ~/.uploadrc
+
+# Create the cached /usr/local archive
+if [ -n "$CI"  ]; then
+  tar -C /usr -cf /tmp/local.cache.tar  local
+fi

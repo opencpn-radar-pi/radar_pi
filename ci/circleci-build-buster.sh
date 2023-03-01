@@ -13,27 +13,36 @@
 
 set -xe
 
+# Read configuration and check if we should really build this
+here=$(cd $(dirname $0); pwd -P)
+source $here/../build-conf.rc
+if [ "$oldstable_build_rate" -eq 0 ]; then exit 0; fi
+if [ $((CIRCLE_BUILD_NUM % oldstable_build_rate)) -ne 0 ]; then
+    exit 0
+fi
+
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 if [ -d /ci-source ]; then cd /ci-source; fi
 
 git submodule update --init opencpn-libs
 
-# Set up build directory and a visible link in /
-builddir=build-$OCPN_TARGET
+# Set up build directory and possibly a visible link in /
+builddir=build-buster
 test -d $builddir || sudo mkdir $builddir  && sudo rm -rf $builddir/*
 sudo chmod 777 $builddir
-if [ "$PWD" != "/"  ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
+if [ -w "/" ]; then    # Running as root i. e., a docker build
+    if [ "$PWD" != "/" ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
+fi
 
 # Create a log file.
 exec > >(tee $builddir/build.log) 2>&1;
 
-sudo add-apt-repository ppa:leamas-alec/wxwidgets
 sudo apt -qq update || apt update
 sudo apt-get -qq install devscripts equivs software-properties-common
 
-sudo mk-build-deps -ir build-deps/control
-sudo apt-get -q --allow-unauthenticated install -f
+mk-build-deps --root-cmd=sudo -ir build-deps/control
+rm -f *changes  *buildinfo
 
 sudo apt install -q \
     python3-pip python3-setuptools python3-dev python3-wheel \
@@ -43,13 +52,10 @@ python3 -m pip install --user --upgrade -q setuptools wheel pip
 python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
 cd $builddir
-
-cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DOCPN_TARGET_TUPLE="ubuntu-wx315;20.04;x86_64" \
-    ..
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 make VERBOSE=1 tarball
 ldd app/*/lib/opencpn/*.so
+
 if [ -d /ci-source ]; then
     sudo chown --reference=/ci-source -R . ../cache || :
 fi

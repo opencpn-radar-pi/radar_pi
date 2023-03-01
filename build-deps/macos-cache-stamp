@@ -1,0 +1,4 @@
+# Any change in this file will cause the macos cache to be invalidated
+# i. e., that the homebrew dependencies are downloaded and wxwidgets
+# rebuilt. For example, change the stock 'v1' to 'v2'
+v1

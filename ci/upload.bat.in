@@ -4,11 +4,11 @@ rem
 
 echo OFF
 if "%CLOUDSMITH_API_KEY%" == "" (
-    echo 'Warning: CLOUDSMITH_API_KEY is not available, giving up.'
-    echo 'Metadata: @pkg_displayname@.xml'
-    echo 'Tarball: @pkg_tarname@.tar.gz'
-    echo 'Version: @pkg_semver@'
-    exit 0
+    echo Warning: CLOUDSMITH_API_KEY is not available, giving up.
+    echo Metadata: @pkg_displayname@.xml
+    echo Tarball: @pkg_tarname@.tar.gz
+    echo Version: @pkg_semver@
+    exit /b 0
 )
 echo Using CLOUDSMITH_API_KEY: %CLOUDSMITH_API_KEY:~,4%%...
 echo ON
