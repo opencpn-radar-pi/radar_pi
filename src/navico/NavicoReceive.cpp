@@ -1286,6 +1286,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
           m_ri->m_no_transmit_end[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].end_angle)),
                                             data->blanking[i].enabled ? RCS_MANUAL : RCS_OFF);
         }
+        m_ri->m_no_transmit_zones = 4;
         LOG_BINARY_RECEIVE(wxT("received sector blanking message"), report, len);
         break;
       }

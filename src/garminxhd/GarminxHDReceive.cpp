@@ -697,6 +697,7 @@ bool GarminxHDReceive::ProcessReport(const uint8_t *report, size_t len) {
           m_ri->m_no_transmit_start[0].Update(0, RCS_OFF);
           m_ri->m_no_transmit_end[0].Update(0, RCS_OFF);
         }
+        m_ri->m_no_transmit_zones = 1;
         return true;
       }
       case 0x0940: {
