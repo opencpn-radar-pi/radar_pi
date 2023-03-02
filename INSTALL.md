@@ -45,22 +45,23 @@ just work in dry-run mode without uploading anything. See the file for
 details.
 
 #### Building on windows (MSVC)
-On Windows, build is performed in the _build_ directory using a CMD shell:
+On Windows, build is performed in the _build_ directory using a CMD shell.
+
+The first, initial step to install build depencies needs administrative
+privileges and is run using:
 
     > set PATH=C:\ProgramData\chocolatey\bin;C:\Windows\system32;C:\Windows
     > ..\buildwin\win_deps.bat
-    > cmake -T v141_xp -G "Visual Studio 15 2017" ^
-           -DCMAKE_BUILD_TYPE=RelWithDebInfo  ..
-    > cmake --build . --target tarball --config RelWithDebInfo
 
-_win\_deps.bat_ needs administrative privileges on the first run when it
-installs some build dependencies. Subsequent runs can (should) be
-done without such privileges.
-
-The initial `set PATH=...` file strips down %PATH% to a very small path,
+The initial `set PATH=...` line strips down %PATH% to a very small path,
 excluding most if not all otherwise available tools. In many cases this is
 neither required nor convenient and can be excluded. However, doing it
 represents a tested baseline.
+
+Actual builds can (i. e., should) be performed without administrative
+privileges by running 
+
+    > ..\ci\appveyor.bat
 
 #### Building for Buster (Debian 9)
 

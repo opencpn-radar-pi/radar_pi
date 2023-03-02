@@ -1,3 +1,11 @@
+3.2.3-beta1 Feb 14, 2023
+* ci: debian, armhf builds: Fix handling of CLOUDSMITH_BETA_REPO 
+  environment variable (#498)
+* macos: Install built wxWidgets in local project dir (#495).
+* Update opencpn-libs, handle missing ocpn-api link target (opencpn-libs#9).
+* update-templates: Handle wxWidgets 3.2 in build-deps/control (#490).
+* ci: debian-build-docker, -armhf: Clean up directory permissions (#492).
+
 3.2.2 Jan 16, 2023
 * ci: flatpak: Update google packages signing key (#487)
 * ci: android: Handle missing google packages signing key (#487)
