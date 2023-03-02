@@ -76,7 +76,7 @@ function install_wx32() {
 set -x
 
 apt -y update
-apt -y install devscripts equivs wget git lsb-release
+apt -y install acl devscripts equivs wget git lsb-release
 
 mk-build-deps /ci-source/build-deps/control
 apt install -q -y ./opencpn-build-deps*deb
@@ -101,11 +101,17 @@ fi
 
 
 cd /ci-source
+getfacl -R /ci-source > /ci-source.permissions
+chown root:root /ci-source
+git config --global --add safe.directory /ci-source
+
 rm -rf build-debian; mkdir build-debian; cd build-debian
 cmake -DCMAKE_BUILD_TYPE=Release -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" ..
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
-chown --reference=.. .
+
+cd /
+setfacl --restore=/ci-source.permissions
 EOF
 
 sed -i "s/@TARGET_TUPLE@/$TARGET_TUPLE/" $ci_source/build.sh
@@ -121,7 +127,7 @@ fi
 docker run --rm --privileged multiarch/qemu-user-static:register --reset || :
 docker run --platform linux/arm/v7 --privileged \
     -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
-    -e "CLOUDSMITH_BETA_REPO=$OCPN_BETA_REPO" \
+    -e "CLOUDSMITH_BETA_REPO=$CLOUDSMITH_BETA_REPO" \
     -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
