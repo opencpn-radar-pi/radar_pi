@@ -319,7 +319,7 @@ void GPSKalmanFilter::SetMeasurement(ExtendedPosition* gps, ExtendedPosition* up
   if (updated->pos.lat < -90.) updated->pos.lat = -180. - updated->pos.lat;
   if (updated->pos.lon > 180.) updated->pos.lon = -360. + updated->pos.lon;
   if (updated->pos.lon < -180.) updated->pos.lon = 360. + updated->pos.lon;
-  double cosin = cos(updated->pos.lat / 360. * 2. * PI);
+  double cosin = cos(deg2rad(updated->pos.lat));
   updated->speed_kn = sqrt(X(2, 0) * X(2, 0) + X(3, 0) * X(3, 0) * cosin * cosin) * 3600. / 1852.;
 
   // update covariance P

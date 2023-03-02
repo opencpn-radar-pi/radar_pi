@@ -233,11 +233,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
 
     case CT_BEARING_ALIGNMENT: {  // to be consistent with the local bearing alignment of the pi
                                   // this bearing alignment works opposite to the one an a Lowrance display
-#if 0
-      if (value < 0) {
-        value += 360;
-      }
-#endif
+
       uint8_t rd_msg_bearing_offset[] = {0x07, 0x82, 0x01, 0x00, 0x14, 0x00, 0x00, 0x00};
       rd_msg_bearing_offset[4] = value & 0xff;
       rd_msg_bearing_offset[5] = (value >> 8) & 0xff;

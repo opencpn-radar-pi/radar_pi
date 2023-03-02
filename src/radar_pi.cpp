@@ -87,7 +87,7 @@ double local_bearing(GeoPosition pos1, GeoPosition pos2) {
   double y = sin(theta) * cos(s2);
   double x = cos(s1) * sin(s2) - sin(s1) * cos(s2) * cos(theta);
 
-  double brg = fmod(rad2deg(atan2(y, x)) + 360.0, 360.0);
+  double brg = MOD_DEGREES_FLOAT(rad2deg(atan2(y, x)));
   return brg;
 }
 
@@ -1411,7 +1411,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
       // v_scale_ppm = vertical pixels per meter
       v_scale_ppm = vp->pix_height / dist_y;  // pixel height of screen div by equivalent meters
     }
-    double rotation = fmod(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor) + 720.0, 360);
+    double rotation = MOD_DEGREES_FLOAT(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
     LOG_DIALOG(wxT("RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat, vp->clon,
                vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
     m_radar[current_overlay_radar]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
@@ -1857,11 +1857,7 @@ void radar_pi::UpdateCOGAvg(double cog) {
     }
     sum /= count;
 
-    if (sum < 0.) {
-      sum += 360.;
-    } else if (sum >= 360.) {
-      sum -= 360.;
-    }
+    sum = MOD_DEGREES_FLOAT(sum);
     m_COGAvg = sum;
   } else {
     m_COGAvg = cog;

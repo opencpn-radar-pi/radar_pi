@@ -203,13 +203,11 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
 
     case CT_BEARING_ALIGNMENT: {  // to be consistent with the local bearing alignment of the pi
                                   // this bearing alignment works opposite to the one an a Lowrance display
-      if (value < 0) {
-        value += 360;
-      }
-      int v = value * 10;
-      int v1 = v / 256;
-      int v2 = v & 255;
-      uint8_t cmd[4] = {0x05, 0xc1, (uint8_t)v2, (uint8_t)v1};
+      value = MOD_DEGREES(value);
+      uint16_t v = SCALE_DEGREES_TO_DECIDEGREES(value);
+      uint8_t v1 = v >> 8;
+      uint8_t v2 = (uint8_t) v;
+      uint8_t cmd[4] = {0x05, 0xc1, v2, v1};
       LOG_VERBOSE(wxT("%s Bearing alignment: %d"), m_name.c_str(), v);
       r = TransmitCmd(cmd, sizeof(cmd));
       break;

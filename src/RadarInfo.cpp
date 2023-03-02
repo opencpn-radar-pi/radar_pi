@@ -591,7 +591,7 @@ void RadarInfo::SampleCourse(int angle) {
     for (int i = 0; i < COURSE_SAMPLES; i++) {
       sum += m_course_log[i];
     }
-    m_course = fmod(sum / COURSE_SAMPLES + 720., 360);
+    m_course = MOD_DEGREES_FLOAT(sum / COURSE_SAMPLES);
   }
 }
 
@@ -697,12 +697,8 @@ void RadarInfo::RenderGuardZone() {
       end_bearing = m_no_transmit_end[z].GetValue();
 
       if (start_bearing != end_bearing && start_bearing >= -180 && end_bearing >= -180) {
-        if (start_bearing < 0) {
-          start_bearing += 360;
-        }
-        if (end_bearing < 0) {
-          end_bearing += 360;
-        }
+        start_bearing = MOD_DEGREES(start_bearing);
+        end_bearing = MOD_DEGREES(end_bearing);
         glColor4ub(250, 255, 255, alpha);
         DrawFilledArc(range, 0, start_bearing, end_bearing);
       }
@@ -1142,7 +1138,7 @@ wxString RadarInfo::FormatAngle(double angle) {
   wxString s;
 
   wxString relative;
-  if (angle > 360) angle -= 360;
+  angle = MOD_DEGREES_FLOAT(angle);
   if (GetOrientation() != ORIENTATION_HEAD_UP) {
     relative = wxT("T");
   } else {
@@ -1186,7 +1182,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
       if (!isnan(m_vrm[b]) && !isnan(bearing)) {
         if (orientation == ORIENTATION_STABILIZED_UP) {
           bearing += m_course;
-          if (bearing >= 360) bearing -= 360;
+          bearing = MOD_DEGREES_FLOAT(bearing);
         }
 
         if (s.length()) {
@@ -1206,7 +1202,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
       } else if (orientation == ORIENTATION_COG_UP) {
         bearing += m_pi->GetCOG();
       }
-      if (bearing >= 360) bearing -= 360;
+      bearing = MOD_DEGREES_FLOAT(bearing);
 
     } else if (!isnan(m_mouse_pos.lat) && !isnan(m_mouse_pos.lon) && GetRadarPosition(&radar_pos)) {
       // Can't compute this upfront, ownship may move...
