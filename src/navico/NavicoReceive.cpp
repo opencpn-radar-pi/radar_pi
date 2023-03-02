@@ -1029,6 +1029,16 @@ struct SectorBlankingReport {
   uint16_t end_angle;
 };
 
+struct RadarReport_06C4_68 {         // 06 C4 with length 68
+  uint8_t what;                      // 0   0x04
+  uint8_t command;                   // 1   0xC4
+  uint32_t field1;                   // 2-5
+  char name[6];                      // 6-11 "Halo;\0"
+  uint8_t field2[24];                // 12-35 unknown
+  SectorBlankingReport blanking[4];  // 36-55
+  uint8_t field3[12];                // 56-67
+};
+
 struct RadarReport_06C4_74 {         // 06 C4 with length 74
   uint8_t what;                      // 0   0x04
   uint8_t command;                   // 1   0xC4
@@ -1276,7 +1286,24 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
       }
 #endif
 
-      case (74 << 8) + 0x06: {  // 66 bytes starting with 04 C4
+      case (68 << 8) + 0x06: {  // 68 bytes starting with 04 C4
+                                // Seen on HALO 4 (Vlissingen)
+        RadarReport_06C4_68 *data = (RadarReport_06C4_68 *)report;
+        for (int i = 0; i <= 3; i++) {
+          LOG_INFO(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
+                   data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
+          m_ri->m_no_transmit_start[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].start_angle)),
+                                              data->blanking[i].enabled ? RCS_MANUAL : RCS_OFF);
+          m_ri->m_no_transmit_end[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].end_angle)),
+                                            data->blanking[i].enabled ? RCS_MANUAL : RCS_OFF);
+        }
+        m_ri->m_no_transmit_zones = 4;
+        LOG_BINARY_RECEIVE(wxT("received sector blanking message"), report, len);
+        break;
+      }
+
+      case (74 << 8) + 0x06: {  // 74 bytes starting with 04 C4
+                                // Seen on HALO 24 (Merrimac)
         RadarReport_06C4_74 *data = (RadarReport_06C4_74 *)report;
         for (int i = 0; i <= 3; i++) {
           LOG_INFO(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
