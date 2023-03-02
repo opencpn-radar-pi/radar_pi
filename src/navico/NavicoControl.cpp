@@ -320,8 +320,10 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       uint8_t sector = (controlType - CT_NO_TRANSMIT_START_1);
       uint8_t enable = (state >= RCS_MANUAL) ? 1 : 0;
       int valueEnd = m_ri->m_no_transmit_end[sector].GetValue();
-      uint16_t start_raw = SCALE_DEGREES_TO_DECIDEGREES((value + 360 % 360));
-      uint16_t end_raw = SCALE_DEGREES_TO_DECIDEGREES((valueEnd + 360 % 360));
+      value = MOD_DEGREES(value);
+      valueEnd = MOD_DEGREES(valueEnd);
+      uint16_t start_raw = SCALE_DEGREES_TO_DECIDEGREES(value);
+      uint16_t end_raw = SCALE_DEGREES_TO_DECIDEGREES(valueEnd);
       uint8_t enable_cmd[] = {0x0d, 0xc1, sector, 0, 0, 0, enable};
       uint8_t angle_cmd[] = {
           0xc0,
@@ -350,8 +352,8 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       uint8_t sector = (controlType - CT_NO_TRANSMIT_END_1);
       uint8_t enable = (state >= RCS_MANUAL) ? 1 : 0;
       int valueStart = m_ri->m_no_transmit_start[sector].GetValue();
-      uint16_t start_raw = SCALE_DEGREES_TO_DECIDEGREES((valueStart + 360 % 360));
-      uint16_t end_raw = SCALE_DEGREES_TO_DECIDEGREES((value + 360 % 360));
+      uint16_t start_raw = SCALE_DEGREES_TO_DECIDEGREES(MOD_DEGREES(valueStart));
+      uint16_t end_raw = SCALE_DEGREES_TO_DECIDEGREES(MOD_DEGREES(value));
       uint8_t enable_cmd[] = {0x0d, 0xc1, sector, 0, 0, 0, enable};
       uint8_t angle_cmd[] = {
           0xc0,
