@@ -225,26 +225,39 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
     }
 
     case CT_SEA: {
-      int v = (value + 1) * 255 / 100;
-      if (v > 255) {
-        v = 255;
-      }
       if (m_ri->m_radar_type >= RT_HaloA) {
-        uint8_t cmd[] = {0x11, 0xc1, 0, 0, 0, 0};
+	// Capture data:
+	// Data: 11c101000004 = Auto
+	// Data: 11c10100ff04 = Auto-1
+	// Data: 11c10100ce04 = Auto-50
+	// Data: 11c101323204 = Auto+50
+	// Data: 11c100646402 = 100
+        // Data: 11c100000002 = 0
+        // Data: 11c100000001 = Mode manual
+        // Data: 11c101000001 = Mode auto
+
+        uint8_t cmd[] = {0x11, 0xc1, 0, 0, 0, 1};
 
         if (state == RCS_MANUAL) {
-          cmd[5] = 0x01;
+          cmd[2] = 0x00;
+	  r = TransmitCmd(cmd, sizeof(cmd));
+          cmd[5] = 0x02;
         } else {
           cmd[2] = 0x01;
-          if (value > 0) {
-            cmd[3] = value;
-          }
-          cmd[4] = (uint8_t)value;
-          cmd[5] = 0x05;
+	  r = TransmitCmd(cmd, sizeof(cmd));
+          cmd[5] = 0x04;
         }
+	if (value > 0) {
+	  cmd[3] = (uint8_t) value;
+	}
+	cmd[4] = (uint8_t)value;
         LOG_VERBOSE(wxT("%s Halo Sea: %d auto %d"), m_name.c_str(), value, autoValue);
         r = TransmitCmd(cmd, sizeof(cmd));
       } else {
+	int v = (value + 1) * 255 / 100;
+	if (v > 255) {
+	  v = 255;
+	}
         uint8_t cmd[] = {0x06, 0xc1, 0x02, 0, 0, 0, (uint8_t)autoValue, 0, 0, 0, (uint8_t)v};
 
         LOG_VERBOSE(wxT("%s Sea: %d auto %d"), m_name.c_str(), value, autoValue);
