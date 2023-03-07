@@ -12,7 +12,6 @@
 # (at your option) any later version.
 
 
-
 # -------- Options ----------
 
 set(OCPN_TEST_REPO
