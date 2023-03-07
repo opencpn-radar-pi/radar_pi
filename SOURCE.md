@@ -26,7 +26,7 @@ The refactoring had the following design principles:
 - Concentrate knowledge of the actual radar in as little code as possible.
 - Minimize computations and OpenGL overhead.
 
-The design of the code is such that only the classes named br24... are really Navico specific. The RadarDraw, RadarDrawVertex, RadarDrawShader and GuardZone should be quite portable to other radars. RadarInfo will need some massaging.
+The design of the code is such that only the classes in specific 'manufacturer' directories are manufacturer/radar specific. The files in the `src` directory itself are portable.
 
 Drawing: Vertex or Shader
 -------------------------
