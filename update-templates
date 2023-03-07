@@ -116,6 +116,14 @@ if [ -n "$clean" ]; then
     exit 1
 fi
 
+# Set up a generic sed -i command  for MacOS and Linux/GNU (#505).
+case $OSTYPE in
+  darwin*) SED_I="sed -i.bak"
+           ;;
+  *)       SED_I="sed -i"
+           ;;
+esac
+
 if [ -z "$test_mode" ]; then
     init_shipdriver_remote
 
@@ -176,7 +184,7 @@ git diff-index --quiet --cached HEAD -- || {
 }
 
 # Update flatpak runtime version as required:
-sed -i \
+$SED_I \
     -e '/sdk: org.freedesktop.Sdk/s/20.08/22.08/' \
     -e '/^runtime-version:/s/:.*/: beta/' \
   flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
@@ -214,7 +222,7 @@ cat >$wxtemp << EOF
 EOF
 
 grep -q "libwxgtk3.2" build-deps/control || {
-    sed -i -e '/libwxgtk/s/^.*$/LIBWXGTK/' \
+    $SED_I -e '/libwxgtk/s/^.*$/LIBWXGTK/' \
            -e '1,/LIBWXGTK/s/LIBWXGTK/WX_DEPS/' \
            -e "/WX_DEPS/r$wxtemp" \
            -e '/WX_DEPS/d' -e '/LIBWXGTK/d' \
