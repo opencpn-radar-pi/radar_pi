@@ -8,3 +8,4 @@ po/*.pot
 cache
 plugins
 *.bat
+*.bak
