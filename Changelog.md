@@ -1,5 +1,7 @@
 3.2.3 TBD
 * Fix a typo in MacosWxwidgets affecting parallel make (#502)
+* Update opencpn-libs, notably updated ocpn_plugin.h and pdb API files
+* Handle bug on MacOS in update_templates (#502).
 
 3.2.3-beta1 Feb 14, 2023
 * ci: debian, armhf builds: Fix handling of CLOUDSMITH_BETA_REPO 
