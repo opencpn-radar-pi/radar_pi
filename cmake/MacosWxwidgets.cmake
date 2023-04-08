@@ -83,7 +83,7 @@ execute_process(
       --prefix=${cache_dir}
  WORKING_DIRECTORY ${wxwidgets_src_dir}
 )
-math(_nproc ${OPCN_NPROC} * 2)    # Assuming two threads/cpu
+math(_nproc ${OCPN_NPROC} * 2)    # Assuming two threads/cpu
 execute_process(
   COMMAND make -j${_nproc}
   WORKING_DIRECTORY ${wxwidgets_src_dir}
