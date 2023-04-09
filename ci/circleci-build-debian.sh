@@ -76,7 +76,7 @@ git submodule update --init opencpn-libs
 builddir=build-$OCPN_TARGET
 test -d $builddir || sudo mkdir $builddir  && sudo rm -rf $builddir/*
 sudo chmod 777 $builddir
-#if [ "$PWD" != "/"  ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
+if [ "$PWD" != "/"  ]; then sudo ln -sf $PWD/$builddir /$builddir; fi
 
 # Create a log file.
 exec > >(tee $builddir/build.log) 2>&1;
