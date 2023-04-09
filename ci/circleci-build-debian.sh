@@ -36,6 +36,8 @@ function remove_wx30() {
 
 # Install generated packages
 function install_wx32() {
+
+  apt upgrade dpkg/focal-updates || :
   test -d /usr/local/pkg || sudo mkdir /usr/local/pkg
   sudo chmod a+w /usr/local/pkg
   repo="https://ppa.launchpadcontent.net/opencpn/opencpn/"
