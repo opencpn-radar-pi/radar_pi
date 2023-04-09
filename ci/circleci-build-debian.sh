@@ -40,9 +40,9 @@ function install_wx32() {
   apt upgrade dpkg/focal-updates || :
   test -d /usr/local/pkg || sudo mkdir /usr/local/pkg
   sudo chmod a+w /usr/local/pkg
-  repo="https://ppa.launchpadcontent.net/opencpn/opencpn/"
-  head="ubuntu/pool/main/w/wxwidgets3.2"
-  vers="3.2.2+dfsg-1~bpo22.04.1"
+  repo="https://keversoft.com/apt/debian"
+  head="11/wx"
+  vers="3.2.2+dfsg-2"
   pushd /usr/local/pkg
   wget -v -r -l 1 -np -nd -A _all.deb,_amd64.deb "$repo/$head/"
   #wget -q $repo/$head/wx-common_${vers}_amd64.deb
