@@ -25,10 +25,12 @@ function remove_wx30() {
       libwxgtk3.0-gtk3-0v5 \
       libwxbase3.0-0v5 wx3.0-headers \
       libwxsvg3 \
-      libwxsvg-dev \
-      libwxbase3.2-0 \
+      libwxsvg-dev
+
+  # Necessary in my own dev env, not on CircleCI:
+  sudo apt remove libwxbase3.2-0 \
       libwxgtk3.2-0 \
-      libwxgtk-webview3.2-0
+      libwxgtk-webview3.2-0 || :
 
 }
 
