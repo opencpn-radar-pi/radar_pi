@@ -111,10 +111,7 @@ bool ArpaTarget::Pix(int ang, int rad) {
   if (rad <= 0 || rad >= (int)m_ri->m_spoke_len_max) {
     return false;
   }
-  int angle = MOD_SPOKES(ang);
-  if (angle >= m_ri->m_spokes || angle < 0) {
-    return false;
-  }
+  SpokeBearing angle = MOD_SPOKES(ang);
   bool bit0 = (m_ri->m_history[angle].line[rad] & 128) > 0;
   bool bit1 = (m_ri->m_history[angle].line[rad] & 64) > 0;
   bool bit2 = (m_ri->m_history[angle].line[rad] & 32) > 0;
@@ -1274,10 +1271,10 @@ void RadarArpa::SearchDopplerTargets() {
     LOG_INFO(wxT("No more scanning for ARPA targets, maximum number of targets reached"));
     return;
   }
-  if (!m_pi->m_settings.show                          // No radar shown
-    || !m_ri->GetRadarPosition(&own_pos.pos)        // No position
-    || m_pi->GetHeadingSource() == HEADING_NONE    // No heading
-    || (m_pi->GetHeadingSource() == HEADING_FIX_HDM && m_pi->m_var_source == VARIATION_SOURCE_NONE)) {
+  if (!m_pi->m_settings.show                       // No radar shown
+      || !m_ri->GetRadarPosition(&own_pos.pos)     // No position
+      || m_pi->GetHeadingSource() == HEADING_NONE  // No heading
+      || (m_pi->GetHeadingSource() == HEADING_FIX_HDM && m_pi->m_var_source == VARIATION_SOURCE_NONE)) {
     return;
   }
 

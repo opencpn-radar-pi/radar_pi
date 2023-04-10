@@ -1116,7 +1116,6 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
     m_ri->m_state.Update(RADAR_TRANSMIT);
 
     wxLongLong nowMillis = wxGetLocalTimeMillis();
-    int headerIdx = 0;
     int nextOffset = sizeof(QuantumHeader);
     UINT8 unpacked_data[1024], *dataPtr = 0;
 
@@ -1162,7 +1161,6 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
       }
     }
     m_next_spoke = spoke + 1;
-    headerIdx++;
     m_pi->SetRadarHeading();
     int hdt_raw = qheader->num_spokes * (m_pi->GetHeadingTrue() + m_pi->m_vp_rotation) / 360.;
 

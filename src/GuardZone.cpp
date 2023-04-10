@@ -141,10 +141,10 @@ void GuardZone::SearchTargets() {
     LOG_INFO(wxT("No more scanning for ARPA targets, maximum number of targets reached"));
     return;
   }
-  if (!m_pi->m_settings.show                        // No radar shown
-    || !m_ri->GetRadarPosition(&own_pos.pos)        // No position
-    || m_pi->GetHeadingSource() == HEADING_NONE     // No heading 
-    || (m_pi->GetHeadingSource() == HEADING_FIX_HDM && m_pi->m_var_source == VARIATION_SOURCE_NONE)) {
+  if (!m_pi->m_settings.show                       // No radar shown
+      || !m_ri->GetRadarPosition(&own_pos.pos)     // No position
+      || m_pi->GetHeadingSource() == HEADING_NONE  // No heading
+      || (m_pi->GetHeadingSource() == HEADING_FIX_HDM && m_pi->m_var_source == VARIATION_SOURCE_NONE)) {
     return;
   }
   if (m_pi->m_radar[0] == 0 && m_pi->m_radar[1] == 0) {
@@ -166,14 +166,9 @@ void GuardZone::SearchTargets() {
   if (range_start < 1) range_start = 1;
   if (range_start >= range_end) return;
   int hdt = SCALE_DEGREES_TO_SPOKES(m_pi->GetHeadingTrue());
-  while (hdt >= m_ri->m_spokes) {
-    hdt -= m_ri->m_spokes;
-  }
-  while (hdt < 0) {
-    hdt += m_ri->m_spokes;
-  }
-  SpokeBearing start_bearing = SCALE_DEGREES_TO_SPOKES(m_start_bearing) + hdt;
-  SpokeBearing end_bearing = SCALE_DEGREES_TO_SPOKES(m_end_bearing) + hdt;
+  SpokeBearing hdt_spokes = MOD_SPOKES(hdt);
+  SpokeBearing start_bearing = SCALE_DEGREES_TO_SPOKES(m_start_bearing) + hdt_spokes;
+  SpokeBearing end_bearing = SCALE_DEGREES_TO_SPOKES(m_end_bearing) + hdt_spokes;
   start_bearing = MOD_SPOKES(start_bearing);
   end_bearing = MOD_SPOKES(end_bearing);
   if (start_bearing > end_bearing) {
