@@ -32,9 +32,9 @@ function remove_wx30() {
 function install_wx32() {
   test -d /usr/local/pkg || sudo mkdir /usr/local/pkg
   sudo chmod a+w /usr/local/pkg
-  repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets"
+  repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets3-2"
   head="deb/debian/pool/bullseye/main"
-  vers="3.2.1+dfsg-1~bpo11+1"
+  vers="3.2.2+dfsg-1~bpo11+1"
   pushd /usr/local/pkg
   wget -q $repo/$head/w/wx/wx-common_${vers}/wx-common_${vers}_amd64.deb
   wget -q $repo/$head/w/wx/wx3.2-i18n_${vers}/wx3.2-i18n_${vers}_all.deb
