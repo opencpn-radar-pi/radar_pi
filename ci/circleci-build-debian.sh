@@ -49,6 +49,7 @@ function install_wx32() {
   wget -q $repo/$head/l/li/libwxgtk-media3.2-1_${vers}/libwxgtk-media3.2-1_${vers}_amd64.deb
   #wget -q $repo/$head/l/li/libwxsvg-dev_2:1.5.23+dfsg-1~bpo11+1/libwxsvg-dev_1.5.23+dfsg-1~bpo11+1_amd64.deb
   #wget -q $repo/$head/l/li/libwxsvg3_2:1.5.23+dfsg-1~bpo11+1/libwxsvg3_1.5.23+dfsg-1~bpo11+1_amd64.deb
+
   sudo dpkg -i --force-depends $(ls /usr/local/pkg/*deb)
   sudo apt --fix-broken install
   sudo sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
