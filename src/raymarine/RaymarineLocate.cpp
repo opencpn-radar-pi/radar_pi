@@ -215,7 +215,7 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
   LocationInfoBlock *rRec = (LocationInfoBlock *)report;
   wxCriticalSectionLocker lock(m_exclusive);
 
-  int raymarine_radar_code;
+  int raymarine_radar_code = 0;
   for (size_t r = 0; r < m_pi->m_settings.radar_count; r++) {
     if (m_pi->m_radar[r]->m_radar_type == RM_E120) {  // only one Raymarine radar allowed
       raymarine_radar_code = 01;
