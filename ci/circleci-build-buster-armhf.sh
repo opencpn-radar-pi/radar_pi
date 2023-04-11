@@ -52,8 +52,8 @@ apt install -y ./cmake_3.19.3-0.1_armhf.deb ./cmake-data_3.19.3-0.1_all.deb
 
 cd /ci-source
 rm -rf build-debian; mkdir build-debian; cd build-debian
-cmake -DCMAKE_BUILD_TYPE=Release -DOCPN_TARGET_TUPLE="debian;10;armhf" ..
-make -j $(nproc) VERBOSE=1 tarball
+cmake "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}" -DOCPN_TARGET_TUPLE="debian;10;armhf" ..
+make -j \$(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 chown --reference=.. .
 EOF
@@ -77,7 +77,6 @@ docker run --platform linux/arm/v7 --privileged \
     arm32v7/debian:buster /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
-"${here}/ci/verify-result.sh"
 
 # Install cloudsmith-cli (for upload) and cryptography (for git-push).
 #

@@ -1,22 +1,34 @@
 #!/usr/bin/env bash
+#
+# Copyright (c) 2023 Kees Verruijt
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
 
 set -euo pipefail
 
+OCPN_TARGET="${1:?Usage: verify-result.sh target-dir}"
+
+# shellcheck disable=SC1090
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 
-pkg_tarname="$(echo *.tar.gz)"
+cd "${OCPN_TARGET}"
+pkg_tarname="$(echo ./*.tar.gz)"
 if [ ! -s "${pkg_tarname}" ] 
 then
   echo "ERROR: Not exactly one .tar.gz file in $PWD"
-  ls *.tar.gz
+  ls ./*.tar.gz
   exit 1
 fi
 
-pkg_xmlname="$(grep -l '<tarball-url>' *.xml)"
+pkg_xmlname="$(grep -l '<tarball-url>' ./*.xml)"
 if [ ! -s "${pkg_xmlname}" ] 
 then
   echo "ERROR: Not exactly one .xml file containing tarball-url in $PWD"
-  ls *.xml
+  ls ./*.xml
   exit 1
 fi
 

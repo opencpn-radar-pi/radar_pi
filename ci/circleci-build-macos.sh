@@ -51,7 +51,7 @@ export OPENSSL_ROOT_DIR='/usr/local/opt/openssl'
 # Build and package
 cd build-osx
 cmake \
-  -DCMAKE_BUILD_TYPE=Release \
+  "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}" \
   -DCMAKE_INSTALL_PREFIX= \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 \
   -DOCPN_TARGET_TUPLE="darwin-wx32;10;x86_64" \
@@ -66,8 +66,6 @@ fi
 # nor-reproducible error on first invocation, seemingly tarball-conf-stamp
 # is not created as required.
 make VERBOSE=1 tarball || make VERBOSE=1 tarball
-
-"${here}/ci/verify-result.sh"
 
 # Install cloudsmith needed by upload script
 python3 -m pip install -q --user cloudsmith-cli

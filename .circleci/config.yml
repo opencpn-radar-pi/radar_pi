@@ -5,6 +5,7 @@ debian-steps: &debian-steps
   steps:
     - checkout
     - run: ci/circleci-build-debian.sh
+    - run: ci/verify-result.sh "/build-$OCPN_TARGET"
     - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
     - run: sh -c "ci/git-push.sh /build-$OCPN_TARGET"
 
@@ -216,6 +217,7 @@ jobs:
             - /Users/distiller/project/cache
       - run: >
           sh -c "otool -L build-osx/app/*/OpenCPN.app/Contents/PlugIns/*.dylib"
+      - run: ci/verify-result.sh build-osx
       - run: cd build-osx; /bin/bash < upload.sh
       - run: ci/git-push.sh  build-osx
 

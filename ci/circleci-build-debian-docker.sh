@@ -100,13 +100,13 @@ chown root:root /ci-source
 git config --global --add safe.directory /ci-source
 
 rm -rf build-debian; mkdir build-debian; cd build-debian
-cmake -DCMAKE_BUILD_TYPE=Release\
+cmake "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}" \
    -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" \
     ..
 
 git config --global --add safe.directory /ci-source
 
-make -j $(nproc) VERBOSE=1 tarball
+make -j \$(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 
 cd /
@@ -129,7 +129,6 @@ docker run \
     debian:$OCPN_TARGET /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
-"${here}/ci/verify-result.sh"
 
 # Install cloudsmith-cli (for upload) and cryptography (for git-push).
 #
