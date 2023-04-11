@@ -232,6 +232,7 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
     case CT_ANTENNA_HEIGHT:
     case CT_DISPLAY_TIMING:
     case CT_DOPPLER:
+    case CT_DOPPLER_THRESHOLD:
     case CT_LOCAL_INTERFERENCE_REJECTION:
     case CT_MAIN_BANG_SUPPRESSION:
     case CT_NOISE_REJECTION:

@@ -164,6 +164,7 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
     case CT_CENTER_VIEW:
     case CT_DISPLAY_TIMING:
     case CT_DOPPLER:
+    case CT_DOPPLER_THRESHOLD:
     case CT_FTC:
     case CT_LOCAL_INTERFERENCE_REJECTION:
     case CT_MAIN_BANG_SIZE:

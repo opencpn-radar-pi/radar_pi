@@ -432,6 +432,8 @@ enum RangeUnits {
     RANGE_UNITS_UNDEFINED
 };
 static const int RangeUnitsToMeters[3] = { 1852, 1000, 1852 };
+static const wxString RangeUnitDescriptions[3]
+    = { wxT("kn"), wxT("kph"), wxT("kn") };
 
 /**
  * The data that is stored in the opencpn.ini file. Most of this is set in the

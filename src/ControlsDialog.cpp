@@ -247,23 +247,35 @@ void RadarControlButton::UpdateLabel(bool force) {
         break;
 
       case RCS_MANUAL:
-        if (m_ci.type != CT_RANGE_ADJUSTMENT) {
-          if (m_ci.names) {
-            if (value >= 0 && value < m_ci.nameCount) {
-              label << m_ci.names[value];
+        switch (m_ci.type) {
+          case CT_RANGE_ADJUSTMENT: {
+            // special case for range adjustment to display x.y %
+            double value1 = value / 10.;
+            label << value1;
+            if (m_ci.unit.length() > 0) {
+              label << wxT(" %");
             }
-          } else {
-            label << value;
+            break;
           }
-          if (m_ci.unit.length() > 0) {
-            label << wxT(" ") << m_ci.unit;
+
+          case CT_DOPPLER_THRESHOLD: {
+            // special case for doppler threshold to display x.y units
+            double step = value * 36.0 / RangeUnitsToMeters[m_pi->m_settings.range_units];
+            label << wxString::Format(wxT("%.1f "), step) << RangeUnitDescriptions[m_pi->m_settings.range_units];
+            break;
           }
-        } else {
-          // special case for range adjustment to display x.y %
-          double value1 = value / 10.;
-          label << value1;
-          if (m_ci.unit.length() > 0) {
-            label << wxT(" %");
+
+          default: {
+            if (m_ci.names) {
+              if (value >= 0 && value < m_ci.nameCount) {
+                label << m_ci.names[value];
+              }
+            } else {
+              label << value;
+            }
+            if (m_ci.unit.length() > 0) {
+              label << wxT(" ") << m_ci.unit;
+            }
           }
         }
 
@@ -1146,6 +1158,13 @@ void ControlsDialog::CreateControls() {
     m_view_sizer->Add(m_doppler_button, 0, wxALL, BORDER);
   }
 
+  // The DOPPLER button
+  if (m_ctrl[CT_DOPPLER_THRESHOLD].type) {
+    m_doppler_threshold_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Doppler Speed Threshold"),
+                                                        m_ctrl[CT_DOPPLER_THRESHOLD], &m_ri->m_doppler_threshold);
+    m_view_sizer->Add(m_doppler_threshold_button, 0, wxALL, BORDER);
+  }
+
   // The DOPPLERAUTOTRACK button
   if (m_ctrl[CT_AUTOTTRACKDOPPLER].type) {
     m_autotrack_doppler_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("DopplerAutoTrack"),
@@ -1315,7 +1334,7 @@ void ControlsDialog::OnClose(wxCloseEvent& event) { m_pi->OnControlDialogClose(m
 void ControlsDialog::OnIdOKClick(wxCommandEvent& event) { m_pi->OnControlDialogClose(m_ri); }
 
 void ControlsDialog::OnPlusTenClick(wxCommandEvent& event) {
-  m_from_control->AdjustValue(+10);
+  m_from_control->AdjustValue(m_from_control->m_ci.stepValue * 10);
   m_auto_button->Enable();
   m_off_button->Enable();
 
@@ -1370,7 +1389,7 @@ void ControlsDialog::OnMinusClick(wxCommandEvent& event) {
 }
 
 void ControlsDialog::OnMinusTenClick(wxCommandEvent& event) {
-  m_from_control->AdjustValue(-10);
+  m_from_control->AdjustValue(m_from_control->m_ci.stepValue * -10);
   m_auto_button->Enable();
   m_off_button->Enable();
 
@@ -1450,10 +1469,24 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
   }
 
   if (m_from_control->m_ci.unit.length() > 0) {
-    label1 << wxT("+") << m_from_control->m_ci.stepValue << wxT(" ") << m_from_control->m_ci.unit;
-    label2 << wxT("-") << m_from_control->m_ci.stepValue << wxT(" ") << m_from_control->m_ci.unit;
-    label3 << wxT("+") << 10 << wxT(" ") << m_from_control->m_ci.unit;
-    label4 << wxT("-") << 10 << wxT(" ") << m_from_control->m_ci.unit;
+    float step = m_from_control->m_ci.stepValue;
+    const wxString* unit = &m_from_control->m_ci.unit;
+    wxString stepLabel;
+    wxString stepLabel10;
+
+    if (m_from_control->m_ci.unit == wxT("cm/s")) {
+      step = step * 36.0 / RangeUnitsToMeters[m_pi->m_settings.range_units];
+      stepLabel << wxString::Format(wxT("%.1f"), step);
+      stepLabel10 << wxString::Format(wxT("%.1f"), step * 10.);
+      unit = &RangeUnitDescriptions[m_pi->m_settings.range_units];
+    } else {
+      stepLabel << step;
+      stepLabel10 << step * 10;
+    }
+    label1 << wxT("+") << stepLabel << wxT(" ") << *unit;
+    label2 << wxT("-") << stepLabel << wxT(" ") << *unit;
+    label3 << wxT("+") << stepLabel10 << wxT(" ") << *unit;
+    label4 << wxT("-") << stepLabel10 << wxT(" ") << *unit;
   } else {
     if (m_from_control->m_ci.stepValue > 1) {
       label1 << wxT("+") << m_from_control->m_ci.stepValue;
@@ -1925,6 +1958,9 @@ void ControlsDialog::DisableRadarControls() {
   if (m_doppler_button) {
     m_doppler_button->Disable();
   }
+  if (m_doppler_threshold_button) {
+    m_doppler_threshold_button->Disable();
+  }
   if (m_autotrack_doppler_button) {
     m_autotrack_doppler_button->Disable();
   }
@@ -2034,6 +2070,9 @@ void ControlsDialog::EnableRadarControls() {
   }
   if (m_doppler_button) {
     m_doppler_button->Enable();
+  }
+  if (m_doppler_threshold_button) {
+    m_doppler_threshold_button->Enable();
   }
   if (m_autotrack_doppler_button) {
     m_autotrack_doppler_button->Enable();
@@ -2345,6 +2384,9 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   }
   if (m_doppler_button) {
     m_doppler_button->UpdateLabel();
+  }
+  if (m_doppler_threshold_button) {
+    m_doppler_threshold_button->UpdateLabel();
   }
   if (m_autotrack_doppler_button) {
     m_autotrack_doppler_button->UpdateLabel();

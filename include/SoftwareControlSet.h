@@ -98,6 +98,12 @@
         _("min")                                                               \
     }
 #endif
+#ifndef CTD_CM_PER_S
+#define CTD_CM_PER_S                                                           \
+    {                                                                          \
+        wxT("cm/s")                                                            \
+    }
+#endif
 
 //
 // Make an entry for all control types. Specify all supported (or all?)

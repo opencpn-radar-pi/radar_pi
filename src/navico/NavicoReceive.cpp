@@ -1326,7 +1326,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
                                 // contains Doppler data in extra 3 bytes
         RadarReport_08C4_21 *s08 = (RadarReport_08C4_21 *)report;
 
-        LOG_RECEIVE(wxT("%s %u 08C4: doppler=%d speed=%d, state=%d"), m_ri->m_name.c_str(), len, s08->doppler_state,
+        LOG_RECEIVE(wxT("%s %u 08C4: doppler=%d speed_threshold=%u cm/s, state=%d"), m_ri->m_name.c_str(), len, s08->doppler_state,
                     s08->doppler_speed, s08->doppler_state);
         // TODO: Doppler speed
 
@@ -1334,6 +1334,8 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         if (m_ri->m_doppler.IsModified()) {
           m_ri->ComputeColourMap();
         }
+        // doppler speed threshold in values 0..1594 (in cm/s).
+        m_ri->m_doppler_threshold.Update(s08->doppler_speed);
       }  // FALLTHRU to old length, no break!
 
       case (18 << 8) + 0x08: {  // length 18, 08 C4

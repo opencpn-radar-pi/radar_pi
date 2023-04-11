@@ -188,6 +188,7 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
     case CT_CENTER_VIEW:
     case CT_COLOR_GAIN:
     case CT_DOPPLER:
+    case CT_DOPPLER_THRESHOLD:
     case CT_LOCAL_INTERFERENCE_REJECTION:
     case CT_MAIN_BANG_SIZE:
     case CT_MAX:
