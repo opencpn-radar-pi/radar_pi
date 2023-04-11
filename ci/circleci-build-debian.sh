@@ -104,7 +104,7 @@ python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
 cd $builddir
 
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo $OCPN_WX_ABI_OPT $TARGET_OPT ..
+cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release} $OCPN_WX_ABI_OPT $TARGET_OPT ..
 make VERBOSE=1 tarball
 ldd app/*/lib/opencpn/*.so
 if [ -d /ci-source ]; then

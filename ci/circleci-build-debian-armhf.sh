@@ -96,7 +96,7 @@ else
 fi
 
 OCPN_WX_ABI_OPT=""
-if [ -n "$BUILD_WX32" ]; then
+if [ -n "@BUILD_WX32@" ]; then
   remove_wx30;
   install_wx32;
   OCPN_WX_ABI_OPT="-DOCPN_WX_ABI=wx32"
