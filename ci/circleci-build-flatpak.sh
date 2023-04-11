@@ -82,7 +82,8 @@ flatpak remote-add --user --if-not-exists \
 
 # Configure and build the plugin tarball and metadata.
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j $(nproc) VERBOSE=1 flatpak
+# Do not build flatpak in parallel; make becomes unreliable
+make -j 1 VERBOSE=1 flatpak
 
 # Restore permissions and owner in build tree.
 if [ -d /ci-source ]; then sudo chown --reference=/ci-source -R . ../cache; fi
