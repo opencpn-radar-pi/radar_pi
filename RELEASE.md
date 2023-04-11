@@ -137,12 +137,11 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
 
 3. Copy the XML files from CloudSmith to your local plugins repo:
     ```
-    ./cloudsmith-sync.sh radar_pi opencpn-radar-pi opencpn-radar-pi-prod 5.2.0.eecba41
+    ./download_xml_bash.sh opencpn-radar-pi v5.5.0 opencpn-radar-pi prod
     ```
    Or for unstable/Beta:
     ```
-    ./cloudsmith-sync.sh radar_pi opencpn-radar-pi opencpn-radar-pi-beta 5.2.0-beta4.0.eecba41
-
+    ./download_xml_bash.sh opencpn-radar-pi v5.5.0-beta2 opencpn-radar-pi beta
     ```
 
    Unlike earlier versions of the sync script you must determine yourself what version+commit
