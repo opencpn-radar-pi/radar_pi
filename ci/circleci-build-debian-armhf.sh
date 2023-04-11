@@ -44,7 +44,7 @@ function remove_wx30() {
 function install_wx32() {
   test -d /usr/local/pkg || mkdir /usr/local/pkg
   chmod a+w /usr/local/pkg
-  repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets3-2"
+  repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets-32"
   head="deb/debian/pool/bullseye/main"
   vers="3.2.2+dfsg-1~bpo11+1"
   pushd /usr/local/pkg
