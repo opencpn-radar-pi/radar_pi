@@ -44,29 +44,28 @@ function remove_wx30() {
 function install_wx32() {
   test -d /usr/local/pkg || mkdir /usr/local/pkg
   chmod a+w /usr/local/pkg
-  repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets"
+  repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets-32"
   head="deb/debian/pool/bullseye/main"
-  vers="3.2.1+dfsg-1~bpo11+1"
+  vers="3.2.2+dfsg-1~bpo11+1"
   pushd /usr/local/pkg
-  wget  $repo/$head/w/wx/wx3.2-i18n_${vers}/wx3.2-i18n_${vers}_all.deb
-  wget  $repo/$head/w/wx/wx3.2-headers_${vers}/wx3.2-headers_${vers}_all.deb
-  wget  $repo/$head/w/wx/wx-common_3.2.1+dfsg-1/wx-common_3.2.1+dfsg-1_arm64.deb
-  wget  $repo/$head/l/li/libwxgtk-webview3.2-dev_3.2.1+dfsg-1/libwxgtk-webview3.2-dev_3.2.1+dfsg-1_arm64.deb
-  wget  $repo/$head/l/li/libwxgtk-webview3.2-0_3.2.1+dfsg-1/libwxgtk-webview3.2-0_3.2.1+dfsg-1_arm64.deb 
-  wget  $repo/$head/l/li/libwxgtk-media3.2-dev_3.2.1+dfsg-1/libwxgtk-media3.2-dev_3.2.1+dfsg-1_arm64.deb
-  wget  $repo/$head/l/li/libwxgtk3.2-dev_3.2.1+dfsg-1/libwxgtk3.2-dev_3.2.1+dfsg-1_arm64.deb
-  wget  $repo/$head/l/li/libwxgtk3.2-0_3.2.1+dfsg-1/libwxgtk3.2-0_3.2.1+dfsg-1_arm64.deb
-  wget  $repo/$head/l/li/libwxbase3.2-0_3.2.1+dfsg-1/libwxbase3.2-0_3.2.1+dfsg-1_arm64.deb
-  wget  $repo/$head/l/li/libwxgtk-media3.2-dev_3.2.1+dfsg-1/libwxgtk-media3.2-dev_3.2.1+dfsg-1_arm64.deb
-  wget  $repo/$head/l/li/libwxsvg-dev_2:1.5.23+dfsg-1~bpo11+1/libwxsvg-dev_1.5.23+dfsg-1~bpo11+1_arm64.deb
-  wget  $repo/$head/l/li/libwxsvg3_2:1.5.23+dfsg-1~bpo11+1/libwxsvg3_1.5.23+dfsg-1~bpo11+1_arm64.deb
+  wget -q $repo/$head/w/wx/wx-common_${vers}/wx-common_${vers}_arm64.deb
+  wget -q $repo/$head/w/wx/wx3.2-i18n_${vers}/wx3.2-i18n_${vers}_all.deb
+  wget -q $repo/$head/w/wx/wx3.2-headers_${vers}/wx3.2-headers_${vers}_all.deb
+  wget -q $repo/$head/l/li/libwxgtk-webview3.2-dev_${vers}/libwxgtk-webview3.2-dev_${vers}_arm64.deb
+  wget -q $repo/$head/l/li/libwxgtk-webview3.2-1_${vers}/libwxgtk-webview3.2-1_${vers}_arm64.deb
+  wget -q $repo/$head/l/li/libwxgtk-media3.2-dev_${vers}/libwxgtk-media3.2-dev_${vers}_arm64.deb
+  wget -q $repo/$head/l/li/libwxgtk3.2-dev_${vers}/libwxgtk3.2-dev_${vers}_arm64.deb
+  wget -q $repo/$head/l/li/libwxgtk3.2-1_${vers}/libwxgtk3.2-1_${vers}_arm64.deb
+  wget -q $repo/$head/l/li/libwxgtk-gl3.2-1_${vers}/libwxgtk-gl3.2-1_${vers}_arm64.deb
+  wget -q $repo/$head/l/li/libwxbase3.2-1_${vers}/libwxbase3.2-1_${vers}_arm64.deb
+  wget -q $repo/$head/l/li/libwxgtk-media3.2-1_${vers}/libwxgtk-media3.2-1_${vers}_arm64.deb
+
   dpkg -i --force-depends $(ls /usr/local/pkg/*deb)
   sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
       /usr/lib/*-linux-gnu/wx/config/gtk3-unicode-3.2
 
-  # See wxWidgets#22790. FIXME (leamas) To be removed after wxw 3.2.3
-  cd /usr/include/wx-3.2/wx/
-  patch -p1 < /ci-source/build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
+  # wxWidgets#22790 patch no longer needed in wx3.2.2.1
+
   popd
 }
 
