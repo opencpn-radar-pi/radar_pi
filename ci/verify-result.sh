@@ -42,7 +42,7 @@ then
   [ -d "${EXTRACT_DIR}" ] && rm -rf "${EXTRACT_DIR}"
   mkdir "${EXTRACT_DIR}"
   pushd "${EXTRACT_DIR}"
-  tar xzf "${OLD_DIR}/@pkg_tarname@.tar.gz"
+  tar xzf "${OLD_DIR}/${pkg_tarname}"
   find . -name '*.so' | while read -r i
   do
     if [ -f "${i}" ]
@@ -90,14 +90,14 @@ else
   exit 1
 fi
 
-sha_xml="$(sed -n '/<tarball-checksum>/s! *<tarball-checksum> \([^ ]*\) </tarball-checksum> *!\1!p' < '@pkg_xmlname@.xml')"
-sha_file="$(${sha_exe} '@pkg_tarname@.tar.gz' | sed 's/ .*//')"
+sha_xml="$(sed -n '/<tarball-checksum>/s! *<tarball-checksum> \([^ ]*\) </tarball-checksum> *!\1!p' < "${pkg_xmlname}")"
+sha_file="$(${sha_exe} "${pkg_tarname}" | sed 's/ .*//')"
 if [ "${sha_xml:-}" != "${sha_file:-}" ]
 then
   echo "ERROR: MISMATCH IN CHECKSUM"
-  echo "${sha_file} = @pkg_tarname@.tar.gz"
-  echo "${sha_xml} = @pkg_xmlname@.xml"
-  cat '@pkg_xmlname@.xml'
+  echo "${sha_file} = ${pkg_tarname}"
+  echo "${sha_xml} = ${pkg_xmlname}"
+  cat "${pkg_xmlname}"
   exit 1
 else
   echo "Verified checksum is ${sha_xml}"

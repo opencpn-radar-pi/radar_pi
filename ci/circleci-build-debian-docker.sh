@@ -106,7 +106,7 @@ cmake "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}" \
 
 git config --global --add safe.directory /ci-source
 
-make -j \$(nproc) VERBOSE=1 tarball
+make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 
 cd /
