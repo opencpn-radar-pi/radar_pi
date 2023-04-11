@@ -21,6 +21,7 @@ flatpak-steps: &flatpak-steps
           -{{ checksum \"ci/circleci-build-flatpak.sh\" }}"
         paths:
           - /home/circleci/.local/share/flatpak/repo
+    - run: ci/verify-result.sh "/build-flatpak"
     - run: cd /build-flatpak; /bin/bash < upload.sh
     - run: ci/git-push.sh /build-flatpak
 
@@ -265,12 +266,6 @@ workflows:
       - build-macos:
           <<: *std-filters
 
-      - build-android-arm64:
-          <<: *std-filters
-
-      - build-android-armhf:
-          <<: *std-filters
-
       - build-bullseye-wx32:
           <<: *std-filters
 
@@ -298,8 +293,3 @@ workflows:
       - build-bookworm:
           <<: *std-filters
 
-      - build-buster:
-          <<: *std-filters
-
-      - build-buster-armhf:
-          <<: *std-filters
