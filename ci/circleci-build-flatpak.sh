@@ -72,7 +72,6 @@ cd $builddir
 
 # Patch the manifest to use correct branch and runtime unconditionally
 manifest=$(ls ../flatpak/org.opencpn.OpenCPN.Plugin*yaml)
-sed -i  '/-DBUILD_TYPE/s/$/ -DOCPN_WX_ABI=wx32/' $manifest
     # FIXME (leamas) restore beta -> stable when O58 is published
 sed -i  '/^runtime-version/s/:.*/: beta/'  $manifest
 

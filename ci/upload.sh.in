@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 #
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
 
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 
-if [ -z "$CLOUDSMITH_API_KEY" ]; then
+if [ -z "${CLOUDSMITH_API_KEY:-}" ]; then
     echo 'Warning: $CLOUDSMITH_API_KEY is not available, giving up.'
     echo 'Metadata: @pkg_displayname@.xml'
     echo 'Tarball: @pkg_tarname@.tar.gz'
@@ -17,7 +19,18 @@ fi
 echo "Using CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
 
 if [ -f ~/.uploadrc ]; then source ~/.uploadrc; fi
-set -xe
+set -x
+
+sha_xml=$(sed -n '/<tarball-checksum>/s! *<tarball-checksum> \([^ ]*\) </tarball-checksum> *!\1!p' < '@pkg_xmlname@.xml')
+sha_file=$(sha256sum '@pkg_tarname@.tar.gz')
+if [ "${sha_xml:-}" != "${sha_file:-}" ]
+then
+  echo "ERROR: MISMATCH IN CHECKSUM"
+  echo "${sha_file} = @pkg_tarname@.tar.gz"
+  echo "${sha_xml} = @pkg_xmlname@.xml"
+  cat '@pkg_xmlname@.xml'
+  exit 1
+fi
 
 cloudsmith push raw --no-wait-for-sync \
     --name @pkg_displayname@-metadata \

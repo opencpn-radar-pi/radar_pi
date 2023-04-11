@@ -59,16 +59,12 @@ function install_wx32() {
   wget -q $repo/$head/l/li/libwxgtk-gl3.2-1_${vers}/libwxgtk-gl3.2-1_${vers}_armhf.deb
   wget -q $repo/$head/l/li/libwxbase3.2-1_${vers}/libwxbase3.2-1_${vers}_armhf.deb
   wget -q $repo/$head/l/li/libwxgtk-media3.2-1_${vers}/libwxgtk-media3.2-1_${vers}_armhf.deb
-  #wget -q $repo/$head/l/li/libwxsvg-dev_2:1.5.23+dfsg-1~bpo11+1/libwxsvg-dev_1.5.23+dfsg-1~bpo11+1_armhf.deb
-  #wget -q $repo/$head/l/li/libwxsvg3_2:1.5.23+dfsg-1~bpo11+1/libwxsvg3_1.5.23+dfsg-1~bpo11+1_armhf.deb
 
   dpkg -i --force-depends $(ls /usr/local/pkg/*deb)
   sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
       /usr/lib/*-linux-*/wx/config/gtk3-unicode-3.2
 
-  # See wxWidgets#22790. FIXME (leamas) To be removed after wxw 3.2.3
-  #cd /usr/include/wx-3.2/wx/
-  #patch -p1 < /ci-source/build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
+  # wxWidgets#22790 patch no longer needed in wx3.2.2.1
 
   popd
 }
@@ -95,11 +91,9 @@ else
     echo "Unknown debian release: $debian_rel"
 fi
 
-OCPN_WX_ABI_OPT=""
 if [ -n "@BUILD_WX32@" ]; then
-  remove_wx30;
-  install_wx32;
-  OCPN_WX_ABI_OPT="-DOCPN_WX_ABI=wx32"
+  remove_wx30
+  install_wx32
 fi
 
 
@@ -109,7 +103,7 @@ chown root:root /ci-source
 git config --global --add safe.directory /ci-source
 
 rm -rf build-debian; mkdir build-debian; cd build-debian
-cmake -DCMAKE_BUILD_TYPE=Release $OCPN_WX_ABI_OPT -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" ..
+cmake -DCMAKE_BUILD_TYPE=Release -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" ..
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 

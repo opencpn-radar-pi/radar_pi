@@ -122,17 +122,13 @@ elseif ("${_pkg_arch}" MATCHES "armhf")
   set(_display_arch "-A32")
 endif()
 
-if (NOT "${OCPN_WX_ABI}" STREQUAL "")
-  set(_wx_abi ".${OCPN_WX_ABI}")
-endif ()
-
 if ("${_git_tag}" STREQUAL "")
   set(pkg_displayname "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}")
 else ()
   set(pkg_displayname "${PLUGIN_API_NAME}-${_git_tag}")
 endif ()
 string(APPEND pkg_displayname
-  "-${plugin_target}${_wx_abi}${_display_arch}-${plugin_target_version}"
+  "-${plugin_target}${_display_arch}-${plugin_target_version}"
 )
 
 # pkg_xmlname: XML metadata basename
@@ -141,7 +137,7 @@ set(pkg_xmlname ${pkg_displayname})
 # pkg_tarname: Tarball basename
 string(CONCAT pkg_tarname
   "${PLUGIN_API_NAME}-${pkg_semver}"
-  "_${plugin_target}${_wx_abi}-${plugin_target_version}-${_pkg_arch}"
+  "_${plugin_target}-${plugin_target_version}-${_pkg_arch}"
 )
 
 # pkg_tarball_url: Tarball location at cloudsmith
@@ -165,9 +161,6 @@ endif ()
 # pkg_target_arch: os + optional -arch suffix. See: Opencpn bug #2003
 if ("${BUILD_TYPE}" STREQUAL "flatpak")
   set(pkg_target_arch "flatpak-${ARCH}")
-  if (NOT "${OCPN_WX_ABI}" STREQUAL "")
-    set(pkg_target_arch "${pkg_target_arch}-${OCPN_WX_ABI}")
-  endif ()
 elseif ("${plugin_target}" MATCHES "ubuntu|raspbian|debian|mingw")
   set(pkg_target_arch "${plugin_target}-${ARCH}")
 else ()

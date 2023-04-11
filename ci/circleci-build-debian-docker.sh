@@ -59,16 +59,13 @@ function install_wx32() {
   wget -q $repo/$head/l/li/libwxgtk-gl3.2-1_${vers}/libwxgtk-gl3.2-1_${vers}_arm64.deb
   wget -q $repo/$head/l/li/libwxbase3.2-1_${vers}/libwxbase3.2-1_${vers}_arm64.deb
   wget -q $repo/$head/l/li/libwxgtk-media3.2-1_${vers}/libwxgtk-media3.2-1_${vers}_arm64.deb
-  #wget -q $repo/$head/l/li/libwxsvg-dev_2:1.5.23+dfsg-1~bpo11+1/libwxsvg-dev_1.5.23+dfsg-1~bpo11+1_arm64.deb
-  #wget -q $repo/$head/l/li/libwxsvg3_2:1.5.23+dfsg-1~bpo11+1/libwxsvg3_1.5.23+dfsg-1~bpo11+1_arm64.deb
 
   dpkg -i --force-depends $(ls /usr/local/pkg/*deb)
   sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
       /usr/lib/*-linux-gnu/wx/config/gtk3-unicode-3.2
 
-  # See wxWidgets#22790. FIXME (leamas) To be removed after wxw 3.2.3
-  # cd /usr/include/wx-3.2/wx/
-  # patch -p1 < /ci-source/build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
+  # wxWidgets#22790 patch no longer needed in wx3.2.2.1
+
   popd
 }
 
@@ -107,6 +104,8 @@ cmake -DCMAKE_BUILD_TYPE=Release\
    -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" \
     ..
 
+git config --global --add safe.directory /ci-source
+
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
 
@@ -114,23 +113,19 @@ cd /
 setfacl --restore=/ci-source.permissions
 EOF
 
-if [ -n "$BUILD_WX32" ]; then OCPN_WX_ABI_OPT="-DOCPN_WX_ABI=wx32"; fi
-
 sed -i "s/@TARGET_TUPLE@/$TARGET_TUPLE/" $ci_source/build.sh
-sed -i "s/@BUILD_WX32@/$BUILD_WX32/" $ci_source/build.sh
-#sed -i "s/@OCPN_WX_ABI_OPT@/$OCPN_WX_ABI_OPT/" $ci_source/build.sh
 
 
 # Run script in docker image
 #
 docker run \
-    -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
-    -e "CLOUDSMITH_BETA_REPO=$OCPN_BETA_REPO" \
-    -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
-    -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
-    -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
+    -e "CLOUDSMITH_STABLE_REPO" \
+    -e "CLOUDSMITH_BETA_REPO" \
+    -e "CLOUDSMITH_UNSTABLE_REPO" \
+    -e "CIRCLE_BUILD_NUM" \
+    -e "TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
-    debian:$OCPN_TARGET /bin/bash -xe /ci-source/build.sh    
+    debian:$OCPN_TARGET /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
 

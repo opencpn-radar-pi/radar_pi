@@ -47,17 +47,14 @@ function install_wx32() {
   wget -q $repo/$head/l/li/libwxgtk-gl3.2-1_${vers}/libwxgtk-gl3.2-1_${vers}_amd64.deb
   wget -q $repo/$head/l/li/libwxbase3.2-1_${vers}/libwxbase3.2-1_${vers}_amd64.deb
   wget -q $repo/$head/l/li/libwxgtk-media3.2-1_${vers}/libwxgtk-media3.2-1_${vers}_amd64.deb
-  #wget -q $repo/$head/l/li/libwxsvg-dev_2:1.5.23+dfsg-1~bpo11+1/libwxsvg-dev_1.5.23+dfsg-1~bpo11+1_amd64.deb
-  #wget -q $repo/$head/l/li/libwxsvg3_2:1.5.23+dfsg-1~bpo11+1/libwxsvg3_1.5.23+dfsg-1~bpo11+1_amd64.deb
 
   sudo dpkg -i --force-depends $(ls /usr/local/pkg/*deb)
   sudo apt --fix-broken install
   sudo sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
       /usr/lib/$(uname -m)-linux-gnu/wx/config/gtk3-unicode-3.2
-  # See wxWidgets#22790. To be removed after wxw 3.2.3
-  #cd /usr/include/wx-3.2/wx/
-  #sudo patch -p1 \
-  #  < $here/../build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
+
+  # wxWidgets#22790 patch no longer needed in wx3.2.2.1
+
   popd
 }
 
@@ -86,9 +83,8 @@ mk-build-deps --root-cmd=sudo -ir build-deps/control
 rm -f *changes  *buildinfo
 
 if [ -n "$BUILD_WX32" ]; then
-  remove_wx30;
-  install_wx32;
-  OCPN_WX_ABI_OPT="-DOCPN_WX_ABI=wx32"
+  remove_wx30
+  install_wx32
 fi
 
 if [ -n "$TARGET_TUPLE" ]; then
@@ -104,7 +100,7 @@ python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
 cd $builddir
 
-cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release} $OCPN_WX_ABI_OPT $TARGET_OPT ..
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo $TARGET_OPT ..
 make VERBOSE=1 tarball
 ldd app/*/lib/opencpn/*.so
 if [ -d /ci-source ]; then
