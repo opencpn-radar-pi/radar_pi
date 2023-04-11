@@ -114,6 +114,7 @@ setfacl --restore=/ci-source.permissions
 EOF
 
 sed -i "s/@TARGET_TUPLE@/$TARGET_TUPLE/" $ci_source/build.sh
+sed -i "s/@BUILD_WX32@/$BUILD_WX32/" $ci_source/build.sh
 
 
 # Run script in docker image
