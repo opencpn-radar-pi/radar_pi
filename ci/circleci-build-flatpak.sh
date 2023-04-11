@@ -81,7 +81,7 @@ flatpak remote-add --user --if-not-exists \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 # Configure and build the plugin tarball and metadata.
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release} ..
 # Do not build flatpak in parallel; make becomes unreliable
 make -j 1 VERBOSE=1 flatpak
 
