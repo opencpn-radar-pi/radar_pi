@@ -129,6 +129,7 @@ docker run \
     debian:$OCPN_TARGET /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
+"${here}/ci/verify-result.sh"
 
 # Install cloudsmith-cli (for upload) and cryptography (for git-push).
 #

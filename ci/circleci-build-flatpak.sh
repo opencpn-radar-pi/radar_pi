@@ -85,6 +85,8 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 # Do not build flatpak in parallel; make becomes unreliable
 make -j 1 VERBOSE=1 flatpak
 
+"${here}/ci/verify-result.sh"
+
 # Restore permissions and owner in build tree.
 if [ -d /ci-source ]; then sudo chown --reference=/ci-source -R . ../cache; fi
 sudo chown --reference=.. .

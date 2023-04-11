@@ -100,9 +100,12 @@ python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
 cd $builddir
 
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo $TARGET_OPT ..
+cmake -DCMAKE_BUILD_TYPE=Release $TARGET_OPT ..
 make VERBOSE=1 tarball
 ldd app/*/lib/opencpn/*.so
+
+"${here}/ci/verify-result.sh"
+
 if [ -d /ci-source ]; then
     sudo chown --reference=/ci-source -R . ../cache || :
 fi

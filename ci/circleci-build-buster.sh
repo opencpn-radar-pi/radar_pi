@@ -56,6 +56,8 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 make VERBOSE=1 tarball
 ldd app/*/lib/opencpn/*.so
 
+"${here}/ci/verify-result.sh"
+
 if [ -d /ci-source ]; then
     sudo chown --reference=/ci-source -R . ../cache || :
 fi

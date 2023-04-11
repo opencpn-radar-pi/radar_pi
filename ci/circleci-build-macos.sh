@@ -67,6 +67,8 @@ fi
 # is not created as required.
 make VERBOSE=1 tarball || make VERBOSE=1 tarball
 
+"${here}/ci/verify-result.sh"
+
 # Install cloudsmith needed by upload script
 python3 -m pip install -q --user cloudsmith-cli
 
