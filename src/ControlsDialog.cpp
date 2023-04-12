@@ -1469,15 +1469,16 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
   }
 
   if (m_from_control->m_ci.unit.length() > 0) {
-    float step = m_from_control->m_ci.stepValue;
+    int step = m_from_control->m_ci.stepValue;
     const wxString* unit = &m_from_control->m_ci.unit;
     wxString stepLabel;
     wxString stepLabel10;
 
     if (m_from_control->m_ci.unit == wxT("cm/s")) {
-      step = step * 36.0 / RangeUnitsToMeters[m_pi->m_settings.range_units];
-      stepLabel << wxString::Format(wxT("%.1f"), step);
-      stepLabel10 << wxString::Format(wxT("%.1f"), step * 10.);
+      double stepf = step * 36.0 / RangeUnitsToMeters[m_pi->m_settings.range_units];
+
+      stepLabel << wxString::Format(wxT("%.1f"), stepf);
+      stepLabel10 << wxString::Format(wxT("%.1f"), stepf * 10.);
       unit = &RangeUnitDescriptions[m_pi->m_settings.range_units];
     } else {
       stepLabel << step;
