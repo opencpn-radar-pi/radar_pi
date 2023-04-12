@@ -60,17 +60,24 @@ set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
 
 4. For Production releases: Add the file, commit, add a commented tag and push both code and tags in 1 step:
     ```
-    git add CMakeLists.txt
+    git add Plugin.cmake
     git commit -m"v5.0.4 release"
     git tag -a --force -m"v5.0.4 release" v5.0.4
     git push --atomic --force origin master v5.0.4
     ```
 
-If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor, Drone and Cloud CI. 
+NEW
+===
+There is now a `tools/release.sh` script that performs steps 2 and 3 automatically. Usage:
+
+    ./tools/release.sh [-f] {beta|prod}
+
+It will check that the beta/prod status is clear in Plugin.cmake, that the git status is clean and generate and push a tag
+to github. Use -f to update a release already made earlier.
+
+If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor and CircleCI.
 See below for the URLs. You can also follow the links in Github on the commit (there is a small progress
 dot or a checkmark correct/bad nowadays).
-
-The process of adding and pushing the tag will put the releases in the "stable" repository on Cloudsmith.
 
 That concludes the building actions.
 
