@@ -55,6 +55,7 @@ cmake \
   -DCMAKE_INSTALL_PREFIX= \
   "-DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}" \
   -DOCPN_TARGET_TUPLE="darwin-wx32;10;x86_64" \
+  ${CMAKE_EXTRA_OPTIONS:-} \
   ..
 
 if [[ -z "$CI" ]]; then
