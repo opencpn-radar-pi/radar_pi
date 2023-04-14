@@ -30,7 +30,7 @@ rm -rf build-osx  && mkdir build-osx
 # Create a log file.
 exec > >(tee build-osx/build.log) 2>&1
 
-export MACOSX_DEPLOYMENT_TARGET=10.10
+export MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET:-10.10}
 
 # Return latest version of $1, optionally using option $2
 pkg_version() { brew list --versions $2 $1 | tail -1 | awk '{print $2}'; }
@@ -53,7 +53,7 @@ cd build-osx
 cmake \
   "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}" \
   -DCMAKE_INSTALL_PREFIX= \
-  -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 \
+  "-DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}" \
   -DOCPN_TARGET_TUPLE="darwin-wx32;10;x86_64" \
   ..
 
