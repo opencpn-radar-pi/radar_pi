@@ -73,7 +73,7 @@ execute_process(
 execute_process(
  COMMAND ./configure
       --with-cxx=11
-      --with-macosx-version-min=10.10
+      --with-macosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}
       --enable-unicode
       --with-osx-cocoa
       --enable-aui
