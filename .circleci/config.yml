@@ -174,7 +174,7 @@ jobs:
     resource_class: arm.medium
     environment:
       - OCPN_TARGET: flatpak-arm64
-      - CMAKE_BUILD_PARALLEL_LEVEL: 1
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
     parameters:
       cache-key:
         type: string
@@ -187,7 +187,7 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       - OCPN_TARGET: flatpak
-      - CMAKE_BUILD_PARALLEL_LEVEL: 1
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
     parameters:
       cache-key:
         type: string
