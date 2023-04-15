@@ -59,6 +59,7 @@ elseif (UNIX)
     OUTPUT_VARIABLE plugin_target_version
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
+  set(lsb_linux ON)
 else ()
   set(plugin_target "unknown")
   set(plugin_target_version 1)

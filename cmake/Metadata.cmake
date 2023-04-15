@@ -161,7 +161,7 @@ endif ()
 # pkg_target_arch: os + optional -arch suffix. See: Opencpn bug #2003
 if ("${BUILD_TYPE}" STREQUAL "flatpak")
   set(pkg_target_arch "flatpak-${ARCH}")
-elseif ("${plugin_target}" MATCHES "ubuntu|raspbian|debian|mingw")
+elseif (lsb_linux OR "${plugin_target}" MATCHES "mingw")
   set(pkg_target_arch "${plugin_target}-${ARCH}")
 else ()
   set(pkg_target_arch "${plugin_target}")
