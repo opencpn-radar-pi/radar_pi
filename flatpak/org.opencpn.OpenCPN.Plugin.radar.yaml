@@ -21,7 +21,7 @@ modules:
       - -DCMAKE_INSTALL_PREFIX=/app/extensions/radar/
       - -DCMAKE_BUILD_TYPE:STRING=Release
       - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - -DBUILD_TYPE:STRING=tarball
+      - -DBUILD_TYPE:STRING=flatpak
       - -Uplugin_target
     build-options:
         cflags: -fPIC -I/run/build/radar/bundled-gl
