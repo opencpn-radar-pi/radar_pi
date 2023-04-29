@@ -1,7 +1,12 @@
 3.3.0 TBD
 * Fix wrong upload directory for bookworm plugins (#492).
 * Fix handling of wxWidgets 3.2 build deps in update-templates (#490).
-* Update opencpn-libs, provides a compitility target ocpn::api on api-18
+* Update opencpn-libs,
+    - Provide a compatility target ocpn::api on api-18.
+    - Fix bug in nmea0183 lib, see
+      https://github.com/leamas/opencpn-libs/issues/15
+    - Add new marnav library.
+    - Add new N2k library required to receive and parse n2k messages.
 
 3.2.1  Dec 18, 2022
 * New release afrter some release problems of the 3.2.0 tag
