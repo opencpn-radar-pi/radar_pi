@@ -1,10 +1,14 @@
+3.2.4-beta1 Apr 29, 2023
+* Use wx3.2.2.1 instead of wx3.2.1
+* Fix broken bullseye/armhf target
+
 3.2.3 March 8, 2023
 * Fix a typo in MacosWxwidgets affecting parallel make (#502)
 * Update opencpn-libs, notably updated ocpn_plugin.h and pdb API files
 * Handle bug on MacOS in update_templates (#502).
 
 3.2.3-beta1 Feb 14, 2023
-* ci: debian, armhf builds: Fix handling of CLOUDSMITH_BETA_REPO 
+* ci: debian, armhf builds: Fix handling of CLOUDSMITH_BETA_REPO
   environment variable (#498)
 * macos: Install built wxWidgets in local project dir (#495).
 * Update opencpn-libs, handle missing ocpn-api link target (opencpn-libs#9).
