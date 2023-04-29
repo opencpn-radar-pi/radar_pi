@@ -95,6 +95,7 @@ sudo apt install -q \
     python3-pip python3-setuptools python3-dev python3-wheel \
     build-essential libssl-dev libffi-dev
 
+python3 -m pip install -q --user "urllib3<2.0.0"   # See #520
 python3 -m pip install --user --upgrade -q setuptools wheel pip
 python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
