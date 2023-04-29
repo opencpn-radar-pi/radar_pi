@@ -137,6 +137,7 @@ if pyenv versions &>/dev/null;  then
     pyenv versions | tr -d '*' | awk '{print $1}' | tail -1 \
         > $HOME/.python-version
 fi
+python3 -m pip install -q --user "urllib3<2.0.0"   # See #520
 python3 -m pip install -q --user cloudsmith-cli cryptography
 
 # python install scripts in ~/.local/bin, teach upload.sh to use in it's PATH:
