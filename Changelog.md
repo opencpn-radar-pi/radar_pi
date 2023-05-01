@@ -1,6 +1,7 @@
 3.3.0 TBD
 * Fix wrong upload directory for bookworm plugins (#492).
 * Fix handling of wxWidgets 3.2 build deps in update-templates (#490).
+* Use urllib3 < 2.0.0 (#520).
 * Update opencpn-libs,
     - Provide a compatility target ocpn::api on api-18.
     - Fix bug in nmea0183 lib, see
