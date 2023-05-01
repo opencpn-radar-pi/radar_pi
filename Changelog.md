@@ -1,8 +1,7 @@
 3.2.4-beta1 Apr 29, 2023
 * Use wx3.2.2.1 instead of wx3.2.1
 * Update wxwidgets to 3.2.2 (#510)
-* Fix broken bullseye/armhf target
-* Update opencpn-libs to latest version
+* Use urllib3 < 2.0.0 (#520).
 * Update opencpn-libs,
     - Provide a compatility target ocpn::api on api-18.
     - Fix bug in nmea0183 lib, see
