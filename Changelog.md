@@ -1,3 +1,6 @@
+3.2.1-beta3 May 4, 2023
+* Fix problems downloading repo signing key (#526)
+
 3.2.4-beta2 May 04, 2023
 * Use urllib3 < 2.0.0 (#520).
 * opencpn-libs, Update to latest version.
