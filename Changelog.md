@@ -1,4 +1,7 @@
-3.2.1-beta3 May 4, 2023
+3.2.4 Jul 17, 2023
+* Update windows build to use wxwidgets 3.2.2.1 (#523, #510).
+
+3.2.4-beta3 May 4, 2023
 * Fix problems downloading repo signing key (#526)
 
 3.2.4-beta2 May 04, 2023
