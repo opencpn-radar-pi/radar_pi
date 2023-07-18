@@ -29,5 +29,15 @@ public:
         double ilat, double ilon, double crse, double hdg, wxString channel,
         wxString timestamp);
 
+    wxString nmeaEncode1_2_3(
+        int message_id, 
+        int iMMSI, 
+        int nav_status,   
+        float sog, // Knots.
+        double ilat, double ilon,
+        double cog, // Degrees.
+        double true_heading,
+        wxString channel);
+
 protected:
 };

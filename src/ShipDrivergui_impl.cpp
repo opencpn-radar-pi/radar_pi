@@ -31,6 +31,7 @@
 #include <wx/textfile.h>
 #include <wx/timer.h>
 #include <wx/wx.h>
+#include "wx/tglbtn.h"
 
 #include "qtstylesheet.h"
 #include "ShipDrivergui_impl.h"
@@ -66,6 +67,20 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
     m_bInvalidGribFile = false;
     m_bShipDriverHasStarted = false;
 
+    m_bSART = false;
+    m_bDISTRESS = false;
+    m_bCANCEL = false;
+    m_bDISTRESSRELAY = false;
+    m_bRELAYCANCEL = false;
+
+    stop_count = 999;
+    stop_countMOB = 999;
+    stop_countEPIRB = 999;
+    stop_countDISTRESS = 999;
+    stop_countCANCEL = 999;
+
+    alarm_id = 999;
+
 #ifdef __ANDROID__
     g_Window = this;
     GetHandle()->setStyleSheet( qtStyleSheet);
@@ -75,11 +90,11 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
     wxFileConfig* pConf = GetOCPNConfigObject();
 
     if (pConf) {
-        pConf->SetPath(_T("/PlugIns/ShipDriver_pi"));
+        pConf->SetPath("/PlugIns/ShipDriver_pi");
 
-        pConf->Read(_T("shipdriverUseAis"), &m_bUseAis, 0);
-        pConf->Read(_T("shipdriverUseFile"), &m_bUseFile, 0);
-        pConf->Read(_T("shipdriverMMSI"), &m_tMMSI, "12345");
+        pConf->Read("shipdriverUseAis", &m_bUseAis, 0);
+        pConf->Read("shipdriverUseFile", &m_bUseFile, 0);
+        pConf->Read("shipdriverMMSI", &m_tMMSI, "123456789");
     }
 }
 
@@ -91,7 +106,7 @@ wxPoint g_mouse_pos_screen;
 void Dlg::OnMouseEvent( wxMouseEvent& event )
 {
     g_mouse_pos_screen = ClientToScreen( event.GetPosition() );
-    
+
     if(event.Dragging()){
         int x = wxMax(0, g_startPos.x + (g_mouse_pos_screen.x - g_startMouse.x));
         int y = wxMax(0, g_startPos.y + (g_mouse_pos_screen.y - g_startMouse.y));
@@ -99,7 +114,7 @@ void Dlg::OnMouseEvent( wxMouseEvent& event )
         x = wxMin(x, xmax);
         int ymax = ::wxGetDisplaySize().y - (GetSize().y * 2);          // Some fluff at the bottom
         y = wxMin(y, ymax);
-        
+
         g_Window->Move(x, y);
     }
 }
@@ -127,10 +142,6 @@ void Dlg::SetFollowStep(double inLat, double inLon, double inDir, double inSpd,
 
     if (myDist <= initSpd / 7200) {
 
-        // wxString sDist = wxString::Format(_T("%5.2f"), myDist);
-        // wxMessageBox(sDist, _T("Dist <15"));
-        // return;
-
         stepLat = nextLat;
         stepLon = nextLon;
 
@@ -143,9 +154,6 @@ void Dlg::SetFollowStep(double inLat, double inLon, double inDir, double inSpd,
 
         for (std::vector<rtept>::iterator it = routePoints.begin();
              it != routePoints.end(); it++) {
-
-            // wxString sIndex = wxString::Format(_T("%i"), (*it).index);
-            // wxMessageBox(sIndex, _T("index"));
 
             double value;
 
@@ -176,22 +184,27 @@ void Dlg::StartDriving()
         return;
     }
 
-    m_bShipDriverHasStarted = true;
-    m_bUsingWind = false;
-
     if (!m_tMMSI.ToLong(&m_iMMSI)) {
         wxMessageBox(_("MMSI must be a number, please change in Preferences"));
         return;
     }
+
+    if (m_tMMSI.Len() != 9) {
+        wxMessageBox(_("MMSI must be nine digits, please change in Preferences"));
+        return;
+    }
+
+    m_bShipDriverHasStarted = true;
+    m_bUsingWind = false;
 
     if (m_bUseFile) {
 
         wxString caption = wxT("Choose a file");
         wxString wildcard = wxT("Text files (*.txt)|*.txt|All files (*.*)|*.*");
 
-        wxString s = _T("/");
+        wxString s = "/";
         const char* pName = "ShipDriver_pi";
-        wxString defaultDir = GetPluginDataDir(pName) + s + _T("data") + s;
+        wxString defaultDir = GetPluginDataDir(pName) + s + "data" + s;
 
         wxString defaultFilename = wxEmptyString;
         wxFileDialog filedlg(this->m_parent, caption, defaultDir,
@@ -207,8 +220,8 @@ void Dlg::StartDriving()
         }
     }
 
-    m_textCtrlRudderStbd->SetValue(_T(""));
-    m_textCtrlRudderPort->SetValue(_T(""));
+    m_textCtrlRudderStbd->SetValue("");
+    m_textCtrlRudderPort->SetValue("");
     initSpd = 0; // 5 knots
 
     if (!m_bUsingFollow) {
@@ -241,13 +254,13 @@ void Dlg::SetStop()
         m_Timer->Stop();
 
     if (m_bUsingFollow) {
-        wxMessageBox(_T("Vessel is stopping"));
+        wxMessageBox(_("Vessel is stopping"));
     }
 
     m_SliderSpeed->SetValue(0);
     m_SliderRudder->SetValue(30);
-    m_textCtrlRudderStbd->SetValue(_T(""));
-    m_textCtrlRudderPort->SetValue(_T(""));
+    m_textCtrlRudderStbd->SetValue("");
+    m_textCtrlRudderPort->SetValue("");
 
     m_interval = m_Timer->GetInterval();
     m_bUseSetTime = false;
@@ -263,7 +276,7 @@ void Dlg::SetStop()
         nmeafile->Close();
     }
     initSpd = 0.0;
-    m_stSpeed->SetLabel(wxString::Format(_T("%3.1f"), initSpd));
+    m_stSpeed->SetLabel(wxString::Format("%3.1f", initSpd));
 }
 
 void Dlg::OnMidships(wxCommandEvent& event) { m_SliderRudder->SetValue(30); }
@@ -274,7 +287,7 @@ void Dlg::OnMinus10(wxCommandEvent& event)
     m_bAuto = false;
     GoToStandby();
     myDir -= 10;
-    wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
+    wxString mystring = wxString::Format("%03.0f", myDir);
     m_stHeading->SetLabel(mystring);
 }
 
@@ -284,7 +297,7 @@ void Dlg::OnPlus10(wxCommandEvent& event)
     m_bAuto = false;
     GoToStandby();
     myDir += 10;
-    wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
+    wxString mystring = wxString::Format("%03.0f", myDir);
     m_stHeading->SetLabel(mystring);
 }
 
@@ -294,7 +307,7 @@ void Dlg::OnMinus1(wxCommandEvent& event)
     m_bAuto = false;
     GoToStandby();
     myDir -= 1;
-    wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
+    wxString mystring = wxString::Format("%03.0f", myDir);
     m_stHeading->SetLabel(mystring);
 }
 
@@ -304,7 +317,7 @@ void Dlg::OnPlus1(wxCommandEvent& event)
     m_bAuto = false;
     GoToStandby();
     myDir += 1;
-    wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
+    wxString mystring = wxString::Format("%03.0f", myDir);
     m_stHeading->SetLabel(mystring);
 }
 
@@ -330,6 +343,153 @@ void Dlg::GoToStandby()
     Refresh();
 }
 
+// Now for the distress alarms
+
+void Dlg::OnSART(wxCommandEvent& event)
+{
+    if (m_Timer->IsRunning()) {
+
+        bool active = m_buttonSART->GetValue();
+        alarm_id = 970;
+        if (active) {
+            m_bSART = true;            
+            m_buttonSART->SetBackgroundColour(wxColour(255, 0, 0));
+        } else {             
+            stop_count = 0;
+            m_bSART = false;
+            m_buttonSART->SetBackgroundColour(wxColour(0, 255, 0));           
+        }
+    } else
+        wxMessageBox(_("ShipDriver has not been started"));
+}
+
+void Dlg::OnMOB(wxCommandEvent& event)
+{
+    if (m_Timer->IsRunning()) {
+
+        bool active = m_buttonMOB->GetValue();
+        alarm_id = 972;
+        if (active) {
+            m_latMOB = initLat;
+            m_lonMOB = initLon;
+            m_bMOB = true;
+            m_buttonMOB->SetBackgroundColour(wxColour(255, 0, 0));
+        } else {
+            stop_countMOB = 0;
+            m_bMOB = false;
+            m_buttonMOB->SetBackgroundColour(wxColour(0, 255, 0));
+        }
+    } else
+        wxMessageBox(_("ShipDriver has not been started"));
+}
+
+void Dlg::OnEPIRB(wxCommandEvent& event)
+{
+    if (m_Timer->IsRunning()) {
+
+        bool active = m_buttonEPIRB->GetValue();
+        alarm_id = 974;
+        if (active) {
+            m_bEPIRB = true;            
+            m_buttonEPIRB->SetBackgroundColour(wxColour(255, 0, 0));
+        } else {
+            stop_countEPIRB = 0;
+            m_bEPIRB = false;
+            m_buttonEPIRB->SetBackgroundColour(wxColour(0, 255, 0));
+        }
+    } else
+        wxMessageBox(_("ShipDriver has not been started"));
+}
+
+void Dlg::OnDistressAlert(wxCommandEvent& event)
+{
+    if (m_Timer->IsRunning()) {
+
+        bool active = m_buttonDistressAlert->GetValue();
+        alarm_id = 980;
+        if (active) {
+            
+            m_bDISTRESS = true;
+            m_buttonDistressAlert->SetBackgroundColour(wxColour(255, 0, 0));
+        } else {
+            stop_countDISTRESS = 0;
+            m_bDISTRESS = false;
+            m_buttonDistressAlert->SetBackgroundColour(wxColour(0, 255, 0));
+        }
+    } else
+        wxMessageBox(_("ShipDriver has not been started"));
+}
+
+void Dlg::OnDistressCancel(wxCommandEvent& event)
+{
+    if (m_Timer->IsRunning()) {
+
+        bool active = m_buttonDistressCancel->GetValue();
+        alarm_id = 982;
+        if (active) {            
+            if (!m_bDISTRESS) { 
+                wxMessageBox(_("No DSC Distress activated"));
+                return;
+            }
+            m_bCANCEL = true;
+            m_buttonDistressCancel->SetBackgroundColour(wxColour(255, 0, 0));
+            if (m_bDISTRESS) { 
+                m_bDISTRESS = false;
+                m_buttonDistressAlert->SetBackgroundColour(wxColour(0, 255, 0));
+            }
+
+        } else {
+            m_bCANCEL = false;
+            m_buttonDistressCancel->SetBackgroundColour(wxColour(0, 255, 0));
+        }
+    } else
+        wxMessageBox(_("ShipDriver has not been started"));
+}
+
+void Dlg::OnDistressRelay(wxCommandEvent& event)
+{
+    if (m_Timer->IsRunning()) {
+
+        bool active = m_buttonDistressRelay->GetValue();
+        alarm_id = 984;
+        if (active) {
+            m_bDISTRESSRELAY = true;
+            m_buttonDistressRelay->SetBackgroundColour(wxColour(255, 0, 0));
+        } else {
+            stop_countDISTRESSRELAY = 0;
+            m_bDISTRESSRELAY = false;
+            m_buttonDistressRelay->SetBackgroundColour(wxColour(0, 255, 0));
+        }
+    } else
+        wxMessageBox(_("ShipDriver has not been started"));
+}
+
+void Dlg::OnRelayCancel(wxCommandEvent& event)
+{
+    if (m_Timer->IsRunning()) {
+
+        bool active = m_buttonRelayCancel->GetValue();
+        alarm_id = 986;
+        if (active) {
+            if (!m_bDISTRESSRELAY) {
+                wxMessageBox(_("No DSC Distress activated"));
+                return;
+            }
+            m_bRELAYCANCEL = true;
+            m_buttonRelayCancel->SetBackgroundColour(wxColour(255, 0, 0));
+            if (m_bDISTRESSRELAY) {
+                m_bDISTRESSRELAY = false;
+                m_buttonDistressRelay->SetBackgroundColour(wxColour(0, 255, 0));
+            }
+
+        } else {
+            m_bRELAYCANCEL = false;
+            m_buttonRelayCancel->SetBackgroundColour(wxColour(0, 255, 0));
+        }
+    } else
+        wxMessageBox(_("ShipDriver has not been started"));
+}
+
 void Dlg::OnClose(wxCloseEvent& event)
 {
     if (m_Timer->IsRunning())
@@ -352,22 +512,22 @@ void Dlg::Notify()
         double myPortRudder = 30 - std::abs(myRudder);
         m_gaugeRudderPort->SetValue(myPortRudder);
         m_textCtrlRudderPort->SetValue(
-            wxString::Format(_T("%.0f"), myRudder) + _T(" P"));
+            wxString::Format("%.0f", myRudder) + " P");
         m_gaugeRudderStbd->SetValue(0);
-        m_textCtrlRudderStbd->SetValue(_T(""));
+        m_textCtrlRudderStbd->SetValue("");
     } else if (myRudder >= 0) {
 
         initRudder -= 30;
         myDir += initRudder;
         m_gaugeRudderStbd->SetValue(myRudder);
         if (myRudder == 0) {
-            m_textCtrlRudderStbd->SetValue(_T(""));
+            m_textCtrlRudderStbd->SetValue("");
         } else {
             m_textCtrlRudderStbd->SetValue(
-                wxString::Format(_T("%.0f"), myRudder) + _T(" S"));
+                wxString::Format("%.0f", myRudder) + " S");
         }
         m_gaugeRudderPort->SetValue(0);
-        m_textCtrlRudderPort->SetValue(_T(""));
+        m_textCtrlRudderPort->SetValue("");
     }
 
     if (myDir < 0) {
@@ -376,7 +536,7 @@ void Dlg::Notify()
         myDir -= 360;
     }
 
-    wxString mystring = wxString::Format(wxT("%03.0f"), myDir);
+    wxString mystring = wxString::Format("%03.0f", myDir);
     m_stHeading->SetLabel(mystring);
 
     if (m_bUsingWind) {
@@ -386,7 +546,7 @@ void Dlg::Notify()
         }
     }
 
-    m_stSpeed->SetLabel(wxString::Format(_T("%3.1f"), initSpd));
+    m_stSpeed->SetLabel(wxString::Format("%3.1f", initSpd));
 
     if (!m_bUsingFollow) {
 
@@ -397,10 +557,122 @@ void Dlg::Notify()
             initLat, initLon, myDir, initSpd / 7200, stepLat, stepLon);
     }
 
-    wxString timeStamp = wxString::Format(_T("%i"), wxGetUTCTime());
+    wxString timeStamp = wxString::Format("%i", wxGetUTCTime());
 
-    wxString myNMEAais = myAIS->nmeaEncode(_T("18"), m_iMMSI, _T("5"), initSpd,
-        initLat, initLon, myDir, myDir, _T("B"), timeStamp);
+    wxString myNMEAais = myAIS->nmeaEncode("18", m_iMMSI, "5", initSpd,
+        initLat, initLon, myDir, myDir, "B", timeStamp);
+
+    wxString notMID = m_tMMSI.Mid(3);
+
+    switch (alarm_id) {
+    case 970:
+        SARTid = "970" + notMID;
+        SARTint = wxAtoi(SARTid);
+
+        if (m_bSART) {
+            myNMEA_SART = myAIS->nmeaEncode1_2_3(1, SARTint, 14, initSpd,
+                initLat, initLon, myDir, myDir, "B");
+
+            m_textCtrlSART->SetValue(myNMEA_SART);
+            PushNMEABuffer(myNMEA_SART + "\r\n");
+        } else if (stop_count < 5) {
+            stop_count++;
+
+            myNMEA_SART = myAIS->nmeaEncode1_2_3(1, SARTint, 15, initSpd,
+                initLat, initLon, myDir, myDir, "B");
+
+            m_textCtrlSART->SetValue(myNMEA_SART); // for analysis of sentence
+            PushNMEABuffer(myNMEA_SART + "\r\n");
+        }
+        break;
+
+    case 972:
+        MOBid = "972" + notMID;
+        MOBint = wxAtoi(MOBid);
+
+        if (m_bMOB) {
+            myNMEA_MOB = myAIS->nmeaEncode1_2_3(1, MOBint, 14, initSpd,
+                m_latMOB, m_lonMOB, myDir, myDir, "B");
+
+            m_textCtrlSART->SetValue(myNMEA_MOB);
+            PushNMEABuffer(myNMEA_MOB + "\r\n");
+        } else if (stop_countMOB < 5) {
+            stop_countMOB++;
+
+            myNMEA_MOB = myAIS->nmeaEncode1_2_3(1, MOBint, 15, initSpd,
+                m_latMOB, m_lonMOB, myDir, myDir, "B");
+
+            m_textCtrlSART->SetValue(myNMEA_MOB); // for analysis of sentence
+            PushNMEABuffer(myNMEA_MOB + "\r\n");
+        }
+        break;
+
+    case 974:
+        EPIRBid = "974" + notMID;
+        EPIRBint = wxAtoi(EPIRBid);
+
+        if (m_bEPIRB) {
+            myNMEA_EPIRB = myAIS->nmeaEncode1_2_3(1, EPIRBint, 14, initSpd,
+                initLat, initLon, myDir, myDir, "B");
+
+            m_textCtrlSART->SetValue(myNMEA_EPIRB);
+            PushNMEABuffer(myNMEA_EPIRB + "\r\n");
+        } else if (stop_countEPIRB < 5) {
+            stop_countEPIRB++;
+
+            myNMEA_EPIRB = myAIS->nmeaEncode1_2_3(1, EPIRBint, 15, initSpd,
+                initLat, initLon, myDir, myDir, "B");
+
+            m_textCtrlSART->SetValue(myNMEA_EPIRB); // for analysis of sentence
+            PushNMEABuffer(myNMEA_EPIRB + "\r\n");
+        }
+        break;
+    case 980:
+        if (m_bDISTRESS) {
+            myNMEA_DISTRESS = createDSCAlertSentence(
+                initLat, initLon, m_iMMSI, "05", timeStamp);
+
+            m_textCtrlSART->SetValue(myNMEA_DISTRESS);
+
+            wxString DSCexpansion
+                = createDSCExpansionSentence(initLat, initLon, m_iMMSI);
+
+            PushNMEABuffer(myNMEA_DISTRESS + "\r\n");
+            PushNMEABuffer(DSCexpansion + "\r\n");
+        }
+        break;
+    case 982:
+        if (m_bCANCEL && m_bDISTRESS) {
+            myNMEA_CANCEL = createDSCAlertCancelSentence(
+                initLat, initLon, m_iMMSI, "05", timeStamp);
+
+            m_textCtrlSART->SetValue(myNMEA_CANCEL);
+            PushNMEABuffer(myNMEA_CANCEL + "\r\n");
+        }
+        break;
+    case 984:
+        if (m_bDISTRESSRELAY) {
+            myNMEA_DISTRESSRELAY = createDSCAlertRelaySentence(
+                49.9, -5.9, m_iMMSI, 503110520, "05", "1800");
+            m_textCtrlSART->SetValue(myNMEA_DISTRESSRELAY);
+
+            wxString DSCexpansion
+                = createDSCExpansionSentence(initLat, initLon, m_iMMSI);
+
+            PushNMEABuffer(myNMEA_DISTRESSRELAY + "\r\n");
+            PushNMEABuffer(DSCexpansion + "\r\n");
+        }
+        break;
+    case 986:
+        if (m_bRELAYCANCEL && m_bDISTRESSRELAY) {
+            myNMEA_RELAYCANCEL = createDSCAlertRelayCancelSentence(
+                49.9, -5.9, m_iMMSI, 503110520, "05", "1800");
+
+            m_textCtrlSART->SetValue(myNMEA_RELAYCANCEL);
+            PushNMEABuffer(myNMEA_RELAYCANCEL + "\r\n");
+        }
+        break;
+    }
 
     if (m_bUseFile)
         nmeafile->AddLine(myNMEAais);
@@ -420,22 +692,22 @@ void Dlg::Notify()
         MWVT = createMWVTSentence(initSpd, myDir, wdir, wspd);
         MWD = createMWDSentence(wdir, wspd);
 
-        PushNMEABuffer(MWVA + _T("\n"));
-        PushNMEABuffer(MWVT + _T("\n"));
-        PushNMEABuffer(MWD + _T("\n"));
+        PushNMEABuffer(MWVA + "\r\n");
+        PushNMEABuffer(MWVT + "\r\n");
+        PushNMEABuffer(MWD + "\r\n");
     }
 
     GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
     VTG = createVTGSentence(initSpd, myDir);
     VHW = createVHWSentence(initSpd, myDir);
 
-    PushNMEABuffer(GLL + _T("\n"));
-    PushNMEABuffer(VTG + _T("\n"));
-    PushNMEABuffer(VHW + _T("\n"));
+    PushNMEABuffer(GLL + "\r\n");
+    PushNMEABuffer(VTG + "\r\n");
+    PushNMEABuffer(VHW + "\r\n");
 
-    if (m_bUseAis)
-        PushNMEABuffer(myNMEAais + _T("\n"));
-
+    if (m_bUseAis) {
+        PushNMEABuffer(myNMEAais + "\r\n");        
+    }
     initLat = stepLat;
     initLon = stepLon;
 
@@ -494,18 +766,18 @@ wxString Dlg::createMWDSentence(double winddirection, double windspeed)
     wxString nForCheckSum;
     wxString nFinal;
     wxString nUnits;
-    wxString nC = _T(",");
-    wxString nA = _T("A");
-    nUnits = _T("N");
-    nMWV = _T("WIMWV");
-    nMWD = _T("WIMWD");
-    nRelTrue = _T("T");
-    nValid = _T("A,A");
-    wxString ndlr = _T("$");
-    wxString nast = _T("*");
+    wxString nC = ",";
+    wxString nA = "A";
+    nUnits = "N";
+    nMWV = "WIMWV";
+    nMWD = "WIMWD";
+    nRelTrue = "T";
+    nValid = "A,A";
+    wxString ndlr = "$";
+    wxString nast = "*";
 
-    nSpd = wxString::Format(_T("%f"), windspeed);
-    nDir = wxString::Format(_T("%f"), winddirection);
+    nSpd = wxString::Format("%f", windspeed);
+    nDir = wxString::Format("%f", winddirection);
 
     // nForCheckSum = nMWV + nC + nDir + nC + nRelTrue + nC + nSpd + nC + nUnits
     // + nC + nA;
@@ -522,7 +794,7 @@ wxString Dlg::createVHWSentence(double stw, double hdg)
     1   2   3   4   5   6   7   8 9
     |   |   |   |   |   |   |   | |
     $--VHW, x.x, T, x.x, M, x.x, N, x.x, K*hh
-    1) Degress	True
+    1) Degress  True
     2) T = True
     3) Degrees Magnetic
     4) M = Magnetic
@@ -540,16 +812,16 @@ wxString Dlg::createVHWSentence(double stw, double hdg)
     wxString nForCheckSum;
     wxString nFinal;
     wxString nUnits;
-    wxString nC = _T(",");
-    wxString nA = _T("A");
-    nUnits = _T("N");
-    nVHW = _T("IIVHW");
-    nTrueMag = _T("T");
-    wxString ndlr = _T("$");
-    wxString nast = _T("*");
+    wxString nC = ",";
+    wxString nA = "A";
+    nUnits = "N";
+    nVHW = "IIVHW";
+    nTrueMag = "T";
+    wxString ndlr = "$";
+    wxString nast = "*";
 
-    nSpd = wxString::Format(_T("%f"), stw);
-    nDir = wxString::Format(_T("%f"), hdg);
+    nSpd = wxString::Format("%f", stw);
+    nDir = wxString::Format("%f", hdg);
 
     nForCheckSum
         = nVHW + nC + nDir + nC + nTrueMag + nC + nC + nC + nSpd + nC + nUnits;
@@ -611,18 +883,18 @@ wxString Dlg::createMWVTSentence(
     wxString nForCheckSum;
     wxString nFinal;
     wxString nUnits;
-    wxString nC = _T(",");
-    wxString nA = _T("A");
-    nUnits = _T("N");
-    nMWV = _T("WIMWV");
-    nMWD = _T("WIMWD");
-    nRelTrue = _T("T");
-    nValid = _T("A,A");
-    wxString ndlr = _T("$");
-    wxString nast = _T("*");
+    wxString nC = ",";
+    wxString nA = "A";
+    nUnits = "N";
+    nMWV = "WIMWV";
+    nMWD = "WIMWD";
+    nRelTrue = "T";
+    nValid = "A,A";
+    wxString ndlr = "$";
+    wxString nast = "*";
 
-    nSpd = wxString::Format(_T("%f"), tws);
-    nDir = wxString::Format(_T("%f"), twa);
+    nSpd = wxString::Format("%f", tws);
+    nDir = wxString::Format("%f", twa);
 
     nForCheckSum
         = nMWV + nC + nDir + nC + nRelTrue + nC + nSpd + nC + nUnits + nC + nA;
@@ -679,10 +951,10 @@ wxString Dlg::createMWVASentence(
     wxString leftright = wxEmptyString;
 
     if (twa <= 180) {
-        leftright = _T("R");
+        leftright = "R";
     }
     if (twa > 180) {
-        leftright = _T("L");
+        leftright = "L";
         twa = 360 - twa;
     }
 
@@ -705,7 +977,7 @@ wxString Dlg::createMWVASentence(
     awa = twa - charlie;
     awa = awa * 180 / M_PI; // back to degrees
 
-    if (leftright == _T("L")) {
+    if (leftright == "L") {
         awa = 360 - awa;
     }
 
@@ -718,18 +990,18 @@ wxString Dlg::createMWVASentence(
     wxString nForCheckSum;
     wxString nFinal;
     wxString nUnits;
-    wxString nC = _T(",");
-    wxString nA = _T("A");
-    nUnits = _T("N");
-    nMWV = _T("WIMWV");
-    nMWD = _T("WIMWD");
-    nRelTrue = _T("R");
-    nValid = _T("A,A");
-    wxString ndlr = _T("$");
-    wxString nast = _T("*");
+    wxString nC = ",";
+    wxString nA = "A";
+    nUnits = "N";
+    nMWV = "WIMWV";
+    nMWD = "WIMWD";
+    nRelTrue = "R";
+    nValid = "A,A";
+    wxString ndlr = "$";
+    wxString nast = "*";
 
-    nSpd = wxString::Format(_T("%f"), aws);
-    nDir = wxString::Format(_T("%f"), awa);
+    nSpd = wxString::Format("%f", aws);
+    nDir = wxString::Format("%f", awa);
 
     nForCheckSum
         = nMWV + nC + nDir + nC + nRelTrue + nC + nSpd + nC + nUnits + nC + nA;
@@ -759,22 +1031,22 @@ wxString Dlg::createRMCSentence(wxDateTime myDateTime, double myLat,
     wxString nValid;
     wxString nForCheckSum;
     wxString nFinal;
-    wxString nC = _T(",");
-    wxString nA = _T("A,");
-    nRMC = _T("GPRMC,");
-    nValid = _T("A,A");
-    wxString ndlr = _T("$");
-    wxString nast = _T("*");
+    wxString nC = ",";
+    wxString nA = "A,";
+    nRMC = "GPRMC,";
+    nValid = "A,A";
+    wxString ndlr = "$";
+    wxString nast = "*";
 
     nTime = DateTimeToTimeString(myDateTime);
     nNS = LatitudeToString(myLat);
     nEW = LongitudeToString(myLon);
-    nSpd = wxString::Format(_T("%f"), mySpd);
-    nDir = wxString::Format(_T("%f"), myDir);
+    nSpd = wxString::Format("%f", mySpd);
+    nDir = wxString::Format("%f", myDir);
     nDate = DateTimeToDateString(myDateTime);
 
     nForCheckSum = nRMC + nTime + nC + nNS + nEW + nSpd + nC + nDir + nC + nDate
-        + _T(",,,A");
+        + ",,,A";
     nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
     return nFinal;
 }
@@ -797,21 +1069,21 @@ wxString Dlg::createGLLSentence(wxDateTime myDateTime, double myLat,
     wxString nValid;
     wxString nForCheckSum;
     wxString nFinal;
-    wxString nC = _T(",");
-    wxString nA = _T("A,");
-    nGLL = _T("IIGLL,");
-    nValid = _T("A,A");
-    wxString ndlr = _T("$");
-    wxString nast = _T("*");
+    wxString nC = ",";
+    wxString nA = "A,";
+    nGLL = "IIGLL,";
+    nValid = "A,A";
+    wxString ndlr = "$";
+    wxString nast = "*";
 
     nTime = DateTimeToTimeString(myDateTime);
     nNS = LatitudeToString(myLat);
     nEW = LongitudeToString(myLon);
-    nSpd = wxString::Format(_T("%f"), mySpd);
-    nDir = wxString::Format(_T("%f"), myDir);
+    nSpd = wxString::Format("%f", mySpd);
+    nDir = wxString::Format("%f", myDir);
     nDate = DateTimeToDateString(myDateTime);
 
-    nForCheckSum = nGLL + nNS + nEW + nTime + _T(",A");
+    nForCheckSum = nGLL + nNS + nEW + nTime + ",A";
     nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
     // wxMessageBox(nFinal);
     return nFinal;
@@ -828,20 +1100,20 @@ wxString Dlg::createVTGSentence(double mySpd, double myDir)
     wxString nValid;
     wxString nForCheckSum;
     wxString nFinal;
-    wxString nC = _T(",");
-    wxString nA = _T("A");
-    wxString nT = _T("T,");
-    wxString nM = _T("M,");
-    wxString nN = _T("N,");
-    wxString nK = _T("K,");
+    wxString nC = ",";
+    wxString nA = "A";
+    wxString nT = "T,";
+    wxString nM = "M,";
+    wxString nN = "N,";
+    wxString nK = "K,";
 
-    wxString nVTG = _T("IIVTG,");
-    nValid = _T("A,A");
-    wxString ndlr = _T("$");
-    wxString nast = _T("*");
+    wxString nVTG = "IIVTG,";
+    nValid = "A,A";
+    wxString ndlr = "$";
+    wxString nast = "*";
 
-    nSpd = wxString::Format(_T("%f"), mySpd);
-    nDir = wxString::Format(_T("%f"), myDir);
+    nSpd = wxString::Format("%f", mySpd);
+    nDir = wxString::Format("%f", myDir);
 
     nForCheckSum = nVTG + nDir + nC + nT + nC + nM + nSpd + nN + nC + nC + nA;
 
@@ -864,24 +1136,313 @@ wxString Dlg::createHDTSentence(double myDir)
     wxString nValid;
     wxString nForCheckSum;
     wxString nFinal;
-    wxString nC = _T(",");
-    wxString nA = _T("A");
-    wxString nT = _T("T,");
-    wxString nM = _T("M,");
-    wxString nN = _T("N,");
-    wxString nK = _T("K,");
+    wxString nC = ",";
+    wxString nA = "A";
+    wxString nT = "T,";
+    wxString nM = "M,";
+    wxString nN = "N,";
+    wxString nK = "K,";
 
-    wxString nHDG = _T("IIHDT,");
-    nValid = _T("A,A");
-    wxString ndlr = _T("$");
-    wxString nast = _T("*");
+    wxString nHDG = "IIHDT,";
+    nValid = "A,A";
+    wxString ndlr = "$";
+    wxString nast = "*";
 
-    nDir = wxString::Format(_T("%f"), myDir);
+    nDir = wxString::Format("%f", myDir);
 
     nForCheckSum = nHDG + nDir + nC + nT;
 
     nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
     // wxMessageBox(nFinal);
+    return nFinal;
+}
+
+wxString Dlg::createDSCAlertSentence(
+    double lat, double lon, int mmsi, wxString nature, wxString time)
+{
+   // 1      2  3          4  5  6  7          8    9 10 11 12 13 
+   // |      |  |          |  |  |  |          |    | |  |  |  | 
+   // $CDDSC,12,3380400790,12,06,00,1423108312,2019, , , S, E* 6A
+    
+    wxString nNS;
+    wxString nEW;
+    wxString nLatLon;
+    wxString nMMSI;
+    wxString nTime;
+    wxString nQLat;
+    wxString nQLon;
+
+    wxString ndlr = "$";
+    wxString nast = "*";
+
+    wxString nForCheckSum;
+    wxString nFinal;
+
+    wxString nC = ",";
+    wxString nDSC = "CDDSC";
+
+    nNS = LatitudeToString(lat);
+    nEW = LongitudeToString(lon);
+
+    nQLat = nNS.at(nNS.length() - 2);
+    nQLon = nEW.at(nEW.length() - 2);
+
+    wxString nQ = nQLat + nQLon;
+    wxString quadrant;
+
+ /*
+    - quadrant NE is indicated by the digit “0”,
+    – quadrant NW is indicated by the digit “1”,
+    – quadrant SE is indicated by the digit “2”,
+    – quadrant SW is indicated by the digit “3
+*/
+    if (nQ == "NE")
+        quadrant = "0";
+    else if (nQ == "NW")
+        quadrant = "1";
+    else if (nQ == "SE")
+        quadrant = "2";
+    else if (nQ == "SW")
+        quadrant = "3";
+
+    nNS = nNS.Mid(0, 4);
+    nEW = nEW.Mid(0, 5);
+    nLatLon = quadrant + nNS + nEW;
+
+    nMMSI = wxString::Format("%i",mmsi) + "0";
+
+    nTime = time;
+    nTime = nTime.Mid(0, 4);
+
+    nForCheckSum = nDSC + nC + "12" + nC + nMMSI + nC + "12" + nC + "06" + nC
+        + "00" + nC + nLatLon + nC + nC + nC + "S" + nC + "E";
+
+    nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
+
+    return nFinal;
+}
+
+wxString Dlg::createDSCExpansionSentence(double lat, double lon, int mmsi)
+{
+ //    1     2  3  4  5           6   7          8 
+ //    |     |  |  |  |           |   |          | 
+ //   $CDDSE,1, 1, A, 3380400790, 00, 45894494 * 1B   
+        
+    wxString nNS;
+    wxString nEW;
+    wxString nDecNS;
+    wxString nDecEW;
+    wxString nMMSI;
+    wxString nDec;
+
+    wxString nDSC = "CDDSE";
+
+    wxString ndlr = "$";
+    wxString nast = "*";
+
+    wxString nForCheckSum;
+    wxString nFinal;
+
+    wxString nC = ",";
+
+    nNS = LatitudeToString(lat);
+    nEW = LongitudeToString(lon);
+
+    nDecNS = nNS.substr(nNS.find('.') + 1);
+    nDecEW = nEW.substr(nEW.find('.') + 1);
+
+    nDec = nDecNS.Mid(0,4) + nDecEW.Mid(0,4);
+
+    nMMSI = wxString::Format("%i",mmsi) + "0";
+
+    nForCheckSum = nDSC + nC + "1" + nC + "1" + nC + "A" + nC + nMMSI + nC + "00"
+        + nC + nDec;
+
+    nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
+
+    return nFinal;
+}
+
+wxString Dlg::createDSCAlertCancelSentence(double lat, double lon, int mmsi, wxString nature, wxString time)
+{ 
+
+//    1      2  3           4   5   6   7           8     9          10 11 12  13 
+//    |      |  |           |   |   |   |           |     |          |  |  |    | 
+ //   $CDDSC,12,3381581370, 12, 06, 00, 1423108312, 0236, 3381581370, , S,    *20
+
+    wxString nNS;
+    wxString nEW;
+    wxString nLatLon;
+    wxString nMMSI;
+    wxString nTime;
+    wxString nQLat;
+    wxString nQLon;
+
+    wxString ndlr = "$";
+    wxString nast = "*";
+
+    wxString nForCheckSum;
+    wxString nFinal;
+
+    wxString nC = ",";
+    wxString nDSC = "CDDSC";
+
+    nNS = LatitudeToString(lat);
+    nEW = LongitudeToString(lon);
+
+    nQLat = nNS.at(nNS.length() - 2);
+    nQLon = nEW.at(nEW.length() - 2);
+
+    wxString nQ = nQLat + nQLon;
+    wxString quadrant;
+
+    if (nQ == "NE")
+        quadrant = "0";
+    else if (nQ == "NW")
+        quadrant = "1";
+    else if (nQ == "SE")
+        quadrant = "2";
+    else if (nQ == "SW")
+        quadrant = "3";
+
+    nNS = nNS.Mid(0, 4);
+    nEW = nEW.Mid(0, 5);
+    nLatLon = quadrant + nNS + nEW;
+
+    nMMSI = wxString::Format("%i", mmsi) + "0";
+
+    nForCheckSum = nDSC + nC + "12" + nC + nMMSI + nC + nature + nC + "00" + nC + nLatLon + nC + time + nC + nMMSI + nC + nC + "S" + nC;
+
+    nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
+
+    return nFinal;
+
+
+}
+
+wxString Dlg::createDSCAlertRelaySentence(double lat, double lon, int mmsi, int dmmsi, wxString nature, wxString time)
+{
+    // 1      2  3          4  5  6  7          8    9          10 11 12 13
+    // |      |  |          |  |  |  |          |    |          |  |  |  |
+    // $CDDSC,12,3380400790,12,12,00,1423108312,2019,5031105200,05,S, E* 6A
+
+    wxString nNS;
+    wxString nEW;
+    wxString nLatLon;
+    wxString nMMSI;
+    wxString dMMSI;
+    wxString nTime;
+    wxString nQLat;
+    wxString nQLon;
+
+    wxString ndlr = "$";
+    wxString nast = "*";
+
+    wxString nForCheckSum;
+    wxString nFinal;
+
+    wxString nC = ",";
+    wxString nDSC = "CDDSC";
+
+    nNS = LatitudeToString(lat);
+    nEW = LongitudeToString(lon);
+
+    nQLat = nNS.at(nNS.length() - 2);
+    nQLon = nEW.at(nEW.length() - 2);
+
+    wxString nQ = nQLat + nQLon;
+    wxString quadrant;
+
+    /*
+       - quadrant NE is indicated by the digit “0”,
+       – quadrant NW is indicated by the digit “1”,
+       – quadrant SE is indicated by the digit “2”,
+       – quadrant SW is indicated by the digit “3
+   */
+    if (nQ == "NE")
+        quadrant = "0";
+    else if (nQ == "NW")
+        quadrant = "1";
+    else if (nQ == "SE")
+        quadrant = "2";
+    else if (nQ == "SW")
+        quadrant = "3";
+
+    nNS = nNS.Mid(0, 4);
+    nEW = nEW.Mid(0, 5);
+    nLatLon = quadrant + nNS + nEW;
+
+    nMMSI = wxString::Format("%i", mmsi) + "0";
+    dMMSI = wxString::Format("%i", dmmsi) + "0";
+
+    nTime = time;
+    nTime = nTime.Mid(0, 4);
+
+    nForCheckSum = nDSC + nC + "16" + nC + nMMSI + nC + "12" + nC + "12" + nC
+        + "00" + nC + nLatLon + nC + time + nC + dMMSI + nC + nature + nC + "S" + nC
+        + "E";
+
+    nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
+
+    return nFinal;
+}
+
+wxString Dlg::createDSCAlertRelayCancelSentence(double lat, double lon, int mmsi, int dmmsi, wxString nature, wxString time)
+{
+
+    //    1      2  3           4   5   6   7           8     9          10 11
+    //    12  13 |      |  |           |   |   |   |           |     | |  |  | |
+    //   $CDDSC,12,3381581370, 12, 06, 00, 1423108312, 0236, 3381581370, , S,
+    //   *20
+
+    wxString nNS;
+    wxString nEW;
+    wxString nLatLon;
+    wxString nMMSI;
+    wxString dMMSI;
+    wxString nTime;
+    wxString nQLat;
+    wxString nQLon;
+
+    wxString ndlr = "$";
+    wxString nast = "*";
+
+    wxString nForCheckSum;
+    wxString nFinal;
+
+    wxString nC = ",";
+    wxString nDSC = "CDDSC";
+
+    nNS = LatitudeToString(lat);
+    nEW = LongitudeToString(lon);
+
+    nQLat = nNS.at(nNS.length() - 2);
+    nQLon = nEW.at(nEW.length() - 2);
+
+    wxString nQ = nQLat + nQLon;
+    wxString quadrant;
+
+    if (nQ == "NE")
+        quadrant = "0";
+    else if (nQ == "NW")
+        quadrant = "1";
+    else if (nQ == "SE")
+        quadrant = "2";
+    else if (nQ == "SW")
+        quadrant = "3";
+
+    nNS = nNS.Mid(0, 4);
+    nEW = nEW.Mid(0, 5);
+    nLatLon = quadrant + nNS + nEW;
+
+    nMMSI = wxString::Format("%i", mmsi) + "0";
+    dMMSI = wxString::Format("%i", dmmsi) + "0";
+
+    nForCheckSum = nDSC + nC + "12" + nC + nMMSI + nC + nature + nC + "00" + nC
+        + nLatLon + nC + time + nC + dMMSI + nC + nC + "S" + nC;
+
+    nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
+
     return nFinal;
 }
 
@@ -897,7 +1458,7 @@ wxString Dlg::makeCheckSum(wxString mySentence)
     for (XOR = 0, i = 0; i < iLen; i++)
         XOR ^= (unsigned char)Buff[i];
     stringstream tmpss;
-    tmpss << hex << (int)XOR << endl;
+    tmpss << hex << (int)XOR;
     wxString mystr = tmpss.str();
     return mystr;
 }
@@ -922,11 +1483,11 @@ double StringToLatitude(wxString mLat)
 wxString Dlg::LatitudeToString(double mLat)
 {
 
-    wxString singlezero = _T("0");
+    wxString singlezero = "0";
     wxString mDegLat;
 
     int degLat = std::abs(mLat);
-    wxString finalDegLat = wxString::Format(_T("%i"), degLat);
+    wxString finalDegLat = wxString::Format("%i", degLat);
 
     int myL = finalDegLat.length();
     switch (myL) {
@@ -944,24 +1505,23 @@ wxString Dlg::LatitudeToString(double mLat)
     double decLat = minLat * 60;
 
     wxString returnLat;
-    // wxMessageBox(returnLat, _T("returnLat"));
 
     if (mLat >= 0) {
         if (decLat < 10) {
-            returnLat = mDegLat + _T("0") + wxString::Format(_T("%.6f"), decLat)
-                + _T(",N,");
+            returnLat = mDegLat + "0" + wxString::Format("%.6f", decLat)
+                + ",N,";
         } else {
             returnLat
-                = mDegLat + wxString::Format(_T("%.6f"), decLat) + _T(",N,");
+                = mDegLat + wxString::Format("%.6f", decLat) + ",N,";
         }
 
     } else if (mLat < 0) {
         if (decLat < 10) {
-            returnLat = mDegLat + _T("0") + wxString::Format(_T("%.6f"), decLat)
-                + _T(",S,");
+            returnLat = mDegLat + "0" + wxString::Format("%.6f", decLat)
+                + ",S,";
         } else {
             returnLat
-                = mDegLat + wxString::Format(_T("%.6f"), decLat) + _T(",S,");
+                = mDegLat + wxString::Format("%.6f", decLat) + ",S,";
         }
     }
 
@@ -1020,13 +1580,11 @@ wxString Dlg::LongitudeToString(double mLon)
     wxString mDegLon;
     double decValue;
     wxString returnLon;
-    wxString doublezero = _T("00");
-    wxString singlezero = _T("0");
+    wxString doublezero = "00";
+    wxString singlezero = "0";
 
     int degLon = fabs(mLon);
-    wxString inLon = wxString::Format(_T("%i"), degLon);
-
-    // wxMessageBox(returnLon, _T("inLon"));
+    wxString inLon = wxString::Format("%i", degLon);
 
     int myL = inLon.length();
     switch (myL) {
@@ -1048,32 +1606,31 @@ wxString Dlg::LongitudeToString(double mLon)
 
     if (mLon >= 0) {
         if (decLon < 10) {
-            returnLon = mDegLon + _T("0") + wxString::Format(_T("%.6f"), decLon)
-                + _T(",E,");
+            returnLon = mDegLon + "0" + wxString::Format("%.6f", decLon)
+                + ",E,";
         } else {
             returnLon
-                = mDegLon + wxString::Format(_T("%.6f"), decLon) + _T(",E,");
+                = mDegLon + wxString::Format("%.6f", decLon) + ",E,";
         }
 
     } else {
         if (decLon < 10) {
-            returnLon = mDegLon + _T("0") + wxString::Format(_T("%.6f"), decLon)
-                + _T(",W,");
+            returnLon = mDegLon + "0" + wxString::Format("%.6f", decLon)
+                + ",W,";
         } else {
             returnLon
-                = mDegLon + wxString::Format(_T("%.6f"), decLon) + _T(",W,");
+                = mDegLon + wxString::Format("%.6f", decLon) + ",W,";
         }
     }
-    // wxMessageBox(returnLon, _T("returnLon"));
     return returnLon;
 }
 
 wxString Dlg::DateTimeToTimeString(wxDateTime myDT)
 {
     wxString sHours, sMinutes, sSecs;
-    sHours = myDT.Format(_T("%H"));
-    sMinutes = myDT.Format(_T("%M"));
-    sSecs = myDT.Format(_T("%S"));
+    sHours = myDT.Format("%H");
+    sMinutes = myDT.Format("%M");
+    sSecs = myDT.Format("%S");
     wxString dtss = sHours + sMinutes + sSecs;
     return dtss;
 }
@@ -1082,9 +1639,9 @@ wxString Dlg::DateTimeToDateString(wxDateTime myDT)
 {
 
     wxString sDay, sMonth, sYear;
-    sDay = myDT.Format(_T("%d"));
-    sMonth = myDT.Format(_T("%m"));
-    sYear = myDT.Format(_T("%y"));
+    sDay = myDT.Format("%d");
+    sMonth = myDT.Format("%m");
+    sYear = myDT.Format("%y");
 
     return sDay + sMonth + sYear;
 }
@@ -1121,7 +1678,7 @@ void Dlg::RequestGrib(wxDateTime time)
     writer->write(value, &outStream);
     std::string str = outStream.str();
 
-    SendPluginMessage(wxString(_T("GRIB_TIMELINE_RECORD_REQUEST")), str);
+    SendPluginMessage(wxString("GRIB_TIMELINE_RECORD_REQUEST"), str);
 
     Lock();
     m_bNeedsGrib = false;
@@ -1170,12 +1727,11 @@ void Dlg::OnWind(wxCommandEvent& event)
         double myPolarSpeed = GetPolarSpeed(initLat, initLon, initDir);
         if (myPolarSpeed == -1) {
             if (m_bInvalidPolarsFile) {
-                wxMessageBox(_T("Invalid Boat Polars file"));
+                wxMessageBox(_("Invalid Boat Polars file"));
             }
 
             if (m_bInvalidGribFile) {
-                wxMessageBox(_T("Grib data is not available for the present ")
-                             _T("date/time or location"));
+                wxMessageBox(_("Grib data is not available for the present date/time or location"));
             }
             m_buttonWind->SetBackgroundColour(wxColour(0, 255, 0));
             m_bUsingWind = false;
@@ -1203,12 +1759,12 @@ double Dlg::GetPolarSpeed(double lat, double lon, double cse)
     }
 
     wxString error;
-    wxString s = _T("/");
+    wxString s = "/";
 
     const char* pName = "ShipDriver_pi";
 
-    wxString polars_path = GetPluginDataDir(pName) + s + _T("data") + s;
-    wxString myFile = polars_path + _T("arcona.xml");
+    wxString polars_path = GetPluginDataDir(pName) + s + "data" + s;
+    wxString myFile = polars_path + "arcona.xml";
 
     double twa = 360 - ((cse - dir) - 360);
     if (twa > 360) {
@@ -1221,15 +1777,6 @@ double Dlg::GetPolarSpeed(double lat, double lon, double cse)
     if (twa > 180) {
         twa = 360 - twa;
     }
-    /*
-    double relWind = cse - dir;
-
-    relWind = abs(relWind);
-    if (relWind > 180){
-    relWind = 360 - relWind;
-    }
-    */
-    // wxMessageBox(wxString::Format(_T("%f"), relWind));
 
     double polarSpeed = ReadPolars(myFile, twa, spd);
     return polarSpeed;
@@ -1281,7 +1828,7 @@ double Dlg::ReadPolars(wxString filename, double windangle, double windspeed)
                 && !foundWindAngle && !foundWindSpeed) {
                 myWindAngle = AttributeDouble(e, "WindAngle", NAN);
                 if (prevAngle < windangle && windangle < myWindAngle) {
-                    theWindAngle = wxString::Format(_T("%5.2f"), prevAngle);
+                    theWindAngle = wxString::Format("%5.2f", prevAngle);
                     foundWindAngle = true;
                     break;
                 }
@@ -1301,10 +1848,10 @@ double Dlg::ReadPolars(wxString filename, double windangle, double windspeed)
                 if (!strcmp(e->Value(), "TWA")) {
                     myWindAngle = AttributeDouble(e, "WindAngle", NAN);
                     wxString angleOut
-                        = wxString::Format(_T("%5.2f"), myWindAngle);
+                        = wxString::Format("%5.2f", myWindAngle);
                     if (angleOut
                         == theWindAngle) { // we have found the correct section
-                                           // of the polars file	for the
+                                           // of the polars file    for the
                                            // relative wind
                         for (TiXmlElement* g = e->FirstChildElement(); g;
                              g = g->NextSiblingElement()) {
@@ -1319,9 +1866,6 @@ double Dlg::ReadPolars(wxString filename, double windangle, double windspeed)
 
                                 if (prevSpeed < windspeed
                                     && windspeed < myWindSpeed) {
-                                    // wxString boatSpeed =
-                                    // wxString::Format(_T("%5.2f"),
-                                    // prevPolarSpeed);
                                     return prevPolarSpeed;
                                 }
 
@@ -1367,7 +1911,7 @@ double Dlg::ReadNavobj()
     wxString wpt_guid;
 
     wxString navobj_path = Dlg::StandardPath();
-    wxString myFile = navobj_path + _T("navobj.xml");
+    wxString myFile = navobj_path + "navobj.xml";
 
     // wxMessageBox(myFile);
 
@@ -1375,7 +1919,7 @@ double Dlg::ReadNavobj()
     wxString error;
 
     if (!doc.LoadFile(myFile.mb_str())) {
-        wxMessageBox(_T("Unable to read navobj file"));
+        wxMessageBox(_("Unable to read navobj file"));
         return -1;
     } else {
         TiXmlElement* root = doc.RootElement();
@@ -1410,15 +1954,9 @@ double Dlg::ReadNavobj()
 
                         myRtePt.lat = rte_lat;
                         myRtePt.lon = rte_lon;
-                        // wxMessageBox(_T("lat: ") + rte_lat);
-                        // wxMessageBox(_T("lon: ") + rte_lon);
-
-                        // wxMessageBox(wxString::FromUTF8(f->Value()));
 
                         for (TiXmlElement* i = f->FirstChildElement(); i;
                              i = i->NextSiblingElement()) {
-
-                            // wxMessageBox(wxString::FromUTF8(i->Value()));
 
                             if (!strcmp(i->Value(), "extensions")) {
 
@@ -1426,13 +1964,10 @@ double Dlg::ReadNavobj()
                                      j; j = j->NextSiblingElement()) {
 
                                     if (!strcmp(j->Value(), "opencpn:guid")) {
-                                        wpt_guid
-                                            = wxString::FromUTF8(j->GetText());
+                                        wpt_guid = wxString::FromUTF8(j->GetText());
 
                                         myRtePt.m_GUID = wpt_guid;
 
-                                        // wxMessageBox(_T("guid: ") +
-                                        // wpt_guid);
                                     }
                                 }
                             }
@@ -1445,7 +1980,7 @@ double Dlg::ReadNavobj()
                 }
                 myRte.m_rteptList = my_points;
                 if (!nameFound) {
-                    myRte.Name = _T("Unnamed");
+                    myRte.Name = "Unnamed";
                 }
                 my_routes.push_back(myRte);
                 myIndex = 0;
@@ -1470,20 +2005,20 @@ void Dlg::OnFollow(wxCommandEvent& event)
     GetRouteDialog RouteDialog(this, -1, _("Select the route to follow"),
         wxPoint(200, 200), wxSize(300, 200), wxRESIZE_BORDER);
 
-    RouteDialog.dialogText->InsertColumn(0, _T(""), 0, wxLIST_AUTOSIZE);
+    RouteDialog.dialogText->InsertColumn(0, "", 0, wxLIST_AUTOSIZE);
     RouteDialog.dialogText->SetColumnWidth(0, 290);
-    RouteDialog.dialogText->InsertColumn(1, _T(""), 0, wxLIST_AUTOSIZE);
+    RouteDialog.dialogText->InsertColumn(1, "", 0, wxLIST_AUTOSIZE);
     RouteDialog.dialogText->SetColumnWidth(1, 0);
     RouteDialog.dialogText->DeleteAllItems();
 
     int in = 0;
-    wxString routeName = _T("");
+    wxString routeName = "";
     for (std::vector<rte>::iterator it = my_routes.begin();
          it != my_routes.end(); it++) {
 
         routeName = (*it).Name;
 
-        RouteDialog.dialogText->InsertItem(in, _T(""), -1);
+        RouteDialog.dialogText->InsertItem(in, "", -1);
         RouteDialog.dialogText->SetItem(in, 0, routeName);
         in++;
     }
@@ -1548,15 +2083,13 @@ void Dlg::OnFollow(wxCommandEvent& event)
                         countRoutePoints++;
 
                     wxString xcountRoutePoints
-                        = wxString::Format(_T("%i"), countRoutePoints);
-                    // wxMessageBox(xcountRoutePoints, _T("countRoutePoints"));
+                        = wxString::Format("%i", countRoutePoints);
 
                     for (std::vector<rtept>::iterator it = routePoints.begin();
                          it != routePoints.end(); it++) {
 
                         wxString sIndex
-                            = wxString::Format(_T("%i"), (*it).index);
-                        // wxMessageBox(sIndex, _T("index"));
+                            = wxString::Format("%i", (*it).index);
 
                         if ((*it).index == 0) {
 
@@ -1585,7 +2118,7 @@ void Dlg::OnFollow(wxCommandEvent& event)
             }
 
         } else {
-            wxMessageBox(_T("Route not found"));
+            wxMessageBox(_("Route not found"));
             m_bUsingFollow = false;
             return;
         }
@@ -1606,7 +2139,7 @@ wxString Dlg::StandardPath()
 #elif defined(__WXGTK__) || defined(__WXQT__)
     wxString stdPath = std_path.GetUserDataDir();
 #elif defined(__WXOSX__)
-    wxString stdPath = (std_path.GetUserConfigDir() + s + _T("opencpn"));
+    wxString stdPath = (std_path.GetUserConfigDir() + s + "opencpn");
 #endif
 
 #ifdef __WXOSX__

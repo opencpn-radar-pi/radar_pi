@@ -205,12 +205,12 @@ string AisMaker::Str2Six(string str, int length)
 
         letter = str[i];
         int si = findIntFromLetter(letter);
-        result = Int2BString(si, 6) + result;
+        result = result + Int2BString(si, 6);
     }
     while (result.size() < (size_t)length) {
 
-        int sj = findIntFromLetter('@');
-        result = Int2BString(sj, 6) + result;
+        int sj = findIntFromLetter(' ');
+        result =  result + Int2BString(sj, 6);
     }
     return result;
 }
@@ -238,8 +238,6 @@ string AisMaker::NMEAencapsulate(string BigString, int numsixes)
     }
     // Now intChars contains the encoded bits for the AIS string
     for (chindex = 0; chindex < numsixes; chindex++) {
-        wxString mystring = wxString::Format(_T("%i"), intChars[chindex]);
-        // wxMessageBox(mystring);
         char plChar = findCharFromNumber(intChars[chindex]);
         capsule = capsule + plChar;
     }
@@ -260,7 +258,7 @@ wxString AisMaker::makeCheckSum(wxString mySentence)
     for (XOR = 0, i = 0; i < iLen; i++)
         XOR ^= (unsigned char)Buff[i];
     stringstream tmpss;
-    tmpss << hex << (int)XOR << endl;
+    tmpss << hex << (int)XOR;
     wxString mystr = tmpss.str();
     return mystr;
 }
@@ -274,9 +272,8 @@ wxString AisMaker::nmeaEncode(wxString type, int iMMSI, wxString status,
 
     string RepeatIndicator = Int2BString(0, 2);
 
-    wxString MMSI = wxString::Format(_T("%i"), iMMSI);
+    wxString MMSI = wxString::Format("%i", iMMSI);
     string sMMSI = (const char*)MMSI.mb_str();
-
     string oMMSI = Int2BString(Str2Int(sMMSI, ""), 30);
 
     string Spare1 = Int2BString(0, 8);
@@ -284,29 +281,29 @@ wxString AisMaker::nmeaEncode(wxString type, int iMMSI, wxString status,
     wxString sChannel;
     string Channel = (const char*)sChannel.mb_str();
 
-    wxString SPEED = wxString::Format(_T("%f"), spd * 10);
+    wxString SPEED = wxString::Format("%f", spd * 10);
     string sSPEED = (const char*)SPEED.mb_str();
     float sog = Str2Float(sSPEED, "");
     string SOG = Int2BString(sog, 10);
 
     string PosAccuracy = Int2BString(1, 1);
 
-    wxString LON = wxString::Format(_T("%f"), ilon);
+    wxString LON = wxString::Format("%f", ilon);
     string sLON = (const char*)LON.mb_str();
     float flon = Str2Float(sLON, "");
     string Longitude = Int2BString(int(flon * 600000), 28);
 
-    wxString LAT = wxString::Format(_T("%f"), ilat);
+    wxString LAT = wxString::Format("%f", ilat);
     string sLAT = (const char*)LAT.mb_str();
     float flat = Str2Float(sLAT, "");
     string Latitude = Int2BString(int(flat * 600000), 27);
 
-    wxString COURSE = wxString::Format(_T("%f"), crse);
+    wxString COURSE = wxString::Format("%f", crse);
     string sCOURSE = (const char*)COURSE.mb_str();
     float cog = Str2Float(sCOURSE, "");
     string COG = Int2BString(int(cog * 10), 12);
 
-    wxString HEADING = wxString::Format(_T("%f"), hdg);
+    wxString HEADING = wxString::Format("%f", hdg);
     string sHEADING = (const char*)HEADING.mb_str();
     int heading = Str2Int(sHEADING, "");
     string Heading = Int2BString(heading, 9);
@@ -333,7 +330,90 @@ wxString AisMaker::nmeaEncode(wxString type, int iMMSI, wxString status,
     wxString myNMEA = aisnmea;
     wxString myCheck = makeCheckSum(myNMEA);
 
-    myNMEA = _T("!") + myNMEA + _T("*") + myCheck;
+    myNMEA = "!" + myNMEA + "*" + myCheck;
 
     return myNMEA;
+}
+
+wxString AisMaker::nmeaEncode1_2_3(
+    int message_id, 
+    int iMMSI,
+    int nav_status,
+    float sog, // Knots.
+    double ilat, double ilon,    
+    double cog, // Degrees.
+    double true_heading,
+    wxString channel
+    )                   
+    
+{
+    
+    string MessageID(Int2BString(Str2Int("1", ""), 6));
+    string RepeatIndicator = Int2BString(0, 2);
+
+    wxString MMSI = wxString::Format("%i", iMMSI);
+    string sMMSI = (const char*)MMSI.mb_str();    
+    string oMMSI = Int2BString(Str2Int(sMMSI, ""), 30);
+    
+    string nav_status1 = Int2BString(nav_status, 4); //AIS-SART (active), MOB-AIS, EPIRB-AIS
+    string rot_raw = Int2BString(0, 8);
+
+    wxString SPEED = wxString::Format("%f", sog * 10);
+    string sSPEED = (const char*)SPEED.mb_str();
+    float sog1 = Str2Float(sSPEED, "");
+    string sog2 = Int2BString(sog1,10);
+
+    string position_accuracy = Int2BString(0, 1);
+
+    wxString LON = wxString::Format("%f", ilon);
+    string sLON = (const char*)LON.mb_str();
+    float flon = Str2Float(sLON, "");
+    string Longitude = Int2BString(int(flon * 600000), 28);
+
+    wxString LAT = wxString::Format("%f", ilat);
+    string sLAT = (const char*)LAT.mb_str();
+    float flat = Str2Float(sLAT, "");
+    string Latitude = Int2BString(int(flat * 600000), 27);
+
+    wxString COURSE = wxString::Format("%f", cog);
+    string sCOURSE = (const char*)COURSE.mb_str();
+    float cog1 = Str2Float(sCOURSE, "");
+    string COG = Int2BString(int(cog1 * 10), 12);
+
+    wxString HEADING = wxString::Format("%f", true_heading);
+    string sHEADING = (const char*)HEADING.mb_str();
+    int heading = Str2Int(sHEADING, "");
+    string Heading = Int2BString(heading, 9);
+        
+    int tSecond = wxGetUTCTime();
+    string TimeStamp = Int2BString(tSecond, 6);
+        
+    string special_manoeuvre = Int2BString(0, 2);
+    string spare = Int2BString(0, 3);
+    
+    string raim = Int2BString(0, 1);
+
+    string sync_state = Int2BString(0, 2);
+
+    string slot_timeout = Int2BString(0, 3);        
+    string slot_offset = Int2BString(0, 14);
+
+    string BigString = MessageID;
+    BigString = BigString + RepeatIndicator;
+    BigString = BigString + oMMSI + nav_status1 + rot_raw + sog2 + position_accuracy + Longitude
+            + Latitude + COG + Heading + TimeStamp + special_manoeuvre + spare + raim + sync_state + slot_timeout + slot_offset;
+
+    int bsz = BigString.size();
+    int numSixes = (bsz / 6);
+
+    string channel1 = (const char*)channel.mb_str();
+
+    string capsule = NMEAencapsulate(BigString, numSixes);
+    string aisnmea = "AIVDM,1,1,," + channel1 + "," + capsule + ",O";
+    wxString myNMEA_SART = aisnmea;
+    wxString myCheck = makeCheckSum(myNMEA_SART);
+
+    myNMEA_SART = "!" + myNMEA_SART + "*" + myCheck;
+
+    return myNMEA_SART;
 }

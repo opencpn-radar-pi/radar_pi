@@ -390,7 +390,7 @@ std::string GribRecord::makeKey(int dataType, int levelType, int levelValue)
     //levelValue); 	return std::string(ktmp);
 
     wxString k;
-    k.Printf(_T("%d-%d-%d"), dataType, levelType, levelValue);
+    k.Printf("%d-%d-%d", dataType, levelType, levelValue);
     return std::string(k.mb_str());
 }
 //-----------------------------------------

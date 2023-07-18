@@ -122,18 +122,17 @@ ShipDriver_pi::~ShipDriver_pi(void)
 
         if (pConf) {
 
-            pConf->SetPath(_T("/Settings/otidalroute"));
-
-            pConf->Write(_T("shipdriverUseAis"), m_bCopyUseAis);
-            pConf->Write(_T("shipdriverUseFile"), m_bCopyUseFile);
-            pConf->Write(_T("shipdriverMMSI"), m_tCopyMMSI);
+            pConf->SetPath("/PlugIns/ShipDriver_pi");
+            pConf->Write("shipdriverUseAis", m_bCopyUseAis);
+            pConf->Write("shipdriverUseFile", m_bCopyUseFile);
+            pConf->Write("shipdriverMMSI", m_tCopyMMSI);
         }
     }
 }
 
 int ShipDriver_pi::Init(void)
 {
-    AddLocaleCatalog(_T("opencpn-ShipDriver_pi"));
+    AddLocaleCatalog("opencpn-ShipDriver_pi");
 
     // Set some default private member parameters
     m_hr_dialog_x = 40;
@@ -155,13 +154,13 @@ int ShipDriver_pi::Init(void)
     //    This PlugIn needs a toolbar icon, so request its insertion
     if (m_bShipDriverShowIcon) {
 #ifdef ocpnUSE_SVG
-        m_leftclick_tool_id = InsertPlugInToolSVG(_T( "ShipDriver" ),
+        m_leftclick_tool_id = InsertPlugInToolSVG("ShipDriver",
             _svg_shipdriver, _svg_shipdriver, _svg_shipdriver_toggled,
-            wxITEM_CHECK, _("ShipDriver"), _T( "" ), NULL,
+            wxITEM_CHECK, "ShipDriver", "", NULL,
             ShipDriver_TOOL_POSITION, 0, this);
 #else
-        m_leftclick_tool_id = InsertPlugInTool(_T(""), _img_ShipDriverIcon,
-            _img_ShipDriverIcon, wxITEM_CHECK, _("ShipDriver"), _T(""), NULL,
+        m_leftclick_tool_id = InsertPlugInTool("", _img_ShipDriverIcon,
+            _img_ShipDriverIcon, wxITEM_CHECK, _("ShipDriver"), "", NULL,
             ShipDriver_TOOL_POSITION, 0, this);
 #endif
     }
@@ -331,19 +330,19 @@ bool ShipDriver_pi::LoadConfig(void)
     wxFileConfig* pConf = (wxFileConfig*)m_pconfig;
 
     if (pConf) {
-        pConf->SetPath(_T( "/PlugIns/ShipDriver_pi" ));
-        pConf->Read(_T( "ShowShipDriverIcon" ), &m_bShipDriverShowIcon, 1);
-        pConf->Read(_T("shipdriverUseAis"), &m_bCopyUseAis, 0);
-        pConf->Read(_T("shipdriverUseFile"), &m_bCopyUseFile, 0);
-        m_tCopyMMSI = pConf->Read(_T("shipdriverMMSI"), _T("12345"));
+        pConf->SetPath("/PlugIns/ShipDriver_pi");
+        pConf->Read("ShowShipDriverIcon", &m_bShipDriverShowIcon, 1);
+        pConf->Read("shipdriverUseAis", &m_bCopyUseAis, 0);
+        pConf->Read("shipdriverUseFile", &m_bCopyUseFile, 0);
+        m_tCopyMMSI = pConf->Read("shipdriverMMSI", "12345");
 
-        m_hr_dialog_x = pConf->Read(_T ( "DialogPosX" ), 40L);
-        m_hr_dialog_y = pConf->Read(_T ( "DialogPosY" ), 140L);
-        m_hr_dialog_sx = pConf->Read(_T ( "DialogSizeX"), 330L);
+        m_hr_dialog_x = pConf->Read("DialogPosX", 40L);
+        m_hr_dialog_y = pConf->Read("DialogPosY", 140L);
+        m_hr_dialog_sx = pConf->Read("DialogSizeX", 330L);
 #ifdef __WXOSX__
-        m_hr_dialog_sy = pConf->Read(_T ( "DialogSizeY"), 250L);
+        m_hr_dialog_sy = pConf->Read("DialogSizeY", 250L);
 #else
-        m_hr_dialog_sy = pConf->Read(_T ( "DialogSizeY"), 300L);
+        m_hr_dialog_sy = pConf->Read("DialogSizeY", 300L);
 #endif
         if ((m_hr_dialog_x < 0) || (m_hr_dialog_x > m_display_width))
             m_hr_dialog_x = 40;
@@ -360,16 +359,16 @@ bool ShipDriver_pi::SaveConfig(void)
     wxFileConfig* pConf = (wxFileConfig*)m_pconfig;
 
     if (pConf) {
-        pConf->SetPath(_T ( "/PlugIns/ShipDriver_pi" ));
-        pConf->Write(_T ( "ShowShipDriverIcon" ), m_bShipDriverShowIcon);
-        pConf->Write(_T("shipdriverUseAis"), m_bCopyUseAis);
-        pConf->Write(_T("shipdriverUseFile"), m_bCopyUseFile);
-        pConf->Write(_T("shipdriverMMSI"), m_tCopyMMSI);
+        pConf->SetPath("/PlugIns/ShipDriver_pi");
+        pConf->Write("ShowShipDriverIcon", m_bShipDriverShowIcon);
+        pConf->Write("shipdriverUseAis", m_bCopyUseAis);
+        pConf->Write("shipdriverUseFile", m_bCopyUseFile);
+        pConf->Write("shipdriverMMSI", m_tCopyMMSI);
 
-        pConf->Write(_T ( "DialogPosX" ), m_hr_dialog_x);
-        pConf->Write(_T ( "DialogPosY" ), m_hr_dialog_y);
-        pConf->Write(_T ( "DialogSizeX"), m_hr_dialog_sx);
-        pConf->Write(_T ( "DialogSizeY"), m_hr_dialog_sy);
+        pConf->Write("DialogPosX", m_hr_dialog_x);
+        pConf->Write("DialogPosY" , m_hr_dialog_y);
+        pConf->Write("DialogSizeX", m_hr_dialog_sx);
+        pConf->Write("DialogSizeY", m_hr_dialog_sy);
 
         return true;
     } else
@@ -410,7 +409,7 @@ void ShipDriver_pi::SetCursorLatLon(double lat, double lon)
 void ShipDriver_pi::SetPluginMessage(
     wxString& message_id, wxString& message_body)
 {
-    if (message_id == _T("GRIB_TIMELINE")) {
+    if (message_id == "GRIB_TIMELINE") {
         Json::CharReaderBuilder builder;
         Json::CharReader* reader = builder.newCharReader();
 
@@ -435,14 +434,14 @@ void ShipDriver_pi::SetPluginMessage(
             value["Second"].asInt());
 
         wxString dt;
-        dt = time.Format(_T("%Y-%m-%d  %H:%M "));
+        dt = time.Format("%Y-%m-%d  %H:%M ");
 
         if (m_pDialog) {
             m_pDialog->m_GribTimelineTime = time.ToUTC();
             // m_pDialog->m_textCtrl1->SetValue(dt);
         }
     }
-    if (message_id == _T("GRIB_TIMELINE_RECORD")) {
+    if (message_id == "GRIB_TIMELINE_RECORD") {
         Json::CharReaderBuilder builder;
         Json::CharReader* reader = builder.newCharReader();
 
@@ -471,7 +470,7 @@ void ShipDriver_pi::SetPluginMessage(
 
             if (grib_version < grib_min || grib_version > grib_max) {
                 wxMessageDialog mdlg(m_parent_window,
-                    _("Grib plugin version not supported.") + _T("\n\n")
+                    _("Grib plugin version not supported.") + "\n\n"
                         + wxString::Format(_("Use versions %d.%d to %d.%d"),
                             GRIB_MIN_MAJOR, GRIB_MIN_MINOR, GRIB_MAX_MAJOR,
                             GRIB_MAX_MINOR),
@@ -494,8 +493,6 @@ void ShipDriver_pi::SetPluginMessage(
 
         m_tr_spd = spd;
         m_tr_dir = dir;
-
-        // wxMessageBox(wxString::Format(_T("%5.2f"), spd));
     }
 }
 
@@ -531,16 +528,16 @@ void ShipDriver_pi::SetNMEASentence(wxString& sentence)
 
     wxString token[40];
     wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
-    token[0] = _T("");
+    token[0] = "";
 
-    wxStringTokenizer tokenizer(sentence, wxT(","));
+    wxStringTokenizer tokenizer(sentence, ",");
     int i = 0;
 
     while (tokenizer.HasMoreTokens()) {
         token[i] = tokenizer.GetNextToken();
         i++;
     }
-    if (token[0].Right(3) == _T("APB")) {
+    if (token[0].Right(3) == "APB") {
 
         s11 = token[11];
 
@@ -550,11 +547,5 @@ void ShipDriver_pi::SetNMEASentence(wxString& sentence)
             s11.ToDouble(&value);
             m_pDialog->myDir = value;
         }
-        /*
-        s6 = token[6];
-        if (s6 == _T("A")) {
-                wxMessageBox(_("Vessel has arrived at the final waypoint"));
-        }
-        */
     }
 }

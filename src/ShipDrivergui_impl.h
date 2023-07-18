@@ -41,6 +41,7 @@
 #include "json/reader.h"
 #include "json/writer.h"
 #include <cmath>
+#include <algorithm>
 #include <sstream>
 #include <wx/filedlg.h>
 #include <wx/gdicmn.h>
@@ -123,6 +124,13 @@ public:
     wxString createVTGSentence(double mySpd, double myDir);
     wxString createHDTSentence(double myDir);
 
+    // DSC Sentences
+    wxString createDSCAlertSentence(double lat, double lon, int mmsi, wxString nature, wxString time);
+    wxString createDSCExpansionSentence(double lat, double lon, int mmsi);
+    wxString createDSCAlertCancelSentence(double lat, double lon, int mmsi, wxString nature, wxString time);
+    wxString createDSCAlertRelaySentence(double lat, double lon, int mmsi, int dmmsi, wxString nature, wxString time);   
+    wxString createDSCAlertRelayCancelSentence(double lat, double lon, int mmsi, int dmmsi, wxString nature, wxString time);
+
     wxString LatitudeToString(double mLat);
     wxString LongitudeToString(double mLon);
     wxString DateTimeToTimeString(wxDateTime myDT);
@@ -152,6 +160,7 @@ public:
     wxString m_tMMSI;
 
     bool m_bAuto;
+
     wxDateTime m_GribTimelineTime;
 
     double myDir;
@@ -186,6 +195,8 @@ private:
     bool m_bUseStop;
     bool m_bUsePause;
 
+    bool SART_active;
+
     wxString ParseNMEAIdentifier(wxString sentence);
     wxString ParseNMEASentence(wxString sentence, wxString id);
 
@@ -215,6 +226,58 @@ private:
     void GoToStandby();
 
     void OnAuto(wxCommandEvent& event);
+
+    // Distress alarms
+    int alarm_id;
+        
+    bool m_bSART;
+    bool m_bMOB;
+    bool m_bEPIRB;
+    bool m_bDISTRESS;
+    bool m_bCANCEL;
+    bool m_bDISTRESSRELAY;
+    bool m_bRELAYCANCEL;
+
+
+    wxString SARTid;
+    wxString MOBid;
+    wxString EPIRBid;
+    wxString ALERTid;
+    wxString CANCELid;
+
+    int SARTint;
+    int MOBint;
+    int EPIRBint;
+    int DISTRESSint;
+    int CANCELint;
+
+    wxString myNMEA_SART;
+    wxString myNMEA_MOB;
+    wxString myNMEA_EPIRB;
+    wxString myNMEA_DISTRESS;
+    wxString myNMEA_CANCEL;
+    wxString myNMEA_DISTRESSRELAY;
+    wxString myNMEA_RELAYCANCEL;
+
+
+    int stop_count;
+    int stop_countMOB;
+    int stop_countEPIRB;
+    int stop_countDISTRESS;
+    int stop_countCANCEL;
+    int stop_countDISTRESSRELAY;
+    int stop_countRELAYCANCEL;
+
+    double m_latMOB;
+    double m_lonMOB;
+
+    void OnSART(wxCommandEvent& event);
+    void OnMOB(wxCommandEvent& event);
+    void OnEPIRB(wxCommandEvent& event);
+    void OnDistressAlert(wxCommandEvent& event);
+    void OnDistressCancel(wxCommandEvent& event);
+    void OnDistressRelay(wxCommandEvent& event);
+    void OnRelayCancel(wxCommandEvent& event);
 
     long m_iMMSI;
 

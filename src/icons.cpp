@@ -82,11 +82,11 @@ void initialize_images(void)
 
     tmp_path = GetPluginDataDir("ShipDriver_pi");
     fn.SetPath(tmp_path);
-    fn.AppendDir(_T("data"));
+    fn.AppendDir("data");
 
-    fn.SetFullName(_T("shipdriver_pi.svg"));
+    fn.SetFullName("shipdriver_pi.svg");
     _svg_shipdriver = fn.GetFullPath();
-    fn.SetFullName(_T("shipdriver_pi_toggled.svg"));
+    fn.SetFullName("shipdriver_pi_toggled.svg");
     _svg_shipdriver_toggled = fn.GetFullPath();
 
 #endif // ocpnUSE_SVG
