@@ -76,6 +76,7 @@ python -m pip install -q setuptools wheel
 python -m pip install -q cloudsmith-cli
 python -m pip install -q cryptography
 
+::
 :: Install pre-compiled wxWidgets and other DLL; add required paths.
 ::
 set SCRIPTDIR=%~dp0
