@@ -1,0 +1,9 @@
+src/ShipDriver_pi.h
+src/ShipDriver_pi.cpp
+src/icons.h
+src/icons.cpp
+src/ShipDrivergui.h
+src/ShipDrivergui.cpp
+src/ShipDrivergui_impl.cpp
+src/ShipDrivergui_impl.h
+

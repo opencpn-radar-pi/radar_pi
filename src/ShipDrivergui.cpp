@@ -68,7 +68,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 
 	bSizer131->Add( m_textCtrlRudderPort, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT, 0 );
 
-	m_buttonMid = new wxButton( this, wxID_ANY, _("|"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonMid = new wxButton( this, wxID_ANY, "|", wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonMid->SetFont( wxFont( 11, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonMid->SetBackgroundColour( wxColour( 250, 203, 107 ) );
 	m_buttonMid->SetToolTip( _("Midships") );
