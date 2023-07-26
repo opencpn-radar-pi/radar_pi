@@ -268,8 +268,12 @@ private:
     int stop_countDISTRESSRELAY;
     int stop_countRELAYCANCEL;
 
+    double m_latSART;
+    double m_lonSART;
     double m_latMOB;
     double m_lonMOB;
+    double m_latEPIRB;
+    double m_lonEPIRB;
 
     void OnSART(wxCommandEvent& event);
     void OnMOB(wxCommandEvent& event);

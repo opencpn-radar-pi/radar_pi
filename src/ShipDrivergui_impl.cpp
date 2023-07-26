@@ -184,13 +184,10 @@ void Dlg::StartDriving()
         return;
     }
 
-    if (!m_tMMSI.ToLong(&m_iMMSI)) {
-        wxMessageBox(_("MMSI must be a number, please change in Preferences"));
-        return;
-    }
+    bool bIsDigits = m_tMMSI.IsNumber();
 
-    if (m_tMMSI.Len() != 9) {
-        wxMessageBox(_("MMSI must be nine digits, please change in Preferences"));
+    if (m_tMMSI.Len() != 9 || !bIsDigits) {
+        wxMessageBox(_("MMSI must be nine digits\nEdit using Preferences"));
         return;
     }
 
@@ -245,18 +242,18 @@ void Dlg::StartDriving()
     myAIS = new AisMaker();
 }
 
-void Dlg::OnStop(wxCommandEvent& event) { SetStop(); }
+void Dlg::OnStop(wxCommandEvent& event) { 
+    SetStop(); 
+}
 
 void Dlg::SetStop()
 {
 
     if (m_Timer->IsRunning())
         m_Timer->Stop();
-
-    if (m_bUsingFollow) {
-        wxMessageBox(_("Vessel is stopping"));
-    }
-
+   
+    wxMessageBox(_("Vessel stopped"));
+   
     m_SliderSpeed->SetValue(0);
     m_SliderRudder->SetValue(30);
     m_textCtrlRudderStbd->SetValue("");
@@ -352,6 +349,7 @@ void Dlg::OnSART(wxCommandEvent& event)
         bool active = m_buttonSART->GetValue();
         alarm_id = 970;
         if (active) {
+            PositionBearingDistanceMercator_Plugin(initLat, initLon, 200.0, 10.0, &m_latSART, &m_lonSART);
             m_bSART = true;            
             m_buttonSART->SetBackgroundColour(wxColour(255, 0, 0));
         } else {             
@@ -390,6 +388,7 @@ void Dlg::OnEPIRB(wxCommandEvent& event)
         bool active = m_buttonEPIRB->GetValue();
         alarm_id = 974;
         if (active) {
+            PositionBearingDistanceMercator_Plugin(initLat, initLon, 300.0, 10.0, &m_latEPIRB, &m_lonEPIRB);
             m_bEPIRB = true;            
             m_buttonEPIRB->SetBackgroundColour(wxColour(255, 0, 0));
         } else {
@@ -566,20 +565,20 @@ void Dlg::Notify()
 
     switch (alarm_id) {
     case 970:
-        SARTid = "970" + notMID;
+        SARTid = "970111111";
         SARTint = wxAtoi(SARTid);
 
         if (m_bSART) {
-            myNMEA_SART = myAIS->nmeaEncode1_2_3(1, SARTint, 14, initSpd,
-                initLat, initLon, myDir, myDir, "B");
+            myNMEA_SART = myAIS->nmeaEncode1_2_3(1, SARTint, 14, 0,
+                m_latSART, m_lonSART, 3600, 511, "B");
 
             m_textCtrlSART->SetValue(myNMEA_SART);
             PushNMEABuffer(myNMEA_SART + "\r\n");
         } else if (stop_count < 5) {
             stop_count++;
 
-            myNMEA_SART = myAIS->nmeaEncode1_2_3(1, SARTint, 15, initSpd,
-                initLat, initLon, myDir, myDir, "B");
+            myNMEA_SART = myAIS->nmeaEncode1_2_3(1, SARTint, 15, 0,
+                m_latSART, m_lonSART, 3600, 511, "B");
 
             m_textCtrlSART->SetValue(myNMEA_SART); // for analysis of sentence
             PushNMEABuffer(myNMEA_SART + "\r\n");
@@ -591,7 +590,7 @@ void Dlg::Notify()
         MOBint = wxAtoi(MOBid);
 
         if (m_bMOB) {
-            myNMEA_MOB = myAIS->nmeaEncode1_2_3(1, MOBint, 14, initSpd,
+            myNMEA_MOB = myAIS->nmeaEncode1_2_3(1, MOBint, 14, 0,
                 m_latMOB, m_lonMOB, myDir, myDir, "B");
 
             m_textCtrlSART->SetValue(myNMEA_MOB);
@@ -599,7 +598,7 @@ void Dlg::Notify()
         } else if (stop_countMOB < 5) {
             stop_countMOB++;
 
-            myNMEA_MOB = myAIS->nmeaEncode1_2_3(1, MOBint, 15, initSpd,
+            myNMEA_MOB = myAIS->nmeaEncode1_2_3(1, MOBint, 15, 0,
                 m_latMOB, m_lonMOB, myDir, myDir, "B");
 
             m_textCtrlSART->SetValue(myNMEA_MOB); // for analysis of sentence
@@ -608,20 +607,20 @@ void Dlg::Notify()
         break;
 
     case 974:
-        EPIRBid = "974" + notMID;
+        EPIRBid = "974222222";
         EPIRBint = wxAtoi(EPIRBid);
 
         if (m_bEPIRB) {
-            myNMEA_EPIRB = myAIS->nmeaEncode1_2_3(1, EPIRBint, 14, initSpd,
-                initLat, initLon, myDir, myDir, "B");
+            myNMEA_EPIRB = myAIS->nmeaEncode1_2_3(1, EPIRBint, 14, 0,
+                m_latEPIRB, m_lonEPIRB, 3600, 511, "B");
 
             m_textCtrlSART->SetValue(myNMEA_EPIRB);
             PushNMEABuffer(myNMEA_EPIRB + "\r\n");
         } else if (stop_countEPIRB < 5) {
             stop_countEPIRB++;
 
-            myNMEA_EPIRB = myAIS->nmeaEncode1_2_3(1, EPIRBint, 15, initSpd,
-                initLat, initLon, myDir, myDir, "B");
+            myNMEA_EPIRB = myAIS->nmeaEncode1_2_3(1, EPIRBint, 15, 0,
+                m_latEPIRB, m_lonEPIRB, 3600, 511, "B");
 
             m_textCtrlSART->SetValue(myNMEA_EPIRB); // for analysis of sentence
             PushNMEABuffer(myNMEA_EPIRB + "\r\n");

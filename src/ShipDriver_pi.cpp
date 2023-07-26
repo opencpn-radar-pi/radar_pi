@@ -334,7 +334,7 @@ bool ShipDriver_pi::LoadConfig(void)
         pConf->Read("ShowShipDriverIcon", &m_bShipDriverShowIcon, 1);
         pConf->Read("shipdriverUseAis", &m_bCopyUseAis, 0);
         pConf->Read("shipdriverUseFile", &m_bCopyUseFile, 0);
-        m_tCopyMMSI = pConf->Read("shipdriverMMSI", "12345");
+        m_tCopyMMSI = pConf->Read("shipdriverMMSI", "123456789");
 
         m_hr_dialog_x = pConf->Read("DialogPosX", 40L);
         m_hr_dialog_y = pConf->Read("DialogPosY", 140L);
@@ -359,6 +359,13 @@ bool ShipDriver_pi::SaveConfig(void)
     wxFileConfig* pConf = (wxFileConfig*)m_pconfig;
 
     if (pConf) {
+
+        bool bIsDigits = m_tCopyMMSI.IsNumber();
+        if (m_tCopyMMSI.length() < 9 || !bIsDigits) {
+            wxMessageBox("MMSI must be 9 digits.\nEdit using Preferences");
+            return false;
+        }
+
         pConf->SetPath("/PlugIns/ShipDriver_pi");
         pConf->Write("ShowShipDriverIcon", m_bShipDriverShowIcon);
         pConf->Write("shipdriverUseAis", m_bCopyUseAis);
