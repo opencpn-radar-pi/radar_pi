@@ -590,17 +590,12 @@ void Dlg::Notify()
         MOBint = wxAtoi(MOBid);
 
         if (m_bMOB) {
-            myNMEA_MOB = myAIS->nmeaEncode1_2_3(1, MOBint, 14, 0,
-                m_latMOB, m_lonMOB, myDir, myDir, "B");
-
+            myNMEA_MOB = myAIS->nmeaEncode1_2_3(1, MOBint, 14, 0, m_latMOB, m_lonMOB, 3600, 511, "B");
             m_textCtrlSART->SetValue(myNMEA_MOB);
             PushNMEABuffer(myNMEA_MOB + "\r\n");
         } else if (stop_countMOB < 5) {
             stop_countMOB++;
-
-            myNMEA_MOB = myAIS->nmeaEncode1_2_3(1, MOBint, 15, 0,
-                m_latMOB, m_lonMOB, myDir, myDir, "B");
-
+            myNMEA_MOB = myAIS->nmeaEncode1_2_3(1, MOBint, 15, 0, m_latMOB, m_lonMOB, 3600, 511, "B");
             m_textCtrlSART->SetValue(myNMEA_MOB); // for analysis of sentence
             PushNMEABuffer(myNMEA_MOB + "\r\n");
         }
