@@ -78,6 +78,7 @@ public:
         m_halo_received_info = wxGetUTCTimeMillis();
         m_halo_sent_heading = m_halo_received_info;
         m_halo_sent_mystery = m_halo_received_info;
+        m_hours = 0;
 
         m_receive_socket = GetLocalhostServerTCPSocket();
         m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
