@@ -83,8 +83,9 @@ mk-build-deps --root-cmd=sudo -ir build-deps/control
 rm -f *changes  *buildinfo
 
 if [ -n "$BUILD_WX32" ]; then
-  remove_wx30
-  install_wx32
+  remove_wx30;
+  install_wx32;
+  OCPN_WX_ABI_OPT="-DOCPN_WX_ABI=wx32"
 fi
 
 if [ -n "$TARGET_TUPLE" ]; then
@@ -95,12 +96,13 @@ sudo apt install -q \
     python3-pip python3-setuptools python3-dev python3-wheel \
     build-essential libssl-dev libffi-dev
 
+python3 -m pip install -q --user "urllib3<2.0.0"   # See #520
 python3 -m pip install --user --upgrade -q setuptools wheel pip
 python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
 cd $builddir
 
-cmake "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-RelWithDbgInfo}" $TARGET_OPT ..
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo $OCPN_WX_ABI_OPT $TARGET_OPT ..
 make VERBOSE=1 tarball
 ldd app/*/lib/opencpn/*.so
 if [ -d /ci-source ]; then
