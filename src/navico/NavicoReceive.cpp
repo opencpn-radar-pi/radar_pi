@@ -1044,9 +1044,11 @@ struct RadarReport_06C4_74 {         // 06 C4 with length 74
   uint8_t command;                   // 1   0xC4
   uint32_t field1;                   // 2-5
   char name[6];                      // 6-11 "Halo;\0"
-  uint8_t field2[30];                // 12-41 unknown
+  uint8_t field2[24];                // 12-33 unknown
+  uint32_t hours;                    // 34-37 unknown
+  uint32_t field3;                   // 38-41 unknown
   SectorBlankingReport blanking[4];  // 42-61
-  uint8_t field3[12];                // 62-73
+  uint8_t field4[12];                // 62-73
 };
 
 struct RadarReport_08C4_18 {             // 08 c4  length 18
@@ -1305,6 +1307,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
       case (74 << 8) + 0x06: {  // 74 bytes starting with 04 C4
                                 // Seen on HALO 24 (Merrimac)
         RadarReport_06C4_74 *data = (RadarReport_06C4_74 *)report;
+        m_hours = data->hours;
         for (int i = 0; i <= 3; i++) {
           LOG_INFO(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
                    data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
@@ -1469,6 +1472,11 @@ wxString NavicoReceive::GetInfoStatus() {
   if (m_firmware.length() > 0) {
     r << wxT("\n");
     r << m_firmware;
+  }
+  if (m_hours > 0) {
+    r << wxT("\n");
+    r << m_hours;
+    r << _("hours transmitted");
   }
 
   if (m_radar_status == 0 && m_pi->m_navico_locator) {

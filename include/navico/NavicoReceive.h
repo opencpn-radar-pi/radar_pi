@@ -160,6 +160,7 @@ private:
     wxCriticalSection m_lock; // Protects m_status
     wxString m_status; // Userfriendly string
     wxString m_firmware; // Userfriendly string #2
+    uint32_t m_hours; // Number of hours transmitted
 
     void SetInfoStatus(wxString status)
     {
