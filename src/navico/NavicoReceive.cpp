@@ -1292,8 +1292,8 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
                                 // Seen on HALO 4 (Vlissingen)
         RadarReport_06C4_68 *data = (RadarReport_06C4_68 *)report;
         for (int i = 0; i <= 3; i++) {
-          LOG_INFO(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
-                   data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
+          LOG_RECEIVE(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
+                      data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
           m_ri->m_no_transmit_start[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].start_angle)),
                                               data->blanking[i].enabled ? RCS_MANUAL : RCS_OFF);
           m_ri->m_no_transmit_end[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].end_angle)),
@@ -1309,8 +1309,8 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         RadarReport_06C4_74 *data = (RadarReport_06C4_74 *)report;
         m_hours = data->hours;
         for (int i = 0; i <= 3; i++) {
-          LOG_INFO(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
-                   data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
+          LOG_RECEIVE(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
+                      data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
           m_ri->m_no_transmit_start[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].start_angle)),
                                               data->blanking[i].enabled ? RCS_MANUAL : RCS_OFF);
           m_ri->m_no_transmit_end[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].end_angle)),
@@ -1375,7 +1375,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         RadarReport_12C4_66 *s = (RadarReport_12C4_66 *)report;
         wxString sn = "#";
         sn << s->serialno;
-        LOG_INFO(wxT("%s serial number is: %s"), m_ri->m_name.c_str(), sn);
         LOG_RECEIVE(wxT("%s RadarReport_12C4_66 serialno=%s"), m_ri->m_name.c_str(), sn);
         break;
       }
