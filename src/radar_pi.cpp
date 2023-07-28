@@ -285,12 +285,14 @@ int radar_pi::Init(void) {
     LOG_INFO(wxT("RECEIVE  = %d"), LOGLEVEL_RECEIVE);
     LOG_INFO(wxT("GUARD    = %d"), LOGLEVEL_GUARD);
     LOG_INFO(wxT("ARPA     = %d"), LOGLEVEL_ARPA);
+    LOG_INFO(wxT("REPORTS  = %d"), LOGLEVEL_REPORTS);
     LOG_VERBOSE(wxT("VERBOSE  log is enabled"));
     LOG_DIALOG(wxT("DIALOG   log is enabled"));
     LOG_TRANSMIT(wxT("TRANSMIT log is enabled"));
     LOG_RECEIVE(wxT("RECEIVE  log is enabled"));
     LOG_GUARD(wxT("GUARD    log is enabled"));
     LOG_ARPA(wxT("ARPA     log is enabled"));
+    LOG_REPORTS(wxT("REPORTS  log is enabled"));
   } else {
     wxLogError(wxT("configuration file values initialisation failed"));
     return 0;  // give up
