@@ -338,7 +338,7 @@ void Dlg::OnAuto(wxCommandEvent& event)
             m_buttonAuto->SetBackgroundColour(wxColour(255, 255, 255));
 
             wxMessageBox(_("Route or waypoint must be activated\nHas a "
-                         "connection been made in the plugin Preferences?"));
+                         "connection been made in Options->Connections?"));
             return;
         }
     } 
