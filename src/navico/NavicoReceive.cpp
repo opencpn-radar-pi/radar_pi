@@ -1044,7 +1044,7 @@ struct RadarReport_06C4_74 {         // 06 C4 with length 74
   uint8_t command;                   // 1   0xC4
   uint32_t field1;                   // 2-5
   char name[6];                      // 6-11 "Halo;\0"
-  uint8_t field2[24];                // 12-33 unknown
+  uint8_t field2[22];                // 12-33 unknown
   uint32_t hours;                    // 34-37 unknown
   uint32_t field3;                   // 38-41 unknown
   SectorBlankingReport blanking[4];  // 42-61
