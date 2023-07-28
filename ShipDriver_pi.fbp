@@ -2015,7 +2015,7 @@
                                         <property name="size"></property>
                                         <property name="subclass">; ; forward_declare</property>
                                         <property name="toolbar_pane">0</property>
-                                        <property name="tooltip">SART</property>
+                                        <property name="tooltip">MOB</property>
                                         <property name="validator_data_type"></property>
                                         <property name="validator_style">wxFILTER_NONE</property>
                                         <property name="validator_type">wxDefaultValidator</property>
@@ -2087,7 +2087,7 @@
                                         <property name="size"></property>
                                         <property name="subclass">; ; forward_declare</property>
                                         <property name="toolbar_pane">0</property>
-                                        <property name="tooltip">SART</property>
+                                        <property name="tooltip">EPIRB</property>
                                         <property name="validator_data_type"></property>
                                         <property name="validator_style">wxFILTER_NONE</property>
                                         <property name="validator_type">wxDefaultValidator</property>
@@ -2321,7 +2321,7 @@
                                         <property name="size"></property>
                                         <property name="subclass">; ; forward_declare</property>
                                         <property name="toolbar_pane">0</property>
-                                        <property name="tooltip">Distress Alert</property>
+                                        <property name="tooltip">Distress Relay</property>
                                         <property name="validator_data_type"></property>
                                         <property name="validator_style">wxFILTER_NONE</property>
                                         <property name="validator_type">wxDefaultValidator</property>
@@ -2393,7 +2393,7 @@
                                         <property name="size"></property>
                                         <property name="subclass">; ; forward_declare</property>
                                         <property name="toolbar_pane">0</property>
-                                        <property name="tooltip">Distress Cancel</property>
+                                        <property name="tooltip">Relay Cancel</property>
                                         <property name="validator_data_type"></property>
                                         <property name="validator_style">wxFILTER_NONE</property>
                                         <property name="validator_type">wxDefaultValidator</property>

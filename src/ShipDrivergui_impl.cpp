@@ -80,6 +80,7 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
     stop_countCANCEL = 999;
 
     alarm_id = 999;
+    m_bGotAPB = false;
 
 #ifdef __ANDROID__
     g_Window = this;
@@ -265,7 +266,9 @@ void Dlg::SetStop()
     m_bAuto = false;
     m_bUsingWind = false;
     m_bUsingFollow = false;
-
+    m_bShipDriverHasStarted = false;
+    m_buttonStandby->SetBackgroundColour(wxColour(0, 255, 0));
+    m_buttonAuto->SetBackgroundColour(wxColour(255, 255, 255));    
     m_buttonWind->SetBackgroundColour(wxColour(0, 255, 0));
 
     if (m_bUseFile) {
@@ -274,6 +277,8 @@ void Dlg::SetStop()
     }
     initSpd = 0.0;
     m_stSpeed->SetLabel(wxString::Format("%3.1f", initSpd));
+
+    Refresh();
 }
 
 void Dlg::OnMidships(wxCommandEvent& event) { m_SliderRudder->SetValue(30); }
@@ -319,13 +324,48 @@ void Dlg::OnPlus1(wxCommandEvent& event)
 }
 
 void Dlg::OnAuto(wxCommandEvent& event)
-{
+{        
+    if (m_bShipDriverHasStarted) {
+        
+        if (m_bGotAPB) {
+            m_bAuto = true;
+            m_buttonStandby->SetBackgroundColour(wxColour(255, 0, 0));
+            m_buttonAuto->SetBackgroundColour(wxColour(0, 255, 0));
+            Refresh();
+        } else {
+            m_bAuto = false;
+            m_buttonStandby->SetBackgroundColour(wxColour(0, 255, 0));
+            m_buttonAuto->SetBackgroundColour(wxColour(255, 255, 255));
 
-    m_bAuto = true;
+            wxMessageBox(_("Route or waypoint must be activated\nHas a "
+                         "connection been made in the plugin Preferences?"));
+            return;
+        }
+    } 
+}
 
-    m_buttonStandby->SetBackgroundColour(wxColour(255, 0, 0));
-    m_buttonAuto->SetBackgroundColour(wxColour(0, 255, 0));
-    Refresh();
+void Dlg::SetNMEAMessage(wxString sentence) {
+    // $GPAPB,A,A,0.10,R,N,V,V,011,M,DEST,011,M,011,M*3C
+    wxString token[40];
+    wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
+    token[0] = "";
+
+    wxStringTokenizer tokenizer(sentence, ",");
+    int i = 0;
+    while (tokenizer.HasMoreTokens()) {
+        token[i] = tokenizer.GetNextToken();
+        i++;
+    }
+    if (token[0].Right(3) == "APB") {        
+        s11 = token[11];
+
+        m_bGotAPB = true;  
+        if (m_bAuto) {
+            double value;
+            s11.ToDouble(&value);
+            myDir = value;
+        } 
+    } 
 }
 
 void Dlg::OnStandby(wxCommandEvent& event) { GoToStandby(); }
@@ -499,7 +539,6 @@ void Dlg::Notify()
 {
     wxString mySentence;
     plugin->SetNMEASentence(mySentence);
-
     initSpd = m_SliderSpeed->GetValue();
     initRudder = m_SliderRudder->GetValue();
 

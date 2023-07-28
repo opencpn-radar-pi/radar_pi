@@ -275,14 +275,14 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_buttonMOB = new wxToggleButton( sbSizer3->GetStaticBox(), wxID_ANY, _("MOB"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonMOB->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonMOB->SetBackgroundColour( wxColour( 0, 255, 0 ) );
-	m_buttonMOB->SetToolTip( _("SART") );
+	m_buttonMOB->SetToolTip( _("MOB") );
 
 	fgSizer3->Add( m_buttonMOB, 0, wxALL|wxEXPAND, 5 );
 
 	m_buttonEPIRB = new wxToggleButton( sbSizer3->GetStaticBox(), wxID_ANY, _("EPIRB"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonEPIRB->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonEPIRB->SetBackgroundColour( wxColour( 0, 255, 0 ) );
-	m_buttonEPIRB->SetToolTip( _("SART") );
+	m_buttonEPIRB->SetToolTip( _("EPIRB") );
 
 	fgSizer3->Add( m_buttonEPIRB, 0, wxALL|wxEXPAND, 5 );
 
@@ -314,14 +314,14 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_buttonDistressRelay = new wxToggleButton( sbSizer3->GetStaticBox(), wxID_ANY, _("Distress Relay"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonDistressRelay->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonDistressRelay->SetBackgroundColour( wxColour( 0, 255, 0 ) );
-	m_buttonDistressRelay->SetToolTip( _("Distress Alert") );
+	m_buttonDistressRelay->SetToolTip( _("Distress Relay") );
 
 	fgSizer5->Add( m_buttonDistressRelay, 0, wxALL|wxEXPAND, 5 );
 
 	m_buttonRelayCancel = new wxToggleButton( sbSizer3->GetStaticBox(), wxID_ANY, _("Relay Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonRelayCancel->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonRelayCancel->SetBackgroundColour( wxColour( 0, 255, 0 ) );
-	m_buttonRelayCancel->SetToolTip( _("Distress Cancel") );
+	m_buttonRelayCancel->SetToolTip( _("Relay Cancel") );
 
 	fgSizer5->Add( m_buttonRelayCancel, 0, wxALL|wxEXPAND, 5 );
 

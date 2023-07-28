@@ -139,6 +139,8 @@ public:
     wxString StandardPath();
     wxBitmap m_panelBitmap;
 
+
+
 private:
     double m_cursor_lat;
     double m_cursor_lon;

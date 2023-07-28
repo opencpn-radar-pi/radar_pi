@@ -164,6 +164,9 @@ public:
     wxDateTime m_GribTimelineTime;
 
     double myDir;
+    void SetNMEAMessage(wxString sentence);
+    bool m_bGotAPB;
+
 
 protected:
     bool m_bNeedsGrib;
