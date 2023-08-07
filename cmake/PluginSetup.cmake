@@ -14,7 +14,7 @@ if (DEFINED plugin_target)
   return ()
 endif ()
 
-message(STATUS "Setup: OCPN_TARGET_TUPLE: ${OCPN_TARGET_TUPLE}.")
+message(STATUS "Setup: OCPN_TARGET_TUPLE: ${OCPN_TARGET_TUPLE}")
 
 if (NOT "${OCPN_TARGET_TUPLE}" STREQUAL "")
   list(GET OCPN_TARGET_TUPLE 0 plugin_target)
