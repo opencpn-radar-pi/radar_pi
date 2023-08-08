@@ -70,28 +70,6 @@ string(TOLOWER "${plugin_target}" plugin_target)
 string(STRIP "${plugin_target_version}" plugin_target_version)
 string(TOLOWER "${plugin_target_version}" plugin_target_version)
 
-if (plugin_target STREQUAL "ubuntu")
-  if (DEFINED wxWidgets_CONFIG_EXECUTABLE)
-    set(_WX_CONFIG_PROG ${wxWidgets_CONFIG_EXECUTABLE})
-  else ()
-    find_program(_WX_CONFIG_PROG NAMES $ENV{WX_CONFIG} wx-config )
-  endif ()
-  if (_WX_CONFIG_PROG)
-    execute_process(
-      COMMAND ${_WX_CONFIG_PROG} --selected-config
-      OUTPUT_VARIABLE _WX_SELECTED_CONFIG
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    if (_WX_SELECTED_CONFIG MATCHES gtk3)
-      if (${plugin_target_version} VERSION_LESS 22.04)
-        set(plugin_target ubuntu-gtk3)
-      endif ()
-    endif ()
-  else ()
-    message(WARNING "Cannot locate wx-config utility")
-  endif ()
-endif ()
-
 string(CONCAT msg "Identified plugin target:release"
   " ${plugin_target}:${plugin_target_version}"
 )
