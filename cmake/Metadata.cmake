@@ -167,6 +167,4 @@ else ()
   set(pkg_target_arch "${plugin_target}")
 endif ()
 
-message(STATUS "Metadata: pkg_target_arch: ${pkg_target_arch}.")
-
 #cmake-format: on
