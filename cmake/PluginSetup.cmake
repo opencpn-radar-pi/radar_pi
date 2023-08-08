@@ -91,7 +91,7 @@ if (plugin_target STREQUAL "ubuntu")
   endif ()
 endif ()
 
-string(CONCAT msg "Building for target-release "
-  "${plugin_target}-${plugin_target_version}"
+string(CONCAT msg "Identified plugin target:release"
+  " ${plugin_target}:${plugin_target_version}"
 )
 message(STATUS "${msg}")

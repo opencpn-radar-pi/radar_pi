@@ -177,4 +177,7 @@ else ()
   set(pkg_target_arch "${plugin_target}")
 endif ()
 
+message(STATUS
+  "Building for target:release: ${pkg_target_arch}:${plugin_target_version}"
+)
 #cmake-format: on
