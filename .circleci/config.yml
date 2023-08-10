@@ -28,7 +28,7 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:bullseye-scm
     environment:
-      - OCPN_TARGET: bullseye
+      - TARGET_TUPLE: debian-x86_64;10;x86_64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - checkout
@@ -41,6 +41,7 @@ jobs:
     resource_class: arm.medium
     environment:
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
+      - TARGET_TUPLE: debian-armhf;10;armhf
     steps:
       - checkout
       - run: ci/circleci-build-buster-armhf.sh
@@ -60,7 +61,7 @@ jobs:
     environment:
       - OCPN_TARGET: bullseye
       - BUILD_WX32: true
-      - TARGET_TUPLE: debian-wx32;11;x86_64
+      - TARGET_TUPLE: debian-wx32-x86_64;11;x86_64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     <<: *debian-steps
 
@@ -69,7 +70,7 @@ jobs:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
     environment:
-      - TARGET_TUPLE: debian;11;armhf
+      - TARGET_TUPLE: debian-armhf;11;armhf
       - OCPN_TARGET: bullseye
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
@@ -83,7 +84,7 @@ jobs:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
     environment:
-      - TARGET_TUPLE: debian-wx32;11;armhf
+      - TARGET_TUPLE: debian-wx32-armhf;11;armhf
       - OCPN_TARGET: bullseye
       - BUILD_WX32: true
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
@@ -100,7 +101,7 @@ jobs:
     resource_class: arm.medium
     environment:
       - OCPN_TARGET: bullseye
-      - TARGET_TUPLE: debian;11;arm64
+      - TARGET_TUPLE: debian-arm64;11;arm64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - checkout
@@ -115,7 +116,7 @@ jobs:
     environment:
       - OCPN_TARGET: bullseye
       - BUILD_WX32: true
-      - TARGET_TUPLE: debian-wx32;11;arm64
+      - TARGET_TUPLE: debian-wx32-arm64;11;arm64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - checkout
@@ -130,7 +131,7 @@ jobs:
     resource_class: medium
     environment:
       - OCPN_TARGET: bookworm
-      - TARGET_TUPLE: debian;12;x86_64
+      - TARGET_TUPLE: debian-x86_64;12;x86_64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - checkout
@@ -144,7 +145,7 @@ jobs:
     resource_class: arm.medium
     environment:
       - OCPN_TARGET: bookworm
-      - TARGET_TUPLE: debian;12;arm64
+      - TARGET_TUPLE: debian-arm64;12;arm64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - checkout
@@ -157,8 +158,8 @@ jobs:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
     environment:
-      - TARGET_TUPLE: debian;12;armhf
       - OCPN_TARGET: bookworm
+      - TARGET_TUPLE: debian-armhf;12;armhf
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - checkout
