@@ -82,7 +82,7 @@ static inline bool GribCurrent(
 #define ShipDriver_TOOL_POSITION                                               \
     -1 // Request default positioning of toolbar tool
 
-class ShipDriver_pi : public opencpn_plugin_116 {
+class ShipDriver_pi : public opencpn_plugin_117 {
 public:
     ShipDriver_pi(void* ppimgr);
     ~ShipDriver_pi(void);

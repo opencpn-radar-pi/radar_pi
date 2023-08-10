@@ -102,7 +102,7 @@ static wxBitmap load_plugin(const char* icon_name, const char* api_name) {
  
 
 ShipDriver_pi::ShipDriver_pi(void* ppimgr)
-    : opencpn_plugin_116(ppimgr)
+    : opencpn_plugin_117(ppimgr)
 {
     // Create the PlugIn icons
     initialize_images();
@@ -223,6 +223,14 @@ int ShipDriver_pi::GetPlugInVersionMajor()
 }
 
 int ShipDriver_pi::GetPlugInVersionMinor() { return PLUGIN_VERSION_MINOR; }
+
+int GetPlugInVersionPatch() { return PLUGIN_VERSION_PATCH; }
+
+int GetPlugInVersionPost() { return PLUGIN_VERSION_TWEAK; };
+
+const char *GetPlugInVersionPre() { return PKG_PRERELEASE; }
+
+const char *GetPlugInVersionBuild() { return PKG_BUILD_INFO; }
 
 wxBitmap* ShipDriver_pi::GetPlugInBitmap() { return &m_panelBitmap; }
 

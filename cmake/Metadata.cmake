@@ -170,4 +170,8 @@ endif ()
 message(STATUS
   "Building for target:release: ${pkg_target_arch}:${plugin_target_version}"
 )
+
+# pkg_vers_build_info: Semantic version build info part.
+set(pkg_vers_build_info "${_build_id}.${_gitversion}")
+
 #cmake-format: on
