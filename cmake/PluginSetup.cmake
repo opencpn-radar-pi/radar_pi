@@ -1,6 +1,6 @@
 # ~~~
-# Summary:     Set up and export plugin_target and plugin_target_version
-# License:     GPLv3+
+# Summary:      Set up plugin_target and plugin_target_version.
+# License:      GPLv3+
 # Copyright (c) 2020-2021 Alec Leamas
 # ~~~
 
@@ -9,6 +9,7 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 
+include(GetArch)
 
 if (DEFINED plugin_target)
   return ()
@@ -18,7 +19,7 @@ if (NOT "${OCPN_TARGET_TUPLE}" STREQUAL "")
   list(GET OCPN_TARGET_TUPLE 0 plugin_target)
   list(GET OCPN_TARGET_TUPLE 1 plugin_target_version)
 elseif ("${BUILD_TYPE}" STREQUAL "flatpak")
-  set(plugin_target "flatpak")
+  set(plugin_target "flatpak-${ARCH}")
   file(GLOB manifest_path "${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.*.yaml")
   file(READ ${manifest_path} manifest)
   string(REPLACE "\n" ";" manifest_lines "${manifest}")
@@ -48,7 +49,6 @@ elseif (APPLE)
   set(plugin_target "darwin-wx32")
   set(plugin_target_version "10.13.6")
 elseif (UNIX)
-  # Some linux dist:
   execute_process(
     COMMAND "lsb_release" "-is"
     OUTPUT_VARIABLE plugin_target
@@ -59,7 +59,9 @@ elseif (UNIX)
     OUTPUT_VARIABLE plugin_target_version
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
-  set(lsb_linux ON)
+  if (NOT ${plugin_target} MATCHES ${ARCH})
+    set(plugin_target "${plugin_target}-${ARCH}")
+  endif ()
 else ()
   set(plugin_target "unknown")
   set(plugin_target_version 1)
@@ -70,7 +72,6 @@ string(TOLOWER "${plugin_target}" plugin_target)
 string(STRIP "${plugin_target_version}" plugin_target_version)
 string(TOLOWER "${plugin_target_version}" plugin_target_version)
 
-string(CONCAT msg "Identified plugin target:release"
-  " ${plugin_target}:${plugin_target_version}"
+message(STATUS
+  "Building for target:release ${plugin_target}:${plugin_target_version}"
 )
-message(STATUS "${msg}")

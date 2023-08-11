@@ -158,19 +158,6 @@ else ()
   set(pkg_python python)
 endif ()
 
-# pkg_target_arch: os + optional -arch suffix. See: Opencpn bug #2003
-if ("${BUILD_TYPE}" STREQUAL "flatpak")
-  set(pkg_target_arch "flatpak-${ARCH}")
-elseif (lsb_linux OR "${plugin_target}" MATCHES "mingw")
-  set(pkg_target_arch "${plugin_target}-${ARCH}")
-else ()
-  set(pkg_target_arch "${plugin_target}")
-endif ()
-
-message(STATUS
-  "Building for target:release: ${pkg_target_arch}:${plugin_target_version}"
-)
-
 # pkg_vers_build_info: Semantic version build info part.
 set(pkg_vers_build_info "${_build_id}.${_gitversion}")
 
