@@ -201,7 +201,8 @@ for f in  \
     build-conf.rc \
     libs \
     build-deps/macos-cache-stamp \
-    build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
+    build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch \
+    UPDATE_PLUGIN_API.md
 do
     if test -e $f; then continue; fi
     git checkout $source_treeish $f
