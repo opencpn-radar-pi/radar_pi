@@ -57,3 +57,5 @@ The update process:
    const char *GetPlugInVersionBuild() { return PKG_BUILD_INFO; }
    ```
    This is boilerplate code, same for all plugins. 
+
+7. Build and test plugin. When completed, remove this document.
