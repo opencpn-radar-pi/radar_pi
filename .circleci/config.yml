@@ -223,7 +223,7 @@ jobs:
 
   build-android-arm64:
     docker:
-      - image: circleci/android:api-28-ndk
+      - image: cimg/android:2023.08-ndk
     environment:
       - OCPN_TARGET: android-aarch64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
@@ -234,7 +234,7 @@ jobs:
 
   build-android-armhf:
     docker:
-      - image: circleci/android:api-28-ndk
+      - image: cimg/android:2023.08-ndk
     environment:
       - OCPN_TARGET: android-armhf
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
