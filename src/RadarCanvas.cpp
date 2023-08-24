@@ -648,7 +648,7 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     double delta_x = (m_ri->m_off_center.x + m_ri->m_drag.x);
     double delta_y = (m_ri->m_off_center.y + m_ri->m_drag.y);
     double distance = sqrt(delta_x * delta_x + delta_y * delta_y) / (vp.view_scale_ppm);
-    double angle = PI/2. - atan2(delta_y, -delta_x) - vp.rotation;
+    double angle = PI / 2. - atan2(delta_y, -delta_x) - vp.rotation;
     // double full_range = m_ri->m_panel_zoom * wxMax(w, h) / 2.0;
     // distance = distance / (1852.0 * full_range / display_range);
 

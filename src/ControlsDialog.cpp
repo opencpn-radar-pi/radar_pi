@@ -1153,7 +1153,7 @@ void ControlsDialog::CreateControls() {
         new RadarControlButton(this, ID_TARGETS_ON_PPI, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
     m_view_sizer->Add(m_targets_on_ppi_button, 0, wxALL, BORDER);
   } else {
-	  m_ri->m_target_on_ppi.Update(0);
+    m_ri->m_target_on_ppi.Update(0);
   }
 
   // The DOPPLER button
