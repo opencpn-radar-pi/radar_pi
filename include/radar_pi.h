@@ -398,6 +398,7 @@ enum BlobColour {
 extern const char* convertRadarToString(int range_meters, int units, int index);
 extern double local_distance(GeoPosition pos1, GeoPosition pos2);
 extern double local_bearing(GeoPosition pos1, GeoPosition pos2);
+extern GeoPosition local_position(GeoPosition &pos, double distance, double bearing);
 
 enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
 enum VariationSource {

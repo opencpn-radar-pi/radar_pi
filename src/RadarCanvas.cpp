@@ -644,8 +644,17 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
     vp.skew = 0.;
     vp.pix_width = clientSize.GetWidth();
     vp.pix_height = clientSize.GetHeight();
-    vp.clat = pos.lat;
-    vp.clon = pos.lon;
+
+    double delta_x = (m_ri->m_off_center.x + m_ri->m_drag.x);
+    double delta_y = (m_ri->m_off_center.y + m_ri->m_drag.y);
+    double distance = sqrt(delta_x * delta_x + delta_y * delta_y) / (vp.view_scale_ppm);
+    double angle = PI/2. - atan2(delta_y, -delta_x) - vp.rotation;
+    // double full_range = m_ri->m_panel_zoom * wxMax(w, h) / 2.0;
+    // distance = distance / (1852.0 * full_range / display_range);
+
+    GeoPosition cpos = local_position(pos, distance, angle);
+    vp.clat = cpos.lat;
+    vp.clon = cpos.lon;
 
     wxString aisTextFont = _("AIS Target Name");
     wxFont *aisFont = GetOCPNScaledFont_PlugIn(aisTextFont, 12);

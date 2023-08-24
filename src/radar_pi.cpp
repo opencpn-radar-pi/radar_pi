@@ -110,6 +110,28 @@ static double radar_distance(GeoPosition pos1, GeoPosition pos2, char unit) {
   return dist;
 }
 
+/*
+ * Given a geo position and distance and bearing, what is the geo position
+ * of that indicated point?
+ *
+ * Distance in m, bearing in radians
+ */
+GeoPosition local_position(GeoPosition &pos, double distance, double bearing)
+{
+  const double R = 6378100.; // Radius of the Earth
+  double lat = deg2rad(pos.lat);
+  double lon = deg2rad(pos.lon);
+
+  lat = asin(sin(lat) * cos(distance / R) + cos(lat) * sin(distance / R) * cos(bearing));
+  lon += atan2(sin(bearing) * sin(distance / R) * cos(lat), cos(distance / R) - sin(lat) * sin(lat));
+
+  GeoPosition r;
+
+  r.lat = rad2deg(lat);
+  r.lon = rad2deg(lon);
+  return r;
+}
+
 //---------------------------------------------------------------------------------------------------------
 //
 //    Radar PlugIn Implementation
