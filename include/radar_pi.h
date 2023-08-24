@@ -398,7 +398,8 @@ enum BlobColour {
 extern const char* convertRadarToString(int range_meters, int units, int index);
 extern double local_distance(GeoPosition pos1, GeoPosition pos2);
 extern double local_bearing(GeoPosition pos1, GeoPosition pos2);
-extern GeoPosition local_position(GeoPosition &pos, double distance, double bearing);
+extern GeoPosition local_position(
+    GeoPosition& pos, double distance, double bearing);
 
 enum DisplayModeType { DM_CHART_OVERLAY, DM_CHART_NONE };
 enum VariationSource {
@@ -688,6 +689,8 @@ public:
 #define BASE_ARPA_DIST (750.)
     double m_arpa_max_range; //  Temporary distance(m) fron own ship to collect
                              //  AIS targets.
+
+    bool m_ais_drawgl_broken;
 
 private:
     void RadarSendState(void);

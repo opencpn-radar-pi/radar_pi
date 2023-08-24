@@ -116,9 +116,8 @@ static double radar_distance(GeoPosition pos1, GeoPosition pos2, char unit) {
  *
  * Distance in m, bearing in radians
  */
-GeoPosition local_position(GeoPosition &pos, double distance, double bearing)
-{
-  const double R = 6378100.; // Radius of the Earth
+GeoPosition local_position(GeoPosition &pos, double distance, double bearing) {
+  const double R = 6378100.;  // Radius of the Earth
   double lat = deg2rad(pos.lat);
   double lon = deg2rad(pos.lon);
 
@@ -269,6 +268,7 @@ int radar_pi::Init(void) {
   m_settings.threshold_green = 255;
   m_settings.enable_cog_heading = false;
   m_settings.AISatARPAoffset = 50;
+  m_ais_drawgl_broken = false;
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
@@ -1459,7 +1459,16 @@ bool radar_pi::LoadConfig(void) {
   wxString s;
 
   if (pConf) {
-    pConf->SetPath(wxT("Settings"));
+    pConf->SetPath(wxT("/Settings"));
+    pConf->Read(wxT("ConfigVersionString"), &s, "");
+    if (sscanf(s.c_str(), "Version %d.%d.%d", &v, &x, &y) == 3) {
+      wxLogInfo(wxT("Detected OpenCPN Version %d.%d.%d"), v, x, y);
+      if (v == 5 && x == 8 && y <= 4) {
+        wxLogError(wxT("Version %d.%d.%d cannot draw AIS targets on PPI; disabling this feature\n"), v, x, y);
+        m_ais_drawgl_broken = true;
+      }
+    }
+
     pConf->Read(wxT("COGUPAvgSeconds"), &m_COGAvgSec, 15);
     m_COGAvgSec = wxMin(m_COGAvgSec, MAX_COG_AVERAGE_SECONDS);  // Bound the array size
     for (int i = 0; i < m_COGAvgSec; i++) {
