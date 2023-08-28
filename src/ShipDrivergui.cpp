@@ -129,17 +129,17 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 
 	bSizer7->Add( m_stHeading, 0, wxALIGN_CENTER_VERTICAL, 5 );
 
-	m_staticTextKnots = new wxStaticText( this, wxID_ANY, _("             Speed: "), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticTextKnots = new wxStaticText( this, wxID_ANY, _("       Speed: "), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextKnots->Wrap( -1 );
 	m_staticTextKnots->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	bSizer7->Add( m_staticTextKnots, 0, wxALIGN_CENTER_VERTICAL, 5 );
 
-	m_stSpeed = new wxStaticText( this, wxID_ANY, _("0"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_stSpeed = new wxStaticText( this, wxID_ANY, _("00.0"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_stSpeed->Wrap( -1 );
 	m_stSpeed->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
-	bSizer7->Add( m_stSpeed, 0, wxALIGN_CENTER_VERTICAL, 5 );
+	bSizer7->Add( m_stSpeed, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 	m_staticText81 = new wxStaticText( this, wxID_ANY, _("        Kts"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText81->Wrap( -1 );

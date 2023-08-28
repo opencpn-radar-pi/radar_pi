@@ -49,6 +49,9 @@
 #include <wx/stdpaths.h>
 #include <wx/thread.h>
 #include <wx/utils.h>
+#include <wx/msgdlg.h>
+#include <wx/arrstr.h>
+#include <wx/vector.h>
 
 #ifdef __WXOSX__
 #define SHIPDRIVER_DLG_STYLE                                                   \
@@ -60,13 +63,6 @@
 using namespace std;
 
 class ShipDriver_pi;
-// class rte_table;
-
-// lass rtept;
-
-// ----------------------------------------------------------------------------
-// a simple thread
-// ----------------------------------------------------------------------------
 
 class rtept {
 public:
@@ -319,10 +315,8 @@ public:
         long style = wxDEFAULT_DIALOG_STYLE);
 
     wxListView* dialogText;
-    wxString GetText();
 
 private:
-    void OnOk(wxCommandEvent& event);
 };
 
 #endif

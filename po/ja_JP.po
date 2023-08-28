@@ -2,38 +2,57 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-10 12:43+0000\n"
-"PO-Revision-Date: 2019-07-04 03:56\n"
-"Last-Translator: Pavel Kalian (nohal)\n"
+"POT-Creation-Date: 2023-07-28 09:51+0100\n"
+"PO-Revision-Date: 2023-08-18 16:14\n"
+"Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: crowdin.com\n"
 "X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Project-ID: 49843\n"
 "X-Crowdin-Language: ja\n"
 "X-Crowdin-File: /plugins/shipdriver_pi/po/ShipDriver_pi.pot\n"
+"X-Crowdin-File-ID: 231\n"
 
-#: src/ShipDriver_pi.cpp:125 src/ShipDriver_pi.cpp:128 src/ShipDriver_pi.cpp:212
-#: src/ShipDrivergui_impl.h:80
+#: src/ShipDriver_pi.cpp:163 src/ShipDriver_pi.cpp:229
+#: src/ShipDrivergui_impl.h:105
 msgid "ShipDriver"
 msgstr "ShipDriver"
 
-#: src/ShipDriver_pi.cpp:134
-msgid "Select Vessel Start Position"
-msgstr "開始位置を選択"
-
-#: src/ShipDriver_pi.cpp:218
+#: src/ShipDriver_pi.cpp:231
 msgid "ShipDriver player"
 msgstr "ShipDriverプレイヤ"
 
-#: src/ShipDriver_pi.cpp:223
+#: src/ShipDriver_pi.cpp:233
 msgid "Almost a simulator"
 msgstr "ほぼシミュレータ"
 
-#: src/ShipDrivergui.h:105
+#: src/ShipDriver_pi.cpp:293
+msgid "Select Vessel Start Position"
+msgstr "開始位置を選択"
+
+#: src/ShipDriver_pi.cpp:365
+msgid "MMSI must be 9 digits.\n"
+"Edit using Preferences"
+msgstr ""
+
+#: src/ShipDriver_pi.cpp:480
+msgid "Grib plugin version not supported."
+msgstr ""
+
+#: src/ShipDriver_pi.cpp:481
+#, c-format
+msgid "Use versions %d.%d to %d.%d"
+msgstr ""
+
+#: src/ShipDriver_pi.cpp:484
+msgid "Weather Routing"
+msgstr ""
+
+#: src/ShipDrivergui.h:126
 msgid "Preferences"
 msgstr "設定"
 
@@ -43,7 +62,7 @@ msgstr "舵制御"
 
 #: src/ShipDrivergui.cpp:71
 msgid "|"
-msgstr "|"
+msgstr ""
 
 #: src/ShipDrivergui.cpp:74
 msgid "Midships"
@@ -101,43 +120,156 @@ msgstr "自動"
 msgid "Autopilot Control"
 msgstr "オートパイロット"
 
-#: src/ShipDrivergui.cpp:225
+#: src/ShipDrivergui.cpp:215
+msgid "Follow"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:221
+msgid "Sail"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:224
+msgid "Using Sail"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:229
 msgid "-1"
 msgstr "-1"
 
-#: src/ShipDrivergui.cpp:231
+#: src/ShipDrivergui.cpp:235
 msgid "-10"
 msgstr "-10"
 
-#: src/ShipDrivergui.cpp:237
+#: src/ShipDrivergui.cpp:241
 msgid "+10"
 msgstr "+10"
 
-#: src/ShipDrivergui.cpp:243
+#: src/ShipDrivergui.cpp:247
 msgid "+1"
 msgstr "+1"
 
-#: src/ShipDrivergui.cpp:295
+#: src/ShipDrivergui.cpp:257
+msgid "Alarms"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:268 src/ShipDrivergui.cpp:271
+msgid "SART"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:275 src/ShipDrivergui.cpp:278
+msgid "MOB"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:282 src/ShipDrivergui.cpp:285
+msgid "EPIRB"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:300
+msgid "DSC Distress Alert"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:303
+msgid "Distress Alert"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:307
+msgid "DSC Distress Cancel"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:310
+msgid "Distress Cancel"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:314 src/ShipDrivergui.cpp:317
+msgid "Distress Relay"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:321 src/ShipDrivergui.cpp:324
+msgid "Relay Cancel"
+msgstr ""
+
+#: src/ShipDrivergui.cpp:405
 msgid "AIS"
 msgstr "AIS"
 
-#: src/ShipDrivergui.cpp:302
+#: src/ShipDrivergui.cpp:412
 msgid "Transmit"
 msgstr "送信"
 
-#: src/ShipDrivergui.cpp:305
+#: src/ShipDrivergui.cpp:415
 msgid "Save to file"
 msgstr "ファイルへ保存"
 
-#: src/ShipDrivergui.cpp:312
+#: src/ShipDrivergui.cpp:422
 msgid "MMSI"
 msgstr "MMSI"
 
-#: src/ShipDrivergui_impl.cpp:85
+#: src/ShipDrivergui_impl.cpp:184 src/ShipDrivergui_impl.cpp:1745
 msgid "Please right-click and choose vessel start position"
 msgstr "右クリックで開始位置を選択してください。"
 
-#: src/ShipDrivergui_impl.cpp:90
-msgid "MMSI must be a number, please change in Preferences"
-msgstr "MMSIは9桁の数字です。設定を確認してください"
+#: src/ShipDrivergui_impl.cpp:191
+msgid "MMSI must be nine digits\n"
+"Edit using Preferences"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:212
+msgid "ShipDriver has been stopped"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:256
+msgid "Vessel stopped"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:340
+msgid "Route or waypoint must be activated\n"
+"Has a connection been made in Options->Connections?"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:401 src/ShipDrivergui_impl.cpp:421
+#: src/ShipDrivergui_impl.cpp:440 src/ShipDrivergui_impl.cpp:459
+#: src/ShipDrivergui_impl.cpp:485 src/ShipDrivergui_impl.cpp:503
+#: src/ShipDrivergui_impl.cpp:529
+msgid "ShipDriver has not been started"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:470 src/ShipDrivergui_impl.cpp:514
+msgid "No DSC Distress activated"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:1749
+msgid "Please start ShipDriver"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:1763
+msgid "Invalid Boat Polars file"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:1767
+msgid "Grib data is not available for the present date/time or location"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:1955
+msgid "Unable to read navobj file"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:1960
+msgid "Invalid xml file"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:2038
+msgid "Select the route to follow"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:2154
+msgid "Route not found"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:2220
+msgid "Cancel"
+msgstr ""
+
+#: src/ShipDrivergui_impl.cpp:2222
+msgid "OK"
+msgstr ""
 

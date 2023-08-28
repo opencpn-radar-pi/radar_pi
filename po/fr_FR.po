@@ -2,38 +2,58 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-10 12:43+0000\n"
-"PO-Revision-Date: 2019-07-06 17:07\n"
-"Last-Translator: Pavel Kalian (nohal)\n"
+"POT-Creation-Date: 2023-07-28 09:51+0100\n"
+"PO-Revision-Date: 2023-08-18 16:14\n"
+"Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: crowdin.com\n"
 "X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Project-ID: 49843\n"
 "X-Crowdin-Language: fr\n"
 "X-Crowdin-File: /plugins/shipdriver_pi/po/ShipDriver_pi.pot\n"
+"X-Crowdin-File-ID: 231\n"
 
-#: src/ShipDriver_pi.cpp:125 src/ShipDriver_pi.cpp:128 src/ShipDriver_pi.cpp:212
-#: src/ShipDrivergui_impl.h:80
+#: src/ShipDriver_pi.cpp:163 src/ShipDriver_pi.cpp:229
+#: src/ShipDrivergui_impl.h:105
 msgid "ShipDriver"
 msgstr "Piloter le bateau"
 
-#: src/ShipDriver_pi.cpp:134
-msgid "Select Vessel Start Position"
-msgstr "Choisissez la position de départ du bateau"
-
-#: src/ShipDriver_pi.cpp:218
+#: src/ShipDriver_pi.cpp:231
 msgid "ShipDriver player"
-msgstr "Exécuter Shipdriver"
+msgstr "Lancer Shipdriver"
 
-#: src/ShipDriver_pi.cpp:223
+#: src/ShipDriver_pi.cpp:233
 msgid "Almost a simulator"
 msgstr "Presque un simulateur"
 
-#: src/ShipDrivergui.h:105
+#: src/ShipDriver_pi.cpp:293
+msgid "Select Vessel Start Position"
+msgstr "Choisissez la position de départ du bateau"
+
+#: src/ShipDriver_pi.cpp:365
+msgid "MMSI must be 9 digits.\n"
+"Edit using Preferences"
+msgstr "MMSI doit comporter 9 chiffres.\n"
+"Modifier en utilisant les préférences"
+
+#: src/ShipDriver_pi.cpp:480
+msgid "Grib plugin version not supported."
+msgstr "Le complement Grib est ancien"
+
+#: src/ShipDriver_pi.cpp:481
+#, c-format
+msgid "Use versions %d.%d to %d.%d"
+msgstr "Usez version %d,%d a %d.%d"
+
+#: src/ShipDriver_pi.cpp:484
+msgid "Weather Routing"
+msgstr "Routage météo"
+
+#: src/ShipDrivergui.h:126
 msgid "Preferences"
 msgstr "Préférences"
 
@@ -91,7 +111,7 @@ msgstr "En attente"
 
 #: src/ShipDrivergui.cpp:202
 msgid "Hand Steering"
-msgstr "Barrer à la main"
+msgstr "Barrer manuellement"
 
 #: src/ShipDrivergui.cpp:207
 msgid "Auto"
@@ -101,43 +121,158 @@ msgstr "Auto"
 msgid "Autopilot Control"
 msgstr "Commande du pilote automatique"
 
-#: src/ShipDrivergui.cpp:225
+#: src/ShipDrivergui.cpp:215
+msgid "Follow"
+msgstr "Suivre"
+
+#: src/ShipDrivergui.cpp:221
+msgid "Sail"
+msgstr "voile"
+
+#: src/ShipDrivergui.cpp:224
+msgid "Using Sail"
+msgstr "Sous voile"
+
+#: src/ShipDrivergui.cpp:229
 msgid "-1"
 msgstr "-1"
 
-#: src/ShipDrivergui.cpp:231
+#: src/ShipDrivergui.cpp:235
 msgid "-10"
 msgstr "-10"
 
-#: src/ShipDrivergui.cpp:237
+#: src/ShipDrivergui.cpp:241
 msgid "+10"
 msgstr "+10"
 
-#: src/ShipDrivergui.cpp:243
+#: src/ShipDrivergui.cpp:247
 msgid "+1"
 msgstr "+1"
 
-#: src/ShipDrivergui.cpp:295
+#: src/ShipDrivergui.cpp:257
+msgid "Alarms"
+msgstr "Alarmes"
+
+#: src/ShipDrivergui.cpp:268 src/ShipDrivergui.cpp:271
+msgid "SART"
+msgstr "SART"
+
+#: src/ShipDrivergui.cpp:275 src/ShipDrivergui.cpp:278
+msgid "MOB"
+msgstr "MOB"
+
+#: src/ShipDrivergui.cpp:282 src/ShipDrivergui.cpp:285
+msgid "EPIRB"
+msgstr "EPIRB"
+
+#: src/ShipDrivergui.cpp:300
+msgid "DSC Distress Alert"
+msgstr "Avis detresse DSC"
+
+#: src/ShipDrivergui.cpp:303
+msgid "Distress Alert"
+msgstr "Alerte Détresse"
+
+#: src/ShipDrivergui.cpp:307
+msgid "DSC Distress Cancel"
+msgstr "Supp DSC Detresse"
+
+#: src/ShipDrivergui.cpp:310
+msgid "Distress Cancel"
+msgstr "Suppr Detresse"
+
+#: src/ShipDrivergui.cpp:314 src/ShipDrivergui.cpp:317
+msgid "Distress Relay"
+msgstr "Relay Detresse"
+
+#: src/ShipDrivergui.cpp:321 src/ShipDrivergui.cpp:324
+msgid "Relay Cancel"
+msgstr "Supp Relais"
+
+#: src/ShipDrivergui.cpp:405
 msgid "AIS"
 msgstr "AIS"
 
-#: src/ShipDrivergui.cpp:302
+#: src/ShipDrivergui.cpp:412
 msgid "Transmit"
 msgstr "Transmettre"
 
-#: src/ShipDrivergui.cpp:305
+#: src/ShipDrivergui.cpp:415
 msgid "Save to file"
 msgstr "Sauver dans un fichier"
 
-#: src/ShipDrivergui.cpp:312
+#: src/ShipDrivergui.cpp:422
 msgid "MMSI"
 msgstr "MMSI"
 
-#: src/ShipDrivergui_impl.cpp:85
+#: src/ShipDrivergui_impl.cpp:184 src/ShipDrivergui_impl.cpp:1745
 msgid "Please right-click and choose vessel start position"
-msgstr "S’il vous plaît, faites un clic droit (sur la carte) & choisissez la position de départ du bateau"
+msgstr "Faites un clic droit (sur la carte) & choisissez votre position de départ"
 
-#: src/ShipDrivergui_impl.cpp:90
-msgid "MMSI must be a number, please change in Preferences"
-msgstr "Le MMSI doit être un nombre. S’il vous plaît changer dans les préférences"
+#: src/ShipDrivergui_impl.cpp:191
+msgid "MMSI must be nine digits\n"
+"Edit using Preferences"
+msgstr "MMSI doit comporter 9 chiffres.\n"
+"Modifier en utilisant les préférences"
+
+#: src/ShipDrivergui_impl.cpp:212
+msgid "ShipDriver has been stopped"
+msgstr "ShipDriven a été stoppé"
+
+#: src/ShipDrivergui_impl.cpp:256
+msgid "Vessel stopped"
+msgstr "Navire arrêté"
+
+#: src/ShipDrivergui_impl.cpp:340
+msgid "Route or waypoint must be activated\n"
+"Has a connection been made in Options->Connections?"
+msgstr "La route ou le waypoint doit être activé\n"
+"Une connexion a-t-elle été établie dans Options->Connexions ?"
+
+#: src/ShipDrivergui_impl.cpp:401 src/ShipDrivergui_impl.cpp:421
+#: src/ShipDrivergui_impl.cpp:440 src/ShipDrivergui_impl.cpp:459
+#: src/ShipDrivergui_impl.cpp:485 src/ShipDrivergui_impl.cpp:503
+#: src/ShipDrivergui_impl.cpp:529
+msgid "ShipDriver has not been started"
+msgstr "Shipdriver n'a pas été lancé"
+
+#: src/ShipDrivergui_impl.cpp:470 src/ShipDrivergui_impl.cpp:514
+msgid "No DSC Distress activated"
+msgstr "Absence DSC Detresse activé"
+
+#: src/ShipDrivergui_impl.cpp:1749
+msgid "Please start ShipDriver"
+msgstr "Merci de démarrer Shipdriver"
+
+#: src/ShipDrivergui_impl.cpp:1763
+msgid "Invalid Boat Polars file"
+msgstr "Polaires invalides"
+
+#: src/ShipDrivergui_impl.cpp:1767
+msgid "Grib data is not available for the present date/time or location"
+msgstr "Données GRIB indisponbles pour jour/heure ou lieu"
+
+#: src/ShipDrivergui_impl.cpp:1955
+msgid "Unable to read navobj file"
+msgstr "Impossible de lire navobj"
+
+#: src/ShipDrivergui_impl.cpp:1960
+msgid "Invalid xml file"
+msgstr "Fichier XML erroné"
+
+#: src/ShipDrivergui_impl.cpp:2038
+msgid "Select the route to follow"
+msgstr "Choisissez la route a suivre"
+
+#: src/ShipDrivergui_impl.cpp:2154
+msgid "Route not found"
+msgstr "Route inconnue"
+
+#: src/ShipDrivergui_impl.cpp:2220
+msgid "Cancel"
+msgstr "Effacez"
+
+#: src/ShipDrivergui_impl.cpp:2222
+msgid "OK"
+msgstr "OK"
 

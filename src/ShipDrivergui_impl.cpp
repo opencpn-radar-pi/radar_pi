@@ -2027,15 +2027,21 @@ double Dlg::ReadNavobj()
 
     return -1;
 }
+	
 
 void Dlg::OnFollow(wxCommandEvent& event)
 {
 
-    m_bUsingFollow = true;
+	//m_bUsingFollow = false;
+	//PlugIn_Route_Ex thisRoute;
+	
+	std::vector<std::unique_ptr<PlugIn_Route_Ex>> routes;
+	auto uids = GetRouteGUIDArray();
+	for (size_t i = 0; i < uids.size(); i++) {
+	   routes.push_back(std::move(GetRouteEx_Plugin(uids[i])));
+	}
 
-    ReadNavobj();
-
-    GetRouteDialog RouteDialog(this, -1, _("Select the route to follow"),
+	    GetRouteDialog RouteDialog(this, -1, _("Select the route to follow"),
         wxPoint(200, 200), wxSize(300, 200), wxRESIZE_BORDER);
 
     RouteDialog.dialogText->InsertColumn(0, "", 0, wxLIST_AUTOSIZE);
@@ -2044,122 +2050,27 @@ void Dlg::OnFollow(wxCommandEvent& event)
     RouteDialog.dialogText->SetColumnWidth(1, 0);
     RouteDialog.dialogText->DeleteAllItems();
 
-    int in = 0;
-    wxString routeName = "";
-    for (std::vector<rte>::iterator it = my_routes.begin();
-         it != my_routes.end(); it++) {
+	int in = 0;
+	std::vector<std::string> names;
+    for (const auto& r : routes) names.push_back(r->m_NameString.ToStdString());
+        names.push_back(routes[0]->m_NameString.ToStdString());
 
-        routeName = (*it).Name;
+   for (int n = 0; n < names.size(); n++) {
+
+        wxString routeName = names[in];
 
         RouteDialog.dialogText->InsertItem(in, "", -1);
         RouteDialog.dialogText->SetItem(in, 0, routeName);
         in++;
     }
-    this->Fit();
+
+    //ReadNavobj();
+       this->Fit();
     this->Refresh();
-
-    long si = -1;
-    long itemIndex = -1;
-    // int f = 0;
-
-    wxListItem row_info;
-    wxString cell_contents_string = wxEmptyString;
-    bool foundRoute = false;
-
-    if (RouteDialog.ShowModal() != wxID_OK) {
-        m_bUsingFollow = false;
-    } else {
-
-        for (;;) {
-            itemIndex = RouteDialog.dialogText->GetNextItem(
-                itemIndex, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-
-            if (itemIndex == -1)
-                break;
-
-            // Got the selected item index
-            if (RouteDialog.dialogText->IsSelected(itemIndex)) {
-                si = itemIndex;
-                foundRoute = true;
-                break;
-            }
-        }
-
-        if (foundRoute) {
-
-            // Set what row it is (m_itemId is a member of the regular
-            // wxListCtrl class)
-            row_info.m_itemId = si;
-            // Set what column of that row we want to query for information.
-            row_info.m_col = 0;
-            // Set text mask
-            row_info.m_mask = wxLIST_MASK_TEXT;
-
-            // Get the info and store it in row_info variable.
-            RouteDialog.dialogText->GetItem(row_info);
-            // Extract the text out that cell
-            cell_contents_string = row_info.m_text;
-            // wxMessageBox(cell_contents_string);
-            double value;
-            rtept initPoint;
-
-            for (std::vector<rte>::iterator it = my_routes.begin();
-                 it != my_routes.end(); it++) {
-                wxString routeName = (*it).Name;
-                if (routeName == cell_contents_string) {
-
-                    routePoints = (*it).m_rteptList;
-
-                    countRoutePoints = 0;
-                    for (std::vector<rtept>::iterator it = routePoints.begin();
-                         it != routePoints.end(); it++)
-                        countRoutePoints++;
-
-                    wxString xcountRoutePoints
-                        = wxString::Format("%i", countRoutePoints);
-
-                    for (std::vector<rtept>::iterator it = routePoints.begin();
-                         it != routePoints.end(); it++) {
-
-                        wxString sIndex
-                            = wxString::Format("%i", (*it).index);
-
-                        if ((*it).index == 0) {
-
-                            (*it).lat.ToDouble(&value);
-                            initLat = value;
-
-                            (*it).lon.ToDouble(&value);
-                            initLon = value;
-
-                            nextRoutePointIndex = 1;
-                        }
-
-                        if ((*it).index == nextRoutePointIndex) {
-
-                            (*it).lat.ToDouble(&value);
-                            nextLat = value;
-
-                            (*it).lon.ToDouble(&value);
-                            nextLon = value;
-
-                            DistanceBearingMercator_Plugin(nextLat, nextLon,
-                                initLat, initLon, &followDir, &myDist);
-                        }
-                    }
-                }
-            }
-
-        } else {
-            wxMessageBox(_("Route not found"));
-            m_bUsingFollow = false;
-            return;
-        }
-
-        double scale_factor = GetOCPNGUIToolScaleFactor_PlugIn();
-        JumpToPosition(initLat, initLon, scale_factor);
-        StartDriving();
-    }
+	if (RouteDialog.ShowModal() != wxID_OK) {
+		wxMessageBox("here");
+	}
+   
 }
 
 wxString Dlg::StandardPath()
@@ -2227,3 +2138,4 @@ GetRouteDialog::GetRouteDialog(wxWindow* parent, wxWindowID id,
     Fit();
     SetFocus();
 };
+
