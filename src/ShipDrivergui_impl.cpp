@@ -135,6 +135,8 @@ void Dlg::SetFollowStep(double inLat, double inLon, double inDir, double inSpd,
 {
 
     double myBrg;
+	PlugIn_Waypoint_Ex * myWaypoint;
+
 
     PositionBearingDistanceMercator_Plugin(
         inLat, inLon, inDir, inSpd, &stepLat, &stepLon);
@@ -146,32 +148,36 @@ void Dlg::SetFollowStep(double inLat, double inLon, double inDir, double inSpd,
         stepLat = nextLat;
         stepLon = nextLon;
 
-        nextRoutePointIndex++;
+		nextRoutePointIndex++;
 
         if (nextRoutePointIndex > (countRoutePoints - 1)) {
             SetStop();
             return;
         }
 
-        for (std::vector<rtept>::iterator it = routePoints.begin();
-             it != routePoints.end(); it++) {
+		wxPlugin_WaypointExListNode* pwpnode2 = thisRoute->pWaypointList->GetFirst();
+		int index = 0;
+		while (pwpnode2) {
+			myWaypoint = pwpnode2->GetData();
 
-            double value;
+			if (index == nextRoutePointIndex) {				
+				double dlat = myWaypoint->m_lat;
+				double dlon = myWaypoint->m_lon;
 
-            if ((*it).index == nextRoutePointIndex) {
+				nextLat = dlat;
+				nextLon = dlon;
 
-                (*it).lat.ToDouble(&value);
-                nextLat = value;
-
-                (*it).lon.ToDouble(&value);
-                nextLon = value;
-            }
-        }
-        DistanceBearingMercator_Plugin(
-            nextLat, nextLon, stepLat, stepLon, &followDir, &myDist);
-        PositionBearingDistanceMercator_Plugin(
-            stepLat, stepLon, followDir, inSpd, &stepLat, &stepLon);
-        myDir = followDir;
+				DistanceBearingMercator_Plugin(
+					nextLat, nextLon, stepLat, stepLon, &followDir, &myDist);
+				PositionBearingDistanceMercator_Plugin(
+					stepLat, stepLon, followDir, inSpd, &stepLat, &stepLon);
+				myDir = followDir;                 
+				nextRoutePointIndex++; 
+				return;
+				
+			}
+			pwpnode2->GetNext();			
+		}  
     }
 }
 
@@ -2032,7 +2038,7 @@ double Dlg::ReadNavobj()
 void Dlg::OnFollow(wxCommandEvent& event)
 {
 
-	//m_bUsingFollow = false;
+	m_bUsingFollow = true;
 	//PlugIn_Route_Ex thisRoute;
 	
 	std::vector<std::unique_ptr<PlugIn_Route_Ex>> routes;
@@ -2065,13 +2071,135 @@ void Dlg::OnFollow(wxCommandEvent& event)
     }
 
     //ReadNavobj();
-       this->Fit();
-    this->Refresh();
-	if (RouteDialog.ShowModal() != wxID_OK) {
-		wxMessageBox("here");
-	}
+    long si = -1;
+    long itemIndex = -1;
+    // int f = 0;
+
+    wxListItem row_info;
+    wxString cell_contents_string = wxEmptyString;
+    bool foundRoute = false;
+
+    if (RouteDialog.ShowModal() != wxID_OK) {
+        m_bUsingFollow = false;
+    } else {
+
+        for (;;) {
+            itemIndex = RouteDialog.dialogText->GetNextItem(
+                itemIndex, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+
+            if (itemIndex == -1)
+                break;
+
+            // Got the selected item index
+            if (RouteDialog.dialogText->IsSelected(itemIndex)) {
+                si = itemIndex;
+                foundRoute = true;
+                break;
+            }
+        }
+
+		wxString numberString;
+
+		if (foundRoute) {
+
+			// Set what row it is (m_itemId is a member of the regular
+			// wxListCtrl class)
+			row_info.m_itemId = si;
+			// Set what column of that row we want to query for information.
+			row_info.m_col = 0;
+			// Set text mask
+			row_info.m_mask = wxLIST_MASK_TEXT;
+
+			// Get the info and store it in row_info variable.
+			RouteDialog.dialogText->GetItem(row_info);
+			// Extract the text out that cell
+			cell_contents_string = row_info.m_text;
+			//wxMessageBox(cell_contents_string, "cell contents");
+			double value;
+			rtept initPoint;			
+			nextRoutePointIndex = 0;
+			int index = 0;
+			bool foundRoute = false;
+
+			for (size_t i = 0; i < uids.size(); i++) {
+				thisRoute = GetRouteEx_Plugin(uids[i]);
+				//wxString Rt = thisRoute->m_NameString;
+				//wxMessageBox(Rt);
+				if (thisRoute->m_NameString == cell_contents_string) {
+					foundRoute = true;					
+					break;
+				}
+			}
+			if (foundRoute) {
+				m_bUsingFollow = true;
+				countRoutePoints = thisRoute->pWaypointList->size();
+						//wxString ct = wxString::Format("%i", countRoutePoints);
+						//wxMessageBox(ct);	
+
+				PlugIn_Waypoint_Ex* myWaypoint;
+
+				wxPlugin_WaypointExListNode *pwpnode = thisRoute->pWaypointList->GetFirst();
+				while (pwpnode) {
+
+					myWaypoint = pwpnode->GetData();
+					
+					double dd = myWaypoint->m_lat;
+					wxString ct = wxString::Format("%f",dd );
+							wxMessageBox(ct);
+
+					theWaypoints.push_back(myWaypoint);
+					pwpnode->GetNext();
+				}
+				for (int n = 0; n < theWaypoints.size(); n++) {
+					wxMessageBox("here");
+					if (n == 0) {
+
+						double dlat = theWaypoints[n]->m_lat;
+						double dlon = theWaypoints[n]->m_lon;
+
+						initLat = dlat;
+						initLon = dlon;
+
+					}
+
+					if (n == 1) {
+
+						wxMessageBox("here");
+
+						double dlat1 = theWaypoints[n]->m_lat;
+						double dlon1 = theWaypoints[n]->m_lon;
+
+
+						nextLat = dlat1;
+						nextLon = dlon1;
+
+						DistanceBearingMercator_Plugin(nextLat, nextLon,
+							initLat, initLon, &followDir, &myDist);
+
+						 wxString x
+                        = wxString::Format("%i", followDir);
+
+						nextRoutePointIndex++;
+						return;
+
+					}
+				}
+
+			}else wxMessageBox("Route not found");
+
+		}
+		else wxMessageBox("Route not found");
+		        
+
+		//wxMessageBox(numberString);
+
+        //double scale_factor = GetOCPNGUIToolScaleFactor_PlugIn();
+        //JumpToPosition(initLat, initLon, scale_factor);
+       // StartDriving();
+    }
    
 }
+   
 
 wxString Dlg::StandardPath()
 {

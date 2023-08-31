@@ -174,7 +174,8 @@ private:
 
     vector<rte> my_routes;
     vector<rtept> routePoints;
-
+	unique_ptr<PlugIn_Route_Ex> thisRoute;
+	vector<PlugIn_Waypoint_Ex*> theWaypoints;
     int nextRoutePointIndex;
     double nextRoutePoint;
     double followDir;
