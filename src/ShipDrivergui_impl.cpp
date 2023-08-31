@@ -41,6 +41,9 @@
 wxWindow *g_Window;
 #endif
 
+#include <wx/listimpl.cpp>
+WX_DEFINE_LIST(Plugin_WaypointExList);
+
 class GribRecordSet;
 
 void assign(char* dest, char* arrTest2) { strcpy(dest, arrTest2); }
@@ -155,29 +158,26 @@ void Dlg::SetFollowStep(double inLat, double inLon, double inDir, double inSpd,
             return;
         }
 
-		wxPlugin_WaypointExListNode* pwpnode2 = thisRoute->pWaypointList->GetFirst();
-		int index = 0;
-		while (pwpnode2) {
-			myWaypoint = pwpnode2->GetData();
-
-			if (index == nextRoutePointIndex) {				
-				double dlat = myWaypoint->m_lat;
-				double dlon = myWaypoint->m_lon;
-
-				nextLat = dlat;
-				nextLon = dlon;
-
-				DistanceBearingMercator_Plugin(
-					nextLat, nextLon, stepLat, stepLon, &followDir, &myDist);
-				PositionBearingDistanceMercator_Plugin(
-					stepLat, stepLon, followDir, inSpd, &stepLat, &stepLon);
-				myDir = followDir;                 
-				nextRoutePointIndex++; 
-				return;
+		for (int n = 0; n < theWaypoints.size(); n++) {
 				
+			if (n == nextRoutePointIndex) {
+				myWaypoint = theWaypoints[n];
+				nextLat = myWaypoint->m_lat;
+				nextLon = myWaypoint->m_lon;
+                
 			}
-			pwpnode2->GetNext();			
-		}  
+
+			wxString ct = wxString::Format("%f",nextLat);
+					wxMessageBox(ct);
+		}
+
+		DistanceBearingMercator_Plugin(
+           nextLat, nextLon, stepLat, stepLon, &followDir, &myDist);
+        
+		PositionBearingDistanceMercator_Plugin(
+            stepLat, stepLon, followDir, inSpd, &stepLat, &stepLon);
+        
+		myDir = followDir;
     }
 }
 
@@ -2136,22 +2136,23 @@ void Dlg::OnFollow(wxCommandEvent& event)
 						//wxString ct = wxString::Format("%i", countRoutePoints);
 						//wxMessageBox(ct);	
 
+				myList = thisRoute->pWaypointList;
+				
 				PlugIn_Waypoint_Ex* myWaypoint;
-
-				wxPlugin_WaypointExListNode *pwpnode = thisRoute->pWaypointList->GetFirst();
+				
+				
+				wxPlugin_WaypointExListNode *pwpnode = myList->GetFirst();
 				while (pwpnode) {
-
+					
 					myWaypoint = pwpnode->GetData();
 					
-					double dd = myWaypoint->m_lat;
-					wxString ct = wxString::Format("%f",dd );
-							wxMessageBox(ct);
+					
 
 					theWaypoints.push_back(myWaypoint);
-					pwpnode->GetNext();
+					pwpnode = pwpnode->GetNext();
 				}
+
 				for (int n = 0; n < theWaypoints.size(); n++) {
-					wxMessageBox("here");
 					if (n == 0) {
 
 						double dlat = theWaypoints[n]->m_lat;
@@ -2160,11 +2161,12 @@ void Dlg::OnFollow(wxCommandEvent& event)
 						initLat = dlat;
 						initLon = dlon;
 
+						nextRoutePointIndex = 1;
 					}
 
 					if (n == 1) {
 
-						wxMessageBox("here");
+						//wxMessageBox("here");
 
 						double dlat1 = theWaypoints[n]->m_lat;
 						double dlon1 = theWaypoints[n]->m_lon;
@@ -2176,11 +2178,9 @@ void Dlg::OnFollow(wxCommandEvent& event)
 						DistanceBearingMercator_Plugin(nextLat, nextLon,
 							initLat, initLon, &followDir, &myDist);
 
-						 wxString x
-                        = wxString::Format("%i", followDir);
-
-						nextRoutePointIndex++;
-						return;
+						 wxString x = wxString::Format("%f", followDir);
+						// wxMessageBox(x);
+						//nextRoutePointIndex++;
 
 					}
 				}
@@ -2193,9 +2193,9 @@ void Dlg::OnFollow(wxCommandEvent& event)
 
 		//wxMessageBox(numberString);
 
-        //double scale_factor = GetOCPNGUIToolScaleFactor_PlugIn();
-        //JumpToPosition(initLat, initLon, scale_factor);
-       // StartDriving();
+        double scale_factor = GetOCPNGUIToolScaleFactor_PlugIn();
+        JumpToPosition(initLat, initLon, scale_factor);
+        StartDriving();
     }
    
 }

@@ -52,6 +52,8 @@
 #include <wx/msgdlg.h>
 #include <wx/arrstr.h>
 #include <wx/vector.h>
+#include <wx/dataobj.h>
+#include <wx/list.h>
 
 #ifdef __WXOSX__
 #define SHIPDRIVER_DLG_STYLE                                                   \
@@ -306,6 +308,8 @@ private:
     bool m_bInvalidPolarsFile;
     bool m_bInvalidGribFile;
     bool m_bShipDriverHasStarted;
+
+	Plugin_WaypointExList* myList;
 };
 
 class GetRouteDialog : public wxDialog {
