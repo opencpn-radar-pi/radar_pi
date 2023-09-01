@@ -328,10 +328,9 @@ void Dlg::OnPlus1(wxCommandEvent& event)
 }
 
 void Dlg::OnAuto(wxCommandEvent& event)
-{        
-    if (m_bShipDriverHasStarted) {
-        
-        if (m_bGotAPB) {
+{        	
+    if (m_bShipDriverHasStarted) {        
+        if (m_bGotAPB) {			
             m_bAuto = true;
             m_buttonStandby->SetBackgroundColour(wxColour(255, 0, 0));
             m_buttonAuto->SetBackgroundColour(wxColour(0, 255, 0));
@@ -554,6 +553,25 @@ void Dlg::OnCollision(wxCommandEvent& event)
         wxMessageBox(_("ShipDriver has not been started"));
 }
 
+void Dlg::OnPause(wxCommandEvent& event)
+{
+        bool active = m_buttonPause->GetValue();
+        if (active) {
+			m_Timer->Stop();
+			m_buttonPause->SetLabel("Resume");
+			m_buttonPause->SetBackgroundColour(wxColour(255, 0, 0));
+        } else { 
+			StartDriving();           
+			m_buttonPause->SetLabel("Pause");
+            m_buttonPause->SetBackgroundColour(wxColour(0, 255, 0));
+        }
+}
+
+void Dlg::ResetPauseButton(){
+	m_buttonPause->SetValue(0);
+	m_buttonPause->SetLabel("Pause");
+    m_buttonPause->SetBackgroundColour(wxColour(0, 255, 0));
+}
 
 void Dlg::OnClose(wxCloseEvent& event)
 {
@@ -1783,6 +1801,7 @@ void Dlg::OnWind(wxCommandEvent& event)
 {
 
     m_bUsingFollow = false;
+	ResetPauseButton();
 
     if (initLat == 0.0) {
         wxMessageBox(_("Please right-click and choose vessel start position"));
@@ -2114,7 +2133,7 @@ void Dlg::OnFollow(wxCommandEvent& event)
     if (RouteDialog.ShowModal() != wxID_OK) {
         m_bUsingFollow = false;
     } else {
-
+		ResetPauseButton();
         for (;;) {
             itemIndex = RouteDialog.dialogText->GetNextItem(
                 itemIndex, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);

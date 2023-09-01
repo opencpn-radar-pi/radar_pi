@@ -291,6 +291,8 @@ private:
     void OnDistressRelay(wxCommandEvent& event);
     void OnRelayCancel(wxCommandEvent& event);
 	void OnCollision(wxCommandEvent& event);
+	void OnPause(wxCommandEvent& event);
+	void ResetPauseButton();
 
     long m_iMMSI;
 
