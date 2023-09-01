@@ -533,6 +533,28 @@ void Dlg::OnRelayCancel(wxCommandEvent& event)
         wxMessageBox(_("ShipDriver has not been started"));
 }
 
+void Dlg::OnCollision(wxCommandEvent& event)
+{
+    if (m_Timer->IsRunning()) {
+
+        bool active = m_buttonCollision->GetValue();
+        alarm_id = 990;
+        if (active) {
+			PositionBearingDistanceMercator_Plugin(initLat, initLon, 20.0, 6.0, &m_latCollision, &m_lonCollision);
+			DistanceBearingMercator_Plugin(initLat, initLon, m_latCollision, m_lonCollision, &m_collisionDir, &myDist);
+
+            m_bCOLLISION = true;
+            m_buttonCollision->SetBackgroundColour(wxColour(255, 0, 0));
+        } else {
+            stop_countCOLLISION = 0;
+            m_bCOLLISION = false;
+            m_buttonCollision->SetBackgroundColour(wxColour(0, 255, 0));
+        }
+    } else
+        wxMessageBox(_("ShipDriver has not been started"));
+}
+
+
 void Dlg::OnClose(wxCloseEvent& event)
 {
     if (m_Timer->IsRunning())
@@ -709,6 +731,23 @@ void Dlg::Notify()
             PushNMEABuffer(myNMEA_RELAYCANCEL + "\r\n");
         }
         break;
+    case 990:
+		MOBid = "870112233";
+        MOBint = wxAtoi(MOBid);
+
+        if (m_bCOLLISION) {
+			DistanceBearingMercator_Plugin(initLat, initLon, m_latCollision, m_lonCollision, &m_collisionDir, &myDist);
+            myNMEA_Collision = myAIS->nmeaEncode1_2_3(1, MOBint, 0, 20, m_latCollision, m_lonCollision, m_collisionDir, m_collisionDir, "B");
+            m_textCtrlSART->SetValue(myNMEA_Collision);
+            PushNMEABuffer(myNMEA_Collision + "\r\n");
+        } else if (stop_countCOLLISION < 5) {
+            stop_countCOLLISION++;
+            myNMEA_Collision = myAIS->nmeaEncode1_2_3(1, MOBint, 0, 0, m_latCollision, m_lonCollision, m_collisionDir, m_collisionDir, "B");
+            m_textCtrlSART->SetValue(myNMEA_MOB); // for analysis of sentence
+            PushNMEABuffer(myNMEA_Collision + "\r\n");
+        }
+        break;
+
     }
 
     if (m_bUseFile)

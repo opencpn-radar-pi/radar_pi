@@ -239,6 +239,7 @@ private:
     bool m_bCANCEL;
     bool m_bDISTRESSRELAY;
     bool m_bRELAYCANCEL;
+	bool m_bCOLLISION;
 
 
     wxString SARTid;
@@ -260,6 +261,7 @@ private:
     wxString myNMEA_CANCEL;
     wxString myNMEA_DISTRESSRELAY;
     wxString myNMEA_RELAYCANCEL;
+	wxString myNMEA_Collision;
 
 
     int stop_count;
@@ -269,6 +271,7 @@ private:
     int stop_countCANCEL;
     int stop_countDISTRESSRELAY;
     int stop_countRELAYCANCEL;
+	int stop_countCOLLISION;
 
     double m_latSART;
     double m_lonSART;
@@ -276,6 +279,9 @@ private:
     double m_lonMOB;
     double m_latEPIRB;
     double m_lonEPIRB;
+	double m_latCollision;
+    double m_lonCollision;
+	double m_collisionDir;
 
     void OnSART(wxCommandEvent& event);
     void OnMOB(wxCommandEvent& event);
@@ -284,6 +290,7 @@ private:
     void OnDistressCancel(wxCommandEvent& event);
     void OnDistressRelay(wxCommandEvent& event);
     void OnRelayCancel(wxCommandEvent& event);
+	void OnCollision(wxCommandEvent& event);
 
     long m_iMMSI;
 
