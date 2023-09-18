@@ -1,10 +1,31 @@
+3.2.4 Jul 17, 2023
+* Update windows build to use wxwidgets 3.2.2.1 (#523, #510).
+
+3.2.4-beta3 May 4, 2023
+* Fix problems downloading repo signing key (#526)
+
+3.2.4-beta2 May 04, 2023
+* Use urllib3 < 2.0.0 (#520).
+* opencpn-libs, Update to latest version.
+
+3.2.4-beta1 Apr 29, 2023
+* Use wx3.2.2.1 instead of wx3.2.1
+* Update wxwidgets to 3.2.2 (#510)
+* Fix broken bullseye/armhf target
+* Update opencpn-libs,
+    - Provide a compatility target ocpn::api on api-18.
+    - Fix bug in nmea0183 lib, see
+      https://github.com/leamas/opencpn-libs/issues/15
+    - Add new marnav library.
+    - Add new N2k library required to receive and parse n2k messages.
+
 3.2.3 March 8, 2023
 * Fix a typo in MacosWxwidgets affecting parallel make (#502)
 * Update opencpn-libs, notably updated ocpn_plugin.h and pdb API files
 * Handle bug on MacOS in update_templates (#502).
 
 3.2.3-beta1 Feb 14, 2023
-* ci: debian, armhf builds: Fix handling of CLOUDSMITH_BETA_REPO 
+* ci: debian, armhf builds: Fix handling of CLOUDSMITH_BETA_REPO
   environment variable (#498)
 * macos: Install built wxWidgets in local project dir (#495).
 * Update opencpn-libs, handle missing ocpn-api link target (opencpn-libs#9).
@@ -15,7 +36,6 @@
 * ci: flatpak: Update google packages signing key (#487)
 * ci: android: Handle missing google packages signing key (#487)
 * Context menu only appears when dialog started (#488)
-
 3.2.1  Dec 18, 2022
 * New release afrter some release problems of the 3.2.0 tag
 

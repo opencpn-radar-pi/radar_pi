@@ -110,6 +110,27 @@ static double radar_distance(GeoPosition pos1, GeoPosition pos2, char unit) {
   return dist;
 }
 
+/*
+ * Given a geo position and distance and bearing, what is the geo position
+ * of that indicated point?
+ *
+ * Distance in m, bearing in radians
+ */
+GeoPosition local_position(GeoPosition &pos, double distance, double bearing) {
+  const double R = 6378100.;  // Radius of the Earth
+  double lat = deg2rad(pos.lat);
+  double lon = deg2rad(pos.lon);
+
+  lat = asin(sin(lat) * cos(distance / R) + cos(lat) * sin(distance / R) * cos(bearing));
+  lon += atan2(sin(bearing) * sin(distance / R) * cos(lat), cos(distance / R) - sin(lat) * sin(lat));
+
+  GeoPosition r;
+
+  r.lat = rad2deg(lat);
+  r.lon = rad2deg(lon);
+  return r;
+}
+
 //---------------------------------------------------------------------------------------------------------
 //
 //    Radar PlugIn Implementation
@@ -247,6 +268,7 @@ int radar_pi::Init(void) {
   m_settings.threshold_green = 255;
   m_settings.enable_cog_heading = false;
   m_settings.AISatARPAoffset = 50;
+  m_ais_drawgl_broken = false;
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
@@ -285,12 +307,14 @@ int radar_pi::Init(void) {
     LOG_INFO(wxT("RECEIVE  = %d"), LOGLEVEL_RECEIVE);
     LOG_INFO(wxT("GUARD    = %d"), LOGLEVEL_GUARD);
     LOG_INFO(wxT("ARPA     = %d"), LOGLEVEL_ARPA);
+    LOG_INFO(wxT("REPORTS  = %d"), LOGLEVEL_REPORTS);
     LOG_VERBOSE(wxT("VERBOSE  log is enabled"));
     LOG_DIALOG(wxT("DIALOG   log is enabled"));
     LOG_TRANSMIT(wxT("TRANSMIT log is enabled"));
     LOG_RECEIVE(wxT("RECEIVE  log is enabled"));
     LOG_GUARD(wxT("GUARD    log is enabled"));
     LOG_ARPA(wxT("ARPA     log is enabled"));
+    LOG_REPORTS(wxT("REPORTS  log is enabled"));
   } else {
     wxLogError(wxT("configuration file values initialisation failed"));
     return 0;  // give up
@@ -1435,7 +1459,16 @@ bool radar_pi::LoadConfig(void) {
   wxString s;
 
   if (pConf) {
-    pConf->SetPath(wxT("Settings"));
+    pConf->SetPath(wxT("/Settings"));
+    pConf->Read(wxT("ConfigVersionString"), &s, "");
+    if (sscanf(s.c_str(), "Version %d.%d.%d", &v, &x, &y) == 3) {
+      wxLogInfo(wxT("Detected OpenCPN Version %d.%d.%d"), v, x, y);
+      if (v == 5 && x == 8 && y <= 4) {
+        wxLogError(wxT("Version %d.%d.%d cannot draw AIS targets on PPI; disabling this feature\n"), v, x, y);
+        m_ais_drawgl_broken = true;
+      }
+    }
+
     pConf->Read(wxT("COGUPAvgSeconds"), &m_COGAvgSec, 15);
     m_COGAvgSec = wxMin(m_COGAvgSec, MAX_COG_AVERAGE_SECONDS);  // Bound the array size
     for (int i = 0; i < m_COGAvgSec; i++) {
@@ -1554,7 +1587,7 @@ bool radar_pi::LoadConfig(void) {
       n++;
     }
     m_settings.radar_count = n;
-    wxLogError(wxT("Config Loaded RadarCount=%d"), v);
+    wxLogInfo(wxT("Config Loaded RadarCount=%d"), v);
 
     pConf->Read(wxT("AlertAudioFile"), &m_settings.alert_audio_file, m_shareLocn + wxT("alarm.wav"));
     pConf->Read(wxT("ColourStrong"), &s, "red");
@@ -1574,7 +1607,7 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ColourDopplerReceding"), &s, "cyan");
     m_settings.doppler_receding_colour = wxColour(s);
     pConf->Read(wxT("DeveloperMode"), &m_settings.developer_mode, false);
-    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
+    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 1);
     pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
     pConf->Read(wxT("OverlayStandby"), &m_settings.overlay_on_standby, true);
@@ -1660,7 +1693,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("RadarCount"), m_settings.radar_count);
     pConf->Write(wxT("DockSize"), m_settings.dock_size);
 
-    wxLogError(wxT("Config Save RadarCount=%d"), m_settings.radar_count);
+    wxLogInfo(wxT("Config Save RadarCount=%d"), m_settings.radar_count);
     for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
       pConf->Write(wxString::Format(wxT("Radar%dLocationInfo"), r), m_radar[r]->GetRadarLocationInfo().to_string());

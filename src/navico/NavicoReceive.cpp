@@ -1005,10 +1005,12 @@ struct RadarReport_03C4_129 {
   uint8_t what;
   uint8_t command;
   uint8_t radar_type;  // I hope! 01 = 4G and new 3G, 08 = 3G, 0F = BR24, 00 = HALO
-  uint8_t u00[55];     // Lots of unknown
+  uint8_t u00[31];     // Lots of unknown
+  uint32_t hours;      // Hours of operation
+  uint8_t u01[20];     // Lots of unknown
   uint16_t firmware_date[16];
   uint16_t firmware_time[16];
-  uint8_t u01[7];
+  uint8_t u02[7];
 };
 
 struct RadarReport_04C4_66 {   // 04 C4 with length 66
@@ -1046,7 +1048,7 @@ struct RadarReport_06C4_74 {         // 06 C4 with length 74
   char name[6];                      // 6-11 "Halo;\0"
   uint8_t field2[30];                // 12-41 unknown
   SectorBlankingReport blanking[4];  // 42-61
-  uint8_t field3[12];                // 62-73
+  uint8_t field4[12];                // 62-73
 };
 
 struct RadarReport_08C4_18 {             // 08 c4  length 18
@@ -1202,7 +1204,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
 
       case (129 << 8) + 0x03: {  // 129 bytes starting with 03 C4
         RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
-        LOG_RECEIVE(wxT("%s RadarReport_03C4_129 radar_type=%u"), m_ri->m_name.c_str(), s->radar_type);
+        LOG_RECEIVE(wxT("%s RadarReport_03C4_129 radar_type=%u hours=%u"), m_ri->m_name.c_str(), s->radar_type, s->hours);
 
         switch (s->radar_type) {
           case REPORT_TYPE_BR24:
@@ -1251,6 +1253,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
 
         SetFirmware(ts);
 
+        m_hours = s->hours;
         break;
       }
 
@@ -1290,8 +1293,8 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
                                 // Seen on HALO 4 (Vlissingen)
         RadarReport_06C4_68 *data = (RadarReport_06C4_68 *)report;
         for (int i = 0; i <= 3; i++) {
-          LOG_INFO(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
-                   data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
+          LOG_RECEIVE(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
+                      data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
           m_ri->m_no_transmit_start[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].start_angle)),
                                               data->blanking[i].enabled ? RCS_MANUAL : RCS_OFF);
           m_ri->m_no_transmit_end[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].end_angle)),
@@ -1306,8 +1309,8 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
                                 // Seen on HALO 24 (Merrimac)
         RadarReport_06C4_74 *data = (RadarReport_06C4_74 *)report;
         for (int i = 0; i <= 3; i++) {
-          LOG_INFO(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
-                   data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
+          LOG_RECEIVE(wxT("%s radar blanking sector %u: enabled=%u start=%u end=%u\n"), m_ri->m_name.c_str(), i + 1,
+                      data->blanking[i].enabled, data->blanking[i].start_angle, data->blanking[i].end_angle);
           m_ri->m_no_transmit_start[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].start_angle)),
                                               data->blanking[i].enabled ? RCS_MANUAL : RCS_OFF);
           m_ri->m_no_transmit_end[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].end_angle)),
@@ -1372,7 +1375,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         RadarReport_12C4_66 *s = (RadarReport_12C4_66 *)report;
         wxString sn = "#";
         sn << s->serialno;
-        LOG_INFO(wxT("%s serial number is: %s"), m_ri->m_name.c_str(), sn);
         LOG_RECEIVE(wxT("%s RadarReport_12C4_66 serialno=%s"), m_ri->m_name.c_str(), sn);
         break;
       }
@@ -1469,6 +1471,12 @@ wxString NavicoReceive::GetInfoStatus() {
   if (m_firmware.length() > 0) {
     r << wxT("\n");
     r << m_firmware;
+  }
+  if (m_hours > 0) {
+    r << wxT("\n");
+    r << m_hours;
+    r << wxT(" ");
+    r << _("hours transmitted");
   }
 
   if (m_radar_status == 0 && m_pi->m_navico_locator) {

@@ -29,12 +29,6 @@ endif ()
 #
 include(Plugin.cmake)
 
-# -------- Options --------
-# If only defined in include file CMake seems to ignore them.
-#
-option(MACOS_UNIVERSAL_BUILD "Build for both x86_64 and arm64" FALSE)
-option(IGNORE_SYSTEM_WX "Never use system wxWidgets installation" FALSE)
-
 # -------- Setup completed, build the plugin --------
 #
 project(${PKG_NAME} VERSION ${PKG_VERSION})

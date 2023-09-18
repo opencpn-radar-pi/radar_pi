@@ -5,7 +5,6 @@ debian-steps: &debian-steps
   steps:
     - checkout
     - run: ci/circleci-build-debian.sh
-    - run: ci/verify-result.sh "/build-$OCPN_TARGET"
     - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
     - run: sh -c "ci/git-push.sh /build-$OCPN_TARGET"
 
@@ -21,7 +20,6 @@ flatpak-steps: &flatpak-steps
           -{{ checksum \"ci/circleci-build-flatpak.sh\" }}"
         paths:
           - /home/circleci/.local/share/flatpak/repo
-    - run: ci/verify-result.sh "/build-flatpak"
     - run: cd /build-flatpak; /bin/bash < upload.sh
     - run: ci/git-push.sh /build-flatpak
 
@@ -218,7 +216,6 @@ jobs:
             - /Users/distiller/project/cache
       - run: >
           sh -c "otool -L build-osx/app/*/OpenCPN.app/Contents/PlugIns/*.dylib"
-      - run: ci/verify-result.sh build-osx
       - run: cd build-osx; /bin/bash < upload.sh
       - run: ci/git-push.sh  build-osx
 
@@ -266,6 +263,12 @@ workflows:
       - build-macos:
           <<: *std-filters
 
+      - build-android-arm64:
+          <<: *std-filters
+
+      - build-android-armhf:
+          <<: *std-filters
+
       - build-bullseye-wx32:
           <<: *std-filters
 
@@ -293,3 +296,8 @@ workflows:
       - build-bookworm:
           <<: *std-filters
 
+      - build-buster:
+          <<: *std-filters
+
+      - build-buster-armhf:
+          <<: *std-filters
