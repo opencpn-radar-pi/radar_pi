@@ -125,6 +125,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_rotation_period.Update(0);
   m_magnetron_current.Update(0);
   m_rotation_period.Update(0);
+  m_stay_alive_type = 0;
 
   m_range_adjustment.Update(0, RCS_MANUAL);
   m_quantum2type = false;

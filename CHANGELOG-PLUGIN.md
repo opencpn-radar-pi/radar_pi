@@ -11,6 +11,8 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ## [Unreleased]
 
+- #248: Adaptation of StayAlive message to latest format, tested with Halo20+ and Halo3008
+
 ## [5.5.0]
 
 This release is mainly focused on compatibility with OpenCPN 5.8.0 which uses a new UI library
