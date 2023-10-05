@@ -178,7 +178,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 
 	bSizer12->Add( m_staticText7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
-	m_SliderSpeed = new wxSlider( this, wxID_ANY, 0, 0, 100, wxDefaultPosition, wxSize( 300,-1 ), 0 );
+	m_SliderSpeed = new wxSlider( this, wxID_ANY, 0, 0, 100, wxDefaultPosition, wxSize( -1,-1 ), 0 );
 	m_SliderSpeed->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_SliderSpeed->SetForegroundColour( wxColour( 0, 0, 0 ) );
 	m_SliderSpeed->SetBackgroundColour( wxColour( 201, 201, 201 ) );
@@ -193,7 +193,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	bSizer12->Add( m_staticText8, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 
-	bSizer10->Add( bSizer12, 1, wxEXPAND, 5 );
+	bSizer10->Add( bSizer12, 0, wxEXPAND, 5 );
 
 	wxFlexGridSizer* fgSizer82;
 	fgSizer82 = new wxFlexGridSizer( 2, 4, 0, 0 );
