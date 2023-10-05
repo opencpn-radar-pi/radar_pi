@@ -111,7 +111,39 @@ void Dlg::OnMouseEvent( wxMouseEvent& event )
 {
     g_mouse_pos_screen = ClientToScreen( event.GetPosition() );
 
+    wxAuiPaneInfo& pane = m_pauimgr->GetPane(this);
+    wxSize currentSize = wxSize(pane.floating_size.x, pane.floating_size.y);
+    double aRatio = (double)currentSize.y / (double)currentSize.x;
+
+    if (event.LeftDown()) {
+        m_resizeStartPoint = ClientToScreen( event.GetPosition() ;
+        m_resizeStartSize = currentSize;
+        m_binResize2 = true;
+    }
+
     if(event.Dragging()){
+
+      wxPoint p = event.GetPosition();
+
+        wxSize dragSize = m_resizeStartSize;
+
+        dragSize.y += p.y - m_resizeStartPoint.y;
+        dragSize.x += p.x - m_resizeStartPoint.x;
+        ;
+
+        if ((par_pos.y + dragSize.y) > par_size.y)
+          dragSize.y = par_size.y - par_pos.y;
+
+        if ((par_pos.x + dragSize.x) > par_size.x)
+          dragSize.x = par_size.x - par_pos.x;
+
+        /// vertical
+        // dragSize.x = dragSize.y / aRatio;
+
+        // not too small
+        dragSize.x = wxMax(dragSize.x, 150);
+        dragSize.y = wxMax(dragSize.y, 150);
+
         int x = wxMax(0, g_startPos.x + (g_mouse_pos_screen.x - g_startMouse.x));
         int y = wxMax(0, g_startPos.y + (g_mouse_pos_screen.y - g_startMouse.y));
         int xmax = ::wxGetDisplaySize().x - GetSize().x;

@@ -165,6 +165,13 @@ public:
     void SetNMEAMessage(wxString sentence);
     bool m_bGotAPB;
 
+    wxAuiManager* m_pauimgr;
+
+    wxPoint m_resizeStartPoint;
+    wxSize m_resizeStartSize;
+    bool m_binResize;
+    bool m_binResize2;
+
 
 protected:
     bool m_bNeedsGrib;
