@@ -48,7 +48,6 @@
 #include "ShipDrivergui_impl.h"
 #include "GribRecordSet.h"
 
-
 // Define minimum and maximum versions of the grib plugin supported
 #define GRIB_MAX_MAJOR 4
 #define GRIB_MAX_MINOR 1
