@@ -336,7 +336,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	fgSizer5->Add( m_buttonRelayCancel, 0, wxALL|wxEXPAND, 5 );
 
 
-	sbSizer3->Add( fgSizer5, 1, wxEXPAND, 5 );
+	sbSizer3->Add( fgSizer5, 0, wxEXPAND, 5 );
 
 	wxBoxSizer* bSizer111;
 	bSizer111 = new wxBoxSizer( wxVERTICAL );
@@ -358,10 +358,10 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	bSizer11->Add( m_textCtrlSART, 0, wxALL|wxEXPAND, 5 );
 
 
-	sbSizer3->Add( bSizer11, 1, wxEXPAND, 5 );
+	sbSizer3->Add( bSizer11, 0, wxEXPAND, 5 );
 
 
-	bSizer10->Add( sbSizer3, 1, wxEXPAND, 5 );
+	bSizer10->Add( sbSizer3, 0, wxEXPAND, 5 );
 
 
 	this->SetSizer( bSizer10 );
