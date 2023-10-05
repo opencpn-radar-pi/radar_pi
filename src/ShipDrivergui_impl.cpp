@@ -130,7 +130,7 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
 wxPoint g_startPos;
 wxPoint g_startMouse;
 wxPoint g_mouse_pos_screen;
-/*
+
 void Dlg::OnMouseEvent( wxMouseEvent& event )
 {
     g_mouse_pos_screen = ClientToScreen( event.GetPosition() );
@@ -145,7 +145,7 @@ void Dlg::OnMouseEvent( wxMouseEvent& event )
 
         g_Window->Move(x, y);
     }
-}*/
+}
 #endif
 
 #ifdef __OCPN__ANDROID__
@@ -307,7 +307,7 @@ void Dlg::OnEvtPanGesture(wxQT_PanGestureEvent& event) {
           break;
     }
 }
-
+/*
 void Dlg::OnMouseEvent(wxMouseEvent& event) {
     if (m_binPinch) return;
 
@@ -378,7 +378,7 @@ void Dlg::OnMouseEvent(wxMouseEvent& event) {
           }
         }
     }
-}
+}*/
 #endif
 
 
