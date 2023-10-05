@@ -109,6 +109,8 @@ public:
   bool m_binPinch;
 
 #ifdef __ANDROID__
+  void OnEvtPinchGesture(wxQT_PinchGestureEvent& event);
+  void OnEvtPanGesture(wxQT_PanGestureEvent& event);
   void OnMouseEvent(wxMouseEvent& event);
   wxPoint m_lpinchPoint;
 

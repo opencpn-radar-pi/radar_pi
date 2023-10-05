@@ -149,7 +149,7 @@ void Dlg::OnMouseEvent( wxMouseEvent& event )
 #endif
 
 #ifdef __OCPN__ANDROID__
-void DashboardWindow::OnEvtPinchGesture(wxQT_PinchGestureEvent& event) {
+void Dlg::OnEvtPinchGesture(wxQT_PinchGestureEvent& event) {
     float zoom_gain = 0.3;
     float zoom_val;
     float total_zoom_val;
@@ -244,7 +244,7 @@ void DashboardWindow::OnEvtPinchGesture(wxQT_PinchGestureEvent& event) {
     }
 }
 
-void DashboardWindow::OnEvtPanGesture(wxQT_PanGestureEvent& event) {
+void Dlg::OnEvtPanGesture(wxQT_PanGestureEvent& event) {
     if (m_binPinch) return;
 
     if (m_binResize) return;
@@ -308,7 +308,7 @@ void DashboardWindow::OnEvtPanGesture(wxQT_PanGestureEvent& event) {
     }
 }
 
-void DashboardWindow::OnMouseEvent(wxMouseEvent& event) {
+void Dlg::OnMouseEvent(wxMouseEvent& event) {
     if (m_binPinch) return;
 
     if (m_binResize) {
@@ -370,12 +370,6 @@ void DashboardWindow::OnMouseEvent(wxMouseEvent& event) {
             // not too small
             dragSize.x = wxMax(dragSize.x, 150);
             dragSize.y = wxMax(dragSize.y, 150);
-            /*
-                            for( unsigned int i=0; i<m_ArrayOfInstrument.size();
-               i++ ) { DashboardInstrument* inst =
-               m_ArrayOfInstrument.Item(i)->m_pInstrument; inst->Show();
-                            }
-            */
             pane.FloatingSize(dragSize);
             m_pauimgr->Update();
 
