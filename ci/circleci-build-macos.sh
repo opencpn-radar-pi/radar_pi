@@ -46,15 +46,21 @@ for pkg in $(sed '/#/d' < $here/../build-deps/macos-deps);  do
     brew link --overwrite $pkg || brew install $pkg
 done
 
-export OPENSSL_ROOT_DIR='/usr/local/opt/openssl'
+#Install prebuilt dependencies
+wget -q https://dl.cloudsmith.io/public/nohal/opencpn-plugins/raw/files/macos_deps_universal.tar.xz \
+     -O /tmp/macos_deps_universal.tar.xz
+sudo tar -C /usr/local -xJf /tmp/macos_deps_universal.tar.xz
+
+export OPENSSL_ROOT_DIR='/usr/local'
 
 # Build and package
 cd build-osx
 cmake \
   "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}" \
   -DCMAKE_INSTALL_PREFIX= \
-  -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 \
-  -DOCPN_TARGET_TUPLE="darwin-wx32;10;x86_64" \
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} \
+  -DOCPN_TARGET_TUPLE="darwin-wx32;10;universal" \
+  -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
   ..
 
 if [[ -z "$CI" ]]; then

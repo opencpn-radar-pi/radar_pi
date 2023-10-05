@@ -19,6 +19,9 @@ function (GetArch)
   if (NOT "${OCPN_TARGET_TUPLE}" STREQUAL "")
     # Return last element from tuple like "Android-armhf;16;armhf"
     list(GET OCPN_TARGET_TUPLE 2 ARCH)
+    if(ARCH STREQUAL "universal")
+      set(ARCH "x86_64;arm64")
+    endif()
   elseif (NOT WIN32)
     # default
     set(ARCH "x86_64")
