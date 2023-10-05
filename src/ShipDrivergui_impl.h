@@ -105,8 +105,14 @@ public:
       const wxSize& size = wxDefaultSize, long style = SHIPDRIVER_DLG_STYLE);
   ShipDriver_pi* plugin;
 
-  bool m_binResize;
   bool m_binPinch;
+  bool m_binPan;
+
+
+  wxPoint m_resizeStartPoint;
+  wxSize m_resizeStartSize;
+  bool m_binResize;
+  bool m_binResize2;
 
 #ifdef __ANDROID__
   void OnEvtPinchGesture(wxQT_PinchGestureEvent& event);

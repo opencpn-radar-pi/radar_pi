@@ -130,7 +130,7 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
 wxPoint g_startPos;
 wxPoint g_startMouse;
 wxPoint g_mouse_pos_screen;
-
+/*
 void Dlg::OnMouseEvent( wxMouseEvent& event )
 {
     g_mouse_pos_screen = ClientToScreen( event.GetPosition() );
@@ -145,7 +145,7 @@ void Dlg::OnMouseEvent( wxMouseEvent& event )
 
         g_Window->Move(x, y);
     }
-}
+}*/
 #endif
 
 #ifdef __OCPN__ANDROID__
@@ -320,14 +320,14 @@ void Dlg::OnMouseEvent(wxMouseEvent& event) {
         wxPoint par_pos = wxPoint(pane.floating_pos.x, pane.floating_pos.y);
 
         if (event.LeftDown()) {
-          m_resizeStartPoint = event.GetPosition();
+          m_resizeStartPoint = ClientToScreen( event.GetPosition();
           m_resizeStartSize = currentSize;
           m_binResize2 = true;
         }
 
         if (m_binResize2) {
           if (event.Dragging()) {
-            wxPoint p = event.GetPosition();
+            wxPoint p = ClientToScreen( event.GetPosition();
 
             wxSize dragSize = m_resizeStartSize;
 
