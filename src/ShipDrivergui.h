@@ -71,6 +71,7 @@ class ShipDriverBase : public wxDialog
 
 		// Virtual event handlers, override them in your derived class
 		virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
+		virtual void OnDLeftClick( wxMouseEvent& event ) { event.Skip(); }
 		virtual void OnMidships( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStart( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStop( wxCommandEvent& event ) { event.Skip(); }

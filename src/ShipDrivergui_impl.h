@@ -54,6 +54,12 @@
 #include <wx/vector.h>
 #include <wx/dataobj.h>
 #include <wx/list.h>
+#include <wx/window.h>
+#include <wx/menu.h>
+
+#define ID_SOMETHING 2001
+#define ID_SOMETHING_ELSE 2002
+
 
 #ifdef __WXOSX__
 #define SHIPDRIVER_DLG_STYLE                                                   \
@@ -106,8 +112,17 @@ public:
     ShipDriver_pi* plugin;
 
 #ifdef __ANDROID__
-    void OnMouseEvent( wxMouseEvent& event );
+    void OnMouseEvent(wxMouseEvent& event);
+    wxPoint m_resizeStartPoint;
+    wxSize m_resizeStartSize;
+    bool m_binResize;
+    bool m_binResize2;
+
+    void OnPopupClick(wxCommandEvent& evt);
+    void OnDLeftClick(wxMouseEvent& event);
+
 #endif
+
 
     wxString createVHWSentence(double stw, double hdg);
     wxString createMWVTSentence(

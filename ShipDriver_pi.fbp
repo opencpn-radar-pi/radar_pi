@@ -57,6 +57,7 @@
             <property name="window_name"></property>
             <property name="window_style"></property>
             <event name="OnClose">OnClose</event>
+            <event name="OnLeftDClick">OnDLeftClick</event>
             <object class="wxBoxSizer" expanded="1">
                 <property name="minimum_size"></property>
                 <property name="name">bSizer10</property>
