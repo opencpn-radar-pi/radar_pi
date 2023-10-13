@@ -1,4 +1,4 @@
-3.3.0 TBD
+3.3.0 Oct 10, 2023
 * Fix wrong upload directory for bookworm plugins (#492).
 * Fix handling of wxWidgets 3.2 build deps in update-templates (#490).
 * Use urllib3 < 2.0.0 (#520).
@@ -8,6 +8,8 @@
       https://github.com/leamas/opencpn-libs/issues/15
     - Add new marnav library.
     - Add new N2k library required to receive and parse n2k messages.
+* Fix expected hash in AndroidLibs.cmake to align with master.zip.
+* Fix move/resize for Android builds
 
 3.2.1  Dec 18, 2022
 * New release afrter some release problems of the 3.2.0 tag
