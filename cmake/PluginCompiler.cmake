@@ -12,7 +12,7 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
