@@ -238,8 +238,8 @@ void Dlg::SetFollowStep(double inLat, double inLon, double inDir, double inSpd,
       return;
     }
 
-    for (int n = 0; n < theWaypoints.size(); n++) {
-      if (n == nextRoutePointIndex) {
+    for (size_t n = 0; n < theWaypoints.size(); n++) {
+      if (static_cast<int>(n) == nextRoutePointIndex) {
         myWaypoint = theWaypoints[n];
         nextLat = myWaypoint->m_lat;
         nextLon = myWaypoint->m_lon;
@@ -2090,7 +2090,7 @@ void Dlg::OnFollow(wxCommandEvent& event) {
   std::vector<std::string> names;
   for (const auto& r : routes) names.push_back(r->m_NameString.ToStdString());
 
-  for (int n = 0; n < names.size(); n++) {
+  for (size_t n = 0; n < names.size(); n++) {
     wxString routeName = names[in];
 
     RouteDialog.dialogText->InsertItem(in, "", -1);
@@ -2138,10 +2138,8 @@ void Dlg::OnFollow(wxCommandEvent& event) {
       RouteDialog.dialogText->GetItem(row_info);
       // Extract the text out that cell
       cell_contents_string = row_info.m_text;
-      double value;
       rtept initPoint;
       nextRoutePointIndex = 0;
-      int index = 0;
       bool foundRoute = false;
 
       for (size_t i = 0; i < uids.size(); i++) {
@@ -2169,7 +2167,7 @@ void Dlg::OnFollow(wxCommandEvent& event) {
           pwpnode = pwpnode->GetNext();
         }
 
-        for (int n = 0; n < theWaypoints.size(); n++) {
+        for (size_t n = 0; n < theWaypoints.size(); n++) {
           if (n == 0) {
             double dlat = theWaypoints[n]->m_lat;
             double dlon = theWaypoints[n]->m_lon;
