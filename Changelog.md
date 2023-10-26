@@ -1,4 +1,16 @@
-3.3.0 Oct 10, 2023
+3.3.0-beta2 TBD
+* Update opencpn-libs. This update breaks any plugin including 
+  opencpn-libs/plugingl. Such plugins need to apply the following patch:
+    
+        -  add_subdirectory("${CMAKE_SOURCE_DIR}/opencpn-libs/plugingl")
+        -  target_link_libraries(${PACKAGE_NAME} ocpn::plugingl)
+        +  add_subdirectory("${CMAKE_SOURCE_DIR}/opencpn-libs/plugin_dc")
+        +  target_link_libraries(${PACKAGE_NAME} ocpn::plugin-dc)
+    
+  Furthermore, plugins including opencpn/glu should remove this, it is
+  included in the new plugin_dc library.
+
+3.3.0-beta1 Oct 10, 2023
 * Fix wrong upload directory for bookworm plugins (#492).
 * Fix handling of wxWidgets 3.2 build deps in update-templates (#490).
 * Use urllib3 < 2.0.0 (#520).
