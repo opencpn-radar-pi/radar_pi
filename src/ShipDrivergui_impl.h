@@ -186,7 +186,7 @@ protected:
 
 private:
     void Notify();
-    wxString MWD, VHW, MWVA, MWVT, GLL, VTG, HDT;
+    wxString MWD, VHW, MWVA, MWVT, GLL, VTG, HDT, RMC;
     double initDir, initSpd, initRudder, myDist, followStepDistance;
 
     vector<rte> my_routes;

@@ -824,9 +824,9 @@ void Dlg::Notify() {
   }
 
   if (m_bGrib && m_bUsingWind) {
-    MWVA = createMWVASentence(initSpd, myDir, wdir, wspd);
     MWVT = createMWVTSentence(initSpd, myDir, wdir, wspd);
-    MWD = createMWDSentence(wdir, wspd);
+    MWVA = createMWVASentence(initSpd, myDir, wdir, wspd);
+    //MWD = createMWDSentence(wdir, wspd);
 
     PushNMEABuffer(MWVA + "\r\n");
     PushNMEABuffer(MWVT + "\r\n");
@@ -836,10 +836,14 @@ void Dlg::Notify() {
   GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
   VTG = createVTGSentence(initSpd, myDir);
   VHW = createVHWSentence(initSpd, myDir);
+  RMC = createRMCSentence(mdt, initLat, initLon, initSpd, myDir);
+  HDT = createHDTSentence(myDir);
 
   PushNMEABuffer(GLL + "\r\n");
   PushNMEABuffer(VTG + "\r\n");
   PushNMEABuffer(VHW + "\r\n");
+  PushNMEABuffer(RMC + "\r\n");
+  PushNMEABuffer(HDT + "\r\n");
 
   if (m_bUseAis) {
     PushNMEABuffer(myNMEAais + "\r\n");
@@ -939,7 +943,8 @@ wxString Dlg::createVHWSentence(double stw, double hdg) {
   */
   wxString nVHW;
   wxString nDir;
-  wxString nTrueMag;
+  wxString nTrue;
+  wxString nMag;
   wxString nSpd;
   wxString nValid;
   wxString nForCheckSum;
@@ -949,15 +954,16 @@ wxString Dlg::createVHWSentence(double stw, double hdg) {
   wxString nA = "A";
   nUnits = "N";
   nVHW = "IIVHW";
-  nTrueMag = "T";
+  nTrue = "T";
+  nMag = "M";
   wxString ndlr = "$";
   wxString nast = "*";
 
   nSpd = wxString::Format("%f", stw);
   nDir = wxString::Format("%f", hdg);
 
-  nForCheckSum =
-      nVHW + nC + nDir + nC + nTrueMag + nC + nC + nC + nSpd + nC + nUnits;
+  nForCheckSum = nVHW + nC + nDir + nC + nTrue + nC + nC + nMag + nC + nSpd + nC + nUnits +
+                 nC + nC + "K";
   nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
   return nFinal;
 }
@@ -1017,7 +1023,7 @@ wxString Dlg::createMWVTSentence(double spd, double hdg, double winddirection,
   wxString nUnits;
   wxString nC = ",";
   wxString nA = "A";
-  nUnits = "N";
+  nUnits = "K";
   nMWV = "WIMWV";
   nMWD = "WIMWD";
   nRelTrue = "T";
@@ -1123,7 +1129,7 @@ wxString Dlg::createMWVASentence(double spd, double hdg, double winddirection,
   wxString nUnits;
   wxString nC = ",";
   wxString nA = "A";
-  nUnits = "N";
+  nUnits = "K";
   nMWV = "WIMWV";
   nMWD = "WIMWD";
   nRelTrue = "R";
