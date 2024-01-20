@@ -32,17 +32,14 @@ set(OCPN_RELEASE_REPO
 # -------  Plugin setup --------
 #
 set(PKG_NAME ShipDriver_pi)
-set(PKG_VERSION  3.3.3)
+set(PKG_VERSION  999.0.0)
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME ShipDriver)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME ShipDriver) # As of GetCommonName() in plugin API
 set(PKG_SUMMARY "Simulate ship movements")
 set(PKG_DESCRIPTION [=[
-Simulates navigation of a vessel. Using the sail option and a current
-grib file for wind data, simulates how a sailing vessel might react in
-those conditions. Using 'Preferences' the simulator is able to record AIS
-data from itself. This can be replayed to simulate collision situations.
+On starting opens a grib file. Used for testing tactics plugins.
 ]=])
 
 set(PKG_AUTHOR "Mike Rossiter")
