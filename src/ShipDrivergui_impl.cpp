@@ -819,19 +819,19 @@ void Dlg::Notify() {
 
   bool m_bGrib = false;
   double wspd, wdir;
- // if (m_bUsingWind) {
+  if (m_bUsingWind) {
     m_bGrib = GetGribSpdDir(dt, initLat, initLon, wspd, wdir);
- // }
+  }
 
- // if (m_bGrib && m_bUsingWind) {
-    //MWVT = createMWVTSentence(initSpd, myDir, wdir, wspd);
+  if (m_bGrib && m_bUsingWind) {
+    MWVT = createMWVTSentence(initSpd, myDir, wdir, wspd);
     MWVA = createMWVASentence(initSpd, myDir, wdir, wspd);
     //MWD = createMWDSentence(wdir, wspd);
-    //wxMessageBox(MWVA);
+
     PushNMEABuffer(MWVA + "\r\n");
-    //PushNMEABuffer(MWVT + "\r\n");
-    //PushNMEABuffer(MWD + "\r\n");
-//  }
+    PushNMEABuffer(MWVT + "\r\n");
+    PushNMEABuffer(MWD + "\r\n");
+  }
 
   GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
   VTG = createVTGSentence(initSpd, myDir);
@@ -1010,7 +1010,7 @@ wxString Dlg::createMWVTSentence(double spd, double hdg, double winddirection,
     }
   }
 
-  double tws = windspeed * 1.944; // convert m/s to kts
+  double tws = windspeed;
 
   wxString nMWV;
   wxString nMWD;
@@ -1104,7 +1104,7 @@ wxString Dlg::createMWVASentence(double spd, double hdg, double winddirection,
   // double alpha, bravo, charlie, delta;
   double alpha, charlie;
   alpha = pow(spd, 2) + pow(windspeed, 2) - 2 * spd * windspeed * cos(twa);
-  aws = sqrt(alpha) * 1.944;// convert from m/s to kts
+  aws = sqrt(alpha);
 
   // spd / charlie = aws / twa;
 
@@ -1146,10 +1146,7 @@ wxString Dlg::createMWVASentence(double spd, double hdg, double winddirection,
   // MWD,270.7,T,,,20.5,N,,
   // nForCheckSum = nMWD + nC + nDir + nC + nRelTrue + nC  + nC + nC + nSpd +
   // nC + nUnits + nC + nC ;
-  //nForCheckSum = "WIMWV,10.0,R,10.0,K,A";
   nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
-  
- // wxMessageBox(nFinal);
   return nFinal;
 }
 wxString Dlg::createRMCSentence(wxDateTime myDateTime, double myLat,
