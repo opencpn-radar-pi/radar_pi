@@ -766,13 +766,25 @@ void radar_pi::OnToolbarToolCallback(int id) {
     }
   }
 
-  if (m_settings.show) {
+  if (m_settings.show) {  // $$$to do
     LOG_DIALOG(wxT("OnToolbarToolCallback: Hide radar windows"));
     m_settings.show = 0;
     SetRadarWindowViz();
   } else {
     LOG_DIALOG(wxT("OnToolbarToolCallback: Show radar windows"));
     m_settings.show = 1;
+
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      
+        LOG_DIALOG(wxT("OnToolbarToolCallback: show controls for radar %i"), r);
+        if (m_settings.show_radar_control[r] == 0) {
+          ShowRadarControl(r, true);
+        }
+      
+    }
+
+
+
     SetRadarWindowViz();
   }
   UpdateState();
