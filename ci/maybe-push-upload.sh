@@ -8,10 +8,6 @@ source $here/../build-conf.rc
 if [ ! -d /build-$OCPN_TARGET ]; then exit 0; fi   # no build available
 
 case ${OCPN_TARGET,} in
-  *buster*)
-      upload="$oldstable_upload"
-      git_push="$oldstable_git_push"
-      ;;
 
   *android*)
       upload="$android_upload"

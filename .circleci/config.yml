@@ -24,28 +24,6 @@ flatpak-steps: &flatpak-steps
     - run: ci/git-push.sh /build-flatpak
 
 jobs:
-  build-buster:
-    docker:
-      - image: circleci/buildpack-deps:bullseye-scm
-    environment:
-      - OCPN_TARGET: bullseye
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    steps:
-      - checkout
-      - run: ci/circleci-build-buster.sh
-      - run: sh -c "ci/maybe-push-upload.sh"
-
-  build-buster-armhf:
-    machine:
-      image: ubuntu-2004:202101-01
-    resource_class: arm.medium
-    environment:
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    steps:
-      - checkout
-      - run: ci/circleci-build-buster-armhf.sh
-      - run: ci/maybe-push-upload.sh
-
   build-bullseye:
     docker:
       - image: circleci/buildpack-deps:bullseye-scm
@@ -295,10 +273,4 @@ workflows:
           <<: *std-filters
 
       - build-bookworm:
-          <<: *std-filters
-
-      - build-buster:
-          <<: *std-filters
-
-      - build-buster-armhf:
           <<: *std-filters
