@@ -7,6 +7,8 @@
 
 #define PKG_PRERELEASE "@PKG_PRERELEASE@"
 #define PKG_BUILD_INFO "@pkg_vers_build_info@"
+#define PKG_SUMMARY _("@PKG_SUMMARY@")
+#define PKG_DESCRIPTION _(R"""(@PKG_DESCRIPTION@)""")
 
 #define PLUGIN
 

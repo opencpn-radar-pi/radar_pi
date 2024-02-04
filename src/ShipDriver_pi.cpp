@@ -73,7 +73,7 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) { delete p; }
  */
 
 static wxBitmap load_plugin(const char* icon_name, const char* api_name) {
-    wxBitmap bitmap; 
+    wxBitmap bitmap;
     wxFileName fn;
     auto path = GetPluginDataDir(api_name);
     fn.SetPath(path);
@@ -82,7 +82,7 @@ static wxBitmap load_plugin(const char* icon_name, const char* api_name) {
 #ifdef ocpnUSE_SVG
     wxLogDebug("Loading SVG icon");
     fn.SetExt("svg");
-    const static int ICON_SIZE = 48;  // FIXME: Needs size from GUI 
+    const static int ICON_SIZE = 48;  // FIXME: Needs size from GUI
     bitmap = GetBitmapFromSVGFile(fn.GetFullPath(), ICON_SIZE, ICON_SIZE);
 #else
     wxLogDebug("Loading png icon");
@@ -99,7 +99,7 @@ static wxBitmap load_plugin(const char* icon_name, const char* api_name) {
     return bitmap;
 }
 
- 
+
 
 ShipDriver_pi::ShipDriver_pi(void* ppimgr)
     : opencpn_plugin_118(ppimgr)
@@ -234,11 +234,11 @@ const char *GetPlugInVersionBuild() { return PKG_BUILD_INFO; }
 
 wxBitmap* ShipDriver_pi::GetPlugInBitmap() { return &m_panelBitmap; }
 
-wxString ShipDriver_pi::GetCommonName() { return _("ShipDriver"); }
+wxString ShipDriver_pi::GetCommonName() { return PLUGIN_API_NAME; }
 
-wxString ShipDriver_pi::GetShortDescription() { return _("ShipDriver player"); }
+wxString ShipDriver_pi::GetShortDescription() { return PKG_SUMMARY; }
 
-wxString ShipDriver_pi::GetLongDescription() { return _("Almost a simulator"); }
+wxString ShipDriver_pi::GetLongDescription() { return PKG_DESCRIPTION; }
 
 int ShipDriver_pi::GetToolbarToolCount(void) { return 1; }
 
@@ -537,5 +537,5 @@ void ShipDriver_pi::SetNMEASentence(wxString& sentence)
 {
     if (NULL != m_pDialog) {
         m_pDialog->SetNMEAMessage(sentence);
-    }         
+    }
 }
