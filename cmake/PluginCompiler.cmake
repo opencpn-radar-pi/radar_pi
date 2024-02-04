@@ -12,7 +12,7 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -38,8 +38,4 @@ if (UNIX AND NOT APPLE)   # linux, see OpenCPN/OpenCPN#1977
   set_target_properties(${PACKAGE_NAME}
     PROPERTIES INSTALL_RPATH "$ORIGIN:$ORIGIN/.."
   )
-endif ()
-
-if (MINGW)
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L../buildwin")
 endif ()
