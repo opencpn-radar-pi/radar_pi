@@ -22,7 +22,7 @@ At the very end, add
     #endif    // CONFIG_H__
 
 In the next step redefine the API functions `GetCommonName()`,
-GetShortDescription()` and `GetLongDescription()`. In the
+`GetShortDescription()` and `GetLongDescription()`. In the
 shipdriver case these lives in _src/Shipdriver_pi.cpp_ and becomes:
 
     wxString ShipDriver_pi::GetCommonName() { return PLUGIN_API_NAME; }
