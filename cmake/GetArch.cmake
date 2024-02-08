@@ -48,9 +48,7 @@ function (GetArch)
       endif ()
     endif ()
   else (NOT WIN32)
-    # Should really be i386 since we are on win32. However, it's x86_64 for now,
-    # see #2027
-    set(ARCH "x86_64")
+    set(ARCH "x86")   # See #573
   endif ()
   set(ARCH ${ARCH} PARENT_SCOPE)
 endfunction (GetArch)
