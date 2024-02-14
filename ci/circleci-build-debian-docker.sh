@@ -46,7 +46,7 @@ function install_wx32() {
   chmod a+w /usr/local/pkg
   repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets-32"
   head="deb/debian/pool/bullseye/main"
-  vers="3.2.2+dfsg-1~bpo11+1"
+  vers="3.2.4+dfsg-1~bpo11+1"
   pushd /usr/local/pkg
   wget -q $repo/$head/w/wx/wx-common_${vers}/wx-common_${vers}_arm64.deb
   wget -q $repo/$head/w/wx/wx3.2-i18n_${vers}/wx3.2-i18n_${vers}_all.deb
