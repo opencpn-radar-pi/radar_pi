@@ -1,4 +1,4 @@
-3.3.0-beta3 TBD
+3.3.0-beta3 Feb 20, 2024
 * ci: debian: Update builds to use wx 3.2.4 (#564)
 * MacosWxwidgets: Update to 3.2.4 (#564)
 * win_deps: Update to wxWidgets 3.2.5 (#564)
