@@ -1,3 +1,14 @@
+3.3.0-beta3 TBD
+* ci: debian: Update builds to use wx 3.2.4 (#564)
+* MacosWxwidgets: Update to 3.2.4 (#564)
+* win_deps: Update to wxWidgets 3.2.5 (#564)
+* cmake/GetArch: Return correct x86 on windows (#573)
+* config: Use Plugin.cmake data in plugin API (#572)
+* Remove ancient buster builds (#571)
+* Metadata: Windows target arch -> x86 (#573)
+* PluginCompiler: C++11 -> C++17 (#574)
+* Add RMC and HDT NMEA sentences
+
 3.3.0-beta2 Dec 07, 2023
 * Update opencpn-libs. This update breaks any plugin including
   opencpn-libs/plugingl. Such plugins need to apply the following patch:
