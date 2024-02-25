@@ -28,15 +28,17 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_gaugeRudderPort->SetValue( 0 );
 	m_gaugeRudderPort->SetForegroundColour( wxColour( 255, 0, 0 ) );
 	m_gaugeRudderPort->SetBackgroundColour( wxColour( 255, 0, 0 ) );
+  m_gaugeRudderPort->SetToolTip(_("Rudder Port"));
 
-	bSizer92->Add( m_gaugeRudderPort, 1, wxALIGN_RIGHT|wxBOTTOM|wxEXPAND|wxTOP, 5 );
+	bSizer92->Add( m_gaugeRudderPort, 1, wxEXPAND|wxTOP, 5 );
 
 	m_gaugeRudderStbd = new wxGauge( this, wxID_ANY, 30, wxDefaultPosition, wxSize( -1,-1 ), wxGA_HORIZONTAL );
 	m_gaugeRudderStbd->SetValue( 0 );
 	m_gaugeRudderStbd->SetForegroundColour( wxColour( 0, 255, 0 ) );
 	m_gaugeRudderStbd->SetBackgroundColour( wxColour( 0, 255, 0 ) );
+  m_gaugeRudderStbd->SetToolTip(_("Rudder Starboard"));
 
-	bSizer92->Add( m_gaugeRudderStbd, 1, wxBOTTOM|wxEXPAND|wxTOP, 5 );
+	bSizer92->Add( m_gaugeRudderStbd, 1, wxEXPAND|wxTOP, 5 );
 
 
 	bSizer14->Add( bSizer92, 0, wxEXPAND, 5 );
@@ -65,8 +67,9 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 
 	m_textCtrlRudderPort = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_CENTER );
 	m_textCtrlRudderPort->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
+  m_textCtrlRudderPort->SetToolTip(_("Rudder Port"));
 
-	bSizer131->Add( m_textCtrlRudderPort, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT, 0 );
+	bSizer131->Add( m_textCtrlRudderPort, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0 );
 
 	m_buttonMid = new wxButton( this, wxID_ANY, _("|"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonMid->SetFont( wxFont( 11, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
@@ -77,8 +80,9 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 
 	m_textCtrlRudderStbd = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_CENTER );
 	m_textCtrlRudderStbd->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
+  m_textCtrlRudderStbd->SetToolTip( _("Rudder Starboard") );
 
-	bSizer131->Add( m_textCtrlRudderStbd, 0, wxALIGN_BOTTOM|wxALIGN_CENTER_VERTICAL, 0 );
+	bSizer131->Add( m_textCtrlRudderStbd, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0 );
 
 
 	bSizer131->Add( 0, 0, 1, wxEXPAND, 5 );
@@ -161,10 +165,10 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	bSizer7->Add( 0, 0, 1, wxEXPAND, 5 );
 
 
-	bSizer6->Add( bSizer7, 1, wxEXPAND|wxALIGN_BOTTOM|wxALIGN_CENTER_HORIZONTAL, 5 );
+	bSizer6->Add( bSizer7, 1, wxEXPAND, 5 );
 
 
-	bSizer14->Add( bSizer6, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 5 );
+	bSizer14->Add( bSizer6, 1, wxEXPAND, 5 );
 
 
 	bSizer10->Add( bSizer14, 0, wxEXPAND, 5 );
@@ -300,7 +304,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	sbSizer3->Add( fgSizer3, 0, wxEXPAND, 5 );
 
 	wxFlexGridSizer* fgSizer5;
-	fgSizer5 = new wxFlexGridSizer( 1, 2, 0, 0 );
+	fgSizer5 = new wxFlexGridSizer(2, wxSize(0,0));
 	fgSizer5->AddGrowableCol( 0 );
 	fgSizer5->AddGrowableCol( 1 );
 	fgSizer5->AddGrowableRow( 0 );
@@ -312,14 +316,14 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_buttonDistressAlert->SetBackgroundColour( wxColour( 0, 255, 0 ) );
 	m_buttonDistressAlert->SetToolTip( _("Distress Alert") );
 
-	fgSizer5->Add( m_buttonDistressAlert, 0, wxALL, 5 );
+	fgSizer5->Add( m_buttonDistressAlert, 0, wxALL|wxEXPAND, 5 );
 
 	m_buttonDistressCancel = new wxToggleButton( sbSizer3->GetStaticBox(), wxID_ANY, _("DSC Distress Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonDistressCancel->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonDistressCancel->SetBackgroundColour( wxColour( 0, 255, 0 ) );
 	m_buttonDistressCancel->SetToolTip( _("Distress Cancel") );
 
-	fgSizer5->Add( m_buttonDistressCancel, 0, wxALL, 5 );
+	fgSizer5->Add( m_buttonDistressCancel, 0, wxALL|wxEXPAND, 5 );
 
 	m_buttonDistressRelay = new wxToggleButton( sbSizer3->GetStaticBox(), wxID_ANY, _("Distress Relay"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonDistressRelay->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
