@@ -1322,10 +1322,10 @@ wxString Dlg::createDSCAlertSentence(double lat, double lon, int mmsi,
   wxString quadrant;
 
   /*
-     - quadrant NE is indicated by the digit “0”,
-     – quadrant NW is indicated by the digit “1”,
-     – quadrant SE is indicated by the digit “2”,
-     – quadrant SW is indicated by the digit “3
+     - quadrant NE is indicated by the digit Â“0Â”,
+     Â– quadrant NW is indicated by the digit Â“1Â”,
+     Â– quadrant SE is indicated by the digit Â“2Â”,
+     Â– quadrant SW is indicated by the digit Â“3
  */
   if (nQ == "NE")
     quadrant = "0";
@@ -1484,10 +1484,10 @@ wxString Dlg::createDSCAlertRelaySentence(double lat, double lon, int mmsi,
   wxString quadrant;
 
   /*
-     - quadrant NE is indicated by the digit “0”,
-     – quadrant NW is indicated by the digit “1”,
-     – quadrant SE is indicated by the digit “2”,
-     – quadrant SW is indicated by the digit “3
+     - quadrant NE is indicated by the digit Â“0Â”,
+     Â– quadrant NW is indicated by the digit Â“1Â”,
+     Â– quadrant SE is indicated by the digit Â“2Â”,
+     Â– quadrant SW is indicated by the digit Â“3
  */
   if (nQ == "NE")
     quadrant = "0";
@@ -2256,7 +2256,7 @@ GetRouteDialog::GetRouteDialog(wxWindow* parent, wxWindowID id,
   sizerlist->Add(dialogText);
 
   auto sizer = new wxBoxSizer(wxHORIZONTAL);
-  auto flags = wxSizerFlags().Right().Bottom().Border();
+  auto flags = wxSizerFlags().Bottom().Border();
   sizer->Add(1, 1, 100, wxEXPAND);  // Expanding spacer
   auto cancel = new wxButton(this, wxID_CANCEL, _("Cancel"));
   sizer->Add(cancel, flags);
