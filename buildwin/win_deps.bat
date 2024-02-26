@@ -107,6 +107,10 @@ if not exist "%WXWIN%" (
       7z x -o%SCRIPTDIR%..\cache\wxWidgets-3.2.4 wxMSW-3.2.4_vc14x_Dev.7z
       wget -nv !GITHUB_DL!/v3.2.4/wxWidgets-3.2.4-headers.7z
       7z x -o%SCRIPTDIR%..\cache\wxWidgets-3.2.4 wxWidgets-3.2.4-headers.7z
+      echo "Patching defs.h [#584]"
+      cmake -Dpatch_dir=%SCRIPTDIR:\=/%/../cache ^
+          -Dpatch_file=%SCRIPTDIR:\=/%/wxwidgets-3.2.4-584.patch ^
+          -P%SCRIPTDIR:\=/%/../cmake/PatchFile.cmake
   ) else (
       echo Downloading 3.1.2
       wget -O wxWidgets-3.1.2.7z -nv ^

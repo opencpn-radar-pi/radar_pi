@@ -1,0 +1,33 @@
+From e6b6cfc33642a8e372537c55ee1236335ff94963 Mon Sep 17 00:00:00 2001
+From: ALec Leamas <leamas@nowhere.net>
+Date: Mon, 26 Feb 2024 20:41:36 +0100
+Subject: [PATCH] Don't export wxString std::move unless supported
+
+Cherry picked first commit from
+https://github.com/wxWidgets/wxWidgets/pull/24357 to handle #584
+---
+ wxWidgets-3.2.4/include/wx/defs.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/wxWidgets-3.2.4/include/wx/defs.h b/wxWidgets-3.2.4/include/wx/defs.h
+index 4cd9af0..8326ee6 100644
+--- a/wxWidgets-3.2.4/include/wx/defs.h
++++ b/wxWidgets-3.2.4/include/wx/defs.h
+@@ -306,7 +306,12 @@ typedef short int WXTYPE;
+
+     // Rvalue references are supported since MSVS 2010, but enabling them
+     // causes compilation errors on versions before 2015
++    //
++    // And move support in wxString is only available since 3.2.3, so don't
++    // compile it in when compatibility with older versions is requested.
++#if wxABI_VERSION >= 30203
+     #define wxHAS_RVALUE_REF
++#endif
+
+     #define wxHAS_NOEXCEPT
+     #define wxNOEXCEPT noexcept
+--
+2.35.1.windows.1
+
+
+
