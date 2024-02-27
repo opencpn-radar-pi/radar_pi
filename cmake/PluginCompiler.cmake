@@ -20,6 +20,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(BUILD_SHARED_LIBS TRUE)
 
 set(_ocpn_cflags " -Wall -Wno-unused-result -fexceptions")
+string(APPEND _ocpn_cflags " -DwxABI_VERSION=30202")  # See #584.
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   string(APPEND CMAKE_C_FLAGS " ${_ocpn_cflags}")
   string(APPEND CMAKE_CXX_FLAGS " ${_ocpn_cflags}")
@@ -32,6 +33,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")           # Apple is AppleClang
   string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl -undefined dynamic_lookup")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
+  add_definitions(-DwxABI_VERSION=30202)     # See #584
 endif ()
 
 if (UNIX AND NOT APPLE)   # linux, see OpenCPN/OpenCPN#1977
