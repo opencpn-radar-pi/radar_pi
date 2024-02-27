@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version 4.0.0-0-g0efcecf)
+// C++ code generated with wxFormBuilder (version 3.10.1-0-g8feb16b3)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO *NOT* EDIT THIS FILE!
@@ -12,7 +12,7 @@
 ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxSize( -1,-1 ), wxSize( -1,-1 ) );
-	this->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	this->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	this->SetBackgroundColour( wxColour( 201, 201, 201 ) );
 
 	wxBoxSizer* bSizer10;
@@ -28,15 +28,17 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_gaugeRudderPort->SetValue( 0 );
 	m_gaugeRudderPort->SetForegroundColour( wxColour( 255, 0, 0 ) );
 	m_gaugeRudderPort->SetBackgroundColour( wxColour( 255, 0, 0 ) );
+  m_gaugeRudderPort->SetToolTip(_("Rudder Port"));
 
-	bSizer92->Add( m_gaugeRudderPort, 1, wxALIGN_RIGHT|wxBOTTOM|wxEXPAND|wxTOP, 5 );
+	bSizer92->Add( m_gaugeRudderPort, 1, wxEXPAND|wxTOP, 5 );
 
 	m_gaugeRudderStbd = new wxGauge( this, wxID_ANY, 30, wxDefaultPosition, wxSize( -1,-1 ), wxGA_HORIZONTAL );
 	m_gaugeRudderStbd->SetValue( 0 );
 	m_gaugeRudderStbd->SetForegroundColour( wxColour( 0, 255, 0 ) );
 	m_gaugeRudderStbd->SetBackgroundColour( wxColour( 0, 255, 0 ) );
+  m_gaugeRudderStbd->SetToolTip(_("Rudder Starboard"));
 
-	bSizer92->Add( m_gaugeRudderStbd, 1, wxBOTTOM|wxEXPAND|wxTOP, 5 );
+	bSizer92->Add( m_gaugeRudderStbd, 1, wxEXPAND|wxTOP, 5 );
 
 
 	bSizer14->Add( bSizer92, 0, wxEXPAND, 5 );
@@ -64,21 +66,23 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	bSizer131->Add( 0, 0, 1, wxEXPAND, 5 );
 
 	m_textCtrlRudderPort = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_CENTER );
-	m_textCtrlRudderPort->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_textCtrlRudderPort->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
+  m_textCtrlRudderPort->SetToolTip(_("Rudder Port"));
 
-	bSizer131->Add( m_textCtrlRudderPort, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT, 0 );
+	bSizer131->Add( m_textCtrlRudderPort, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0 );
 
 	m_buttonMid = new wxButton( this, wxID_ANY, _("|"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_buttonMid->SetFont( wxFont( 11, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_buttonMid->SetFont( wxFont( 11, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonMid->SetBackgroundColour( wxColour( 250, 203, 107 ) );
 	m_buttonMid->SetToolTip( _("Midships") );
 
 	bSizer131->Add( m_buttonMid, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2 );
 
 	m_textCtrlRudderStbd = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_CENTER );
-	m_textCtrlRudderStbd->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_textCtrlRudderStbd->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
+  m_textCtrlRudderStbd->SetToolTip( _("Rudder Starboard") );
 
-	bSizer131->Add( m_textCtrlRudderStbd, 0, wxALIGN_BOTTOM|wxALIGN_CENTER_VERTICAL, 0 );
+	bSizer131->Add( m_textCtrlRudderStbd, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0 );
 
 
 	bSizer131->Add( 0, 0, 1, wxEXPAND, 5 );
@@ -93,14 +97,14 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	bSizer16->Add( 0, 0, 1, wxEXPAND, 5 );
 
 	m_bpPlay = new wxButton( this, wxID_ANY, _("Start"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	m_bpPlay->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_bpPlay->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_bpPlay->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_WINDOW ) );
 	m_bpPlay->SetBackgroundColour( wxColour( 0, 255, 0 ) );
 
 	bSizer16->Add( m_bpPlay, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2 );
 
 	m_bpStop = new wxButton( this, wxID_ANY, _("Stop"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_bpStop->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_bpStop->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_bpStop->SetBackgroundColour( wxColour( 255, 0, 0 ) );
 
 	bSizer16->Add( m_bpStop, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2 );
@@ -129,31 +133,31 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 
 	m_staticTextHeading = new wxStaticText( this, wxID_ANY, _("  Heading:  "), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextHeading->Wrap( -1 );
-	m_staticTextHeading->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_staticTextHeading->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	bSizer7->Add( m_staticTextHeading, 0, wxALIGN_CENTER_VERTICAL, 5 );
 
 	m_stHeading = new wxStaticText( this, wxID_ANY, _("000"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_stHeading->Wrap( -1 );
-	m_stHeading->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_stHeading->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	bSizer7->Add( m_stHeading, 0, wxALIGN_CENTER_VERTICAL, 5 );
 
 	m_staticTextKnots = new wxStaticText( this, wxID_ANY, _("       Speed: "), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextKnots->Wrap( -1 );
-	m_staticTextKnots->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_staticTextKnots->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	bSizer7->Add( m_staticTextKnots, 0, wxALIGN_CENTER_VERTICAL, 5 );
 
 	m_stSpeed = new wxStaticText( this, wxID_ANY, _("00.0"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_stSpeed->Wrap( -1 );
-	m_stSpeed->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_stSpeed->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	bSizer7->Add( m_stSpeed, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 	m_staticText81 = new wxStaticText( this, wxID_ANY, _("        Kts"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText81->Wrap( -1 );
-	m_staticText81->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_staticText81->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	bSizer7->Add( m_staticText81, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0 );
 
@@ -161,10 +165,10 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	bSizer7->Add( 0, 0, 1, wxEXPAND, 5 );
 
 
-	bSizer6->Add( bSizer7, 1, wxEXPAND|wxALIGN_BOTTOM|wxALIGN_CENTER_HORIZONTAL, 5 );
+	bSizer6->Add( bSizer7, 1, wxEXPAND, 5 );
 
 
-	bSizer14->Add( bSizer6, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 5 );
+	bSizer14->Add( bSizer6, 1, wxEXPAND, 5 );
 
 
 	bSizer10->Add( bSizer14, 0, wxEXPAND, 5 );
@@ -174,12 +178,12 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 
 	m_staticText7 = new wxStaticText( this, wxID_ANY, _("0"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText7->Wrap( -1 );
-	m_staticText7->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_staticText7->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	bSizer12->Add( m_staticText7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 	m_SliderSpeed = new wxSlider( this, wxID_ANY, 0, 0, 100, wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	m_SliderSpeed->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_SliderSpeed->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_SliderSpeed->SetForegroundColour( wxColour( 0, 0, 0 ) );
 	m_SliderSpeed->SetBackgroundColour( wxColour( 201, 201, 201 ) );
 	m_SliderSpeed->SetToolTip( _("Speed Control") );
@@ -188,7 +192,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 
 	m_staticText8 = new wxStaticText( this, wxID_ANY, _("100"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText8->Wrap( -1 );
-	m_staticText8->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_staticText8->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	bSizer12->Add( m_staticText8, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
@@ -207,7 +211,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	fgSizer82->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
 	m_buttonStandby = new wxButton( this, wxID_ANY, _("Stby"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_buttonStandby->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_buttonStandby->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonStandby->SetBackgroundColour( wxColour( 0, 255, 0 ) );
 	m_buttonStandby->SetToolTip( _("Hand Steering") );
 	m_buttonStandby->SetMinSize( wxSize( 50,-1 ) );
@@ -215,7 +219,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	fgSizer82->Add( m_buttonStandby, 1, wxALL|wxEXPAND, 2 );
 
 	m_buttonAuto = new wxButton( this, wxID_ANY, _("Auto"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_buttonAuto->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_buttonAuto->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonAuto->SetBackgroundColour( wxColour( 255, 255, 255 ) );
 	m_buttonAuto->SetToolTip( _("Autopilot Control") );
 	m_buttonAuto->SetMinSize( wxSize( 50,-1 ) );
@@ -229,7 +233,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	fgSizer82->Add( m_button7, 1, wxALL|wxEXPAND, 2 );
 
 	m_buttonWind = new wxButton( this, wxID_ANY, _("Sail"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_buttonWind->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_buttonWind->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonWind->SetBackgroundColour( wxColour( 0, 255, 0 ) );
 	m_buttonWind->SetToolTip( _("Using Sail") );
 	m_buttonWind->SetMinSize( wxSize( 50,-1 ) );
@@ -237,25 +241,25 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	fgSizer82->Add( m_buttonWind, 1, wxALL|wxEXPAND, 2 );
 
 	m_buttonMinus1 = new wxButton( this, wxID_ANY, _("-1"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_buttonMinus1->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_buttonMinus1->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonMinus1->SetMinSize( wxSize( 50,-1 ) );
 
 	fgSizer82->Add( m_buttonMinus1, 1, wxALL|wxEXPAND, 2 );
 
 	m_buttonMinus10 = new wxButton( this, wxID_ANY, _("-10"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_buttonMinus10->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_buttonMinus10->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonMinus10->SetMinSize( wxSize( 50,-1 ) );
 
 	fgSizer82->Add( m_buttonMinus10, 1, wxALL|wxEXPAND, 2 );
 
 	m_buttonPlus10 = new wxButton( this, wxID_ANY, _("+10"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_buttonPlus10->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_buttonPlus10->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonPlus10->SetMinSize( wxSize( 50,-1 ) );
 
 	fgSizer82->Add( m_buttonPlus10, 1, wxALL|wxEXPAND, 2 );
 
 	m_buttonPlus1 = new wxButton( this, wxID_ANY, _("+1"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_buttonPlus1->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_buttonPlus1->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonPlus1->SetMinSize( wxSize( 50,-1 ) );
 
 	fgSizer82->Add( m_buttonPlus1, 1, wxALL|wxEXPAND, 2 );
@@ -300,7 +304,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	sbSizer3->Add( fgSizer3, 0, wxEXPAND, 5 );
 
 	wxFlexGridSizer* fgSizer5;
-	fgSizer5 = new wxFlexGridSizer( 1, 2, 0, 0 );
+	fgSizer5 = new wxFlexGridSizer(2, wxSize(0,0));
 	fgSizer5->AddGrowableCol( 0 );
 	fgSizer5->AddGrowableCol( 1 );
 	fgSizer5->AddGrowableRow( 0 );
@@ -312,14 +316,14 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_buttonDistressAlert->SetBackgroundColour( wxColour( 0, 255, 0 ) );
 	m_buttonDistressAlert->SetToolTip( _("Distress Alert") );
 
-	fgSizer5->Add( m_buttonDistressAlert, 0, wxALL, 5 );
+	fgSizer5->Add( m_buttonDistressAlert, 0, wxALL|wxEXPAND, 5 );
 
 	m_buttonDistressCancel = new wxToggleButton( sbSizer3->GetStaticBox(), wxID_ANY, _("DSC Distress Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonDistressCancel->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	m_buttonDistressCancel->SetBackgroundColour( wxColour( 0, 255, 0 ) );
 	m_buttonDistressCancel->SetToolTip( _("Distress Cancel") );
 
-	fgSizer5->Add( m_buttonDistressCancel, 0, wxALL, 5 );
+	fgSizer5->Add( m_buttonDistressCancel, 0, wxALL|wxEXPAND, 5 );
 
 	m_buttonDistressRelay = new wxToggleButton( sbSizer3->GetStaticBox(), wxID_ANY, _("Distress Relay"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonDistressRelay->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
@@ -367,7 +371,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	this->SetSizer( bSizer10 );
 	this->Layout();
 	bSizer10->Fit( this );
-	m_timer1.SetOwner( this, m_timer1.GetId() );
+	m_timer1.SetOwner( this, wxID_ANY );
 
 	this->Centre( wxBOTH );
 
@@ -394,7 +398,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_buttonDistressRelay->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnDistressRelay ), NULL, this );
 	m_buttonRelayCancel->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnRelayCancel ), NULL, this );
 	m_buttonCollision->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnCollision ), NULL, this );
-	this->Connect( m_timer1.GetId(), wxEVT_TIMER, wxTimerEventHandler( ShipDriverBase::OnTimer ) );
+	this->Connect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( ShipDriverBase::OnTimer ) );
 }
 
 ShipDriverBase::~ShipDriverBase()
@@ -422,7 +426,7 @@ ShipDriverBase::~ShipDriverBase()
 	m_buttonDistressRelay->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnDistressRelay ), NULL, this );
 	m_buttonRelayCancel->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnRelayCancel ), NULL, this );
 	m_buttonCollision->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnCollision ), NULL, this );
-	this->Disconnect( m_timer1.GetId(), wxEVT_TIMER, wxTimerEventHandler( ShipDriverBase::OnTimer ) );
+	this->Disconnect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( ShipDriverBase::OnTimer ) );
 
 }
 
@@ -450,7 +454,7 @@ shipdriverPreferences::shipdriverPreferences( wxWindow* parent, wxWindowID id, c
 	wxStaticBoxSizer* sbSizer2;
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( sbSizer1->GetStaticBox(), wxID_ANY, _("MMSI") ), wxVERTICAL );
 
-	m_textCtrlMMSI = new wxTextCtrl( sbSizer2->GetStaticBox(), wxID_ANY, _("123456789"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_textCtrlMMSI = new wxTextCtrl( sbSizer2->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	sbSizer2->Add( m_textCtrlMMSI, 0, wxALL, 5 );
 
 
