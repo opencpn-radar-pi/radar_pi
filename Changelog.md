@@ -1,4 +1,8 @@
-3.3.0-beta3 Feb 20, 2024
+3.3.0-beta3 Feb 28, 2024
+* Fix to remove Configuration group Settings/ShipDriver_pi
+  Replace by PlugIns/ShipDriver_pi
+* build: windows: Patch wxwidgets sources (#584)
+* build: compiler: Use wxWidgets 3.2.3 ABI (#584)
 * ci: debian: Update builds to use wx 3.2.4 (#564)
 * MacosWxwidgets: Update to 3.2.4 (#564)
 * win_deps: Update to wxWidgets 3.2.5 (#564)
