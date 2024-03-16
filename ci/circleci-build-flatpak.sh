@@ -20,6 +20,7 @@ set -x
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 if [ -d /ci-source ]; then cd /ci-source; fi
 
+git config --global protocol.file.allow always
 git submodule update --init opencpn-libs
 
 # Set up build directory and a visible link in /
