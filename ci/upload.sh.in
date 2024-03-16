@@ -4,6 +4,8 @@
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
 
+export PATH="${PATH}:/Users/distiller/.local/bin"
+
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 
 if [ -z "$CLOUDSMITH_API_KEY" ]; then
