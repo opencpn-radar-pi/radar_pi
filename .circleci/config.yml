@@ -45,7 +45,7 @@ jobs:
 
   build-bullseye-armhf:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2204:current
     resource_class: arm.medium
     environment:
       - TARGET_TUPLE: debian-armhf;11;armhf
@@ -59,7 +59,7 @@ jobs:
 
   build-bullseye-wx32-armhf:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2204:current
     resource_class: arm.medium
     environment:
       - TARGET_TUPLE: debian-wx32-armhf;11;armhf
@@ -75,7 +75,7 @@ jobs:
 
   build-bullseye-arm64:
     machine:
-      image: ubuntu-2004:2022.04.1
+      image: ubuntu-2204:current
     resource_class: arm.medium
     environment:
       - OCPN_TARGET: bullseye
@@ -89,7 +89,7 @@ jobs:
 
   build-bullseye-wx32-arm64:
     machine:
-      image: ubuntu-2004:2022.04.1
+      image: ubuntu-2204:current
     resource_class: arm.medium
     environment:
       - OCPN_TARGET: bullseye
@@ -105,7 +105,7 @@ jobs:
 
   build-bookworm:
     machine:
-      image: ubuntu-2004:2022.04.1
+      image: ubuntu-2204:current
     resource_class: medium
     environment:
       - OCPN_TARGET: bookworm
@@ -119,7 +119,7 @@ jobs:
 
   build-bookworm-arm64:
     machine:
-      image: ubuntu-2004:2022.04.1
+      image: ubuntu-2204:current
     resource_class: arm.medium
     environment:
       - OCPN_TARGET: bookworm
@@ -133,7 +133,7 @@ jobs:
 
   build-bookworm-armhf:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2204:current
     resource_class: arm.medium
     environment:
       - TARGET_TUPLE: debian-armhf;12;armhf
@@ -147,7 +147,7 @@ jobs:
 
   build-flatpak-arm64:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2204:current
     resource_class: arm.medium
     environment:
       - OCPN_TARGET: flatpak-arm64
@@ -161,7 +161,7 @@ jobs:
 
   build-flatpak-x86:
     machine:
-      image: ubuntu-2004:202010-01
+      image: ubuntu-2204:current
     environment:
       - OCPN_TARGET: flatpak
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
