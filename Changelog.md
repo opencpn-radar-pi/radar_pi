@@ -1,3 +1,7 @@
+3.3.0-beta4 Mar 31, 2024
+* CI images update
+* Extend PATH to include PIP installed python binaries
+
 3.3.0-beta3 Feb 28, 2024
 * Fix to remove Configuration group Settings/ShipDriver_pi
   Replace by PlugIns/ShipDriver_pi
