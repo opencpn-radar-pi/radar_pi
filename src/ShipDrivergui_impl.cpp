@@ -2084,7 +2084,7 @@ void Dlg::OnFollow(wxCommandEvent& event) {
 
   GetRouteDialog RouteDialog(this, -1, _("Select the route to follow"),
                              wxPoint(200, 200), wxSize(300, 200),
-                             wxRESIZE_BORDER);
+                             wxCAPTION | wxRESIZE_BORDER);
 
   RouteDialog.dialogText->InsertColumn(0, "", 0, wxLIST_AUTOSIZE);
   RouteDialog.dialogText->SetColumnWidth(0, 290);
