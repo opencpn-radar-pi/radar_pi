@@ -84,6 +84,9 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
   alarm_id = 999;
   m_bGotAPB = false;
 
+  wxMessageBox("Before use please disable any GNSS \nconnections in use", "Avoid Conflict");
+
+
 #ifdef __ANDROID__
 
   m_binResize = false;
@@ -419,6 +422,7 @@ void Dlg::SetNMEAMessage(wxString sentence) {
     token[i] = tokenizer.GetNextToken();
     i++;
   }
+
   if (token[0].Right(3) == "APB") {
     s11 = token[11];
 
@@ -826,7 +830,7 @@ void Dlg::Notify() {
   if (m_bGrib && m_bUsingWind) {
     MWVT = createMWVTSentence(initSpd, myDir, wdir, wspd);
     MWVA = createMWVASentence(initSpd, myDir, wdir, wspd);
-    //MWD = createMWDSentence(wdir, wspd);
+    // MWD = createMWDSentence(wdir, wspd);
 
     PushNMEABuffer(MWVA + "\r\n");
     PushNMEABuffer(MWVT + "\r\n");
@@ -836,13 +840,13 @@ void Dlg::Notify() {
   GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
   VTG = createVTGSentence(initSpd, myDir);
   VHW = createVHWSentence(initSpd, myDir);
-  RMC = createRMCSentence(mdt, initLat, initLon, initSpd, myDir);
+  //RMC = createRMCSentence(mdt, initLat, initLon, initSpd, myDir);
   HDT = createHDTSentence(myDir);
 
   PushNMEABuffer(GLL + "\r\n");
   PushNMEABuffer(VTG + "\r\n");
   PushNMEABuffer(VHW + "\r\n");
-  PushNMEABuffer(RMC + "\r\n");
+  //PushNMEABuffer(RMC + "\r\n");
   PushNMEABuffer(HDT + "\r\n");
 
   if (m_bUseAis) {
@@ -962,8 +966,8 @@ wxString Dlg::createVHWSentence(double stw, double hdg) {
   nSpd = wxString::Format("%f", stw);
   nDir = wxString::Format("%f", hdg);
 
-  nForCheckSum = nVHW + nC + nDir + nC + nTrue + nC + nC + nMag + nC + nSpd + nC + nUnits +
-                 nC + nC + "K";
+  nForCheckSum = nVHW + nC + nDir + nC + nTrue + nC + nC + nMag + nC + nSpd +
+                 nC + nUnits + nC + nC + "K";
   nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
   return nFinal;
 }
