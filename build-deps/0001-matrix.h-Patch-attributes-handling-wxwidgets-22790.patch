@@ -37,7 +37,7 @@ index e048cb7..d491939 100644
 +    #define wxDEPRECATED_EXPORT_CORE(msg) \
 +	__attribute__((visibility("default")))
 +#endif
- 
+
  /*
     Clang Support
 diff --git a/matrix.h b/matrix.h
@@ -54,6 +54,5 @@ index d18a0d2..a3392b5 100644
  {
  public:
      wxTransformMatrix();
--- 
+--
 2.30.2
-
