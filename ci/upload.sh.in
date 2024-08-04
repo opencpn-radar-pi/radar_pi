@@ -4,7 +4,12 @@
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
 
-if [ -d "$HOME/.local/bin" ]; then "PATH=$HOME/.local/bin:$PATH"; fi
+if [ -d "$HOME/.local/bin" ]
+then 
+  "PATH=$HOME/.local/bin:$PATH"
+  ls -l "$HOME/.local/bin"
+  echo "$PATH"
+fi
 
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 
