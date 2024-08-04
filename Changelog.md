@@ -1,4 +1,4 @@
-5.5.1 Aug 4, 2024
+5.5.3 Aug 4, 2024
 * Update build code to OpenCPN 5.9.x standard, including MacOS Universal.
 * Update README.md
 * Stay Alive message for Halo radars not in line with latest Simrad MFD (#248)
