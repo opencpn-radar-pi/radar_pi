@@ -2,8 +2,18 @@
 radar_pi - Radar Plugin for OpenCPN
 ===================================
 
-This is a work in progress. It will support Navico Broadband and Halo radars as well as Garmin xHD and possibly others.
-It is meant as the community effort to only write the common parts of radar support once.
+This is a _plugin_ for [OpenCPN](https://opencpn.org), a free open source marine navigation program.
+
+It supports the following yacht radars:
+
+* Garmin HD
+* Garmin xHD
+* Navico Broadband Radar BR24, 3G and 4G
+* Navico HALO (20, 20+, 24, 4, 6, 8)
+* Various Raymarine radars
+* A simple emulator
+
+_WARNING_ Newer Garmin radars like xHD2 and Fantom are NOT supported. Furuno radars and all others not in the above list are not supported.
 
 End Users
 ---------
@@ -28,11 +38,11 @@ The plugin was started by @cowelld, who took @bdbcat's Garmin radar plugin and t
 
 @nohal contributed the packaging installers, without which this would still be a set of sources instead of deliverable packages for various platforms.
 
-@Hakansv did a lot of testing and contributed the idle timer, and contributed work on the translations.
+@Hakansv did a lot of testing and contributed the idle timer, and coordinated work on the translations.
 
 @douwefokkema also tested a lot and implemented the heading on radar functionality, optimised the OpenGL drawing, implemented the refresh rate code and optimised the target trails code. Douwe also made the MARPA and ARPA functionality.
 
-@seandepagnier shader support and some optimizations.
+@seandepagnier wrote initial shader support, challenged us to improve the code and wrote some optimizations.
 
 [![Hosted By: Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=for-the-badge)](https://cloudsmith.com)
 
