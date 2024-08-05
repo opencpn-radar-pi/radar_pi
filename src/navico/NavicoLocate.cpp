@@ -382,7 +382,7 @@ void NavicoLocate::WakeRadar() {
               sizeof WAKE_COMMAND) {
         LOG_VERBOSE(wxT("Sent wake command to radar on %s"), m_interface_addr[i].FormatNetworkAddress());
       } else {
-        wxLogError(wxT("Failed to send wake command to radars on %s"), m_interface_addr[i].FormatNetworkAddress());
+        LOG_VERBOSE(wxT("Failed to send wake command to radars on %s"), m_interface_addr[i].FormatNetworkAddress());
       }
       closesocket(sock);
     }
