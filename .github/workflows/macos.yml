@@ -39,7 +39,7 @@ jobs:
             cmake_generator: Ninja
             cmake_defines: -DCMAKE_CXX_STANDARD=17
             use_homebrew: 1
-            push_cloudsmith: 1
+            push_cloudsmith: 0
           - name: macOS 13 Homebrew wxOSX
             runner: macos-13
             cmake_generator: Ninja
