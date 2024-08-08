@@ -168,6 +168,7 @@ public:
     RadarControlItem m_coarse_tune;
     RadarControlItem m_magnetron_current;
     RadarControlItem m_color_gain;
+    uint8_t m_stay_alive_type;
 
     bool m_showManualValueInAuto; // Does radar adjust manual value in auto
                                   // mode? True for Garmin, False for others
@@ -195,7 +196,7 @@ public:
     time_t m_data_timeout; // When we consider the data to be obsolete (radar no
                            // longer sending data)
     time_t m_stayalive_timeout; // When we will send another stayalive ping
-#define STAYALIVE_TIMEOUT (5) // Send data every 5 seconds to ping radar
+#define STAYALIVE_TIMEOUT (1) // Send data every 1 seconds to ping radar
 #define DATA_TIMEOUT (5)
 
     bool m_status_text_hide;

@@ -39,10 +39,11 @@ static const uint8_t COMMAND_TX_OFF_B[3] = {0x01, 0xc1, 0x00};  // OFF part 1, n
 static const uint8_t COMMAND_TX_ON_A[3] = {0x00, 0xc1, 0x01};  // ON part 1
 static const uint8_t COMMAND_TX_ON_B[3] = {0x01, 0xc1, 0x01};  // ON part 2
 
-static const uint8_t COMMAND_STAY_ON_A[2] = {0xA0, 0xc1};
+static const uint8_t COMMAND_STAY_ON_A[2] = {0xa0, 0xc1};
 static const uint8_t COMMAND_STAY_ON_B[2] = {0x03, 0xc2};
 static const uint8_t COMMAND_STAY_ON_C[2] = {0x04, 0xc2};
 static const uint8_t COMMAND_STAY_ON_D[2] = {0x05, 0xc2};
+static const uint8_t COMMAND_STAY_ON_E[2] = {0x0a, 0xc2};
 
 bool NavicoControl::Init(radar_pi *pi, RadarInfo *ri, NetworkAddress &ifadr, NetworkAddress &radaradr) {
   int r;
@@ -128,15 +129,33 @@ void NavicoControl::RadarTxOn() {
   IF_LOG_AT(LOGLEVEL_VERBOSE | LOGLEVEL_TRANSMIT, wxLogMessage(wxT("%s transmit: turn on"), m_name.c_str()));
   TransmitCmd(COMMAND_TX_ON_A, sizeof(COMMAND_TX_ON_A));
   TransmitCmd(COMMAND_TX_ON_B, sizeof(COMMAND_TX_ON_B));
+  m_ri->m_stay_alive_type = 0;
 }
 
 bool NavicoControl::RadarStayAlive() {
-  LOG_TRANSMIT(wxT("%s transmit: stay alive"), m_name.c_str());
-
-  TransmitCmd(COMMAND_STAY_ON_A, sizeof(COMMAND_STAY_ON_A));
-  TransmitCmd(COMMAND_STAY_ON_B, sizeof(COMMAND_STAY_ON_B));
-  TransmitCmd(COMMAND_STAY_ON_C, sizeof(COMMAND_STAY_ON_C));
-  return TransmitCmd(COMMAND_STAY_ON_D, sizeof(COMMAND_STAY_ON_D));
+  LOG_TRANSMIT(wxT("%s transmit: stay alive, sequence=%i"), m_name.c_str(), m_ri->m_stay_alive_type);  //$$$
+  bool tx = false;
+  switch (m_ri->m_stay_alive_type) {
+    case 0:
+      TransmitCmd(COMMAND_STAY_ON_A, sizeof(COMMAND_STAY_ON_A));       // a0, c1
+      TransmitCmd(COMMAND_STAY_ON_B, sizeof(COMMAND_STAY_ON_B));       // 03, c2
+      TransmitCmd(COMMAND_STAY_ON_C, sizeof(COMMAND_STAY_ON_C));       // 04, c2
+      TransmitCmd(COMMAND_STAY_ON_D, sizeof(COMMAND_STAY_ON_D));       // 05, c2
+      tx = TransmitCmd(COMMAND_STAY_ON_E, sizeof(COMMAND_STAY_ON_E));  // 0a, c2
+      break;
+    case 1:
+    case 2:
+    case 3:
+      tx = TransmitCmd(COMMAND_STAY_ON_A, sizeof(COMMAND_STAY_ON_A));  // a0, c1
+      break;
+    default:
+      break;
+  }
+  m_ri->m_stay_alive_type++;
+  if (m_ri->m_stay_alive_type == 4) {
+    m_ri->m_stay_alive_type = 0;
+  }
+  return tx;
 }
 
 bool NavicoControl::SetRange(int meters) {
