@@ -11,7 +11,15 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ## [Unreleased]
 
-- #248: Adaptation of StayAlive message to latest format, tested with Halo20+ and Halo3008
+## [5.5.4]
+
+### Fixed
+
+- Compatibility with OpenCPN 5.10.0 (macOS universal build)
+- #248: Stay Alive message for Halo radars not in line with latest Simrad MFD (#248)
+- #244: OCPN crash when AIS targets on PPI window are shown (#244)
+- #243: PPI: AIS target relative to center, not to ownship (#243)
+- Show radar control from menu bar
 
 ## [5.5.0]
 
