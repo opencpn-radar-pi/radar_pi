@@ -49,7 +49,7 @@ set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
     git add Plugin.cmake
     git commit -m"v5.0.4-beta1 release"
     git tag -a --force -m"v5.0.4-beta1 release" v5.0.4-beta1
-    git push --atomic --force origin master v5.0.4-beta1
+    git push --atomic origin master v5.0.4-beta1
     ```
   
    Note that the `--force` tag is only needed if this is a 2nd try where the tag already exists locally
@@ -63,7 +63,7 @@ set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
     git add Plugin.cmake
     git commit -m"v5.0.4 release"
     git tag -a --force -m"v5.0.4 release" v5.0.4
-    git push --atomic --force origin master v5.0.4
+    git push --atomic origin master v5.0.4
     ```
 
 NEW
