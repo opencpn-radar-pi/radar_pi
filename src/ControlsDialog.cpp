@@ -1148,9 +1148,13 @@ void ControlsDialog::CreateControls() {
   m_view_sizer->Add(bMenuBack, 0, wxALL, BORDER);
 
   // The SHOW / HIDE AIS/ARPA ON PPI button
-  m_targets_on_ppi_button =
-      new RadarControlButton(this, ID_TARGETS_ON_PPI, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
-  m_view_sizer->Add(m_targets_on_ppi_button, 0, wxALL, BORDER);
+  if (!m_pi->m_ais_drawgl_broken) {
+    m_targets_on_ppi_button =
+        new RadarControlButton(this, ID_TARGETS_ON_PPI, _("AIS/ARPA on PPI"), m_ctrl[CT_TARGET_ON_PPI], &m_ri->m_target_on_ppi);
+    m_view_sizer->Add(m_targets_on_ppi_button, 0, wxALL, BORDER);
+  } else {
+    m_ri->m_target_on_ppi.Update(0);
+  }
 
   // The DOPPLER button
   if (m_ctrl[CT_DOPPLER].type) {
@@ -1760,7 +1764,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
       m_transmit_sizer->Show(m_cursor_menu);
       resize = true;
     }
-    if (m_top_sizer->IsShown(m_view_sizer) && !m_view_sizer->IsShown(m_targets_on_ppi_button)) {
+    if (m_targets_on_ppi_button && m_top_sizer->IsShown(m_view_sizer) && !m_view_sizer->IsShown(m_targets_on_ppi_button)) {
       m_view_sizer->Show(m_targets_on_ppi_button);
       resize = true;
     }
@@ -1778,7 +1782,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
       m_transmit_sizer->Hide(m_cursor_menu);
       resize = true;
     }
-    if (m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_targets_on_ppi_button)) {
+    if (m_targets_on_ppi_button && m_top_sizer->IsShown(m_view_sizer) && m_view_sizer->IsShown(m_targets_on_ppi_button)) {
       m_view_sizer->Hide(m_targets_on_ppi_button);
       resize = true;
     }
@@ -2214,7 +2218,9 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
     m_bearing_buttons[b]->SetLabel(o);
   }
 
-  m_targets_on_ppi_button->UpdateLabel();
+  if (m_targets_on_ppi_button) {
+    m_targets_on_ppi_button->UpdateLabel();
+  }
   m_target_trails_button->UpdateLabel();
   m_trails_motion_button->UpdateLabel();
   m_orientation_button->UpdateLabel();
