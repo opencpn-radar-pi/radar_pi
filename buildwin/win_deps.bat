@@ -24,7 +24,7 @@
 :: Fix PATH so it can be used in this script
 ::
 
-@echo off
+@echo on
 
 setlocal enabledelayedexpansion
 
@@ -33,7 +33,7 @@ if not exist "%HomeDrive%%HomePath%\.local\bin\pathman.exe" (
     powershell /? >nul 2>&1
     if errorlevel 1 set "PATH=%PATH%;C:\Windows\System32\WindowsPowerShell\v1.0"
     curl.exe -sA "windows/10 x86"  -o webi-pwsh-install.ps1 ^
-        https://webi.ms/packages/_webi/webi-pwsh.ps1
+        https://webi.ms/webi
     powershell.exe -ExecutionPolicy Bypass -File webi-pwsh-install.ps1
     webi.bat pathman
     popd
