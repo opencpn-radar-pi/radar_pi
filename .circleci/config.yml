@@ -195,7 +195,7 @@ jobs:
 
   build-macos:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.4.1"
     environment:
       - OCPN_TARGET: macos
       - CMAKE_BUILD_PARALLEL_LEVEL: 2

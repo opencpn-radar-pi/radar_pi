@@ -1,3 +1,10 @@
+5.5.3 Aug 4, 2024
+* Update build code to OpenCPN 5.9.x standard, including MacOS Universal.
+* Update README.md
+* Stay Alive message for Halo radars not in line with latest Simrad MFD (#248)
+* OCPN crash when AIS targets on PPI window are shown (#244)
+* PPI: AIS target relative to center, not to ownship (#243)
+
 3.2.4 Jul 17, 2023
 * Update windows build to use wxwidgets 3.2.2.1 (#523, #510).
 
