@@ -5,19 +5,20 @@
 # ~~~
 #
 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
 
 set(CMAKE_SYSTEM_NAME Android)
 set(CMAKE_SYSTEM_VERSION 21)
 set(CMAKE_ANDROID_ARCH_ABI arm64-v8a)
-if (DEFINED ENV{NDK_HOME})
+if(DEFINED ENV{NDK_HOME})
   set(CMAKE_ANDROID_NDK $ENV{NDK_HOME})
-else ()
+else()
   set(CMAKE_ANDROID_NDK /opt/android/ndk)
-endif ()
+endif()
 
-set(ARM_ARCH aarch64 CACHE STRING "Selected arm architecture" FORCE)
+set(ARM_ARCH
+    aarch64
+    CACHE STRING "Selected arm architecture" FORCE)

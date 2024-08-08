@@ -88,7 +88,7 @@ def private_key_setup(ci, build_deps, user, password):
     if (os.path.exists(key_path)):
         print("WARNING: Using key in deprecated location ci/")
         print("Please move key to build-deps/")
-    else:    
+    else:
         key_path = os.path.join(build_deps, user + ".enc")
     if (os.path.exists(key_path)):
         with open(key_path, 'r') as f:
@@ -209,7 +209,7 @@ def main():
     branch = os.environ.get('GIT_BRANCH')
     branch = branch if branch else "auto"
 
-    print("Using repository: " + 
+    print("Using repository: " +
          ''.join([c + ' ' for c in os.environ.get("GIT_REPO")]))
     print("Using branch: " + branch)
 

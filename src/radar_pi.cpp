@@ -775,15 +775,11 @@ void radar_pi::OnToolbarToolCallback(int id) {
     m_settings.show = 1;
 
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      
-        LOG_DIALOG(wxT("OnToolbarToolCallback: show controls for radar %i"), r);
-        if (m_settings.show_radar_control[r] == 0) {
-          ShowRadarControl(r, true);
-        }
-      
+      LOG_DIALOG(wxT("OnToolbarToolCallback: show controls for radar %i"), r);
+      if (m_settings.show_radar_control[r] == 0) {
+        ShowRadarControl(r, true);
+      }
     }
-
-
 
     SetRadarWindowViz();
   }
