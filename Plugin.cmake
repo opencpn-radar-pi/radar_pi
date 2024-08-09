@@ -15,16 +15,16 @@
 # -------- Options ----------
 
 set(OCPN_TEST_REPO
-    "opencpn-radar-pi/opencpn-radar-pi-unstable"
+    "opencpn-radar-pi/radar-unstable"
     CACHE STRING "Default repository for untagged builds"
 )
 set(OCPN_BETA_REPO
-    "opencpn-radar-pi/opencpn-radar-pi-beta"
+    "opencpn-radar-pi/radar-beta"
     CACHE STRING 
     "Default repository for tagged builds matching 'beta'"
 )
 set(OCPN_RELEASE_REPO
-    "opencpn-radar-pi/opencpn-radar-pi-prod"
+    "opencpn-radar-pi/radar-prod"
     CACHE STRING 
     "Default repository for tagged builds not matching 'beta'"
 )
