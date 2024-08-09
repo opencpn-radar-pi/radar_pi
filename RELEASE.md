@@ -48,32 +48,19 @@ set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
     ```
     git add Plugin.cmake
     git commit -m"v5.0.4-beta1 release"
-    git tag -a --force -m"v5.0.4-beta1 release" v5.0.4-beta1
-    git push --atomic origin master v5.0.4-beta1
+    ./tools/release.sh -f beta
     ```
   
-   Note that the `--force` tag is only needed if this is a 2nd try where the tag already exists locally
+   Note that the `-f` tag is only needed if this is a 2nd try where the tag already exists locally
    and/or on the server.
-   We use this complicated version of git push instead of `git push; git push --tags` so that only
-   one CI build is kicked off. If you _want_ to test a build to the `Unstable` repository first,
-   go ahead and use `git push` (and only if that gives what you want, run `git push --tags`.)
 
 4. For Production releases: Add the file, commit, add a commented tag and push both code and tags in 1 step:
     ```
     git add Plugin.cmake
     git commit -m"v5.0.4 release"
-    git tag -a --force -m"v5.0.4 release" v5.0.4
-    git push --atomic origin master v5.0.4
+    ./tools/release.sh -f prod
     ```
-
-NEW
-===
-There is now a `tools/release.sh` script that performs steps 2 and 3 automatically. Usage:
-
-    ./tools/release.sh [-f] {beta|prod}
-
-It will check that the beta/prod status is clear in Plugin.cmake, that the git status is clean and generate and push a tag
-to github. Use -f to update a release already made earlier.
+    Again, -f in the last command is only needed if you run this the 2nd time.
 
 If you wait a while you will see builds turn up in Cloudsmith, built by Appveyor and CircleCI.
 See below for the URLs. You can also follow the links in Github on the commit (there is a small progress
@@ -110,7 +97,7 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
 1. Clone the _opencpn-radar-pi_ repo, and set upstream, if you have not already done so:
    (See [Configuring a remote for a fork](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/configuring-a-remote-for-a-fork))
     ```
-    git clone git@github.com:opencpn-radar-pi/plugins.git` 
+    git clone git@github.com:opencpn-radar-pi/plugins.git
 	or
 	git clone https://github.com/opencpn-radar-pi/plugins
     cd plugins

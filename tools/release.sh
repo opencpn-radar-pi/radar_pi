@@ -10,6 +10,13 @@ then
   shift
 fi
 
+dryrun=''
+if [ "${1:-}" = "-n" ]
+then
+  dryrun='echo'
+  shift
+fi
+
 case "${1:-}" in
   beta)
     mode='beta'
@@ -23,7 +30,10 @@ case "${1:-}" in
 
   *)
     cat <<EOF
-Usage: $0 {beta|prod}
+Usage: $0 [-f] [-n] {beta|prod}
+
+To force tagging when this is the 2nd time you run this, use -f.
+To do a dry run, use -n.
 
 This script will:
   1. Check that the Plugin.cmake file contains either "beta..." or "" for the PKG_PRERELEASE variable.
@@ -55,7 +65,12 @@ pkg_prerelease="$(awk -F'"' '/PKG_PRERELEASE/ { print $2 }' Plugin.cmake)"
 tag="v${pkg_version}${pkg_prerelease:+-}${pkg_prerelease}"
 echo "Tag: ${tag}"
 
-git tag -a ${force} -m"${tag} release" "$tag"
-git push --atomic ${force} origin master "$tag"
+if [ -n "${force}" ]
+then
+  # Remove any remote tag
+  $dryrun git push --delete origin "$tag" || :
+fi
+$dryrun git tag -a ${force} -m"${tag} release" "$tag"
+$dryrun git push --atomic origin master "$tag"
 
 

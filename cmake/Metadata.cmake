@@ -65,8 +65,10 @@ endif()
 
 if("${_git_tag}" STREQUAL "")
   set(_gitversion "${_git_hash}")
+  message(STATUS "Git version set to hash ${_gitversion}")
 else()
   set(_gitversion "${_git_tag}")
+  message(STATUS "Git version set to tag ${_gitversion}")
 endif()
 
 if(WIN32)
