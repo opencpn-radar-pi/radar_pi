@@ -131,11 +131,11 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
 
 3. Copy the XML files from CloudSmith to your local plugins repo:
     ```
-    ./download_xml_bash.sh opencpn-radar-pi v5.5.0 opencpn-radar-pi prod
+    ./download_xml_bash.sh radar v5.5.0 opencpn-radar-pi prod
     ```
    Or for unstable/Beta:
     ```
-    ./download_xml_bash.sh opencpn-radar-pi v5.5.0-beta2 opencpn-radar-pi beta
+    ./download_xml_bash.sh radar v5.5.0-beta2 opencpn-radar-pi beta
     ```
 
    Unlike earlier versions of the sync script you must determine yourself what version+commit
@@ -145,7 +145,7 @@ of [OpenCPN/plugins](https://github.com/OpenCPN/plugins) at
    If you don't, run it using `sh -x`, copy the shown curl command and run this yourself to see what you are doing wrong.
 
 
-4. Check that there are new radar_pi files in the `metadata` subdirectory. Remove any old files, for instance:
+4. Check that there are new 'Radar*' files in the `metadata` subdirectory. Remove any old files, for instance:
 
     ls metadata/*radar*
     # Yes, see 5.2.0-beta3 (old) and 5.2.0-beta4 (new) files
