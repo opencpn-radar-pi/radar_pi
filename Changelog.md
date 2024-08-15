@@ -1,3 +1,6 @@
+3.3.0 Aug 15, 2024
+* New release to complete the v3.3 work
+
 3.3.0-beta5 Aug 15, 2024
 * Updated win_deps.bat to use wxWidgets 3.2.2.1 ex Pavel Kalian
   (Without this change ShipDriver will not build due to pathman issue)
