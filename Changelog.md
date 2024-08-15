@@ -1,3 +1,7 @@
+3.3.0-beta5 Aug 15, 2024
+* Updated win_deps.bat to use wxWidgets 3.2.2.1 ex Pavel Kalian
+  (Without this change ShipDriver will not build due to pathman issue)
+
 3.3.0-beta4 Mar 31, 2024
 * CI images update
 * Extend PATH to include PIP installed python binaries
