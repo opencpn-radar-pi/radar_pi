@@ -143,7 +143,7 @@ private:
   double m_cursor_lon;
 
   int m_position_menu_id;
-  double m_GUIScaleFactor;
+  double m_gui_scale_factor;
 
   ShipDriverPi* plugin;
 
@@ -162,7 +162,7 @@ private:
   bool m_show_shipdriver;
 
   bool m_copy_use_ais;
-  bool m_vopy_use_file;
+  bool m_copy_use_file;
   wxString m_copy_mmsi;
 };
 

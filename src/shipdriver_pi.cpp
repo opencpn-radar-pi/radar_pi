@@ -95,7 +95,34 @@ static wxBitmap LoadPlugin(const char* icon_name, const char* api_name) {
   return bitmap;
 }
 
-ShipDriverPi::ShipDriverPi(void* ppimgr) : opencpn_plugin_118(ppimgr) {
+ShipDriverPi::ShipDriverPi(void* ppimgr)
+    : opencpn_plugin_118(ppimgr),
+    m_hr_dialog_x(0),
+    m_hr_dialog_y(8),
+    m_is_grib_valid(false),
+    m_grib_lat(0),
+    m_grib_lon(0),
+    m_tr_spd(0),
+    m_tr_dir(0),
+    m_cursor_lat(0),
+    m_cursor_lon(0),
+    m_position_menu_id(-1),
+    m_gui_scale_factor(1),
+    plugin(nullptr),
+    m_dialog(nullptr),
+    m_config(nullptr),
+    m_parent_window(nullptr),
+    m_hr_dialog_width(0),
+    m_hr_dialog_height(0),
+    m_hr_dialog_sx(0),
+    m_hr_dialog_sy(0),
+    m_display_width(0),
+    m_display_height(0),
+    m_leftclick_tool_id(-1),
+    m_show_shipdriver_icon(false),
+    m_copy_use_ais(false),
+      m_copy_use_file(false)
+ {
   // Create the PlugIn icons
   initialize_images();
   m_panel_bitmap = LoadPlugin("shipdriver_panel_icon", "ShipDriver_pi");
@@ -111,7 +138,7 @@ ShipDriverPi::~ShipDriverPi() {
     if (pConf) {
       pConf->SetPath("/PlugIns/ShipDriver_pi");
       pConf->Write("shipdriverUseAis", m_copy_use_ais);
-      pConf->Write("shipdriverUseFile", m_vopy_use_file);
+      pConf->Write("shipdriverUseFile", m_copy_use_file);
       pConf->Write("shipdriverMMSI", m_copy_mmsi);
     }
   }
@@ -229,7 +256,7 @@ void ShipDriverPi::ShowPreferencesDialog(wxWindow* parent) {
   auto* pref = new shipdriverPreferences(parent);
 
   pref->m_cbTransmitAis->SetValue(m_copy_use_ais);
-  pref->m_cbAisToFile->SetValue(m_vopy_use_file);
+  pref->m_cbAisToFile->SetValue(m_copy_use_file);
   pref->m_textCtrlMMSI->SetValue(m_copy_mmsi);
 
   if (pref->ShowModal() == wxID_OK) {
@@ -237,16 +264,16 @@ void ShipDriverPi::ShowPreferencesDialog(wxWindow* parent) {
     bool copy_file = pref->m_cbAisToFile->GetValue();
     wxString copyMMSI = pref->m_textCtrlMMSI->GetValue();
 
-    if (m_copy_use_ais != copy_ais || m_vopy_use_file != copy_file ||
+    if (m_copy_use_ais != copy_ais || m_copy_use_file != copy_file ||
         m_copy_mmsi != copyMMSI) {
       m_copy_use_ais = copy_ais;
-      m_vopy_use_file = copy_file;
+      m_copy_use_file = copy_file;
       m_copy_mmsi = copyMMSI;
     }
 
     if (m_dialog) {
       m_dialog->m_bUseAis = m_copy_use_ais;
-      m_dialog->m_bUseFile = m_vopy_use_file;
+      m_dialog->m_bUseFile = m_copy_use_file;
       m_dialog->m_tMMSI = m_copy_mmsi;
     }
 
@@ -313,7 +340,7 @@ bool ShipDriverPi::LoadConfig() {
       conf->SetPath("/Settings/ShipDriver_pi");
       conf->Read("ShowShipDriverIcon", &m_show_shipdriver_icon, true);
       conf->Read("shipdriverUseAis", &m_copy_use_ais, false);
-      conf->Read("shipdriverUseFile", &m_vopy_use_file, false);
+      conf->Read("shipdriverUseFile", &m_copy_use_file, false);
       m_copy_mmsi = conf->Read("shipdriverMMSI", "123456789");
 
       m_hr_dialog_x = conf->Read("DialogPosX", 40L);
@@ -329,7 +356,7 @@ bool ShipDriverPi::LoadConfig() {
       conf->SetPath("/PlugIns/ShipDriver_pi");
       conf->Read("ShowShipDriverIcon", &m_show_shipdriver_icon, true);
       conf->Read("shipdriverUseAis", &m_copy_use_ais, false);
-      conf->Read("shipdriverUseFile", &m_vopy_use_file, false);
+      conf->Read("shipdriverUseFile", &m_copy_use_file, false);
       m_copy_mmsi = conf->Read("shipdriverMMSI", "123456789");
 
       m_hr_dialog_x = conf->Read("DialogPosX", 40L);
@@ -364,7 +391,7 @@ bool ShipDriverPi::SaveConfig() {
     conf->SetPath("/PlugIns/ShipDriver_pi");
     conf->Write("ShowShipDriverIcon", m_show_shipdriver_icon);
     conf->Write("shipdriverUseAis", m_copy_use_ais);
-    conf->Write("shipdriverUseFile", m_vopy_use_file);
+    conf->Write("shipdriverUseFile", m_copy_use_file);
     conf->Write("shipdriverMMSI", m_copy_mmsi);
 
     conf->Write("DialogPosX", m_hr_dialog_x);
