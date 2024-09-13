@@ -29,7 +29,7 @@
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
-#endif  // precompiled headers
+#endif
 
 #include "shipdriver_pi.h"
 #include "shipdriver_gui.h"
@@ -105,12 +105,11 @@ ShipDriver_pi::ShipDriver_pi(void* ppimgr) : opencpn_plugin_118(ppimgr) {
   m_bShowShipDriver = false;
 }
 
-ShipDriver_pi::~ShipDriver_pi(void) {
+ShipDriver_pi::~ShipDriver_pi() {
   delete _img_ShipDriverIcon;
 
   if (m_pDialog) {
     wxFileConfig* pConf = GetOCPNConfigObject();
-    ;
 
     if (pConf) {
       pConf->SetPath("/PlugIns/ShipDriver_pi");
@@ -121,7 +120,7 @@ ShipDriver_pi::~ShipDriver_pi(void) {
   }
 }
 
-int ShipDriver_pi::Init(void) {
+int ShipDriver_pi::Init() {
   AddLocaleCatalog("opencpn-ShipDriver_pi");
 
   // Set some default private member parameters
@@ -147,7 +146,7 @@ int ShipDriver_pi::Init(void) {
     m_leftclick_tool_id =
         InsertPlugInToolSVG("ShipDriver", _svg_shipdriver, _svg_shipdriver,
                             _svg_shipdriver_toggled, wxITEM_CHECK, "ShipDriver",
-                            "", NULL, ShipDriver_TOOL_POSITION, 0, this);
+                            "", nullptr, ShipDriver_TOOL_POSITION, 0, this);
 #else
     m_leftclick_tool_id = InsertPlugInTool(
         "", _img_ShipDriverIcon, _img_ShipDriverIcon, wxITEM_CHECK,
@@ -155,7 +154,7 @@ int ShipDriver_pi::Init(void) {
 #endif
   }
 
-  m_pDialog = NULL;
+  m_pDialog = nullptr;
 
   return (WANTS_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK |
           WANTS_TOOLBAR_CALLBACK | INSTALLS_TOOLBAR_TOOL | WANTS_CURSOR_LATLON |
@@ -163,7 +162,7 @@ int ShipDriver_pi::Init(void) {
           WANTS_PLUGIN_MESSAGING | WANTS_CONFIG);
 }
 
-bool ShipDriver_pi::DeInit(void) {
+bool ShipDriver_pi::DeInit() {
   //    Record the dialog position
   if (NULL != m_pDialog) {
     // Capture dialog position
@@ -174,14 +173,14 @@ bool ShipDriver_pi::DeInit(void) {
     SetShipDriverDialogSizeX(r.GetWidth());
     SetShipDriverDialogSizeY(r.GetHeight());
 
-    if ((m_pDialog->m_Timer != NULL) &&
-        (m_pDialog->m_Timer
-             ->IsRunning())) {  // need to stop the timer or crash on exit
+    if ((m_pDialog->m_Timer) &&
+        (m_pDialog->m_Timer->IsRunning())) {
+      // need to stop the timer or crash on exit
       m_pDialog->m_Timer->Stop();
     }
     m_pDialog->Close();
     delete m_pDialog;
-    m_pDialog = NULL;
+    m_pDialog = nullptr;
 
     m_bShowShipDriver = false;
     SetToolbarItemState(m_leftclick_tool_id, m_bShowShipDriver);
@@ -222,10 +221,10 @@ wxString ShipDriver_pi::GetShortDescription() { return PKG_SUMMARY; }
 
 wxString ShipDriver_pi::GetLongDescription() { return PKG_DESCRIPTION; }
 
-int ShipDriver_pi::GetToolbarToolCount(void) { return 1; }
+int ShipDriver_pi::GetToolbarToolCount() { return 1; }
 
 void ShipDriver_pi::SetColorScheme(PI_ColorScheme cs) {
-  if (NULL == m_pDialog) return;
+  if (!m_pDialog) return;
 
   DimeWindow(m_pDialog);
 }
@@ -308,8 +307,8 @@ void ShipDriver_pi::OnToolbarToolCallback(int id) {
   RequestRefresh(m_parent_window);  // refresh main window
 }
 
-bool ShipDriver_pi::LoadConfig(void) {
-  wxFileConfig* pConf = (wxFileConfig*)m_pconfig;
+bool ShipDriver_pi::LoadConfig() {
+  auto* pConf = (wxFileConfig*)m_pconfig;
 
   if (pConf) {
     if (pConf->HasGroup(_T("/Settings/ShipDriver_pi"))) {
@@ -356,8 +355,8 @@ bool ShipDriver_pi::LoadConfig(void) {
     return false;
 }
 
-bool ShipDriver_pi::SaveConfig(void) {
-  wxFileConfig* pConf = (wxFileConfig*)m_pconfig;
+bool ShipDriver_pi::SaveConfig() {
+  auto* pConf = (wxFileConfig*)m_pconfig;
 
   if (pConf) {
     bool bIsDigits = m_tCopyMMSI.IsNumber();
@@ -519,7 +518,7 @@ bool ShipDriver_pi::GribWind(GribRecordSet* grib, double lat, double lon,
 }
 
 void ShipDriver_pi::SetNMEASentence(wxString& sentence) {
-  if (NULL != m_pDialog) {
+  if (m_pDialog) {
     m_pDialog->SetNMEAMessage(sentence);
   }
 }

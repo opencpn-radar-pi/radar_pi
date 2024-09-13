@@ -27,6 +27,12 @@
 
 #include <stdio.h>
 
+#include "wx/wxprec.h"
+
+#ifndef WX_PRECOMP
+#include "wx/wx.h"
+#endif
+
 #include <wx/progdlg.h>
 #include <wx/textfile.h>
 #include <wx/timer.h>
