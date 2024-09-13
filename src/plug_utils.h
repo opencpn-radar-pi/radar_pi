@@ -44,11 +44,11 @@ IconPath GetPluginIcon(const std::string& basename,
  * @param path  png file path
  * @return  loaded wxBitmap object
  */
-static wxBitmap LoadPngIcon(const char* path);
+wxBitmap LoadPngIcon(const char* path);
 
 /**
  * Load .svg file into memory.
  * @param path  png file path
  * @return  loaded wxBitmap object
  */
-static wxBitmap LoadSvgIcon(const char* path);
+wxBitmap LoadSvgIcon(const char* path);

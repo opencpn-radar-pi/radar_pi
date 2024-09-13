@@ -1,6 +1,7 @@
 #ifndef CONFIG_H__
 #define CONFIG_H__
 
+#define PKG_NAME          "@PKG_NAME@"
 #define API_VERSION       "@API_VERSION@"
 
 #define PLUGIN_VERSION_MAJOR @PROJECT_VERSION_MAJOR@

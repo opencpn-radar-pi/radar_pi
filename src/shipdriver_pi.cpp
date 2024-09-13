@@ -31,6 +31,7 @@
 #include "wx/wx.h"
 #endif
 
+#include "config.h"
 #include "icons.h"
 #include "shipdriver_pi.h"
 #include "shipdriver_gui.h"
@@ -91,7 +92,7 @@ ShipDriverPi::ShipDriverPi(void* ppimgr)
       m_copy_use_file(false) {
   // Create the PlugIn icons
   initialize_images();
-  auto icon_path = GetPluginIcon("shipdriver_panel_icon", "ShipDriver_pi");
+  auto icon_path = GetPluginIcon("shipdriver_panel_icon", PKG_NAME);
   if (icon_path.type == IconPath::Type::Svg)
     m_panel_bitmap = LoadSvgIcon(icon_path.path.c_str());
   else if (icon_path.type == IconPath::Type::Png)
@@ -139,8 +140,8 @@ int ShipDriverPi::Init() {
 
   //    And load the configuration items
   LoadConfig();
-  auto icon = GetPluginIcon("shipdriver_pi", "ShipDriver_pi");
-  auto toggled_icon = GetPluginIcon("shipdriver_pi_toggled", "ShipDriver_pi");
+  auto icon = GetPluginIcon("shipdriver_pi", PKG_NAME);
+  auto toggled_icon = GetPluginIcon("shipdriver_pi_toggled", PKG_NAME);
   //    This PlugIn needs a toolbar icon, so request its insertion
   if (m_show_shipdriver_icon) {
     if (icon.type == IconPath::Type::Svg)
