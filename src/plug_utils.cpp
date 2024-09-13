@@ -1,4 +1,4 @@
- /**************************************************************************
+/**************************************************************************
  *   Copyright (C) 2024 Alec Leamas                                        *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -24,22 +24,21 @@
 #include "plug_utils.h"
 #include "std_filesystem.h"
 
- IconPath GetPluginIcon(const std::string& basename,
-                        const std::string& pkg_name) {
+IconPath GetPluginIcon(const std::string& basename,
+                       const std::string& pkg_name) {
+  fs::path path(GetPluginDataDir(pkg_name.c_str()).ToStdString());
+  auto root = path / "data" / basename;
+  auto svg_path = fs::path(root.string() + ".svg");
+  wxLogDebug("GetPluginIcon: trying path: %s", svg_path.string().c_str());
+  if (fs::exists(svg_path))
+    return IconPath(IconPath::Type::Svg, svg_path.string());
 
-   fs::path path(GetPluginDataDir(pkg_name.c_str()).ToStdString());
-   auto root = path / "data" / basename;
-   auto svg_path = fs::path(root.string() + ".svg");
-   wxLogDebug("GetPluginIcon: trying path: %s", svg_path.string().c_str());
-   if (fs::exists(svg_path))
-       return IconPath(IconPath::Type::Svg, svg_path.string());
+  auto png_path = fs::path(root.string() + ".png");
+  wxLogDebug("GetPluginIcon: trying path: %s", png_path.string().c_str());
+  if (fs::exists(png_path))
+    return IconPath(IconPath::Type::Png, png_path.string());
 
-   auto png_path = fs::path(root.string() + ".png");
-   wxLogDebug("GetPluginIcon: trying path: %s", png_path.string().c_str());
-   if (fs::exists(png_path))
-       return IconPath(IconPath::Type::Png, png_path.string());
-
-   return IconPath(IconPath::Type::NotFound, "");
+  return IconPath(IconPath::Type::NotFound, "");
 }
 
 wxBitmap LoadPngIcon(const char* path) {
@@ -47,7 +46,7 @@ wxBitmap LoadPngIcon(const char* path) {
     wxLogDebug("Initiating image handlers.");
     wxInitAllImageHandlers();
   }
-  wxImage  image(path);
+  wxImage image(path);
   return wxBitmap(image);
 }
 
@@ -57,4 +56,3 @@ wxBitmap LoadSvgIcon(const char* path) {
   auto bitmap = GetBitmapFromSVGFile(path, kIconSize, kIconSize);
   return bitmap;
 }
-

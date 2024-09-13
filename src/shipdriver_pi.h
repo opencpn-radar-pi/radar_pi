@@ -76,7 +76,7 @@ static inline bool GribCurrent(GribRecordSet* grib, double lat, double lon,
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
 
-#define ShipDriver_TOOL_POSITION  (-1)  ///< toolbar tool default positioning
+#define ShipDriver_TOOL_POSITION (-1)  ///< toolbar tool default positioning
 
 class ShipDriverPi : public opencpn_plugin_118 {
 public:

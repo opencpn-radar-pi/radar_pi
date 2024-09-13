@@ -90,8 +90,8 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
   alarm_id = 999;
   m_bGotAPB = false;
 
-  wxMessageBox("Before use please disable any GNSS \nconnections in use", "Avoid Conflict");
-
+  wxMessageBox("Before use please disable any GNSS \nconnections in use",
+               "Avoid Conflict");
 
 #ifdef __ANDROID__
 
@@ -846,13 +846,13 @@ void Dlg::Notify() {
   GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
   VTG = createVTGSentence(initSpd, myDir);
   VHW = createVHWSentence(initSpd, myDir);
-  //RMC = createRMCSentence(mdt, initLat, initLon, initSpd, myDir);
+  // RMC = createRMCSentence(mdt, initLat, initLon, initSpd, myDir);
   HDT = createHDTSentence(myDir);
 
   PushNMEABuffer(GLL + "\r\n");
   PushNMEABuffer(VTG + "\r\n");
   PushNMEABuffer(VHW + "\r\n");
-  //PushNMEABuffer(RMC + "\r\n");
+  // PushNMEABuffer(RMC + "\r\n");
   PushNMEABuffer(HDT + "\r\n");
 
   if (m_bUseAis) {

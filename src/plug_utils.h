@@ -1,4 +1,4 @@
- /**************************************************************************
+/**************************************************************************
  *   Copyright (C) 2024 Alec Leamas                                        *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -20,14 +20,14 @@
 /** \file plug_utils.h Miscellaneous plugin support stuff. */
 #include <string>
 
- /**
-  * Result of a icon path lookup
-  */
-  struct IconPath {
-    const enum class Type {NotFound, Png, Svg} type;
-    const std::string path;
-    IconPath(Type t, const std::string& p) : type(t), path(p) {}
-  };
+/**
+ * Result of a icon path lookup
+ */
+struct IconPath {
+  const enum class Type { NotFound, Png, Svg } type;
+  const std::string path;
+  IconPath(Type t, const std::string& p) : type(t), path(p) {}
+};
 
 /**
  * Find an icon matching basename in data/ directory

@@ -62,35 +62,33 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) { delete p; }
 //
 //---------------------------------------------------------------------------------------------------------
 
-
 ShipDriverPi::ShipDriverPi(void* ppimgr)
     : opencpn_plugin_118(ppimgr),
-    m_hr_dialog_x(0),
-    m_hr_dialog_y(8),
-    m_is_grib_valid(false),
-    m_grib_lat(0),
-    m_grib_lon(0),
-    m_tr_spd(0),
-    m_tr_dir(0),
-    m_cursor_lat(0),
-    m_cursor_lon(0),
-    m_position_menu_id(-1),
-    m_gui_scale_factor(1),
-    plugin(nullptr),
-    m_dialog(nullptr),
-    m_config(nullptr),
-    m_parent_window(nullptr),
-    m_hr_dialog_width(0),
-    m_hr_dialog_height(0),
-    m_hr_dialog_sx(0),
-    m_hr_dialog_sy(0),
-    m_display_width(0),
-    m_display_height(0),
-    m_leftclick_tool_id(-1),
-    m_show_shipdriver_icon(false),
-    m_copy_use_ais(false),
-      m_copy_use_file(false)
- {
+      m_hr_dialog_x(0),
+      m_hr_dialog_y(8),
+      m_is_grib_valid(false),
+      m_grib_lat(0),
+      m_grib_lon(0),
+      m_tr_spd(0),
+      m_tr_dir(0),
+      m_cursor_lat(0),
+      m_cursor_lon(0),
+      m_position_menu_id(-1),
+      m_gui_scale_factor(1),
+      plugin(nullptr),
+      m_dialog(nullptr),
+      m_config(nullptr),
+      m_parent_window(nullptr),
+      m_hr_dialog_width(0),
+      m_hr_dialog_height(0),
+      m_hr_dialog_sx(0),
+      m_hr_dialog_sy(0),
+      m_display_width(0),
+      m_display_height(0),
+      m_leftclick_tool_id(-1),
+      m_show_shipdriver_icon(false),
+      m_copy_use_ais(false),
+      m_copy_use_file(false) {
   // Create the PlugIn icons
   initialize_images();
   auto icon_path = GetPluginIcon("shipdriver_panel_icon", "ShipDriver_pi");
@@ -141,21 +139,19 @@ int ShipDriverPi::Init() {
 
   //    And load the configuration items
   LoadConfig();
-  auto icon = GetPluginIcon("shipdriver_pi","ShipDriver_pi");
-  auto toggled_icon = GetPluginIcon("shipdriver_pi_toggled","ShipDriver_pi");
+  auto icon = GetPluginIcon("shipdriver_pi", "ShipDriver_pi");
+  auto toggled_icon = GetPluginIcon("shipdriver_pi_toggled", "ShipDriver_pi");
   //    This PlugIn needs a toolbar icon, so request its insertion
   if (m_show_shipdriver_icon) {
-
     if (icon.type == IconPath::Type::Svg)
-    m_leftclick_tool_id =
-        InsertPlugInToolSVG("ShipDriver", icon.path, icon.path,
-                            toggled_icon.path, wxITEM_CHECK, "ShipDriver","",
-                            nullptr,  ShipDriver_TOOL_POSITION, 0, this);
+      m_leftclick_tool_id = InsertPlugInToolSVG(
+          "ShipDriver", icon.path, icon.path, toggled_icon.path, wxITEM_CHECK,
+          "ShipDriver", "", nullptr, ShipDriver_TOOL_POSITION, 0, this);
     else if (icon.type == IconPath::Type::Png) {
       auto bitmap = LoadPngIcon(icon.path.c_str());
       m_leftclick_tool_id =
-        InsertPlugInTool("", &bitmap, &bitmap, wxITEM_CHECK, "ShipDriver","",
-                         nullptr,  ShipDriver_TOOL_POSITION, 0, this);
+          InsertPlugInTool("", &bitmap, &bitmap, wxITEM_CHECK, "ShipDriver", "",
+                           nullptr, ShipDriver_TOOL_POSITION, 0, this);
     }
   }
   m_dialog = nullptr;
@@ -177,8 +173,7 @@ bool ShipDriverPi::DeInit() {
     SetShipDriverDialogSizeX(r.GetWidth());
     SetShipDriverDialogSizeY(r.GetHeight());
 
-    if ((m_dialog->m_timer) &&
-        (m_dialog->m_timer->IsRunning())) {
+    if ((m_dialog->m_timer) && (m_dialog->m_timer->IsRunning())) {
       // need to stop the timer or crash on exit
       m_dialog->m_timer->Stop();
     }
@@ -410,7 +405,7 @@ void ShipDriverPi::SetCursorLatLon(double lat, double lon) {
 }
 
 void ShipDriverPi::SetPluginMessage(wxString& message_id,
-                                     wxString& message_body) {
+                                    wxString& message_body) {
   if (message_id == "GRIB_TIMELINE") {
     Json::CharReaderBuilder builder;
     Json::CharReader* reader = builder.newCharReader();
@@ -497,8 +492,9 @@ void ShipDriverPi::SetPluginMessage(wxString& message_id,
   }
 }
 
-[[maybe_unused]] bool ShipDriverPi::GribWind(GribRecordSet* grib, double lat, double lon,
-                             double& wg, double& vwg) {
+[[maybe_unused]] bool ShipDriverPi::GribWind(GribRecordSet* grib, double lat,
+                                             double lon, double& wg,
+                                             double& vwg) {
   if (!grib) return false;
 
   if (!GribRecord::getInterpolatedValues(
