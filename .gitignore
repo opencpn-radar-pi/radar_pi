@@ -1,3 +1,4 @@
+.idea
 build
 build-*
 !build-conf.rc
@@ -10,3 +11,4 @@ plugins
 *.bat
 *.bak
 buildwin/*.7z
+
