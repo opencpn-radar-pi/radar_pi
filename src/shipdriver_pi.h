@@ -57,18 +57,18 @@
 class Dlg;
 
 static inline bool GribCurrent(GribRecordSet* grib, double lat, double lon,
-                               double& C, double& VC) {
+                               double& c, double& vc) {
   if (!grib) return false;
 
   if (!GribRecord::getInterpolatedValues(
-          VC, C, grib->m_GribRecordPtrArray[Idx_WIND_VX],
+          vc, c, grib->m_GribRecordPtrArray[Idx_WIND_VX],
           grib->m_GribRecordPtrArray[Idx_WIND_VY], lon, lat))
     return false;
 
-  VC *= 3.6 / 1.852;  // knots
+  vc *= 3.6 / 1.852;  // knots
 
   // C += 180;
-  if (C > 360) C -= 360;
+  if (c > 360) c -= 360;
   return true;
 }
 
@@ -78,10 +78,10 @@ static inline bool GribCurrent(GribRecordSet* grib, double lat, double lon,
 
 #define ShipDriver_TOOL_POSITION  (-1)  ///< toolbar tool default positioning
 
-class ShipDriver_pi : public opencpn_plugin_118 {
+class ShipDriverPi : public opencpn_plugin_118 {
 public:
-  explicit ShipDriver_pi(void* ppimgr);
-  ~ShipDriver_pi() override;
+  explicit ShipDriverPi(void* ppimgr);
+  ~ShipDriverPi() override;
 
   //    The required PlugIn Methods
   int Init() override;
@@ -130,13 +130,13 @@ public:
   void ShowPreferencesDialog(wxWindow* parent) override;
   void SetPluginMessage(wxString& message_id, wxString& message_body) override;
   [[maybe_unused]] bool GribWind(GribRecordSet* grib, double lat, double lon,
-                                 double& WG, double& VWG);
+                                 double& wg, double& vwg);
 
-  bool m_bGribValid;
+  bool m_is_grib_valid;
   double m_grib_lat, m_grib_lon;
   double m_tr_spd;
   double m_tr_dir;
-  wxBitmap m_panelBitmap;
+  wxBitmap m_panel_bitmap;
 
 private:
   double m_cursor_lat;
@@ -145,11 +145,11 @@ private:
   int m_position_menu_id;
   double m_GUIScaleFactor;
 
-  ShipDriver_pi* plugin;
+  ShipDriverPi* plugin;
 
-  Dlg* m_pDialog;
+  Dlg* m_dialog;
 
-  wxFileConfig* m_pconfig;
+  wxFileConfig* m_config;
   wxWindow* m_parent_window;
   bool LoadConfig();
   bool SaveConfig();
@@ -158,12 +158,12 @@ private:
   int m_hr_dialog_sx, m_hr_dialog_sy;
   int m_display_width, m_display_height;
   int m_leftclick_tool_id;
-  bool m_bShipDriverShowIcon;
-  bool m_bShowShipDriver;
+  bool m_show_shipdriver_icon;
+  bool m_show_shipdriver;
 
-  bool m_bCopyUseAis;
-  bool m_bCopyUseFile;
-  wxString m_tCopyMMSI;
+  bool m_copy_use_ais;
+  bool m_vopy_use_file;
+  wxString m_copy_mmsi;
 };
 
 #endif

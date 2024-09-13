@@ -323,7 +323,7 @@ void Dlg::StartDriving() {
   VTG = createVTGSentence(initSpd, initDir);
 
   m_interval = 500;
-  m_Timer->Start(m_interval, wxTIMER_CONTINUOUS);  // start timer
+  m_timer->Start(m_interval, wxTIMER_CONTINUOUS);  // start timer
   m_bAuto = false;
 
   myAIS = new AisMaker();
@@ -332,7 +332,7 @@ void Dlg::StartDriving() {
 void Dlg::OnStop(wxCommandEvent& event) { SetStop(); }
 
 void Dlg::SetStop() {
-  if (m_Timer->IsRunning()) m_Timer->Stop();
+  if (m_timer->IsRunning()) m_timer->Stop();
 
   wxMessageBox(_("Vessel stopped"));
 
@@ -341,7 +341,7 @@ void Dlg::SetStop() {
   m_textCtrlRudderStbd->SetValue("");
   m_textCtrlRudderPort->SetValue("");
 
-  m_interval = m_Timer->GetInterval();
+  m_interval = m_timer->GetInterval();
   m_bUseSetTime = false;
   m_bUseStop = true;
   m_bAuto = false;
@@ -454,7 +454,7 @@ void Dlg::GoToStandby() {
 // Now for the distress alarms
 
 void Dlg::OnSART(wxCommandEvent& event) {
-  if (m_Timer->IsRunning()) {
+  if (m_timer->IsRunning()) {
     bool active = m_buttonSART->GetValue();
     alarm_id = 970;
     if (active) {
@@ -472,7 +472,7 @@ void Dlg::OnSART(wxCommandEvent& event) {
 }
 
 void Dlg::OnMOB(wxCommandEvent& event) {
-  if (m_Timer->IsRunning()) {
+  if (m_timer->IsRunning()) {
     bool active = m_buttonMOB->GetValue();
     alarm_id = 972;
     if (active) {
@@ -490,7 +490,7 @@ void Dlg::OnMOB(wxCommandEvent& event) {
 }
 
 void Dlg::OnEPIRB(wxCommandEvent& event) {
-  if (m_Timer->IsRunning()) {
+  if (m_timer->IsRunning()) {
     bool active = m_buttonEPIRB->GetValue();
     alarm_id = 974;
     if (active) {
@@ -508,7 +508,7 @@ void Dlg::OnEPIRB(wxCommandEvent& event) {
 }
 
 void Dlg::OnDistressAlert(wxCommandEvent& event) {
-  if (m_Timer->IsRunning()) {
+  if (m_timer->IsRunning()) {
     bool active = m_buttonDistressAlert->GetValue();
     alarm_id = 980;
     if (active) {
@@ -524,7 +524,7 @@ void Dlg::OnDistressAlert(wxCommandEvent& event) {
 }
 
 void Dlg::OnDistressCancel(wxCommandEvent& event) {
-  if (m_Timer->IsRunning()) {
+  if (m_timer->IsRunning()) {
     bool active = m_buttonDistressCancel->GetValue();
     alarm_id = 982;
     if (active) {
@@ -548,7 +548,7 @@ void Dlg::OnDistressCancel(wxCommandEvent& event) {
 }
 
 void Dlg::OnDistressRelay(wxCommandEvent& event) {
-  if (m_Timer->IsRunning()) {
+  if (m_timer->IsRunning()) {
     bool active = m_buttonDistressRelay->GetValue();
     alarm_id = 984;
     if (active) {
@@ -564,7 +564,7 @@ void Dlg::OnDistressRelay(wxCommandEvent& event) {
 }
 
 void Dlg::OnRelayCancel(wxCommandEvent& event) {
-  if (m_Timer->IsRunning()) {
+  if (m_timer->IsRunning()) {
     bool active = m_buttonRelayCancel->GetValue();
     alarm_id = 986;
     if (active) {
@@ -588,7 +588,7 @@ void Dlg::OnRelayCancel(wxCommandEvent& event) {
 }
 
 void Dlg::OnCollision(wxCommandEvent& event) {
-  if (m_Timer->IsRunning()) {
+  if (m_timer->IsRunning()) {
     bool active = m_buttonCollision->GetValue();
     alarm_id = 990;
     if (active) {
@@ -611,7 +611,7 @@ void Dlg::OnCollision(wxCommandEvent& event) {
 void Dlg::OnPause(wxCommandEvent& event) {
   bool active = m_buttonPause->GetValue();
   if (active) {
-    m_Timer->Stop();
+    m_timer->Stop();
     m_buttonPause->SetLabel("Resume");
     m_buttonPause->SetBackgroundColour(wxColour(255, 0, 0));
   } else {
@@ -628,7 +628,7 @@ void Dlg::ResetPauseButton() {
 }
 
 void Dlg::OnClose(wxCloseEvent& event) {
-  if (m_Timer->IsRunning()) m_Timer->Stop();
+  if (m_timer->IsRunning()) m_timer->Stop();
   plugin->OnShipDriverDialogClose();
 }
 void Dlg::Notify() {
@@ -868,8 +868,8 @@ void Dlg::Notify() {
 
 void Dlg::SetInterval(int interval) {
   m_interval = interval;
-  if (m_Timer->IsRunning())  // Timer started?
-    m_Timer->Start(m_interval,
+  if (m_timer->IsRunning())  // Timer started?
+    m_timer->Start(m_interval,
                    wxTIMER_CONTINUOUS);  // restart timer with new interval
 }
 
@@ -1808,7 +1808,7 @@ bool Dlg::GetGribSpdDir(wxDateTime dt, double lat, double lon, double& spd,
   plugin->m_grib_lat = lat;
   plugin->m_grib_lon = lon;
   RequestGrib(dtime);
-  if (plugin->m_bGribValid) {
+  if (plugin->m_is_grib_valid) {
     spd = plugin->m_tr_spd;
     dir = plugin->m_tr_dir;
     return true;

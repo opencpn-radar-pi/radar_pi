@@ -31,12 +31,12 @@
 #include "wx/wx.h"
 #endif
 
+#include "icons.h"
 #include "shipdriver_pi.h"
 #include "shipdriver_gui.h"
 #include "shipdriver_gui_impl.h"
 #include "ocpn_plugin.h"
 
-class ShipDriver_pi;
 class Dlg;
 
 using namespace std;
@@ -44,7 +44,7 @@ using namespace std;
 // the class factories, used to create and destroy instances of the PlugIn
 
 extern "C" DECL_EXP opencpn_plugin* create_pi(void* ppimgr) {
-  return new ShipDriver_pi(ppimgr);
+  return new ShipDriverPi(ppimgr);
 }
 
 extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) { delete p; }
@@ -54,8 +54,6 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) { delete p; }
 //    ShipDriver PlugIn Implementation
 //
 //---------------------------------------------------------------------------------------------------------
-
-#include "icons.h"
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -70,8 +68,7 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) { delete p; }
  *  - icon_name: Base name of icon living in data/ directory. When using
  *    SVG icon_name.svg is used, otherwise icon_name.png
  */
-
-static wxBitmap load_plugin(const char* icon_name, const char* api_name) {
+static wxBitmap LoadPlugin(const char* icon_name, const char* api_name) {
   wxBitmap bitmap;
   wxFileName fn;
   auto path = GetPluginDataDir(api_name);
@@ -98,29 +95,29 @@ static wxBitmap load_plugin(const char* icon_name, const char* api_name) {
   return bitmap;
 }
 
-ShipDriver_pi::ShipDriver_pi(void* ppimgr) : opencpn_plugin_118(ppimgr) {
+ShipDriverPi::ShipDriverPi(void* ppimgr) : opencpn_plugin_118(ppimgr) {
   // Create the PlugIn icons
   initialize_images();
-  m_panelBitmap = load_plugin("shipdriver_panel_icon", "ShipDriver_pi");
-  m_bShowShipDriver = false;
+  m_panel_bitmap = LoadPlugin("shipdriver_panel_icon", "ShipDriver_pi");
+  m_show_shipdriver = false;
 }
 
-ShipDriver_pi::~ShipDriver_pi() {
+ShipDriverPi::~ShipDriverPi() {
   delete _img_ShipDriverIcon;
 
-  if (m_pDialog) {
+  if (m_dialog) {
     wxFileConfig* pConf = GetOCPNConfigObject();
 
     if (pConf) {
       pConf->SetPath("/PlugIns/ShipDriver_pi");
-      pConf->Write("shipdriverUseAis", m_bCopyUseAis);
-      pConf->Write("shipdriverUseFile", m_bCopyUseFile);
-      pConf->Write("shipdriverMMSI", m_tCopyMMSI);
+      pConf->Write("shipdriverUseAis", m_copy_use_ais);
+      pConf->Write("shipdriverUseFile", m_vopy_use_file);
+      pConf->Write("shipdriverMMSI", m_copy_mmsi);
     }
   }
 }
 
-int ShipDriver_pi::Init() {
+int ShipDriverPi::Init() {
   AddLocaleCatalog("opencpn-ShipDriver_pi");
 
   // Set some default private member parameters
@@ -135,13 +132,13 @@ int ShipDriver_pi::Init() {
   m_parent_window = GetOCPNCanvasWindow();
 
   //    Get a pointer to the opencpn configuration object
-  m_pconfig = GetOCPNConfigObject();
+  m_config = GetOCPNConfigObject();
 
   //    And load the configuration items
   LoadConfig();
 
   //    This PlugIn needs a toolbar icon, so request its insertion
-  if (m_bShipDriverShowIcon) {
+  if (m_show_shipdriver_icon) {
 #ifdef ocpnUSE_SVG
     m_leftclick_tool_id =
         InsertPlugInToolSVG("ShipDriver", _svg_shipdriver, _svg_shipdriver,
@@ -154,7 +151,7 @@ int ShipDriver_pi::Init() {
 #endif
   }
 
-  m_pDialog = nullptr;
+  m_dialog = nullptr;
 
   return (WANTS_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK |
           WANTS_TOOLBAR_CALLBACK | INSTALLS_TOOLBAR_TOOL | WANTS_CURSOR_LATLON |
@@ -162,28 +159,28 @@ int ShipDriver_pi::Init() {
           WANTS_PLUGIN_MESSAGING | WANTS_CONFIG);
 }
 
-bool ShipDriver_pi::DeInit() {
+bool ShipDriverPi::DeInit() {
   //    Record the dialog position
-  if (m_pDialog) {
+  if (m_dialog) {
     // Capture dialog position
-    wxPoint p = m_pDialog->GetPosition();
-    wxRect r = m_pDialog->GetRect();
+    wxPoint p = m_dialog->GetPosition();
+    wxRect r = m_dialog->GetRect();
     SetShipDriverDialogX(p.x);
     SetShipDriverDialogY(p.y);
     SetShipDriverDialogSizeX(r.GetWidth());
     SetShipDriverDialogSizeY(r.GetHeight());
 
-    if ((m_pDialog->m_Timer) &&
-        (m_pDialog->m_Timer->IsRunning())) {
+    if ((m_dialog->m_timer) &&
+        (m_dialog->m_timer->IsRunning())) {
       // need to stop the timer or crash on exit
-      m_pDialog->m_Timer->Stop();
+      m_dialog->m_timer->Stop();
     }
-    m_pDialog->Close();
-    delete m_pDialog;
-    m_pDialog = nullptr;
+    m_dialog->Close();
+    delete m_dialog;
+    m_dialog = nullptr;
 
-    m_bShowShipDriver = false;
-    SetToolbarItemState(m_leftclick_tool_id, m_bShowShipDriver);
+    m_show_shipdriver = false;
+    SetToolbarItemState(m_leftclick_tool_id, m_show_shipdriver);
   }
 
   SaveConfig();
@@ -193,65 +190,64 @@ bool ShipDriver_pi::DeInit() {
   return true;
 }
 
-int ShipDriver_pi::GetAPIVersionMajor() { return atoi(API_VERSION); }
+int ShipDriverPi::GetAPIVersionMajor() { return atoi(API_VERSION); }
 
-int ShipDriver_pi::GetAPIVersionMinor() {
+int ShipDriverPi::GetAPIVersionMinor() {
   std::string v(API_VERSION);
   size_t dotpos = v.find('.');
   return atoi(v.substr(dotpos + 1).c_str());
 }
 
-int ShipDriver_pi::GetPlugInVersionMajor() { return PLUGIN_VERSION_MAJOR; }
+int ShipDriverPi::GetPlugInVersionMajor() { return PLUGIN_VERSION_MAJOR; }
 
-int ShipDriver_pi::GetPlugInVersionMinor() { return PLUGIN_VERSION_MINOR; }
+int ShipDriverPi::GetPlugInVersionMinor() { return PLUGIN_VERSION_MINOR; }
 
-int ShipDriver_pi::GetPlugInVersionPatch() { return PLUGIN_VERSION_PATCH; }
+int ShipDriverPi::GetPlugInVersionPatch() { return PLUGIN_VERSION_PATCH; }
 
-int ShipDriver_pi::GetPlugInVersionPost() { return PLUGIN_VERSION_TWEAK; };
+int ShipDriverPi::GetPlugInVersionPost() { return PLUGIN_VERSION_TWEAK; };
 
-const char* ShipDriver_pi::GetPlugInVersionPre() { return PKG_PRERELEASE; }
+const char* ShipDriverPi::GetPlugInVersionPre() { return PKG_PRERELEASE; }
 
-const char* ShipDriver_pi::GetPlugInVersionBuild() { return PKG_BUILD_INFO; }
+const char* ShipDriverPi::GetPlugInVersionBuild() { return PKG_BUILD_INFO; }
 
-wxBitmap* ShipDriver_pi::GetPlugInBitmap() { return &m_panelBitmap; }
+wxBitmap* ShipDriverPi::GetPlugInBitmap() { return &m_panel_bitmap; }
 
-wxString ShipDriver_pi::GetCommonName() { return PLUGIN_API_NAME; }
+wxString ShipDriverPi::GetCommonName() { return PLUGIN_API_NAME; }
 
-wxString ShipDriver_pi::GetShortDescription() { return PKG_SUMMARY; }
+wxString ShipDriverPi::GetShortDescription() { return PKG_SUMMARY; }
 
-wxString ShipDriver_pi::GetLongDescription() { return PKG_DESCRIPTION; }
+wxString ShipDriverPi::GetLongDescription() { return PKG_DESCRIPTION; }
 
-int ShipDriver_pi::GetToolbarToolCount() { return 1; }
+int ShipDriverPi::GetToolbarToolCount() { return 1; }
 
-void ShipDriver_pi::SetColorScheme(PI_ColorScheme cs) {
-  if (!m_pDialog) return;
-
-  DimeWindow(m_pDialog);
+void ShipDriverPi::SetColorScheme(PI_ColorScheme cs) {
+  if (!m_dialog) return;
+  DimeWindow(m_dialog);
 }
 
-void ShipDriver_pi::ShowPreferencesDialog(wxWindow* parent) {
-  auto* Pref = new shipdriverPreferences(parent);
+void ShipDriverPi::ShowPreferencesDialog(wxWindow* parent) {
+  auto* pref = new shipdriverPreferences(parent);
 
-  Pref->m_cbTransmitAis->SetValue(m_bCopyUseAis);
-  Pref->m_cbAisToFile->SetValue(m_bCopyUseFile);
-  Pref->m_textCtrlMMSI->SetValue(m_tCopyMMSI);
+  pref->m_cbTransmitAis->SetValue(m_copy_use_ais);
+  pref->m_cbAisToFile->SetValue(m_vopy_use_file);
+  pref->m_textCtrlMMSI->SetValue(m_copy_mmsi);
 
-  if (Pref->ShowModal() == wxID_OK) {
-    bool copyAis = Pref->m_cbTransmitAis->GetValue();
-    bool copyFile = Pref->m_cbAisToFile->GetValue();
-    wxString copyMMSI = Pref->m_textCtrlMMSI->GetValue();
+  if (pref->ShowModal() == wxID_OK) {
+    bool copy_ais = pref->m_cbTransmitAis->GetValue();
+    bool copy_file = pref->m_cbAisToFile->GetValue();
+    wxString copyMMSI = pref->m_textCtrlMMSI->GetValue();
 
-    if (m_bCopyUseAis != copyAis || m_bCopyUseFile != copyFile ||
-        m_tCopyMMSI != copyMMSI) {
-      m_bCopyUseAis = copyAis;
-      m_bCopyUseFile = copyFile;
-      m_tCopyMMSI = copyMMSI;
+    if (m_copy_use_ais != copy_ais || m_vopy_use_file != copy_file ||
+        m_copy_mmsi != copyMMSI) {
+      m_copy_use_ais = copy_ais;
+      m_vopy_use_file = copy_file;
+      m_copy_mmsi = copyMMSI;
     }
 
-    if (m_pDialog) {
-      m_pDialog->m_bUseAis = m_bCopyUseAis;
-      m_pDialog->m_bUseFile = m_bCopyUseFile;
-      m_pDialog->m_tMMSI = m_tCopyMMSI;
+    if (m_dialog) {
+      m_dialog->m_bUseAis = m_copy_use_ais;
+      m_dialog->m_bUseFile = m_vopy_use_file;
+      m_dialog->m_tMMSI = m_copy_mmsi;
     }
 
     SaveConfig();
@@ -259,17 +255,17 @@ void ShipDriver_pi::ShowPreferencesDialog(wxWindow* parent) {
     RequestRefresh(m_parent_window);  // refresh main window
   }
 
-  delete Pref;
-  Pref = nullptr;
+  delete pref;
+  pref = nullptr;
 }
 
-void ShipDriver_pi::OnToolbarToolCallback(int id) {
-  if (!m_pDialog) {
-    m_pDialog = new Dlg(m_parent_window);
-    m_pDialog->plugin = this;
-    m_pDialog->m_Timer = new wxTimer(m_pDialog);
-    m_pDialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));
-    m_pDialog->SetSize(m_hr_dialog_sx, m_hr_dialog_sy);
+void ShipDriverPi::OnToolbarToolCallback(int id) {
+  if (!m_dialog) {
+    m_dialog = new Dlg(m_parent_window);
+    m_dialog->plugin = this;
+    m_dialog->m_timer = new wxTimer(m_dialog);
+    m_dialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));
+    m_dialog->SetSize(m_hr_dialog_sx, m_hr_dialog_sy);
 
     wxMenu dummy_menu;
     m_position_menu_id = AddCanvasContextMenuItem(
@@ -280,25 +276,25 @@ void ShipDriver_pi::OnToolbarToolCallback(int id) {
 
   // m_pDialog->Fit();
   // Toggle
-  m_bShowShipDriver = !m_bShowShipDriver;
+  m_show_shipdriver = !m_show_shipdriver;
 
   //    Toggle dialog?
-  if (m_bShowShipDriver) {
-    m_pDialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));
-    m_pDialog->SetSize(m_hr_dialog_sx, m_hr_dialog_sy);
-    m_pDialog->Show();
+  if (m_show_shipdriver) {
+    m_dialog->Move(wxPoint(m_hr_dialog_x, m_hr_dialog_y));
+    m_dialog->SetSize(m_hr_dialog_sx, m_hr_dialog_sy);
+    m_dialog->Show();
 
   } else {
-    m_pDialog->Hide();
+    m_dialog->Hide();
   }
 
   // Toggle is handled by the toolbar but we must keep plugin manager b_toggle
   // updated to actual status to ensure correct status upon toolbar rebuild
-  SetToolbarItemState(m_leftclick_tool_id, m_bShowShipDriver);
+  SetToolbarItemState(m_leftclick_tool_id, m_show_shipdriver);
 
   // Capture dialog position
-  wxPoint p = m_pDialog->GetPosition();
-  wxRect r = m_pDialog->GetRect();
+  wxPoint p = m_dialog->GetPosition();
+  wxRect r = m_dialog->GetRect();
   SetShipDriverDialogX(p.x);
   SetShipDriverDialogY(p.y);
   SetShipDriverDialogSizeX(r.GetWidth());
@@ -307,42 +303,42 @@ void ShipDriver_pi::OnToolbarToolCallback(int id) {
   RequestRefresh(m_parent_window);  // refresh main window
 }
 
-bool ShipDriver_pi::LoadConfig() {
-  auto* pConf = (wxFileConfig*)m_pconfig;
+bool ShipDriverPi::LoadConfig() {
+  auto* conf = (wxFileConfig*)m_config;
 
-  if (pConf) {
-    if (pConf->HasGroup(_T("/Settings/ShipDriver_pi"))) {
+  if (conf) {
+    if (conf->HasGroup(_T("/Settings/ShipDriver_pi"))) {
       // Read the existing settings
 
-      pConf->SetPath("/Settings/ShipDriver_pi");
-      pConf->Read("ShowShipDriverIcon", &m_bShipDriverShowIcon, true);
-      pConf->Read("shipdriverUseAis", &m_bCopyUseAis, false);
-      pConf->Read("shipdriverUseFile", &m_bCopyUseFile, false);
-      m_tCopyMMSI = pConf->Read("shipdriverMMSI", "123456789");
+      conf->SetPath("/Settings/ShipDriver_pi");
+      conf->Read("ShowShipDriverIcon", &m_show_shipdriver_icon, true);
+      conf->Read("shipdriverUseAis", &m_copy_use_ais, false);
+      conf->Read("shipdriverUseFile", &m_vopy_use_file, false);
+      m_copy_mmsi = conf->Read("shipdriverMMSI", "123456789");
 
-      m_hr_dialog_x = pConf->Read("DialogPosX", 40L);
-      m_hr_dialog_y = pConf->Read("DialogPosY", 140L);
-      m_hr_dialog_sx = pConf->Read("DialogSizeX", 330L);
+      m_hr_dialog_x = conf->Read("DialogPosX", 40L);
+      m_hr_dialog_y = conf->Read("DialogPosY", 140L);
+      m_hr_dialog_sx = conf->Read("DialogSizeX", 330L);
 #ifdef __WXOSX__
       m_hr_dialog_sy = pConf->Read("DialogSizeY", 250L);
 #else
-      m_hr_dialog_sy = pConf->Read("DialogSizeY", 300L);
+      m_hr_dialog_sy = conf->Read("DialogSizeY", 300L);
 #endif
-      pConf->DeleteGroup(_T("/Settings/ShipDriver_pi"));
+      conf->DeleteGroup(_T("/Settings/ShipDriver_pi"));
     } else {
-      pConf->SetPath("/PlugIns/ShipDriver_pi");
-      pConf->Read("ShowShipDriverIcon", &m_bShipDriverShowIcon, true);
-      pConf->Read("shipdriverUseAis", &m_bCopyUseAis, false);
-      pConf->Read("shipdriverUseFile", &m_bCopyUseFile, false);
-      m_tCopyMMSI = pConf->Read("shipdriverMMSI", "123456789");
+      conf->SetPath("/PlugIns/ShipDriver_pi");
+      conf->Read("ShowShipDriverIcon", &m_show_shipdriver_icon, true);
+      conf->Read("shipdriverUseAis", &m_copy_use_ais, false);
+      conf->Read("shipdriverUseFile", &m_vopy_use_file, false);
+      m_copy_mmsi = conf->Read("shipdriverMMSI", "123456789");
 
-      m_hr_dialog_x = pConf->Read("DialogPosX", 40L);
-      m_hr_dialog_y = pConf->Read("DialogPosY", 140L);
-      m_hr_dialog_sx = pConf->Read("DialogSizeX", 330L);
+      m_hr_dialog_x = conf->Read("DialogPosX", 40L);
+      m_hr_dialog_y = conf->Read("DialogPosY", 140L);
+      m_hr_dialog_sx = conf->Read("DialogSizeX", 330L);
 #ifdef __WXOSX__
       m_hr_dialog_sy = pConf->Read("DialogSizeY", 250L);
 #else
-      m_hr_dialog_sy = pConf->Read("DialogSizeY", 300L);
+      m_hr_dialog_sy = conf->Read("DialogSizeY", 300L);
 #endif
     }
     if ((m_hr_dialog_x < 0) || (m_hr_dialog_x > m_display_width))
@@ -355,58 +351,58 @@ bool ShipDriver_pi::LoadConfig() {
     return false;
 }
 
-bool ShipDriver_pi::SaveConfig() {
-  auto* pConf = (wxFileConfig*)m_pconfig;
+bool ShipDriverPi::SaveConfig() {
+  auto* conf = (wxFileConfig*)m_config;
 
-  if (pConf) {
-    bool bIsDigits = m_tCopyMMSI.IsNumber();
-    if (m_tCopyMMSI.length() < 9 || !bIsDigits) {
+  if (conf) {
+    bool is_digits = m_copy_mmsi.IsNumber();
+    if (m_copy_mmsi.length() < 9 || !is_digits) {
       wxMessageBox(_("MMSI must be 9 digits.\nEdit using Preferences"));
       return false;
     }
 
-    pConf->SetPath("/PlugIns/ShipDriver_pi");
-    pConf->Write("ShowShipDriverIcon", m_bShipDriverShowIcon);
-    pConf->Write("shipdriverUseAis", m_bCopyUseAis);
-    pConf->Write("shipdriverUseFile", m_bCopyUseFile);
-    pConf->Write("shipdriverMMSI", m_tCopyMMSI);
+    conf->SetPath("/PlugIns/ShipDriver_pi");
+    conf->Write("ShowShipDriverIcon", m_show_shipdriver_icon);
+    conf->Write("shipdriverUseAis", m_copy_use_ais);
+    conf->Write("shipdriverUseFile", m_vopy_use_file);
+    conf->Write("shipdriverMMSI", m_copy_mmsi);
 
-    pConf->Write("DialogPosX", m_hr_dialog_x);
-    pConf->Write("DialogPosY", m_hr_dialog_y);
-    pConf->Write("DialogSizeX", m_hr_dialog_sx);
-    pConf->Write("DialogSizeY", m_hr_dialog_sy);
+    conf->Write("DialogPosX", m_hr_dialog_x);
+    conf->Write("DialogPosY", m_hr_dialog_y);
+    conf->Write("DialogSizeX", m_hr_dialog_sx);
+    conf->Write("DialogSizeY", m_hr_dialog_sy);
 
     return true;
   } else
     return false;
 }
 
-void ShipDriver_pi::OnShipDriverDialogClose() {
-  m_bShowShipDriver = false;
-  SetToolbarItemState(m_leftclick_tool_id, m_bShowShipDriver);
-  m_pDialog->Hide();
+void ShipDriverPi::OnShipDriverDialogClose() {
+  m_show_shipdriver = false;
+  SetToolbarItemState(m_leftclick_tool_id, m_show_shipdriver);
+  m_dialog->Hide();
   SaveConfig();
 
   RequestRefresh(m_parent_window);  // refresh main window
 }
 
-void ShipDriver_pi::OnContextMenuItemCallback(int id) {
-  if (!m_pDialog) return;
+void ShipDriverPi::OnContextMenuItemCallback(int id) {
+  if (!m_dialog) return;
 
   if (id == m_position_menu_id) {
     m_cursor_lat = GetCursorLat();
     m_cursor_lon = GetCursorLon();
 
-    m_pDialog->OnContextMenu(m_cursor_lat, m_cursor_lon);
+    m_dialog->OnContextMenu(m_cursor_lat, m_cursor_lon);
   }
 }
 
-void ShipDriver_pi::SetCursorLatLon(double lat, double lon) {
+void ShipDriverPi::SetCursorLatLon(double lat, double lon) {
   m_cursor_lat = lat;
   m_cursor_lon = lon;
 }
 
-void ShipDriver_pi::SetPluginMessage(wxString& message_id,
+void ShipDriverPi::SetPluginMessage(wxString& message_id,
                                      wxString& message_body) {
   if (message_id == "GRIB_TIMELINE") {
     Json::CharReaderBuilder builder;
@@ -432,8 +428,8 @@ void ShipDriver_pi::SetPluginMessage(wxString& message_id,
              value["Year"].asInt(), value["Hour"].asInt(),
              value["Minute"].asInt(), value["Second"].asInt());
 
-    if (m_pDialog) {
-      m_pDialog->m_GribTimelineTime = time.ToUTC();
+    if (m_dialog) {
+      m_dialog->m_GribTimelineTime = time.ToUTC();
       // m_pDialog->m_textCtrl1->SetValue(dt);
     }
   }
@@ -487,23 +483,23 @@ void ShipDriver_pi::SetPluginMessage(wxString& message_id,
 
     double dir, spd;
 
-    m_bGribValid = GribCurrent(gptr, m_grib_lat, m_grib_lon, dir, spd);
+    m_is_grib_valid = GribCurrent(gptr, m_grib_lat, m_grib_lon, dir, spd);
 
     m_tr_spd = spd;
     m_tr_dir = dir;
   }
 }
 
-[[maybe_unused]] bool ShipDriver_pi::GribWind(GribRecordSet* grib, double lat, double lon,
-                             double& WG, double& VWG) {
+[[maybe_unused]] bool ShipDriverPi::GribWind(GribRecordSet* grib, double lat, double lon,
+                             double& wg, double& vwg) {
   if (!grib) return false;
 
   if (!GribRecord::getInterpolatedValues(
-          VWG, WG, grib->m_GribRecordPtrArray[Idx_WIND_VX],
+          vwg, wg, grib->m_GribRecordPtrArray[Idx_WIND_VX],
           grib->m_GribRecordPtrArray[Idx_WIND_VY], lon, lat))
     return false;
 
-  VWG *= 3.6 / 1.852;  // knots
+  vwg *= 3.6 / 1.852;  // knots
 
 #if 0
 // test
@@ -514,8 +510,8 @@ void ShipDriver_pi::SetPluginMessage(wxString& message_id,
   return true;
 }
 
-void ShipDriver_pi::SetNMEASentence(wxString& sentence) {
-  if (m_pDialog) {
-    m_pDialog->SetNMEAMessage(sentence);
+void ShipDriverPi::SetNMEASentence(wxString& sentence) {
+  if (m_dialog) {
+    m_dialog->SetNMEAMessage(sentence);
   }
 }

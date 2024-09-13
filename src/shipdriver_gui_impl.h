@@ -70,7 +70,7 @@
 #endif
 using namespace std;
 
-class ShipDriver_pi;
+class ShipDriverPi;
 
 class rtept {
 public:
@@ -109,7 +109,7 @@ public:
         const wxString& title = _("ShipDriver"),
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize, long style = SHIPDRIVER_DLG_STYLE);
-    ShipDriver_pi* plugin;
+    ShipDriverPi* plugin;
 
 #ifdef __ANDROID__
     void OnMouseEvent(wxMouseEvent& event);
@@ -152,7 +152,7 @@ public:
 
     wxString makeCheckSum(wxString mySentence);
 
-    wxTimer* m_Timer;
+    wxTimer* m_timer;
     void OnTimer(wxTimerEvent& event);
 
     double GetLatitude() { return initLat; };
