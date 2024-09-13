@@ -36,6 +36,7 @@
 #include "shipdriver_gui.h"
 #include "shipdriver_gui_impl.h"
 #include "ocpn_plugin.h"
+#include "plug_utils.h"
 
 class Dlg;
 
@@ -61,39 +62,6 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) { delete p; }
 //
 //---------------------------------------------------------------------------------------------------------
 
-/**
- * Load a icon, possibly using SVG
- * Parameters
- *  - api_name: Argument to GetPluginDataDir()
- *  - icon_name: Base name of icon living in data/ directory. When using
- *    SVG icon_name.svg is used, otherwise icon_name.png
- */
-static wxBitmap LoadPlugin(const char* icon_name, const char* api_name) {
-  wxBitmap bitmap;
-  wxFileName fn;
-  auto path = GetPluginDataDir(api_name);
-  fn.SetPath(path);
-  fn.AppendDir("data");
-  fn.SetName(icon_name);
-#ifdef ocpnUSE_SVG
-  wxLogDebug("Loading SVG icon");
-  fn.SetExt("svg");
-  const static int ICON_SIZE = 48;  // FIXME: Needs size from GUI
-  bitmap = GetBitmapFromSVGFile(fn.GetFullPath(), ICON_SIZE, ICON_SIZE);
-#else
-  wxLogDebug("Loading png icon");
-  fn.SetExt("png");
-  path = fn.GetFullPath();
-  if (!wxImage::CanRead(path)) {
-    wxLogDebug("Initiating image handlers.");
-    wxInitAllImageHandlers();
-  }
-  wxImage panelIcon(path);
-  bitmap = wxBitmap(panelIcon);
-#endif
-  wxLogDebug("Icon loaded, result: %s", bitmap.IsOk() ? "ok" : "fail");
-  return bitmap;
-}
 
 ShipDriverPi::ShipDriverPi(void* ppimgr)
     : opencpn_plugin_118(ppimgr),
@@ -125,7 +93,17 @@ ShipDriverPi::ShipDriverPi(void* ppimgr)
  {
   // Create the PlugIn icons
   initialize_images();
-  m_panel_bitmap = LoadPlugin("shipdriver_panel_icon", "ShipDriver_pi");
+  auto icon_path = GetPluginIcon("shipdriver_panel_icon", "ShipDriver_pi");
+  if (icon_path.type == IconPath::Type::Svg)
+    m_panel_bitmap = LoadSvgIcon(icon_path.path.c_str());
+  else if (icon_path.type == IconPath::Type::Png)
+    m_panel_bitmap = LoadPngIcon(icon_path.path.c_str());
+  else  // icon_path.type == NotFound
+    wxLogWarning("Cannot find icon for basename: %s", "shipdriver_panel_icon");
+  if (m_panel_bitmap.IsOk())
+    wxLogDebug("ShipDriverPi::, bitmap OK");
+  else
+    wxLogDebug("ShipDriverPi::, bitmap fail");
   m_show_shipdriver = false;
 }
 
@@ -163,21 +141,23 @@ int ShipDriverPi::Init() {
 
   //    And load the configuration items
   LoadConfig();
-
+  auto icon = GetPluginIcon("shipdriver_pi","ShipDriver_pi");
+  auto toggled_icon = GetPluginIcon("shipdriver_pi_toggled","ShipDriver_pi");
   //    This PlugIn needs a toolbar icon, so request its insertion
   if (m_show_shipdriver_icon) {
-#ifdef ocpnUSE_SVG
-    m_leftclick_tool_id =
-        InsertPlugInToolSVG("ShipDriver", _svg_shipdriver, _svg_shipdriver,
-                            _svg_shipdriver_toggled, wxITEM_CHECK, "ShipDriver",
-                            "", nullptr, ShipDriver_TOOL_POSITION, 0, this);
-#else
-    m_leftclick_tool_id = InsertPlugInTool(
-        "", _img_ShipDriverIcon, _img_ShipDriverIcon, wxITEM_CHECK,
-        _("ShipDriver"), "", NULL, ShipDriver_TOOL_POSITION, 0, this);
-#endif
-  }
 
+    if (icon.type == IconPath::Type::Svg)
+    m_leftclick_tool_id =
+        InsertPlugInToolSVG("ShipDriver", icon.path, icon.path,
+                            toggled_icon.path, wxITEM_CHECK, "ShipDriver","",
+                            nullptr,  ShipDriver_TOOL_POSITION, 0, this);
+    else if (icon.type == IconPath::Type::Png) {
+      auto bitmap = LoadPngIcon(icon.path.c_str());
+      m_leftclick_tool_id =
+        InsertPlugInTool("", &bitmap, &bitmap, wxITEM_CHECK, "ShipDriver","",
+                         nullptr,  ShipDriver_TOOL_POSITION, 0, this);
+    }
+  }
   m_dialog = nullptr;
 
   return (WANTS_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK |

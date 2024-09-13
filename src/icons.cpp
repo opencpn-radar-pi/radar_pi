@@ -4,16 +4,9 @@
 #include <wx/wx.h>
 #endif
 #include "icons.h"
-#include <wx/filename.h>
 #include <wx/mstream.h>
 
 wxBitmap* _img_ShipDriverIcon;
-
-#ifdef ocpnUSE_SVG
-#include "ocpn_plugin.h"
-wxString _svg_shipdriver;
-wxString _svg_shipdriver_toggled;
-#endif
 
 void initialize_images(void)
 {
@@ -75,21 +68,4 @@ void initialize_images(void)
             959);
         _img_ShipDriverIcon = new wxBitmap(wxImage(sm));
     }
-
-#ifdef ocpnUSE_SVG
-    wxFileName fn;
-    wxString tmp_path;
-
-    tmp_path = GetPluginDataDir("ShipDriver_pi");
-    fn.SetPath(tmp_path);
-    fn.AppendDir("data");
-
-    fn.SetFullName("shipdriver_pi.svg");
-    _svg_shipdriver = fn.GetFullPath();
-    fn.SetFullName("shipdriver_pi_toggled.svg");
-    _svg_shipdriver_toggled = fn.GetFullPath();
-
-#endif // ocpnUSE_SVG
-
-    return;
 }
