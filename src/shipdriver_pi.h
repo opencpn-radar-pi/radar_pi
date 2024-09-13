@@ -25,15 +25,15 @@
  ***************************************************************************
  */
 
-#ifndef _SDR_PI_H_
-#define _SDR_PI_H_
+#ifndef SDR_PI_H_
+#define SDR_PI_H_
 
 #include "wx/wxprec.h"
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #include <wx/glcanvas.h>
-#endif  // precompiled headers
+#endif
 
 #include <wx/fileconf.h>
 #include <wx/datetime.h>
@@ -76,17 +76,16 @@ static inline bool GribCurrent(GribRecordSet* grib, double lat, double lon,
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
 
-#define ShipDriver_TOOL_POSITION \
-  -1  // Request default positioning of toolbar tool
+#define ShipDriver_TOOL_POSITION  (-1)  ///< toolbar tool default positioning
 
 class ShipDriver_pi : public opencpn_plugin_118 {
 public:
   ShipDriver_pi(void* ppimgr);
-  ~ShipDriver_pi(void);
+  ~ShipDriver_pi();
 
   //    The required PlugIn Methods
-  int Init(void);
-  bool DeInit(void);
+  int Init();
+  bool DeInit();
 
   int GetAPIVersionMajor();
   int GetAPIVersionMinor();
@@ -103,7 +102,7 @@ public:
   wxString GetLongDescription();
 
   //    The required override PlugIn Methods
-  int GetToolbarToolCount(void);
+  int GetToolbarToolCount();
   void OnToolbarToolCallback(int id);
 
   //    Optional plugin overrides
@@ -125,8 +124,8 @@ public:
 
   int m_hr_dialog_x, m_hr_dialog_y;
 
-  double GetCursorLat(void) { return m_cursor_lat; }
-  double GetCursorLon(void) { return m_cursor_lon; }
+  double GetCursorLat() { return m_cursor_lat; }
+  double GetCursorLon() { return m_cursor_lon; }
 
   void ShowPreferencesDialog(wxWindow* parent);
   void SetPluginMessage(wxString& message_id, wxString& message_body);
@@ -155,8 +154,8 @@ private:
 
   wxFileConfig* m_pconfig;
   wxWindow* m_parent_window;
-  bool LoadConfig(void);
-  bool SaveConfig(void);
+  bool LoadConfig();
+  bool SaveConfig();
 
   int m_hr_dialog_width, m_hr_dialog_height;
   int m_hr_dialog_sx, m_hr_dialog_sy;

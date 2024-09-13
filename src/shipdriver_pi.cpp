@@ -164,7 +164,7 @@ int ShipDriver_pi::Init() {
 
 bool ShipDriver_pi::DeInit() {
   //    Record the dialog position
-  if (NULL != m_pDialog) {
+  if (m_pDialog) {
     // Capture dialog position
     wxPoint p = m_pDialog->GetPosition();
     wxRect r = m_pDialog->GetRect();
@@ -230,7 +230,7 @@ void ShipDriver_pi::SetColorScheme(PI_ColorScheme cs) {
 }
 
 void ShipDriver_pi::ShowPreferencesDialog(wxWindow* parent) {
-  shipdriverPreferences* Pref = new shipdriverPreferences(parent);
+  auto* Pref = new shipdriverPreferences(parent);
 
   Pref->m_cbTransmitAis->SetValue(m_bCopyUseAis);
   Pref->m_cbAisToFile->SetValue(m_bCopyUseFile);
@@ -260,11 +260,11 @@ void ShipDriver_pi::ShowPreferencesDialog(wxWindow* parent) {
   }
 
   delete Pref;
-  Pref = NULL;
+  Pref = nullptr;
 }
 
 void ShipDriver_pi::OnToolbarToolCallback(int id) {
-  if (NULL == m_pDialog) {
+  if (!m_pDialog) {
     m_pDialog = new Dlg(m_parent_window);
     m_pDialog->plugin = this;
     m_pDialog->m_Timer = new wxTimer(m_pDialog);
@@ -315,9 +315,9 @@ bool ShipDriver_pi::LoadConfig() {
       // Read the existing settings
 
       pConf->SetPath("/Settings/ShipDriver_pi");
-      pConf->Read("ShowShipDriverIcon", &m_bShipDriverShowIcon, 1);
-      pConf->Read("shipdriverUseAis", &m_bCopyUseAis, 0);
-      pConf->Read("shipdriverUseFile", &m_bCopyUseFile, 0);
+      pConf->Read("ShowShipDriverIcon", &m_bShipDriverShowIcon, true);
+      pConf->Read("shipdriverUseAis", &m_bCopyUseAis, false);
+      pConf->Read("shipdriverUseFile", &m_bCopyUseFile, false);
       m_tCopyMMSI = pConf->Read("shipdriverMMSI", "123456789");
 
       m_hr_dialog_x = pConf->Read("DialogPosX", 40L);
@@ -331,9 +331,9 @@ bool ShipDriver_pi::LoadConfig() {
       pConf->DeleteGroup(_T("/Settings/ShipDriver_pi"));
     } else {
       pConf->SetPath("/PlugIns/ShipDriver_pi");
-      pConf->Read("ShowShipDriverIcon", &m_bShipDriverShowIcon, 1);
-      pConf->Read("shipdriverUseAis", &m_bCopyUseAis, 0);
-      pConf->Read("shipdriverUseFile", &m_bCopyUseFile, 0);
+      pConf->Read("ShowShipDriverIcon", &m_bShipDriverShowIcon, true);
+      pConf->Read("shipdriverUseAis", &m_bCopyUseAis, false);
+      pConf->Read("shipdriverUseFile", &m_bCopyUseFile, false);
       m_tCopyMMSI = pConf->Read("shipdriverMMSI", "123456789");
 
       m_hr_dialog_x = pConf->Read("DialogPosX", 40L);
@@ -431,9 +431,6 @@ void ShipDriver_pi::SetPluginMessage(wxString& message_id,
     time.Set(value["Day"].asInt(), (wxDateTime::Month)value["Month"].asInt(),
              value["Year"].asInt(), value["Hour"].asInt(),
              value["Minute"].asInt(), value["Second"].asInt());
-
-    wxString dt;
-    dt = time.Format("%Y-%m-%d  %H:%M ");
 
     if (m_pDialog) {
       m_pDialog->m_GribTimelineTime = time.ToUTC();
