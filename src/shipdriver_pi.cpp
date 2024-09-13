@@ -347,7 +347,7 @@ bool ShipDriverPi::LoadConfig() {
       m_hr_dialog_y = conf->Read("DialogPosY", 140L);
       m_hr_dialog_sx = conf->Read("DialogSizeX", 330L);
 #ifdef __WXOSX__
-      m_hr_dialog_sy = pConf->Read("DialogSizeY", 250L);
+      m_hr_dialog_sy = conf->Read("DialogSizeY", 250L);
 #else
       m_hr_dialog_sy = conf->Read("DialogSizeY", 300L);
 #endif
@@ -363,7 +363,7 @@ bool ShipDriverPi::LoadConfig() {
       m_hr_dialog_y = conf->Read("DialogPosY", 140L);
       m_hr_dialog_sx = conf->Read("DialogSizeX", 330L);
 #ifdef __WXOSX__
-      m_hr_dialog_sy = pConf->Read("DialogSizeY", 250L);
+      m_hr_dialog_sy = conf->Read("DialogSizeY", 250L);
 #else
       m_hr_dialog_sy = conf->Read("DialogSizeY", 300L);
 #endif
