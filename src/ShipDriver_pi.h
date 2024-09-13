@@ -92,6 +92,11 @@ public:
   int GetAPIVersionMinor();
   int GetPlugInVersionMajor();
   int GetPlugInVersionMinor();
+  int GetPlugInVersionPatch();
+  int GetPlugInVersionPost();
+  const char* GetPlugInVersionPre();
+  const char* GetPlugInVersionBuild();
+
   wxBitmap* GetPlugInBitmap();
   wxString GetCommonName();
   wxString GetShortDescription();
