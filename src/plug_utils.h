@@ -26,7 +26,7 @@
 struct IconPath {
   const enum class Type { NotFound, Png, Svg } type;
   const std::string path;
-  IconPath(Type t, const std::string& p) : type(t), path(p) {}
+  IconPath(Type t, const std::string p) : type(t), path(std::move(p)){}
 };
 
 /**

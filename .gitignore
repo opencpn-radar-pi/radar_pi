@@ -7,6 +7,7 @@ po/*.pot
 .DS_Store
 *humbs.db
 cache
+cmake-build-*
 plugins
 *.bat
 *.bak
