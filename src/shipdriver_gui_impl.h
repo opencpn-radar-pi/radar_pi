@@ -33,8 +33,8 @@
 #endif
 
 #include "AisMaker.h"
-#include "ShipDriver_pi.h"
-#include "ShipDrivergui.h"
+#include "shipdriver_pi.h"
+#include "shipdriver_gui.h"
 #include "ocpn_plugin.h"
 #include "tinyxml.h"
 #include "wx/process.h"

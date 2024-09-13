@@ -26,7 +26,7 @@
  ***************************************************************************
  */
 
-#include "ShipDrivergui_impl.h"
+#include "shipdriver_gui_impl.h"
 
 static const std::vector<std::pair<uint32_t, char>> payloadencoding
     = { { 0, '0' }, { 1, '1' }, { 2, '2' }, { 3, '3' }, { 4, '4' }, { 5, '5' },

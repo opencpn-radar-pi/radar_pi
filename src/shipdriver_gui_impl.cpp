@@ -34,8 +34,8 @@
 #include "wx/tglbtn.h"
 
 #include "qtstylesheet.h"
-#include "ShipDrivergui_impl.h"
-#include "ShipDriver_pi.h"
+#include "shipdriver_gui_impl.h"
+#include "shipdriver_pi.h"
 
 #ifdef __ANDROID__
 wxWindow* g_Window;

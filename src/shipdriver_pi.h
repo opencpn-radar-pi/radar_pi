@@ -45,7 +45,7 @@
 #include "json/writer.h"
 
 #include "ocpn_plugin.h"  //Required for OCPN plugin functions
-#include "ShipDrivergui_impl.h"
+#include "shipdriver_gui_impl.h"
 #include "GribRecordSet.h"
 
 // Define minimum and maximum versions of the grib plugin supported

@@ -31,9 +31,9 @@
 #include "wx/wx.h"
 #endif  // precompiled headers
 
-#include "ShipDriver_pi.h"
-#include "ShipDrivergui.h"
-#include "ShipDrivergui_impl.h"
+#include "shipdriver_pi.h"
+#include "shipdriver_gui.h"
+#include "shipdriver_gui_impl.h"
 #include "ocpn_plugin.h"
 
 class ShipDriver_pi;
