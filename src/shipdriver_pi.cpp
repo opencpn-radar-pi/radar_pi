@@ -494,7 +494,7 @@ void ShipDriver_pi::SetPluginMessage(wxString& message_id,
   }
 }
 
-bool ShipDriver_pi::GribWind(GribRecordSet* grib, double lat, double lon,
+[[maybe_unused]] bool ShipDriver_pi::GribWind(GribRecordSet* grib, double lat, double lon,
                              double& WG, double& VWG) {
   if (!grib) return false;
 

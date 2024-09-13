@@ -80,38 +80,38 @@ static inline bool GribCurrent(GribRecordSet* grib, double lat, double lon,
 
 class ShipDriver_pi : public opencpn_plugin_118 {
 public:
-  ShipDriver_pi(void* ppimgr);
-  ~ShipDriver_pi();
+  explicit ShipDriver_pi(void* ppimgr);
+  ~ShipDriver_pi() override;
 
   //    The required PlugIn Methods
-  int Init();
-  bool DeInit();
+  int Init() override;
+  bool DeInit() override;
 
-  int GetAPIVersionMajor();
-  int GetAPIVersionMinor();
-  int GetPlugInVersionMajor();
-  int GetPlugInVersionMinor();
-  int GetPlugInVersionPatch();
-  int GetPlugInVersionPost();
-  const char* GetPlugInVersionPre();
-  const char* GetPlugInVersionBuild();
+  int GetAPIVersionMajor() override;
+  int GetAPIVersionMinor() override;
+  int GetPlugInVersionMajor() override;
+  int GetPlugInVersionMinor() override;
+  int GetPlugInVersionPatch() override;
+  int GetPlugInVersionPost() override;
+  const char* GetPlugInVersionPre() override;
+  const char* GetPlugInVersionBuild() override;
 
-  wxBitmap* GetPlugInBitmap();
-  wxString GetCommonName();
-  wxString GetShortDescription();
-  wxString GetLongDescription();
+  wxBitmap* GetPlugInBitmap() override;
+  wxString GetCommonName() override;
+  wxString GetShortDescription() override;
+  wxString GetLongDescription() override;
 
   //    The required override PlugIn Methods
-  int GetToolbarToolCount();
-  void OnToolbarToolCallback(int id);
+  int GetToolbarToolCount() override;
+  void OnToolbarToolCallback(int id) override;
 
   //    Optional plugin overrides
-  void SetColorScheme(PI_ColorScheme cs);
+  void SetColorScheme(PI_ColorScheme cs) override;
 
   //    The override PlugIn Methods
-  void OnContextMenuItemCallback(int id);
-  void SetCursorLatLon(double lat, double lon);
-  void SetNMEASentence(wxString& sentence);
+  void OnContextMenuItemCallback(int id) override;
+  void SetCursorLatLon(double lat, double lon) override;
+  void SetNMEASentence(wxString& sentence) override;
 
   //    Other public methods
   void SetShipDriverDialogX(int x) { m_hr_dialog_x = x; };
@@ -124,20 +124,18 @@ public:
 
   int m_hr_dialog_x, m_hr_dialog_y;
 
-  double GetCursorLat() { return m_cursor_lat; }
-  double GetCursorLon() { return m_cursor_lon; }
+  [[nodiscard]] double GetCursorLat() const { return m_cursor_lat; }
+  [[nodiscard]] double GetCursorLon() const { return m_cursor_lon; }
 
-  void ShowPreferencesDialog(wxWindow* parent);
-  void SetPluginMessage(wxString& message_id, wxString& message_body);
-  bool GribWind(GribRecordSet* grib, double lat, double lon, double& WG,
-                double& VWG);
+  void ShowPreferencesDialog(wxWindow* parent) override;
+  void SetPluginMessage(wxString& message_id, wxString& message_body) override;
+  [[maybe_unused]] bool GribWind(GribRecordSet* grib, double lat, double lon,
+                                 double& WG, double& VWG);
 
   bool m_bGribValid;
   double m_grib_lat, m_grib_lon;
   double m_tr_spd;
   double m_tr_dir;
-
-  wxString StandardPath();
   wxBitmap m_panelBitmap;
 
 private:
@@ -146,7 +144,6 @@ private:
 
   int m_position_menu_id;
   double m_GUIScaleFactor;
-  void OnClose(wxCloseEvent& event);
 
   ShipDriver_pi* plugin;
 
