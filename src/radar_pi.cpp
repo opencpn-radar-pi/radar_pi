@@ -39,7 +39,7 @@
 #include "Kalman.h"
 #include "MessageBox.h"
 #include "OptionsDialog.h"
-#include "RadarMarpa.h"
+#include "Arpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "navico/NavicoLocate.h"

@@ -103,7 +103,7 @@ public:
     double m_radar_radius; // radius in pixels of the outer ring in the panel
     double m_panel_zoom; // zooming factor for the panel image
 
-    RadarArpa* m_arpa;
+    Arpa* m_arpa;
     wxCriticalSection m_exclusive;
 
     /* User radar settings */

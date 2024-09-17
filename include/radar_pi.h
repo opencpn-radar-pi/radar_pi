@@ -76,7 +76,7 @@ class RadarReceive;
 class RadarControl;
 class radar_pi;
 class GuardZoneBogey;
-class RadarArpa;
+class Arpa;
 class GPSKalmanFilter;
 class RaymarineLocate;
 class NavicoLocate;

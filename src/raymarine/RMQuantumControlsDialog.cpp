@@ -12,6 +12,7 @@
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
  *   Copyright (C) 2012-2016 by Kees Verruijt         canboat@verruijt.net *
+ *   Copyright (C) 2015-2024 by Douwe Fokkema             df@percussion.nl * 
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,7 +33,7 @@
 
 #include "RMQuantumControlsDialog.h"
 
-#include "RadarMarpa.h"
+#include "Arpa.h"
 #include "RadarPanel.h"
 
 PLUGIN_BEGIN_NAMESPACE
