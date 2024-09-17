@@ -9,14 +9,14 @@
 :: Install the pathman tool: https://github.com/therootcompany/pathman
 :: Fix PATH so it can be used in this script
 ::
-if not exist "%HomeDrive%%HomePath%\.local\bin\pathman.exe" (
-    pushd "%HomeDrive%%HomePath%"
+if not exist "%USERPROFILE%\.local\bin\pathman.exe" (
+    pushd "%USERPROFILE%"
     curl.exe https://webi.ms/pathman | powershell
     popd
 )
 pathman list > nul 2>&1
 if errorlevel 1 set PATH=%PATH%;%HomeDrive%\%HomePath%\.local\bin
-pathman add %HomeDrive%%HomePath%\.local\bin >nul
+pathman add %USERPROFILE%\.local\bin >nul
 
 :: Install choco cmake and add it's persistent user path element
 ::
