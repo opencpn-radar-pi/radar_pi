@@ -265,7 +265,8 @@ bool MessageBox::UpdateMessage(bool force) {
 
   bool haveOpenGL = m_pi->IsOpenGLEnabled();
   bool haveGPS = m_pi->IsBoatPositionValid();
-  bool haveTrueHeading = !TIMED_OUT(now, m_pi->GetHeadingTrueTimeout());
+  bool haveTrueHeading = !TIMED_OUT(now, m_pi->GetHeadingTrueTimeout()) || m_pi->m_heading_source == HEADING_FIXED;
+  if (m_pi->m_heading_source == HEADING_FIXED) haveTrueHeading = true;
   bool haveMagHeading = !TIMED_OUT(now, m_pi->GetHeadingMagTimeout());
   bool haveHeading = haveTrueHeading || haveMagHeading;
   bool haveVariation = m_pi->GetVariationSource() != VARIATION_SOURCE_NONE;

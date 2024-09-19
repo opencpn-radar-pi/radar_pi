@@ -49,7 +49,7 @@
 
 namespace RadarPlugin {
 using ::NMEA0183;
-
+int g_verbose;
 #undef M_SETTINGS
 #define M_SETTINGS m_settings
 
@@ -262,6 +262,7 @@ int radar_pi::Init(void) {
   // For instance, LOG_XXX messages before config is loaded.
   m_settings.verbose = 0;
   m_settings.overlay_transparency = DEFAULT_OVERLAY_TRANSPARENCY;
+  g_verbose = 0;
   m_settings.refreshrate = 1;
   m_settings.threshold_blue = 255;
   m_settings.threshold_red = 255;
@@ -300,7 +301,7 @@ int radar_pi::Init(void) {
   //    And load the configuration items
   if (LoadConfig()) {
     LOG_INFO(wxT("Configuration file values initialised"));
-    LOG_INFO(wxT("Log verbosity = %d. To modify, set VerboseLog to sum of:"), m_settings.verbose);
+    LOG_INFO(wxT("Log verbosity = %d. To modify, set VerboseLog to sum of:"), g_verbose);
     LOG_INFO(wxT("VERBOSE  = %d"), LOGLEVEL_VERBOSE);
     LOG_INFO(wxT("DIALOG   = %d"), LOGLEVEL_DIALOG);
     LOG_INFO(wxT("TRANSMIT = %d"), LOGLEVEL_TRANSMIT);
@@ -607,7 +608,7 @@ void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
   NotifyRadarWindowViz();
 
   if (EnsureRadarSelectionComplete(false)) {
-    OptionsDialog dlg(parent, m_settings, m_radar[0]->m_radar_type);
+    OptionsDialog dlg(parent, this, m_settings, m_radar[0]->m_radar_type);
 
     if (dlg.ShowModal() == wxID_OK) {
       m_settings = dlg.GetSettings();
@@ -946,6 +947,10 @@ void radar_pi::SetRadarHeading(double heading, bool isTrue) {
   wxCriticalSectionLocker lock(m_exclusive);
   time_t now = time(0);
   if (!wxIsNaN(heading)) {
+    if (m_heading_source == HEADING_FIXED) {
+      m_hdt = heading;
+      return;
+    }
     if (isTrue) {
       m_heading_source = HEADING_RADAR_HDT;
       m_hdt = heading;
@@ -977,6 +982,8 @@ void radar_pi::UpdateHeadingPositionState() {
 
     switch (m_heading_source) {
       case HEADING_NONE:
+        break;
+      case HEADING_FIXED:
         break;
       case HEADING_FIX_COG:
       case HEADING_FIX_HDT:
@@ -1086,6 +1093,11 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
 
 // Called between 1 and 10 times per second by RenderGLOverlay call
 void radar_pi::TimedControlUpdate() {
+  if (m_heading_source == HEADING_FIXED) {
+    while (m_settings.fixed_heading_value >= 360) m_settings.fixed_heading_value -= 360;
+    while (m_settings.fixed_heading_value < -180) m_settings.fixed_heading_value += 360;
+    SetRadarHeading(m_settings.fixed_heading_value);
+  }
   wxLongLong now = wxGetUTCTimeMillis();
   if (!m_notify_control_dialog && !TIMED_OUT(now, m_notify_time_ms + 500)) {
     return;  // Don't run this more often than 2 times per second
@@ -1106,7 +1118,7 @@ void radar_pi::TimedControlUpdate() {
     updateAllControls = true;
   }
 
-  if (m_pMessageBox->IsShown() || (m_settings.verbose != 0)) {
+  if (m_pMessageBox->IsShown() || (g_verbose != 0)) {
     wxString t;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_radar[r]->m_state.GetValue() != RADAR_OFF) {
@@ -1157,6 +1169,7 @@ void radar_pi::TimedControlUpdate() {
   wxString info;
   switch (m_heading_source) {
     case HEADING_NONE:
+      break;
     case HEADING_FIX_HDM:
     case HEADING_NMEA_HDM:
     case HEADING_RADAR_HDM:
@@ -1164,6 +1177,9 @@ void radar_pi::TimedControlUpdate() {
       break;
     case HEADING_FIX_COG:
       info = _("COG");
+      break;
+    case HEADING_FIXED:
+      info = _("Fixed");
       break;
     case HEADING_FIX_HDT:
     case HEADING_NMEA_HDT:
@@ -1177,7 +1193,10 @@ void radar_pi::TimedControlUpdate() {
     info << wxString::Format(wxT(" %3.1f"), m_hdt);
   }
   m_pMessageBox->SetTrueHeadingInfo(info);
+  info = _("");
   switch (m_heading_source) {
+    case HEADING_FIXED:
+      break;
     case HEADING_NONE:
     case HEADING_FIX_COG:
     case HEADING_FIX_HDT:
@@ -1489,10 +1508,25 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("RangeUnits"), &v, RANGE_NAUTIC);
     m_settings.range_units = (RangeUnits)wxMax(wxMin(v, 2), 0);
 
-    pConf->Read(wxT("VerboseLog"), &m_settings.verbose, 0);
+    pConf->Read(wxT("VerboseLog"), &g_verbose, 0);
 
     pConf->Read(wxT("DockSize"), &v, 0);
     m_settings.dock_size = v;
+
+    pConf->Read(wxT("FixedHeading"), &m_settings.fixed_heading, 0);
+    if (m_settings.fixed_heading == 1) {
+      m_heading_source = HEADING_FIXED;
+    }
+    pConf->Read(wxT("FixedHeadingValue"), &m_settings.fixed_heading_value, 0);
+    if (m_settings.fixed_heading == 1) {
+      while (m_settings.fixed_heading_value >= 360.) m_settings.fixed_heading_value -= 360.;
+      while (m_settings.fixed_heading_value < -180.) m_settings.fixed_heading_value += 360.;
+      SetRadarHeading(m_settings.fixed_heading_value);
+    }
+    pConf->Read(wxT("FixedPosition"), &m_settings.pos_is_fixed, 0);
+    pConf->Read(wxT("FixedLatValue"), &m_settings.fixed_pos.lat, 0);
+    pConf->Read(wxT("FixedLonValue"), &m_settings.fixed_pos.lon, 0);
+    pConf->Read(wxT("RadarDescription"), &m_settings.radar_description_text, _("empty"));
 
     size_t n = 0;
     for (int r = 0; r < RADARS; r++) {
@@ -1687,7 +1721,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("TrailColourEnd"), m_settings.trail_end_colour.GetAsString());
     pConf->Write(wxT("TrailsOnOverlay"), m_settings.trails_on_overlay);
     pConf->Write(wxT("Transparency"), m_settings.overlay_transparency.GetValue());
-    pConf->Write(wxT("VerboseLog"), m_settings.verbose);
+    pConf->Write(wxT("VerboseLog"), g_verbose);
     pConf->Write(wxT("AISatARPAoffset"), m_settings.AISatARPAoffset);
     pConf->Write(wxT("ColourStrong"), m_settings.strong_colour.GetAsString());
     pConf->Write(wxT("ColourIntermediate"), m_settings.intermediate_colour.GetAsString());
@@ -1699,6 +1733,14 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("ColourPPIBackground"), m_settings.ppi_background_colour.GetAsString());
     pConf->Write(wxT("RadarCount"), m_settings.radar_count);
     pConf->Write(wxT("DockSize"), m_settings.dock_size);
+    pConf->Write(wxT("FixedHeadingValue"), m_settings.fixed_heading_value);
+    pConf->Write(wxT("FixedHeading"), m_settings.fixed_heading);
+    LOG_INFO(wxT("$$$fixed_heading=%i"), m_settings.fixed_heading);
+    pConf->Write(wxT("FixedPosition"), m_settings.pos_is_fixed);
+    pConf->Write(wxT("FixedLatValue"), m_settings.fixed_pos.lat);
+    pConf->Write(wxT("FixedLonValue"), m_settings.fixed_pos.lon);
+    pConf->Write(wxT("RadarDescription"), m_settings.radar_description_text);
+    pConf->Write(wxT("TargetMixerAddress"), m_settings.target_mixer_address.to_string());
 
     for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
@@ -1746,6 +1788,12 @@ bool radar_pi::SaveConfig(void) {
 
     pConf->Flush();
     // LOG_VERBOSE(wxT("Saved settings"));
+
+    if (m_settings.pos_is_fixed) {
+      m_ownship = m_settings.fixed_pos;
+      m_bpos_set = true;
+      LOG_VERBOSE(wxT("GPS position is now fixed to m_ownship.lat= %f, m_ownship.lon = %f"), m_ownship.lat, m_ownship.lon);
+    }
     return true;
   }
 

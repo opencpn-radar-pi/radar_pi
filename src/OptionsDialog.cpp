@@ -1,31 +1,17 @@
 /******************************************************************************
  *
- * Project:  OpenCPN
- * Purpose:  Radar Plugin
- * Author:   David Register
- *           Dave Cowell
- *           Kees Verruijt
+ * Project:  Shore radar
+ * Authors:  Kees Verruijt
  *           Douwe Fokkema
- *           Sean D'Epagnier
  ***************************************************************************
- *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
- *   Copyright (C) 2012-2013 by Dave Cowell                                *
- *   Copyright (C) 2012-2016 by Kees Verruijt         canboat@verruijt.net *
+ *   Copyright (C) 2012-2023 by Kees Verruijt         canboat@verruijt.net *
+ *   Copyright (C) 2013-2023 by Douwe Fokkema         df@percussion.nl     *
  *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
  *                                                                         *
  *   This program is distributed in the hope that it will be useful,       *
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                  *
  *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
  */
 
@@ -36,13 +22,14 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, RadarType radar_type)
+OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings &settings, RadarType radar_type)
     : wxDialog(parent, wxID_ANY, _("Radar Display Preferences") + wxT(" ") + wxT(PLUGIN_VERSION), wxDefaultPosition, wxDefaultSize,
                wxDEFAULT_DIALOG_STYLE) {
   wxString m_temp;
 
   m_parent = parent;
   m_settings = settings;
+  m_pi = pi;
 
   int font_size_y, font_descent, font_lead;
   GetTextExtent(_T("0"), NULL, &font_size_y, &font_descent, &font_lead);
@@ -105,17 +92,123 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
                               this);
   m_GuardZoneTimeout->SetValue(wxString::Format(wxT("%d"), m_settings.guard_zone_timeout));
 
-  // Drawing Method
+  wxStaticBox *FixedHeadingBox = new wxStaticBox(this, wxID_ANY, _("Fixed Radar"));
+  wxStaticBoxSizer *fixedHeadingSizer = new wxStaticBoxSizer(FixedHeadingBox, wxVERTICAL);
 
-  wxStaticBox *drawingMethodBox = new wxStaticBox(this, wxID_ANY, _("GPU drawing method"));
-  wxStaticBoxSizer *drawingMethodSizer = new wxStaticBoxSizer(drawingMethodBox, wxVERTICAL);
+  m_FixedHeading = new wxCheckBox(this, wxID_ANY, _("Fixed radar heading"), wxDefaultPosition, wxDefaultSize,
+                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  fixedHeadingSizer->Add(m_FixedHeading, 0, wxALL, border_size);
+  m_FixedHeading->SetValue(m_settings.fixed_heading);
+  m_FixedHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnFixedHeadingClick), NULL, this);
 
-  wxArrayString DrawingMethods;
-  RadarDraw::GetDrawingMethods(DrawingMethods);
-  m_DrawingMethod = new wxComboBox(this, wxID_ANY, DrawingMethods[m_settings.drawing_method], wxDefaultPosition, wxDefaultSize,
-                                   DrawingMethods, wxALIGN_CENTRE | wxST_NO_AUTORESIZE, wxDefaultValidator, _("Drawing Method"));
-  drawingMethodSizer->Add(m_DrawingMethod, 0, wxALIGN_CENTER | wxALL, border_size);
-  m_DrawingMethod->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(OptionsDialog::OnDrawingMethodClick), NULL, this);
+  wxStaticText *FixedHeadingValue = new wxStaticText(this, wxID_ANY, _("Fixed heading"), wxDefaultPosition, wxDefaultSize, 0);
+  fixedHeadingSizer->Add(FixedHeadingValue, 0, wxALL, border_size);
+
+  m_FixedHeadingValue = new wxTextCtrl(this, wxID_ANY);
+  fixedHeadingSizer->Add(m_FixedHeadingValue, 1, wxALL, border_size);
+  m_FixedHeadingValue->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(OptionsDialog::OnFixedHeadingValueClick), NULL,
+                               this);
+  m_FixedHeadingValue->SetValue(wxString::Format(wxT("%1.1f"), m_settings.fixed_heading_value));
+
+  m_FixedPosition = new wxCheckBox(this, wxID_ANY, _("Fixed radar position"), wxDefaultPosition, wxDefaultSize,
+                                   wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  fixedHeadingSizer->Add(m_FixedPosition, 0, wxALL, border_size);
+  m_FixedPosition->SetValue(m_settings.pos_is_fixed);
+  m_FixedPosition->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnFixedPositionClick), NULL, this);
+
+  m_CopyOCPNPosition = new wxButton(this, wxID_ANY, _("Copy OpenCPN position"), wxDefaultPosition, wxDefaultSize,
+                                    wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  fixedHeadingSizer->Add(m_CopyOCPNPosition, 0, wxALL, border_size);
+  m_CopyOCPNPosition->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(OptionsDialog::OnCopyOCPNPositionClick), NULL,
+                              this);
+
+  wxStaticText *FixedLatText = new wxStaticText(this, wxID_ANY, _("Fixed latitude"), wxDefaultPosition, wxDefaultSize, 0);
+  fixedHeadingSizer->Add(FixedLatText, 0, wxALL, border_size);
+
+  m_FixedLatValue = new wxTextCtrl(this, wxID_ANY);
+  fixedHeadingSizer->Add(m_FixedLatValue, 1, wxALL, border_size);
+  m_FixedLatValue->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(OptionsDialog::OnFixedLatTextClick), NULL, this);
+  m_FixedLatValue->SetValue(wxString::Format(wxT("%f"), m_settings.fixed_pos.lat));
+
+  wxStaticText *FixedLonText = new wxStaticText(this, wxID_ANY, _("Fixed longitude"), wxDefaultPosition, wxDefaultSize, 0);
+  fixedHeadingSizer->Add(FixedLonText, 0, wxALL, border_size);
+
+  m_FixedLonValue = new wxTextCtrl(this, wxID_ANY);
+  fixedHeadingSizer->Add(m_FixedLonValue, 1, wxALL, border_size);
+  m_FixedLonValue->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(OptionsDialog::OnFixedLonTextClick), NULL, this);
+  m_FixedLonValue->SetValue(wxString::Format(wxT("%f"), m_settings.fixed_pos.lon));
+
+  wxStaticText *RadarDescription = new wxStaticText(this, wxID_ANY, _("Radar Description"), wxDefaultPosition, wxDefaultSize, 0);
+  fixedHeadingSizer->Add(RadarDescription, 0, wxALL, border_size);
+
+  m_RadarDescriptionText = new wxTextCtrl(this, wxID_ANY);
+  fixedHeadingSizer->Add(m_RadarDescriptionText, 1, wxALL, border_size);
+  m_RadarDescriptionText->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(OptionsDialog::OnRadarDescriptionTextClick),
+                                  NULL, this);
+  m_RadarDescriptionText->SetValue(m_settings.radar_description_text);
+
+  // Logging
+
+  wxStaticBox *LoggingBox = new wxStaticBox(this, wxID_ANY, _("Logging"));
+  wxStaticBoxSizer *LoggingSizer = new wxStaticBoxSizer(LoggingBox, wxVERTICAL);
+
+  uint8_t verbose = 0;
+  uint8_t dialog = 0;
+  uint8_t transmit = 0;
+  uint8_t receive = 0;
+  uint8_t guard = 0;
+  uint8_t arpa = 0;
+  uint8_t reports = 0;
+  uint8_t inter = 0;
+  IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE) verbose = 1;
+  IF_LOG_AT_LEVEL(LOGLEVEL_DIALOG) dialog = 1;
+  IF_LOG_AT_LEVEL(LOGLEVEL_TRANSMIT) transmit = 1;
+  IF_LOG_AT_LEVEL(LOGLEVEL_RECEIVE) receive = 1;
+  IF_LOG_AT_LEVEL(LOGLEVEL_GUARD) guard = 1;
+  IF_LOG_AT_LEVEL(LOGLEVEL_ARPA) arpa = 1;
+  IF_LOG_AT_LEVEL(LOGLEVEL_REPORTS) reports = 1;
+  IF_LOG_AT_LEVEL(LOGLEVEL_INTER) inter = 1;
+
+  m_Verbose = new wxCheckBox(this, wxID_ANY, _("Verbose"), wxDefaultPosition, wxDefaultSize,
+                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  LoggingSizer->Add(m_Verbose, 0, wxALL, border_size);
+  m_Verbose->SetValue(verbose);
+  m_Verbose->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnLoggingClick), NULL, this);
+
+  m_Dialog = new wxCheckBox(this, wxID_ANY, _("Dialog"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  LoggingSizer->Add(m_Dialog, 0, wxALL, border_size);
+  m_Dialog->SetValue(dialog);
+  m_Dialog->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnLoggingClick), NULL, this);
+
+  m_Transmit = new wxCheckBox(this, wxID_ANY, _("Transmit"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  LoggingSizer->Add(m_Transmit, 0, wxALL, border_size);
+  m_Transmit->SetValue(transmit);
+  m_Transmit->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnLoggingClick), NULL, this);
+
+  m_Receive = new wxCheckBox(this, wxID_ANY, _("Receive"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  LoggingSizer->Add(m_Receive, 0, wxALL, border_size);
+  m_Receive->SetValue(receive);
+  m_Receive->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnLoggingClick), NULL, this);
+
+  m_Guard = new wxCheckBox(this, wxID_ANY, _("Guard"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  LoggingSizer->Add(m_Guard, 0, wxALL, border_size);
+  m_Guard->SetValue(guard);
+  m_Guard->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnLoggingClick), NULL, this);
+
+  m_ARPA = new wxCheckBox(this, wxID_ANY, _("ARPA"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  LoggingSizer->Add(m_ARPA, 0, wxALL, border_size);
+  m_ARPA->SetValue(arpa);
+  m_ARPA->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnLoggingClick), NULL, this);
+
+  m_Reports = new wxCheckBox(this, wxID_ANY, _("Reports"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  LoggingSizer->Add(m_Reports, 0, wxALL, border_size);
+  m_Reports->SetValue(reports);
+  m_Reports->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnLoggingClick), NULL, this);
+
+  m_Inter = new wxCheckBox(this, wxID_ANY, _("Inter"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+  LoggingSizer->Add(m_Inter, 0, wxALL, border_size);
+  m_Inter->SetValue(inter);
+  m_Inter->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnLoggingClick), NULL, this);
 
   // Menu options
 
@@ -213,10 +306,11 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   PPIColourSizer->Add(m_AisTextColour);
 
   DisplayOptionsBox->Add(m_RangeUnits, 0, wxALL | wxEXPAND, border_size);
-  DisplayOptionsBox->Add(drawingMethodSizer, 0, wxALL | wxEXPAND, border_size);
+  DisplayOptionsBox->Add(LoggingSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(menuOptionsSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(m_GuardZoneStyle, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(guardZoneSizer, 0, wxALL, border_size);
+  DisplayOptionsBox->Add(fixedHeadingSizer, 0, wxALL, border_size);
   DisplayOptionsBox->Add(trailSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(colourSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(PPIColourSizer, 0, wxALL | wxEXPAND, border_size);
@@ -296,7 +390,6 @@ OptionsDialog::OptionsDialog(wxWindow *parent, PersistentSettings &settings, Rad
   // Accept/Reject button
   wxStdDialogButtonSizer *DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
   topSizer->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, border_size);
-
   DimeWindow(this);
 
   Fit();
@@ -381,6 +474,83 @@ void OptionsDialog::OnTestSoundClick(wxCommandEvent &event) {
   }
 }
 
+void OptionsDialog::OnFixedHeadingValueClick(wxCommandEvent &event) {
+  wxString temp = m_FixedHeadingValue->GetValue();
+  double t;
+  temp.ToDouble(&t);
+  m_settings.fixed_heading_value = t;
+  LOG_INFO(wxT("$$$ fixedheadingvalue=%i, %f"), m_settings.fixed_heading_value, t);
+}
+
+void OptionsDialog::OnFixedHeadingClick(wxCommandEvent &event) {
+  m_settings.fixed_heading = m_FixedHeading->GetValue();
+  LOG_INFO(wxT("$$$ fixedheading=%i, %i"), m_settings.fixed_heading, m_FixedHeading->GetValue());
+  if (m_FixedHeading->GetValue()) {
+    m_pi->m_heading_source = HEADING_FIXED;
+  } else {
+    m_pi->m_heading_source = HEADING_NONE;
+  }
+}
+
+void OptionsDialog::OnFixedPositionClick(wxCommandEvent &event) {
+  // Activate fixed position at the position shown in the lat lon fields
+  m_settings.pos_is_fixed = m_FixedPosition->GetValue();
+  if (m_settings.pos_is_fixed) {
+    wxString temp = m_FixedLatValue->GetValue();
+    double t;
+    temp.ToDouble(&t);
+    if (t < 90 && t > -90 && !isnan(t)) {
+      m_settings.fixed_pos.lat = t;
+    } else {
+      m_settings.fixed_pos.lat = 0.;
+    }
+    temp = m_FixedLonValue->GetValue();
+    temp.ToDouble(&t);
+    if (t <= 180 && t >= -180 && !isnan(t)) {
+      m_settings.fixed_pos.lon = t;
+    } else {
+      m_settings.fixed_pos.lon = 0.;
+    }
+    m_pi->m_bpos_set = true;
+  }
+}
+
+void OptionsDialog::OnCopyOCPNPositionClick(wxCommandEvent &event) {
+  // Copy current OCPN position to the lat lon fields
+  LOG_INFO(wxT("$$$m_GPS_positionXXX"));
+  m_FixedLatValue->SetValue(wxString::Format(wxT("%f"), m_pi->m_last_fixed.pos.lat));
+  m_FixedLonValue->SetValue(wxString::Format(wxT("%f"), m_pi->m_last_fixed.pos.lon));
+  m_settings.fixed_pos.lat = m_pi->m_last_fixed.pos.lat;
+  LOG_INFO(wxT("$$$m_GPS_position.pos.lat=%f, m_pi->m_GPS_position.pos.lon=%f"), m_pi->m_last_fixed.pos.lat,
+           m_pi->m_last_fixed.pos.lon);
+  m_settings.fixed_pos.lon = m_pi->m_last_fixed.pos.lon;
+  m_FixedLatValue->Update();
+  m_FixedLonValue->Update();
+}
+
+void OptionsDialog::OnFixedLatTextClick(wxCommandEvent &event) {
+  wxString temp = m_FixedLatValue->GetValue();
+  double t;
+  temp.ToDouble(&t);
+  if (t < 90 && t > -90) {
+    m_settings.fixed_pos.lat = t;
+  }
+}
+
+void OptionsDialog::OnFixedLonTextClick(wxCommandEvent &event) {
+  wxString temp = m_FixedLonValue->GetValue();
+  double t;
+  temp.ToDouble(&t);
+  if (t <= 180 && t >= -180) {
+    m_settings.fixed_pos.lon = t;
+  }
+}
+
+void OptionsDialog::OnRadarDescriptionTextClick(wxCommandEvent &event) {
+  wxString temp = m_RadarDescriptionText->GetValue();
+  m_settings.radar_description_text = temp;
+}
+
 void OptionsDialog::OnIgnoreHeadingClick(wxCommandEvent &event) { m_settings.ignore_radar_heading = m_IgnoreHeading->GetValue(); }
 
 void OptionsDialog::OnPassHeadingClick(wxCommandEvent &event) { m_settings.pass_heading_to_opencpn = m_PassHeading->GetValue(); }
@@ -394,6 +564,13 @@ void OptionsDialog::OnReverseZoomClick(wxCommandEvent &event) { m_settings.rever
 void OptionsDialog::OnResetButtonClick(wxCommandEvent &event) {
   m_settings.reset_radars = true;
   EndModal(wxID_OK);
+}
+
+void OptionsDialog::OnLoggingClick(wxCommandEvent &event) {
+  g_verbose = m_Verbose->GetValue() * LOGLEVEL_VERBOSE + m_Dialog->GetValue() * LOGLEVEL_DIALOG +
+              m_Transmit->GetValue() * LOGLEVEL_TRANSMIT + m_Receive->GetValue() * LOGLEVEL_RECEIVE +
+              m_Guard->GetValue() * LOGLEVEL_GUARD + m_ARPA->GetValue() * LOGLEVEL_ARPA + m_Reports->GetValue() * LOGLEVEL_REPORTS +
+              m_Inter->GetValue() * LOGLEVEL_INTER;
 }
 
 PLUGIN_END_NAMESPACE

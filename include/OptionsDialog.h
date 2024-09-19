@@ -1,31 +1,17 @@
 /******************************************************************************
  *
- * Project:  OpenCPN
- * Purpose:  Radar Plugin
- * Author:   David Register
- *           Dave Cowell
- *           Kees Verruijt
+ * Project:  Shore radar
+ * Authors:  Kees Verruijt
  *           Douwe Fokkema
- *           Sean D'Epagnier
  ***************************************************************************
- *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
- *   Copyright (C) 2012-2013 by Dave Cowell                                *
- *   Copyright (C) 2012-2016 by Kees Verruijt         canboat@verruijt.net *
+ *   Copyright (C) 2012-2023 by Kees Verruijt         canboat@verruijt.net *
+ *   Copyright (C) 2013-2023 by Douwe Fokkema         df@percussion.nl     *
  *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
  *                                                                         *
  *   This program is distributed in the hope that it will be useful,       *
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                  *
  *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
  */
 
@@ -38,9 +24,10 @@ PLUGIN_BEGIN_NAMESPACE
 
 class OptionsDialog : public wxDialog {
 public:
-    OptionsDialog(
-        wxWindow* parent, PersistentSettings& settings, RadarType radar_type);
+    OptionsDialog(wxWindow* parent, radar_pi* pi, PersistentSettings& settings,
+        RadarType radar_type);
     PersistentSettings GetSettings() { return m_settings; };
+    radar_pi* m_pi;
 
 private:
     void OnClose(wxCloseEvent& event);
@@ -52,6 +39,13 @@ private:
     void OnGuardZoneOnOverlayClick(wxCommandEvent& event);
     void OnOverlayOnStandbyClick(wxCommandEvent& event);
     void OnGuardZoneTimeoutClick(wxCommandEvent& event);
+    void OnFixedHeadingClick(wxCommandEvent& event);
+    void OnFixedPositionClick(wxCommandEvent& event);
+    void OnFixedLonTextClick(wxCommandEvent& event);
+    void OnRadarDescriptionTextClick(wxCommandEvent& event);
+    void OnFixedLatTextClick(wxCommandEvent& event);
+    void OnCopyOCPNPositionClick(wxCommandEvent& event);
+    void OnFixedHeadingValueClick(wxCommandEvent& event);
     void OnShowExtremeRangeClick(wxCommandEvent& event);
     void OnTrailsOnOverlayClick(wxCommandEvent& event);
     void OnTrailStartColourClick(wxCommandEvent& event);
@@ -73,6 +67,7 @@ private:
     void OnEnableCOGHeadingClick(wxCommandEvent& event);
     void OnReverseZoomClick(wxCommandEvent& event);
     void OnResetButtonClick(wxCommandEvent& event);
+    void OnLoggingClick(wxCommandEvent& event);
 
     PersistentSettings m_settings;
 
@@ -82,6 +77,10 @@ private:
     wxRadioBox* m_DisplayMode;
     wxRadioBox* m_GuardZoneStyle;
     wxTextCtrl* m_GuardZoneTimeout;
+    wxTextCtrl* m_FixedHeadingValue;
+    wxTextCtrl* m_FixedLatValue;
+    wxTextCtrl* m_FixedLonValue;
+    wxTextCtrl* m_RadarDescriptionText;
     wxColourPickerCtrl* m_TrailStartColour;
     wxColourPickerCtrl* m_TrailEndColour;
     wxColourPickerCtrl* m_WeakColour;
@@ -97,12 +96,23 @@ private:
     wxCheckBox* m_TrailsOnOverlay;
     wxCheckBox* m_OverlayStandby;
     wxCheckBox* m_IgnoreHeading;
+    wxCheckBox* m_FixedPosition;
+    wxButton* m_CopyOCPNPosition;
+    wxCheckBox* m_FixedHeading;
     wxCheckBox* m_PassHeading;
     wxCheckBox* m_COGHeading;
     wxComboBox* m_DrawingMethod;
     wxComboBox* m_MenuAutoHide;
     wxCheckBox* m_EnableDualRadar;
     wxCheckBox* m_ReverseZoom;
+    wxCheckBox* m_Verbose;
+    wxCheckBox* m_Dialog;
+    wxCheckBox* m_Transmit;
+    wxCheckBox* m_Receive;
+    wxCheckBox* m_Guard;
+    wxCheckBox* m_ARPA;
+    wxCheckBox* m_Reports;
+    wxCheckBox* m_Inter;
 };
 
 PLUGIN_END_NAMESPACE
