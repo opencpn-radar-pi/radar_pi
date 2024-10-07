@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-08-11 10:26+0200\n"
-"PO-Revision-Date: 2024-08-19 17:19\n"
+"PO-Revision-Date: 2024-10-07 11:32\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -104,7 +104,7 @@ msgstr "Шумоподавление"
 
 #: src\ControlsDialog.cpp:712
 msgid "Threshold"
-msgstr ""
+msgstr "Порог"
 
 #: src\ControlsDialog.cpp:718
 msgid "Target expansion"
@@ -132,11 +132,11 @@ msgstr "Подавление помех"
 
 #: src\ControlsDialog.cpp:758
 msgid "Target separation"
-msgstr "Разделение целей"
+msgstr "Разделение цели"
 
 #: src\ControlsDialog.cpp:766
 msgid "Fast scan"
-msgstr ""
+msgstr "Быстрое сканирование"
 
 #: src\ControlsDialog.cpp:773
 msgid "Target boost"
@@ -285,11 +285,11 @@ msgstr "МПВ"
 
 #: src\ControlsDialog.cpp:1051
 msgid "Mode"
-msgstr ""
+msgstr "Режим"
 
 #: src\ControlsDialog.cpp:1058
 msgid "All_To_Auto"
-msgstr ""
+msgstr "Авто"
 
 #: src\ControlsDialog.cpp:1074
 msgid "Clear cursor"
@@ -329,7 +329,7 @@ msgstr "Допплер"
 
 #: src\ControlsDialog.cpp:1167
 msgid "Doppler Speed Threshold"
-msgstr ""
+msgstr "Порог скорости доплера"
 
 #: src\ControlsDialog.cpp:1174
 msgid "DopplerAutoTrack"
@@ -446,7 +446,7 @@ msgstr "Требуемая опция OpenCPN"
 
 #: src\MessageBox.cpp:152
 msgid "Use Accelerated Graphics (OpenGL)"
-msgstr ""
+msgstr "Использовать графику (OpenGL)"
 
 #: src\MessageBox.cpp:158
 msgid "For radar overlay also required"
@@ -942,7 +942,7 @@ msgstr ""
 
 #: src\raymarine\RaymarineReceive.cpp:160
 msgid "Interface "
-msgstr ""
+msgstr "Интерфейс"
 
 #: src\raymarine\RaymarineReceive.cpp:386
 msgid "E70498"
@@ -1110,7 +1110,7 @@ msgstr "Открытая Вода"
 
 #: include\navico\NavicoControlSet.h:80
 msgid "Moderate"
-msgstr ""
+msgstr "Умеренное"
 
 #: include\navico\NavicoControlSet.h:86
 msgid "Normal"
@@ -1128,7 +1128,7 @@ msgstr ""
 #: include\raymarine\RMQuantumControlSet.h:77
 #: include\raymarine\RMQuantumControlSet.h:84
 msgid "Harbor"
-msgstr ""
+msgstr "Гавань"
 
 #: include\navico\NavicoControlSet.h:92
 #: include\raymarine\RMQuantumControlSet.h:84
@@ -1143,5 +1143,5 @@ msgstr "Птица"
 #: include\raymarine\RMQuantumControlSet.h:77
 #: include\raymarine\RMQuantumControlSet.h:84
 msgid "Coastal"
-msgstr ""
+msgstr "Прибрежный"
 
