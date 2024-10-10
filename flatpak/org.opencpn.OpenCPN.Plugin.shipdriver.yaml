@@ -1,8 +1,8 @@
 #
 # Branches and runtime-version:
 #   - master     Nigthly builds, 22.08 runtime
-#   - beta       Flathub beta branch with 22.08 runtime.
-#   - stable     Flathub main branch x86_64 with 20.08 runtime.
+#   - beta       Flathub beta branch with 24.08 runtime.
+#   - stable     Flathub main branch x86_64 with 22.08 runtime.
 #
 # This is a template used to create a complete manifest in the build
 # directory. Doing so, it handles three tokens:
@@ -19,7 +19,7 @@
 id: org.opencpn.OpenCPN.Plugin.@plugin_name
 
 runtime: org.opencpn.OpenCPN
-runtime-version: beta
+runtime-version: stable
 sdk: org.freedesktop.Sdk//22.08
 build-extension: true
 separate-locales: false
