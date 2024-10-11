@@ -152,6 +152,7 @@ jobs:
     environment:
       - OCPN_TARGET: flatpak-arm64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
+      - BRANCH: stable
     parameters:
       cache-key:
         type: string
@@ -159,18 +160,50 @@ jobs:
         default: "fp-arm20-v2"
     <<: *flatpak-steps
 
+  build-flatpak-arm64-2408:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: arm.medium
+    environment:
+      - OCPN_TARGET: flatpak-arm64
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+      - BRANCH: beta
+    parameters:
+      cache-key:
+        type: string
+        # Update the last part, here v2, to invalidate cache
+        default: "fp-arm20-v2"
+    <<: *flatpak-steps
+
+
   build-flatpak-x86:
     machine:
       image: ubuntu-2204:current
     environment:
       - OCPN_TARGET: flatpak
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
+      - BRANCH: stable
     parameters:
       cache-key:
         type: string
         # Update the last part, here v2, to invalidate cache
         default: "fp-x86-20-v2"
     <<: *flatpak-steps
+
+  build-flatpak-x86-2408:
+    machine:
+      image: ubuntu-2204:current
+    environment:
+      - OCPN_TARGET: flatpak
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+      - BRANCH: beta
+    parameters:
+      cache-key:
+        type: string
+        # Update the last part, here v2, to invalidate cache
+        default: "fp-x86-20-v2"
+    <<: *flatpak-steps
+
 
   build-macos:
     macos:
@@ -237,6 +270,12 @@ workflows:
           <<: *std-filters
 
       - build-flatpak-x86:
+          <<: *std-filters
+
+      - build-flatpak-arm64-2408:
+          <<: *std-filters
+
+      - build-flatpak-x86-2408:
           <<: *std-filters
 
       - build-macos:

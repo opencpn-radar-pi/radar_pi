@@ -189,7 +189,7 @@ sed -i 's|leamas/opencpn-libs|opencpn/opencpn-libs|g' \
 # Update flatpak runtime version as required:
 $SED_I \
     -e '/sdk: org.freedesktop.Sdk/s/20.08/22.08/' \
-    -e '/^runtime-version:/s/:.*/: beta/' \
+    -e '/^runtime-version:/s/:.*/: stable/' \
   flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
 git add flatpak
 git diff-index --quiet --cached HEAD -- || {
