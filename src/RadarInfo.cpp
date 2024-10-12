@@ -37,7 +37,7 @@
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "RadarMarpa.h"
+#include "Arpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
 #include "TrailBuffer.h"
@@ -265,7 +265,7 @@ bool RadarInfo::Init() {
     }
   }
   if (!m_arpa) {
-    m_arpa = new RadarArpa(m_pi, this);
+    m_arpa = new Arpa(m_pi, this);
   }
   m_trails = new TrailBuffer(this, m_spokes, m_spoke_len_max);
   ComputeTargetTrails();

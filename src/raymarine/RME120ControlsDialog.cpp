@@ -29,10 +29,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
  */
-
+#include "Arpa.h"
 #include "RME120ControlsDialog.h"
 
-#include "RadarMarpa.h"
+
 #include "RadarPanel.h"
 
 PLUGIN_BEGIN_NAMESPACE

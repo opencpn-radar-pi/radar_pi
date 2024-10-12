@@ -29,7 +29,7 @@
  ***************************************************************************
  */
 
-#include "RadarMarpa.h"
+#include "Arpa.h"
 
 #include "GuardZone.h"
 #include "RadarCanvas.h"
@@ -41,7 +41,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 static int target_id_count = 0;
 
-RadarArpa::RadarArpa(radar_pi* pi, RadarInfo* ri) {
+Arpa::Arpa(radar_pi* pi, RadarInfo* ri) {
   m_ri = ri;
   m_pi = pi;
   m_number_of_targets = 0;
@@ -56,7 +56,7 @@ ArpaTarget::~ArpaTarget() {
   }
 }
 
-RadarArpa::~RadarArpa() {
+Arpa::~Arpa() {
   int n = m_number_of_targets;
   m_number_of_targets = 0;
   for (int i = 0; i < n; i++) {
@@ -93,7 +93,7 @@ Polar ArpaTarget::Pos2Polar(ExtendedPosition p, ExtendedPosition own_ship) {
   return pol;
 }
 
-bool RadarArpa::Pix(int ang, int rad, bool doppler) {
+bool Arpa::Pix(int ang, int rad, bool doppler) {
   if (rad <= 0 || rad >= (int)m_ri->m_spoke_len_max) {
     return false;
   }
@@ -230,7 +230,7 @@ bool ArpaTarget::MultiPix(int ang, int rad) {  // checks if the blob has a conto
   return false;
 }
 
-bool RadarArpa::MultiPix(int ang, int rad, bool doppler) {
+bool Arpa::MultiPix(int ang, int rad, bool doppler) {
   // checks the blob has a contour of at least length pixels
   // pol must start on the contour of the blob
   // false if not
@@ -335,11 +335,11 @@ bool RadarArpa::MultiPix(int ang, int rad, bool doppler) {
   return false;
 }
 
-void RadarArpa::AcquireNewMARPATarget(ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
+void Arpa::AcquireNewMARPATarget(ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
 
-void RadarArpa::DeleteTarget(ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, FOR_DELETION); }
+void Arpa::DeleteTarget(ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, FOR_DELETION); }
 
-void RadarArpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int status) {
+void Arpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int status) {
   // acquires new target from mouse click position
   // no contour taken yet
   // target status acquire0
@@ -483,7 +483,7 @@ int ArpaTarget::GetContour(Polar* pol) {
       index += 1;
     }
     if (!succes) {
-      LOG_INFO(wxT("radar_pi::RadarArpa::GetContour no next point found count= %i"), count);
+      LOG_INFO(wxT("radar_pi::Arpa::GetContour no next point found count= %i"), count);
       return 7;  // return code 7, no next point found
     }
     // next point found
@@ -541,7 +541,7 @@ int ArpaTarget::GetContour(Polar* pol) {
   return 0;  //  success, blob found
 }
 
-void RadarArpa::DrawContour(ArpaTarget* target) {
+void Arpa::DrawContour(ArpaTarget* target) {
   if (target->m_lost_count > 0) {
     return;  // don't draw targets that were not seen last sweep
   }
@@ -570,7 +570,7 @@ void RadarArpa::DrawContour(ArpaTarget* target) {
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
 }
 
-void RadarArpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
+void Arpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
   wxPoint boat_center;
   GeoPosition radar_pos;
   if (!m_pi->m_settings.drawing_method && m_ri->GetRadarPosition(&radar_pos)) {
@@ -616,7 +616,7 @@ void RadarArpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
   }
 }
 
-void RadarArpa::DrawArpaTargetsPanel(double scale, double arpa_rotate) {
+void Arpa::DrawArpaTargetsPanel(double scale, double arpa_rotate) {
   wxPoint boat_center;
   GeoPosition radar_pos, target_pos;
   double offset_lat = 0.;
@@ -662,7 +662,7 @@ void RadarArpa::DrawArpaTargetsPanel(double scale, double arpa_rotate) {
   }
 }
 
-void RadarArpa::CleanUpLostTargets() {
+void Arpa::CleanUpLostTargets() {
   // remove targets with status LOST and put them at the end
   // adjust m_number_of_targets
   int ii = 0;
@@ -684,7 +684,7 @@ void RadarArpa::CleanUpLostTargets() {
   }
 }
 
-void RadarArpa::RefreshArpaTargets() {
+void Arpa::RefreshArpaTargets() {
   CleanUpLostTargets();
   int target_to_delete = -1;
   // find a target with status FOR_DELETION if it is there
@@ -1025,7 +1025,7 @@ bool ArpaTarget::FindNearestContour(Polar* pol, int dist) {
   return false;
 }
 
-void RadarArpa::CalculateCentroid(ArpaTarget* target) {
+void Arpa::CalculateCentroid(ArpaTarget* target) {
   // real calculation still to be done
 }
 
@@ -1186,14 +1186,14 @@ void ArpaTarget::SetStatusLost() {
   m_pass_nr = PASS1;
 }
 
-void RadarArpa::DeleteAllTargets() {
+void Arpa::DeleteAllTargets() {
   for (int i = 0; i < m_number_of_targets; i++) {
     if (!m_targets[i]) continue;
     m_targets[i]->SetStatusLost();
   }
 }
 
-int RadarArpa::AcquireNewARPATarget(Polar pol, int status, uint8_t doppler) {
+int Arpa::AcquireNewARPATarget(Polar pol, int status, uint8_t doppler) {
   // acquires new target at polar position pol
   // no contour taken yet
   // target status status, normally 0, if dummy target to delete a target -2
@@ -1250,13 +1250,13 @@ void ArpaTarget::ResetPixels() {
   }
 }
 
-void RadarArpa::ClearContours() {
+void Arpa::ClearContours() {
   for (int i = 0; i < m_number_of_targets; i++) {
     m_targets[i]->m_contour_length = 0;
   }
 }
 
-bool RadarArpa::IsAtLeastOneRadarTransmitting() {
+bool Arpa::IsAtLeastOneRadarTransmitting() {
   for (size_t r = 0; r < RADARS; r++) {
     if (m_pi->m_radar[r] != NULL && m_pi->m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT) {
       return true;
@@ -1265,7 +1265,7 @@ bool RadarArpa::IsAtLeastOneRadarTransmitting() {
   return false;
 }
 
-void RadarArpa::SearchDopplerTargets() {
+void Arpa::SearchDopplerTargets() {
   ExtendedPosition own_pos;
   if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 2) {
     LOG_INFO(wxT("No more scanning for ARPA targets, maximum number of targets reached"));

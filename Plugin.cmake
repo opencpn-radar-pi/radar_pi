@@ -50,7 +50,7 @@ Works with Garmin HD, xHD, Navico BR24, 3G, 4G, HALOxx and several Raymarine rad
 When a compass heading is provided it will allow radar overlay on the chart(s).
 It also allows separate display of a traditional radar picture (PPI).
 
-Supports MARPA (even on radars that do not support this themselves),
+Supports (M)ARPA (even on radars that do not support this themselves),
 Guard zones, AIS overlay on PPI, and various radar dependent features
 such as dual radar range and Doppler.
 ]=])
@@ -78,7 +78,7 @@ set(SRC
   include/RadarFactory.h
   include/RadarInfo.h
   include/RadarLocationInfo.h
-  include/RadarMarpa.h
+  include/Arpa.h
   include/RadarPanel.h
   include/RadarReceive.h
   include/RadarType.h
@@ -153,7 +153,7 @@ set(SRC
   src/RadarDrawVertex.cpp
   src/RadarFactory.cpp
   src/RadarInfo.cpp
-  src/RadarMarpa.cpp
+  src/Arpa.cpp
   src/RadarPanel.cpp
   src/SelectDialog.cpp
   src/TextureFont.cpp

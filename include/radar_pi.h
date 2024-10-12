@@ -76,7 +76,7 @@ class RadarReceive;
 class RadarControl;
 class radar_pi;
 class GuardZoneBogey;
-class RadarArpa;
+class Arpa;
 class GPSKalmanFilter;
 class RaymarineLocate;
 class NavicoLocate;
@@ -139,6 +139,7 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
 #define M_PLUGIN
 #endif
 
+extern int g_verbose;
 #define LOGLEVEL_INFO 0
 #define LOGLEVEL_VERBOSE 1
 #define LOGLEVEL_DIALOG 2
@@ -147,7 +148,9 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
 #define LOGLEVEL_GUARD 16
 #define LOGLEVEL_ARPA 32
 #define LOGLEVEL_REPORTS 64
-#define IF_LOG_AT_LEVEL(x) if ((M_SETTINGS.verbose & (x)) != 0)
+#define LOGLEVEL_INTER 128
+#define IF_LOG_AT_LEVEL(x) if ((g_verbose & (x)) != 0)
+
 #define IF_LOG_AT(x, y)                                                        \
     do {                                                                       \
         IF_LOG_AT_LEVEL(x) { y; }                                              \
@@ -160,7 +163,7 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
 #define LOG_GUARD IF_LOG_AT_LEVEL(LOGLEVEL_GUARD) wxLogMessage
 #define LOG_ARPA IF_LOG_AT_LEVEL(LOGLEVEL_ARPA) wxLogMessage
 #define LOG_REPORTS IF_LOG_AT_LEVEL(LOGLEVEL_REPORTS) wxLogMessage
-
+#define LOG_INTER IF_LOG_AT_LEVEL(LOGLEVEL_INTER) wxLogMessage
 #define LOG_BINARY_VERBOSE(what, data, size)                                   \
     IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE)                                          \
     {                                                                          \
@@ -193,6 +196,11 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
     {                                                                          \
         M_PLUGIN logBinaryData(what, data, size);                              \
     }
+#define LOG_BINARY_INTER(what, data, size)                                     \
+    IF_LOG_AT_LEVEL(LOGLEVEL_INTER)                                            \
+    {                                                                          \
+        M_PLUGIN logBinaryData(what, data, size);                              \
+    }
 
 enum {
     BM_ID_RED,
@@ -211,6 +219,7 @@ enum HeadingSource {
     HEADING_FIX_COG,
     HEADING_FIX_HDM,
     HEADING_FIX_HDT,
+    HEADING_FIXED,
     HEADING_NMEA_HDM,
     HEADING_NMEA_HDT,
     HEADING_RADAR_HDM,
@@ -511,6 +520,12 @@ struct PersistentSettings {
     wxColour ais_text_colour; // Colour for AIS texts
     wxColour
         ppi_background_colour; // Colour for PPI background (normally very dark)
+    double fixed_heading_value;
+    bool fixed_heading;
+    bool pos_is_fixed;
+    GeoPosition fixed_pos;
+    wxString radar_description_text;
+    NetworkAddress target_mixer_address;
 };
 
 // Table for AIS targets inside ARPA zone
@@ -796,6 +811,8 @@ public:
     GeoPosition m_cursor_pos;
     GeoPosition m_right_click_pos;
     GeoPosition m_ownship;
+    GeoPosition m_ownship_old;
+    ExtendedPosition m_GPS_position;
 
 public:
     GPSKalmanFilter* m_GPS_filter;

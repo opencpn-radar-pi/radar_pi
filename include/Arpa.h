@@ -92,7 +92,7 @@ enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
 enum PassN { PASS1, PASS2 };
 
 class ArpaTarget {
-    friend class RadarArpa; // Allow RadarArpa access to private members
+    friend class Arpa; // Allow Arpa access to private members
 
 public:
     ArpaTarget(radar_pi* pi, RadarInfo* ri);
@@ -144,10 +144,10 @@ private:
     Polar Pos2Polar(ExtendedPosition p, ExtendedPosition own_ship);
 };
 
-class RadarArpa {
+class Arpa {
 public:
-    RadarArpa(radar_pi* pi, RadarInfo* ri);
-    ~RadarArpa();
+    Arpa(radar_pi* pi, RadarInfo* ri);
+    ~Arpa();
     void DrawArpaTargetsOverlay(double scale, double arpa_rotate);
     void DrawArpaTargetsPanel(double scale, double arpa_rotate);
     void RefreshArpaTargets();
