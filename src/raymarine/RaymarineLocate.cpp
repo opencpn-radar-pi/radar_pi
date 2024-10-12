@@ -95,14 +95,14 @@ void RaymarineLocate::UpdateEthernetCards() {
           m_interface_addr[i].port = 0;
           wxLogError(wxT("Attempting to start receive socket on  %s"), reportRaymarineCommon.to_string());
           m_socket[i] = startUDPMulticastReceiveSocket(m_interface_addr[i], reportRaymarineCommon, error);
-          LOG_VERBOSE(wxT("RaymarineLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
+          LOG_INFO(wxT("RaymarineLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
           i++;
 
           m_interface_addr[i].addr = sa->sin_addr;
           m_interface_addr[i].port = 0;
           wxLogError(wxT("Attempting to start receive socket on  %s"), reportRaymarineQuantumWiFi.to_string());
           m_socket[i] = startUDPMulticastReceiveSocket(m_interface_addr[i], reportRaymarineQuantumWiFi, error);
-          LOG_VERBOSE(wxT("RaymarineLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
+          LOG_INFO(wxT("RaymarineLocate scanning interface %s for radars"), m_interface_addr[i].FormatNetworkAddress());
           i++;
         }
       }
@@ -169,6 +169,7 @@ void *RaymarineLocate::Entry(void) {
             NetworkAddress radar_address;
             radar_address.addr = rx_addr.ipv4.sin_addr;
             radar_address.port = rx_addr.ipv4.sin_port;
+            LOG_INFO(wxT("$$$ locate receiving r=%i, i=%i"), r, i);
             if (ProcessReport(radar_address, m_interface_addr[i], data, (size_t)r)) {
               rescan_network_cards = -PERIOD_UNTIL_CARD_REFRESH;  // Give double time until we rescan
               success = true;
@@ -226,10 +227,15 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
       break;
     }
   }
-  if (len == sizeof(LocationInfoBlock) && rRec->model_id == raymarine_radar_code) {  // only length 36 is used
-    if (m_pi->m_settings.verbose >= 2) {
-      LOG_BINARY_RECEIVE(wxT("RaymarineLocate received RadarReport"), report, len);
+  if (len == sizeof(LocationInfoBlock)){
+    LOG_INFO(wxT("$$$ locate process len=%i, report model_id =%0x, raymarine_radar_code=%0x"), len, rRec->model_id,
+             raymarine_radar_code);
+    m_pi->logBinaryData(wxT("RaymarineLocate received RadarReport"), report, len);
     }
+  if (len == sizeof(LocationInfoBlock) && rRec->model_id == raymarine_radar_code) {  // only length 36 is used
+    
+      
+    
 
     RadarLocationInfo infoA;
     NetworkAddress radar_ipA = radar_address;
