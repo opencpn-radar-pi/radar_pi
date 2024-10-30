@@ -846,13 +846,13 @@ void Dlg::Notify() {
   GLL = createGLLSentence(mdt, initLat, initLon, initSpd, myDir);
   VTG = createVTGSentence(initSpd, myDir);
   VHW = createVHWSentence(initSpd, myDir);
-  // RMC = createRMCSentence(mdt, initLat, initLon, initSpd, myDir);
+  RMC = createRMCSentence(mdt, initLat, initLon, initSpd, myDir);
   HDT = createHDTSentence(myDir);
 
   PushNMEABuffer(GLL + "\r\n");
   PushNMEABuffer(VTG + "\r\n");
   PushNMEABuffer(VHW + "\r\n");
-  // PushNMEABuffer(RMC + "\r\n");
+  PushNMEABuffer(RMC + "\r\n");
   PushNMEABuffer(HDT + "\r\n");
 
   if (m_bUseAis) {
@@ -1192,7 +1192,7 @@ wxString Dlg::createRMCSentence(wxDateTime myDateTime, double myLat,
   nDate = DateTimeToDateString(myDateTime);
 
   nForCheckSum =
-      nRMC + nTime + nC + nNS + nEW + nSpd + nC + nDir + nC + nDate + ",,,A";
+      nRMC + nTime + nC + nA + nNS + nEW + nSpd + nC + nDir + nC + nDate + ",,";
   nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
   return nFinal;
 }
