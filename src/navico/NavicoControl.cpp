@@ -133,7 +133,7 @@ void NavicoControl::RadarTxOn() {
 }
 
 bool NavicoControl::RadarStayAlive() {
-  LOG_TRANSMIT(wxT("%s transmit: stay alive, sequence=%i"), m_name.c_str(), m_ri->m_stay_alive_type);  //$$$
+  LOG_TRANSMIT(wxT("%s transmit: stay alive, sequence=%i"), m_name.c_str(), m_ri->m_stay_alive_type);
   bool tx = false;
   switch (m_ri->m_stay_alive_type) {
     case 0:

@@ -767,7 +767,7 @@ void radar_pi::OnToolbarToolCallback(int id) {
     }
   }
 
-  if (m_settings.show) {  // $$$to do
+  if (m_settings.show) {  // to do
     LOG_DIALOG(wxT("OnToolbarToolCallback: Hide radar windows"));
     m_settings.show = 0;
     SetRadarWindowViz();
@@ -1735,7 +1735,6 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("DockSize"), m_settings.dock_size);
     pConf->Write(wxT("FixedHeadingValue"), m_settings.fixed_heading_value);
     pConf->Write(wxT("FixedHeading"), m_settings.fixed_heading);
-    LOG_INFO(wxT("$$$fixed_heading=%i"), m_settings.fixed_heading);
     pConf->Write(wxT("FixedPosition"), m_settings.pos_is_fixed);
     pConf->Write(wxT("FixedLatValue"), m_settings.fixed_pos.lat);
     pConf->Write(wxT("FixedLonValue"), m_settings.fixed_pos.lon);

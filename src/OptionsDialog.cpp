@@ -479,12 +479,10 @@ void OptionsDialog::OnFixedHeadingValueClick(wxCommandEvent &event) {
   double t;
   temp.ToDouble(&t);
   m_settings.fixed_heading_value = t;
-  LOG_INFO(wxT("$$$ fixedheadingvalue=%i, %f"), m_settings.fixed_heading_value, t);
 }
 
 void OptionsDialog::OnFixedHeadingClick(wxCommandEvent &event) {
   m_settings.fixed_heading = m_FixedHeading->GetValue();
-  LOG_INFO(wxT("$$$ fixedheading=%i, %i"), m_settings.fixed_heading, m_FixedHeading->GetValue());
   if (m_FixedHeading->GetValue()) {
     m_pi->m_heading_source = HEADING_FIXED;
   } else {
@@ -517,11 +515,10 @@ void OptionsDialog::OnFixedPositionClick(wxCommandEvent &event) {
 
 void OptionsDialog::OnCopyOCPNPositionClick(wxCommandEvent &event) {
   // Copy current OCPN position to the lat lon fields
-  LOG_INFO(wxT("$$$m_GPS_positionXXX"));
   m_FixedLatValue->SetValue(wxString::Format(wxT("%f"), m_pi->m_last_fixed.pos.lat));
   m_FixedLonValue->SetValue(wxString::Format(wxT("%f"), m_pi->m_last_fixed.pos.lon));
   m_settings.fixed_pos.lat = m_pi->m_last_fixed.pos.lat;
-  LOG_INFO(wxT("$$$m_GPS_position.pos.lat=%f, m_pi->m_GPS_position.pos.lon=%f"), m_pi->m_last_fixed.pos.lat,
+  LOG_VERBOSE(wxT("m_GPS_position.pos.lat=%f, m_pi->m_GPS_position.pos.lon=%f"), m_pi->m_last_fixed.pos.lat,
            m_pi->m_last_fixed.pos.lon);
   m_settings.fixed_pos.lon = m_pi->m_last_fixed.pos.lon;
   m_FixedLatValue->Update();

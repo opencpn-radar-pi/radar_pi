@@ -169,7 +169,6 @@ void *RaymarineLocate::Entry(void) {
             NetworkAddress radar_address;
             radar_address.addr = rx_addr.ipv4.sin_addr;
             radar_address.port = rx_addr.ipv4.sin_port;
-            LOG_INFO(wxT("$$$ locate receiving r=%i, i=%i"), r, i);
             if (ProcessReport(radar_address, m_interface_addr[i], data, (size_t)r)) {
               rescan_network_cards = -PERIOD_UNTIL_CARD_REFRESH;  // Give double time until we rescan
               success = true;
@@ -228,14 +227,11 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
     }
   }
   if (len == sizeof(LocationInfoBlock)){
-    LOG_INFO(wxT("$$$ locate process len=%i, report model_id =%0x, raymarine_radar_code=%0x"), len, rRec->model_id,
+    LOG_RECEIVE(wxT(" locate process len=%i, report model_id =%0x, raymarine_radar_code=%0x"), len, rRec->model_id,
              raymarine_radar_code);
     m_pi->logBinaryData(wxT("RaymarineLocate received RadarReport"), report, len);
     }
   if (len == sizeof(LocationInfoBlock) && rRec->model_id == raymarine_radar_code) {  // only length 36 is used
-    
-      
-    
 
     RadarLocationInfo infoA;
     NetworkAddress radar_ipA = radar_address;
