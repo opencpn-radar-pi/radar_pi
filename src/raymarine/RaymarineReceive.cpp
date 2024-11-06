@@ -1146,9 +1146,9 @@ void RaymarineReceive::ProcessQuantumScanData(const UINT8 *data, int len) {
     }  // end of while, only one spoke per packet
 
     returns_per_line = qheader->scan_len;
-    if (returns_per_line > 252) {
+    if (returns_per_line > 250) {
       LOG_VERBOSE(wxT("Error returns_per_line too large %i"), returns_per_line);
-      returns_per_line = 252;
+      returns_per_line = 250;
     }
     dataPtr = unpacked_data;
     m_ri->m_statistics.spokes++;
