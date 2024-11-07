@@ -979,6 +979,7 @@ void radar_pi::UpdateHeadingPositionState() {
       m_predicted_position_initialised = false;
       LOG_VERBOSE(wxT("Lost Boat Position data"));
     }
+    if (m_settings.pos_is_fixed) m_bpos_set = true;
 
     switch (m_heading_source) {
       case HEADING_NONE:
