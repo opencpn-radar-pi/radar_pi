@@ -972,7 +972,7 @@ void radar_pi::UpdateHeadingPositionState() {
     wxCriticalSectionLocker lock(m_exclusive);
     time_t now = time(0);
 
-    if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT)) {
+    if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT && !m_settings.pos_is_fixed)){
       // If the position data is 10s old reset our position.
       // Note that the watchdog is reset every time we receive a position.
       m_bpos_set = false;
