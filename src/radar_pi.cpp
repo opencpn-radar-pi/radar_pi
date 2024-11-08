@@ -1234,11 +1234,11 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   }
 
   //// for testing only, simple trick to get position and heading
-  /*wxString nmea;
-  nmea = wxT("$APHDM,000.0,M*33");
-  PushNMEABuffer(nmea);
-  nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-  PushNMEABuffer(nmea);*/
+  //wxString nmea;//$$$
+  //nmea = wxT("$APHDM,000.0,M*33");
+  //PushNMEABuffer(nmea);
+  //nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+  //PushNMEABuffer(nmea);
 
   // update own ship position to best estimate
   ExtendedPosition intermediate_pos;
@@ -1425,6 +1425,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   if (M_SETTINGS.show                                                     // Radar shown
       && current_overlay_radar > -1                                       // Overlay desired
       && current_overlay_radar < (int)M_SETTINGS.radar_count              // and still valid
+      && m_heading_source != HEADING_NONE                                 // Heading is valid
       && m_radar[current_overlay_radar]->GetRadarPosition(&radar_pos)) {  // Boat position known
 
     GeoPosition pos_min = {vp->lat_min, vp->lon_min};
