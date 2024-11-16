@@ -151,7 +151,7 @@ void *NavicoLocate::Entry(void) {
     }
 
     r = select(maxFd + 1, &fdin, 0, 0, &tv);
-    if (r == -1 && errno != 0) {
+    if (r <= 0 && errno != 0) {
       UpdateEthernetCards();
       rescan_network_cards = 0;
     }
