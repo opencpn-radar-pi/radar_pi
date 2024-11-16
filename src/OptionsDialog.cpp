@@ -117,8 +117,6 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   m_FixedHeading->SetValue(m_settings.fixed_heading);
   m_FixedHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnFixedHeadingClick), NULL, this);
 
-  wxStaticText* FixedHeadingValue = new wxStaticText(this, wxID_ANY, _("Fixed heading"), wxDefaultPosition, wxDefaultSize, 0);
-  fixedHeadingSizer->Add(FixedHeadingValue, 0, wxALL, border_size);
 
   m_FixedHeadingValue = new wxTextCtrl(this, wxID_ANY);
   fixedHeadingSizer->Add(m_FixedHeadingValue, 1, wxALL, border_size);
@@ -138,7 +136,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   m_CopyOCPNPosition->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(OptionsDialog::OnCopyOCPNPositionClick), NULL,
     this);
 
-  wxStaticText* FixedLatText = new wxStaticText(this, wxID_ANY, _("Fixed latitude"), wxDefaultPosition, wxDefaultSize, 0);
+  wxStaticText* FixedLatText = new wxStaticText(this, wxID_ANY, _("Fixed lat / lon"), wxDefaultPosition, wxDefaultSize, 0);
   fixedHeadingSizer->Add(FixedLatText, 0, wxALL, border_size);
 
   m_FixedLatValue = new wxTextCtrl(this, wxID_ANY);
@@ -146,14 +144,13 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   m_FixedLatValue->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(OptionsDialog::OnFixedLatTextClick), NULL, this);
   m_FixedLatValue->SetValue(wxString::Format(wxT("%f"), m_settings.fixed_pos.lat));
 
-  wxStaticText* FixedLonText = new wxStaticText(this, wxID_ANY, _("Fixed longitude"), wxDefaultPosition, wxDefaultSize, 0);
-  fixedHeadingSizer->Add(FixedLonText, 0, wxALL, border_size);
-
   m_FixedLonValue = new wxTextCtrl(this, wxID_ANY);
   fixedHeadingSizer->Add(m_FixedLonValue, 1, wxALL, border_size);
   m_FixedLonValue->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(OptionsDialog::OnFixedLonTextClick), NULL, this);
   m_FixedLonValue->SetValue(wxString::Format(wxT("%f"), m_settings.fixed_pos.lon));
 
+  /* Following taken out to save space
+  
   wxStaticText* RadarDescription = new wxStaticText(this, wxID_ANY, _("Radar Description"), wxDefaultPosition, wxDefaultSize, 0);
   fixedHeadingSizer->Add(RadarDescription, 0, wxALL, border_size);
 
@@ -161,7 +158,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   fixedHeadingSizer->Add(m_RadarDescriptionText, 1, wxALL, border_size);
   m_RadarDescriptionText->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(OptionsDialog::OnRadarDescriptionTextClick),
     NULL, this);
-  m_RadarDescriptionText->SetValue(m_settings.radar_description_text);
+  m_RadarDescriptionText->SetValue(m_settings.radar_description_text);*/
 
   // Logging
 
@@ -328,10 +325,11 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   PPIColourSizer->Add(m_AisTextColour);
 
   DisplayOptionsBox->Add(m_RangeUnits, 0, wxALL | wxEXPAND, border_size);
-  DisplayOptionsBox->Add(LoggingSizer, 0, wxALL | wxEXPAND, border_size);
+  
   DisplayOptionsBox->Add(drawingMethodSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(menuOptionsSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(m_GuardZoneStyle, 0, wxALL | wxEXPAND, border_size);
+  DisplayOptionsBox->Add(LoggingSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(guardZoneSizer, 0, wxALL, border_size);
   DisplayOptionsBox->Add(fixedHeadingSizer, 0, wxALL, border_size);
   DisplayOptionsBox->Add(trailSizer, 0, wxALL | wxEXPAND, border_size);
