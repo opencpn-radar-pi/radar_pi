@@ -108,7 +108,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   // Fixed heading and position
 
-  wxStaticBox* FixedHeadingBox = new wxStaticBox(this, wxID_ANY, _("Fixed Radar"));
+  wxStaticBox* FixedHeadingBox = new wxStaticBox(this, wxID_ANY, _("Fixed radar / for testing"));
   wxStaticBoxSizer* fixedHeadingSizer = new wxStaticBoxSizer(FixedHeadingBox, wxVERTICAL);
 
   m_FixedHeading = new wxCheckBox(this, wxID_ANY, _("Fixed radar heading"), wxDefaultPosition, wxDefaultSize,
