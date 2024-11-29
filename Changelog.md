@@ -1,3 +1,7 @@
+3.3.1 Nov 29, 2024
+* ci: Handle changed bullseye container permissions (#602)
+* ci: flatpak: bugfix
+
 3.3.0 Aug 15, 2024
 * New release to complete the v3.3 work
 
