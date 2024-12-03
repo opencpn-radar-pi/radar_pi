@@ -584,7 +584,7 @@ void RaymarineReceive::ProcessQuantumReport(const UINT8 *data, int len) {
       break;
     default:
       m_ri->m_state.Update(RADAR_STANDBY);
-      LOG_RECEIVE(wxT("%s radar is unknown state %s, state= %i"), m_ri->m_name.c_str(), bl_pter->status);
+      LOG_RECEIVE(wxT(" error unknown state %0x"), bl_pter->status);
       break;
   }
 
