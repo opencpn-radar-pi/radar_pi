@@ -164,6 +164,7 @@ private:
   bool m_copy_use_ais;
   bool m_copy_use_file;
   wxString m_copy_mmsi;
+  bool m_copy_use_nmea;
 };
 
 #endif

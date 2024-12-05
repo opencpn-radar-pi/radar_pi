@@ -171,8 +171,10 @@ public:
   double stepLon;
   AisMaker* myAIS;
   wxTextFile* nmeafile;
+  wxTextFile* nmeastream;
 
   bool m_bUseAis;
+  bool m_bUseNMEA;
   bool m_bUseFile;
   wxString m_tMMSI;
 

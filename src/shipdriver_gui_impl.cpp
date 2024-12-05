@@ -114,6 +114,7 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
     pConf->Read("shipdriverUseAis", &m_bUseAis, 0);
     pConf->Read("shipdriverUseFile", &m_bUseFile, 0);
     pConf->Read("shipdriverMMSI", &m_tMMSI, "123456789");
+    pConf->Read("shipdriverUseNMEA", &m_bUseNMEA, 0);
   }
 }
 
@@ -305,6 +306,28 @@ void Dlg::StartDriving() {
     }
   }
 
+  if (m_bUseNMEA) {
+    wxString caption = wxT("Choose a file");
+    wxString wildcard = wxT("Text files (*.txt)|*.txt|All files (*.*)|*.*");
+
+    wxString s = "/";
+    const char* pName = "ShipDriver_pi";
+    wxString defaultDir = GetPluginDataDir(pName) + s + "data" + s;
+
+    wxString defaultFilename = wxEmptyString;
+    wxFileDialog filedlg2(this->m_parent, caption, defaultDir, defaultFilename,
+                         wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+    if (filedlg2.ShowModal() != wxID_OK) {
+      wxMessageBox(_("ShipDriver has been stopped"));
+      return;
+    } else {
+      nmeastream = new wxTextFile(filedlg2.GetPath());
+      nmeastream->Open();
+      nmeastream->Clear();
+    }
+  }
+
   m_textCtrlRudderStbd->SetValue("");
   m_textCtrlRudderPort->SetValue("");
   initSpd = 0;  // 5 knots
@@ -355,6 +378,10 @@ void Dlg::SetStop() {
   if (m_bUseFile) {
     nmeafile->Write();
     nmeafile->Close();
+  }
+  if (m_bUseNMEA) {
+    nmeastream->Write();
+    nmeastream->Close();
   }
   initSpd = 0.0;
   m_stSpeed->SetLabel(wxString::Format("%3.1f", initSpd));
@@ -858,6 +885,22 @@ void Dlg::Notify() {
   if (m_bUseAis) {
     PushNMEABuffer(myNMEAais + "\r\n");
   }
+
+  wxString rn = "\r\n";
+ 
+  if (m_bUseAis && m_bUseNMEA) {
+    nmeastream->AddLine(myNMEAais + rn);
+  }
+  if (m_bUseNMEA) {
+    nmeastream->AddLine(GLL + "\r\n");
+    nmeastream->AddLine(VTG + "\r\n");
+    nmeastream->AddLine(VHW + "\r\n");
+    nmeastream->AddLine(RMC + "\r\n");
+    nmeastream->AddLine(HDT + "\r\n");
+  }
+
+ 
+
   initLat = stepLat;
   initLon = stepLon;
 

@@ -5,7 +5,7 @@
 // PLEASE DO *NOT* EDIT THIS FILE!
 ///////////////////////////////////////////////////////////////////////////
 
-#include "shipdriver_gui.h"
+#include "shipdrivergui.h"
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -367,7 +367,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	this->SetSizer( bSizer10 );
 	this->Layout();
 	bSizer10->Fit( this );
-	m_timer1.SetOwner( this, wxID_ANY);
+	m_timer1.SetOwner( this, m_timer1.GetId() );
 
 	this->Centre( wxBOTH );
 
@@ -394,7 +394,7 @@ ShipDriverBase::ShipDriverBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_buttonDistressRelay->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnDistressRelay ), NULL, this );
 	m_buttonRelayCancel->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnRelayCancel ), NULL, this );
 	m_buttonCollision->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnCollision ), NULL, this );
-	this->Connect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( ShipDriverBase::OnTimer ) );
+	this->Connect( m_timer1.GetId(), wxEVT_TIMER, wxTimerEventHandler( ShipDriverBase::OnTimer ) );
 }
 
 ShipDriverBase::~ShipDriverBase()
@@ -422,8 +422,8 @@ ShipDriverBase::~ShipDriverBase()
 	m_buttonDistressRelay->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnDistressRelay ), NULL, this );
 	m_buttonRelayCancel->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnRelayCancel ), NULL, this );
 	m_buttonCollision->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( ShipDriverBase::OnCollision ), NULL, this );
-  this->Connect(wxID_ANY, wxEVT_TIMER,
-                      wxTimerEventHandler(ShipDriverBase::OnTimer));
+	this->Disconnect( m_timer1.GetId(), wxEVT_TIMER, wxTimerEventHandler( ShipDriverBase::OnTimer ) );
+
 }
 
 shipdriverPreferences::shipdriverPreferences( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
