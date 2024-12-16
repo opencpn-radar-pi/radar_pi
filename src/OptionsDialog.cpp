@@ -411,8 +411,6 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   wxStdDialogButtonSizer *DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
   topSizer->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, border_size);
 
-  DimeWindow(this);
-
   Fit();
   // SetMinSize(GetBestSize());
   SetLayoutAdaptationMode(wxDIALOG_ADAPTATION_MODE_ENABLED);
