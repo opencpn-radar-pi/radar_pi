@@ -25,16 +25,18 @@ flatpak-steps: &flatpak-steps
 
 jobs:
   build-bullseye:
-    docker:
+    machine:
       - image: ubuntu-2204:current
+    resource_class: medium
     environment:
       - OCPN_TARGET: bullseye
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     <<: *debian-docker-steps
 
   build-bullseye-wx32:
-    docker:
+    machine:
       - image: ubuntu-2204:current
+    resource_class: medium
     environment:
       - OCPN_TARGET: bullseye
       - BUILD_WX32: true
