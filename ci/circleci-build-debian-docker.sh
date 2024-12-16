@@ -47,18 +47,24 @@ function install_wx32() {
   repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets-32"
   head="deb/debian/pool/bullseye/main"
   vers="3.2.2+dfsg-1~bpo11+1"
+  if [ "$(uname -m)" = "x86_64" ]
+  then
+    machine=amd64
+  else
+    machine=arm64
+  fi
   pushd /usr/local/pkg
-  wget -q $repo/$head/w/wx/wx-common_${vers}/wx-common_${vers}_arm64.deb
+  wget -q $repo/$head/w/wx/wx-common_${vers}/wx-common_${vers}_${machine}.deb
   wget -q $repo/$head/w/wx/wx3.2-i18n_${vers}/wx3.2-i18n_${vers}_all.deb
   wget -q $repo/$head/w/wx/wx3.2-headers_${vers}/wx3.2-headers_${vers}_all.deb
-  wget -q $repo/$head/l/li/libwxgtk-webview3.2-dev_${vers}/libwxgtk-webview3.2-dev_${vers}_arm64.deb
-  wget -q $repo/$head/l/li/libwxgtk-webview3.2-1_${vers}/libwxgtk-webview3.2-1_${vers}_arm64.deb
-  wget -q $repo/$head/l/li/libwxgtk-media3.2-dev_${vers}/libwxgtk-media3.2-dev_${vers}_arm64.deb
-  wget -q $repo/$head/l/li/libwxgtk3.2-dev_${vers}/libwxgtk3.2-dev_${vers}_arm64.deb
-  wget -q $repo/$head/l/li/libwxgtk3.2-1_${vers}/libwxgtk3.2-1_${vers}_arm64.deb
-  wget -q $repo/$head/l/li/libwxgtk-gl3.2-1_${vers}/libwxgtk-gl3.2-1_${vers}_arm64.deb
-  wget -q $repo/$head/l/li/libwxbase3.2-1_${vers}/libwxbase3.2-1_${vers}_arm64.deb
-  wget -q $repo/$head/l/li/libwxgtk-media3.2-1_${vers}/libwxgtk-media3.2-1_${vers}_arm64.deb
+  wget -q $repo/$head/l/li/libwxgtk-webview3.2-dev_${vers}/libwxgtk-webview3.2-dev_${vers}_${machine}.deb
+  wget -q $repo/$head/l/li/libwxgtk-webview3.2-1_${vers}/libwxgtk-webview3.2-1_${vers}_${machine}.deb
+  wget -q $repo/$head/l/li/libwxgtk-media3.2-dev_${vers}/libwxgtk-media3.2-dev_${vers}_${machine}.deb
+  wget -q $repo/$head/l/li/libwxgtk3.2-dev_${vers}/libwxgtk3.2-dev_${vers}_${machine}.deb
+  wget -q $repo/$head/l/li/libwxgtk3.2-1_${vers}/libwxgtk3.2-1_${vers}_${machine}.deb
+  wget -q $repo/$head/l/li/libwxgtk-gl3.2-1_${vers}/libwxgtk-gl3.2-1_${vers}_${machine}.deb
+  wget -q $repo/$head/l/li/libwxbase3.2-1_${vers}/libwxbase3.2-1_${vers}_${machine}.deb
+  wget -q $repo/$head/l/li/libwxgtk-media3.2-1_${vers}/libwxgtk-media3.2-1_${vers}_${machine}.deb
 
   dpkg -i --force-depends $(ls /usr/local/pkg/*deb)
   sed -i '/^user_mask_fits/s|{.*}|{ /bin/true; }|' \
