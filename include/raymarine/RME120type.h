@@ -13,14 +13,8 @@ static const NetworkAddress e120_send(0, 0, 0, 0, 0);
 // This is because Raymarine displays a range value that is half of the actual
 // transmit range The actual range in the code is in m_range_meters, double the
 // value of the arrays below
-#define RANGE_METRIC_RM_E120                                                   \
-    {                                                                          \
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                                        \
-    }
-#define RANGE_MIXED_RM_E120                                                    \
-    {                                                                          \
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                                        \
-    }
+#define RANGE_METRIC_RM_E120 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+#define RANGE_MIXED_RM_E120 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 #define RANGE_NAUTIC_RM_E120                                                   \
     { 231, 463, 926, 1389, 2778, 5556, 11112, 22224, 44448, 88896,             \
         133344 }; // not needed ?

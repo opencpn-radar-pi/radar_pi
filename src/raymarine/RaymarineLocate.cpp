@@ -112,37 +112,37 @@ void RaymarineLocate::UpdateEthernetCards() {
 
     freeifaddrs(addr_list);
   }
-   // WakeRadar();
+  // WakeRadar();
 }
 
-//void RaymarineLocate::WakeRadar() {
-//  // Not called yet. No wake command found until now, 02-12-2024 by Douwe Fokkema
-//  // DHCP server seems to function for activating radar, identical addresses as Axiom DHCP, 
-//  // transmit commands from server.
-//  // 
-//  // adapt for Raymarine
-//  // static const uint8_t WAKE_COMMAND[] = {0x01, 0x01};  // put wake command here
-//   static const uint8_t WAKE_COMMAND[] = {0x01, 0x01};
-//   struct sockaddr_in send_addr = NetworkAddress(224, 0, 0, 1, 5800).GetSockAddrIn();
-//  int one = 1;
+// void RaymarineLocate::WakeRadar() {
+//   // Not called yet. No wake command found until now, 02-12-2024 by Douwe Fokkema
+//   // DHCP server seems to function for activating radar, identical addresses as Axiom DHCP,
+//   // transmit commands from server.
+//   //
+//   // adapt for Raymarine
+//   // static const uint8_t WAKE_COMMAND[] = {0x01, 0x01};  // put wake command here
+//    static const uint8_t WAKE_COMMAND[] = {0x01, 0x01};
+//    struct sockaddr_in send_addr = NetworkAddress(224, 0, 0, 1, 5800).GetSockAddrIn();
+//   int one = 1;
 //
-//  for (size_t i = 0; i < m_interface_count; i++) {
-//    SOCKET sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-//    struct sockaddr_in s = m_interface_addr[i].GetSockAddrIn();
+//   for (size_t i = 0; i < m_interface_count; i++) {
+//     SOCKET sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+//     struct sockaddr_in s = m_interface_addr[i].GetSockAddrIn();
 //
-//    if (sock != INVALID_SOCKET) {
-//      if (!setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one)) &&
-//          !::bind(sock, (struct sockaddr *)&s, sizeof(s)) &&
-//          sendto(sock, (const char *)WAKE_COMMAND, sizeof WAKE_COMMAND, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) ==
-//              sizeof WAKE_COMMAND) {
-//        LOG_VERBOSE(wxT("Sent wake command to radar on %s"), m_interface_addr[i].FormatNetworkAddress());
-//      } else {
-//        LOG_VERBOSE(wxT("Failed to send wake command to radars on %s"), m_interface_addr[i].FormatNetworkAddress());
-//      }
-//      closesocket(sock);
-//    }
-//  }
-//}
+//     if (sock != INVALID_SOCKET) {
+//       if (!setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one)) &&
+//           !::bind(sock, (struct sockaddr *)&s, sizeof(s)) &&
+//           sendto(sock, (const char *)WAKE_COMMAND, sizeof WAKE_COMMAND, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) ==
+//               sizeof WAKE_COMMAND) {
+//         LOG_VERBOSE(wxT("Sent wake command to radar on %s"), m_interface_addr[i].FormatNetworkAddress());
+//       } else {
+//         LOG_VERBOSE(wxT("Failed to send wake command to radars on %s"), m_interface_addr[i].FormatNetworkAddress());
+//       }
+//       closesocket(sock);
+//     }
+//   }
+// }
 
 /*
  * Entry
@@ -256,11 +256,11 @@ bool RaymarineLocate::ProcessReport(const NetworkAddress &radar_address, const N
       break;
     }
   }
-  if (len == sizeof(LocationInfoBlock)){
+  if (len == sizeof(LocationInfoBlock)) {
     LOG_RECEIVE(wxT(" locate process len=%i, report model_id =%0x, raymarine_radar_code=%0x"), len, rRec->model_id,
-             raymarine_radar_code);
+                raymarine_radar_code);
     m_pi->logBinaryData(wxT("RaymarineLocate received RadarReport"), report, len);
-    }
+  }
   if (len == sizeof(LocationInfoBlock) && rRec->model_id == raymarine_radar_code) {  // only length 36 is used
 
     RadarLocationInfo infoA;

@@ -29,18 +29,15 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
  */
-#include "Arpa.h"
 #include "RME120ControlsDialog.h"
 
-
+#include "Arpa.h"
 #include "RadarPanel.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
-RME120ControlsDialog::RME120ControlsDialog(size_t radarType){
-
+RME120ControlsDialog::RME120ControlsDialog(size_t radarType) {
 #include "raymarine/RME120ControlSet.h"
-
 }
 
 PLUGIN_END_NAMESPACE

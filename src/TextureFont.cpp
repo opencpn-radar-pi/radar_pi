@@ -70,10 +70,8 @@ void TextureFont::Build(wxFont &font, bool blur, bool luminance) {
   wxASSERT(w < 2048 && h < 2048);
 
   /* make power of 2 */
-  for (tex_w = 1; tex_w < w; tex_w *= 2)
-    ;
-  for (tex_h = 1; tex_h < h; tex_h *= 2)
-    ;
+  for (tex_w = 1; tex_w < w; tex_w *= 2);
+  for (tex_h = 1; tex_h < h; tex_h *= 2);
 
   wxBitmap tbmp(tex_w, tex_h);
   dc.SelectObject(tbmp);
@@ -194,10 +192,8 @@ void TextureFont::RenderGlyph(wchar_t c) {
     wxCoord gw, gh;
     dc.GetTextExtent(c, &gw, &gh);  // measure the text
     int w, h;
-    for (w = 1; w < gw; w *= 2)
-      ;
-    for (h = 1; h < gh; h *= 2)
-      ;
+    for (w = 1; w < gw; w *= 2);
+    for (h = 1; h < gh; h *= 2);
     wxBitmap bmp(w, h);
     dc.SelectObject(bmp);
     dc.SetBackground(wxBrush(wxColour(0, 0, 0)));

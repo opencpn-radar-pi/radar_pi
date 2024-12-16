@@ -48,7 +48,7 @@ PLUGIN_BEGIN_NAMESPACE
  */
 
 #define MILLIS_PER_SELECT 250
-#define SECONDS_SELECT(x) ((x)*MILLISECONDS_PER_SECOND / MILLIS_PER_SELECT)
+#define SECONDS_SELECT(x) ((x) * MILLISECONDS_PER_SECOND / MILLIS_PER_SELECT)
 #define MOD_ROTATION2048(raw) (((raw) + 2 * LINES_PER_ROTATION) % LINES_PER_ROTATION)
 #define LINES_PER_ROTATION (2048)  // with lower ranges only 1024 lines used
 #define SCALE_DEGREES_TO_RAW(angle) ((int)((angle) * (double)SPOKES / DEGREES_PER_ROTATION))
@@ -65,7 +65,7 @@ PLUGIN_BEGIN_NAMESPACE
 #define HEADING_MASK (SPOKES - 1)
 #define HEADING_VALID(x) (((x) & ~(HEADING_TRUE_FLAG | HEADING_MASK)) == 0)
 
-#define IS_MULTICAST(x) (((x)&0xf0) == 224)
+#define IS_MULTICAST(x) (((x) & 0xf0) == 224)
 
 SOCKET RaymarineReceive::PickNextEthernetCard() {
   SOCKET socket = INVALID_SOCKET;

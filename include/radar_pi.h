@@ -107,7 +107,7 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
 // classical degrees (0..359) and back
 
 // OLD NAVICO
-//#define SCALE_RAW_TO_DEGREES2048(raw) ((raw) * (double)DEGREES_PER_ROTATION /
+// #define SCALE_RAW_TO_DEGREES2048(raw) ((raw) * (double)DEGREES_PER_ROTATION /
 // LINES_PER_ROTATION) #define SCALE_DEGREES_TO_RAW2048(angle) ((int)((angle) *
 //(double)LINES_PER_ROTATION / DEGREES_PER_ROTATION)) #define MOD_ROTATION(raw)
 //(((raw) + 2 * SPOKES) % SPOKES)

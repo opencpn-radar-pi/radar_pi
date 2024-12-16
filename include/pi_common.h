@@ -148,10 +148,10 @@ using namespace std;
 #define PI (3.1415926535897931160E0)
 #endif
 #ifndef deg2rad
-#define deg2rad(x) ((x)*2 * PI / 360.0)
+#define deg2rad(x) ((x) * 2 * PI / 360.0)
 #endif
 #ifndef rad2deg
-#define rad2deg(x) ((x)*360.0 / (2 * PI))
+#define rad2deg(x) ((x) * 360.0 / (2 * PI))
 #endif
 
 #define METERS_PER_NM 1852

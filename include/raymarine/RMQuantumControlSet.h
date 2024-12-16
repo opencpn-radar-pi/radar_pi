@@ -53,35 +53,26 @@
 // Note that for range the min, max, step values are ignored, see TODO.
 
 #ifndef OFF_LOW_MEDIUM_HIGH_NAMES
-#define OFF_LOW_MEDIUM_HIGH_NAMES                                              \
-    {                                                                          \
-        _("Off"), _("Low"), _("Medium"), _("High")                             \
-    }
+#define OFF_LOW_MEDIUM_HIGH_NAMES { _("Off"), _("Low"), _("Medium"), _("High") }
 #endif
 #ifndef OFF_LOW_HIGH_NAMES
-#define OFF_LOW_HIGH_NAMES                                                     \
-    {                                                                          \
-        _("Off"), _("Low"), _("High")                                          \
-    }
+#define OFF_LOW_HIGH_NAMES { _("Off"), _("Low"), _("High") }
 #endif
 
 #ifndef SLOW_FAST_NAMES
-#define SLOW_FAST_NAMES                                                        \
-    {                                                                          \
-        _("Slow"), _("Fast")                                                   \
-    }
+#define SLOW_FAST_NAMES { _("Slow"), _("Fast") }
 #endif
 #ifndef RM_SEA_AUTO_NAMES
-#define RM_SEA_AUTO_NAMES                                                      \
-    {                                                                          \
-        _("Harbor"), _("Offshore"), _("Coastal")                               \
-    }
+#define RM_SEA_AUTO_NAMES { _("Harbor"), _("Offshore"), _("Coastal") }
 #endif
 
 #ifndef RM_MODE_NAMES
 #define RM_MODE_NAMES                                                          \
     {                                                                          \
-        _("Harbor"), _("Coastal"), _("Offshore"), _("Weather"),                \
+        _("Harbor"),                                                           \
+        _("Coastal"),                                                          \
+        _("Offshore"),                                                         \
+        _("Weather"),                                                          \
     }
 #endif
 

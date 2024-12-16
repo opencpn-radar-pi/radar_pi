@@ -35,10 +35,8 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-EmulatorControlsDialog::EmulatorControlsDialog(){
-
+EmulatorControlsDialog::EmulatorControlsDialog() {
 #include "emulator/EmulatorControlSet.h"
-
 }
 
 PLUGIN_END_NAMESPACE

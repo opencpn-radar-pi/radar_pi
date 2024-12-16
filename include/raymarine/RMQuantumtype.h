@@ -13,14 +13,8 @@ static const NetworkAddress quantum_send(0, 0, 0, 0, 0);
 // This is because Raymarine displays a range value that is half of the actual
 // transmit range The actual range in the code is in m_range_meters, double the
 // value of the arrays below
-#define RANGE_METRIC_RM_QUANTUM                                                \
-    {                                                                          \
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                                        \
-    }
-#define RANGE_MIXED_RM_QUANTUM                                                 \
-    {                                                                          \
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                                        \
-    }
+#define RANGE_METRIC_RM_QUANTUM { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+#define RANGE_MIXED_RM_QUANTUM { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 #define RANGE_NAUTIC_RM_QUANTUM { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 PLUGIN_END_NAMESPACE

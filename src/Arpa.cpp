@@ -197,7 +197,7 @@ bool ArpaTarget::MultiPix(int ang, int rad) {  // checks if the blob has a conto
     }
     if (!succes) {
       return false;  // no next point found (this happens when the blob consists of one single pixel)
-    }                // next point found
+    }  // next point found
     current.angle = aa;
     current.r = rr;
     if (count >= length) {
@@ -302,7 +302,7 @@ bool Arpa::MultiPix(int ang, int rad, bool doppler) {
     }
     if (!succes) {
       return false;  // no next point found
-    }                // next point found
+    }  // next point found
     current.angle = aa;
     current.r = rr;
     if (count >= length) {
@@ -877,7 +877,7 @@ void ArpaTarget::RefreshTarget(int dist) {
     // x_local expected position in local coordinates
 
     m_position.time = pol.time;  // set the target time to the newly found time
-  }                              // end of target found
+  }  // end of target found
 
   // target not found
   else {

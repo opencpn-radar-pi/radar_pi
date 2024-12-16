@@ -35,10 +35,8 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-GarminxHDControlsDialog::GarminxHDControlsDialog(){
-
+GarminxHDControlsDialog::GarminxHDControlsDialog() {
 #include "garminxhd/GarminxHDControlSet.h"
-
 }
 
 PLUGIN_END_NAMESPACE

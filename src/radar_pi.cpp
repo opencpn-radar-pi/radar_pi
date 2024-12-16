@@ -34,12 +34,12 @@
 
 #include "radar_pi.h"
 
+#include "Arpa.h"
 #include "GuardZone.h"
 #include "GuardZoneBogey.h"
 #include "Kalman.h"
 #include "MessageBox.h"
 #include "OptionsDialog.h"
-#include "Arpa.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "navico/NavicoLocate.h"
@@ -972,7 +972,7 @@ void radar_pi::UpdateHeadingPositionState() {
     wxCriticalSectionLocker lock(m_exclusive);
     time_t now = time(0);
 
-    if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT && !m_settings.pos_is_fixed)){
+    if (m_bpos_set && TIMED_OUT(now, m_bpos_timestamp + WATCHDOG_TIMEOUT && !m_settings.pos_is_fixed)) {
       // If the position data is 10s old reset our position.
       // Note that the watchdog is reset every time we receive a position.
       m_bpos_set = false;
@@ -1234,11 +1234,11 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   }
 
   //// for testing only, simple trick to get position and heading
-  //wxString nmea;
-  //nmea = wxT("$APHDM,000.0,M*33");
-  //PushNMEABuffer(nmea);
-  //nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-  //PushNMEABuffer(nmea);
+  // wxString nmea;
+  // nmea = wxT("$APHDM,000.0,M*33");
+  // PushNMEABuffer(nmea);
+  // nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+  // PushNMEABuffer(nmea);
 
   // update own ship position to best estimate
   ExtendedPosition intermediate_pos;

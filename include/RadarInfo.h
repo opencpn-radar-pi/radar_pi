@@ -52,7 +52,7 @@ struct DrawInfo {
     bool color_option;
 };
 
-#define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
+#define SECONDS_TO_REVOLUTIONS(x) ((x) * 2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1
 enum {
     TRAIL_15SEC,

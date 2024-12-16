@@ -32,17 +32,11 @@
 #include "SoftwareControlSet.h"
 
 #ifndef AUTO_LOW_HIGH_NAMES
-#define AUTO_LOW_HIGH_NAMES                                                    \
-    {                                                                          \
-        _("Low"), _("High")                                                    \
-    }
+#define AUTO_LOW_HIGH_NAMES { _("Low"), _("High") }
 #endif
 
 #ifndef AUTO_CALM_MEDIUM_ROUGH_NAMES
-#define AUTO_CALM_MEDIUM_ROUGH_NAMES                                           \
-    {                                                                          \
-        _("Calm"), _("Medium"), _("Rough")                                     \
-    }
+#define AUTO_CALM_MEDIUM_ROUGH_NAMES { _("Calm"), _("Medium"), _("Rough") }
 #endif
 
 HAVE_CONTROL(CT_BEARING_ALIGNMENT, CTD_AUTO_NO, CTD_DEF_ZERO, -180, +180,

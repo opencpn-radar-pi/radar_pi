@@ -33,22 +33,13 @@
 // This defines the capabilities of the software controls.
 
 #ifndef CTD_AUTO_NO
-#define CTD_AUTO_NO                                                            \
-    {                                                                          \
-        wxT("")                                                                \
-    }
+#define CTD_AUTO_NO { wxT("") }
 #endif
 #ifndef CTD_AUTO_YES
-#define CTD_AUTO_YES                                                           \
-    {                                                                          \
-        _("Auto")                                                              \
-    }
+#define CTD_AUTO_YES { _("Auto") }
 #endif
 #ifndef CTD_AUTO_OFF
-#define CTD_AUTO_OFF                                                           \
-    {                                                                          \
-        _("Off")                                                               \
-    }
+#define CTD_AUTO_OFF { _("Off") }
 #endif
 
 #ifndef CTD_DEF_OFF
@@ -81,28 +72,16 @@
 
 // Standard values for unit, when names == 1 long it is the unit
 #ifndef CTD_NUMERIC
-#define CTD_NUMERIC                                                            \
-    {                                                                          \
-        wxT("")                                                                \
-    }
+#define CTD_NUMERIC { wxT("") }
 #endif
 #ifndef CTD_PERCENTAGE
-#define CTD_PERCENTAGE                                                         \
-    {                                                                          \
-        wxT("%")                                                               \
-    }
+#define CTD_PERCENTAGE { wxT("%") }
 #endif
 #ifndef CTD_MINUTES
-#define CTD_MINUTES                                                            \
-    {                                                                          \
-        _("min")                                                               \
-    }
+#define CTD_MINUTES { _("min") }
 #endif
 #ifndef CTD_CM_PER_S
-#define CTD_CM_PER_S                                                           \
-    {                                                                          \
-        wxT("cm/s")                                                            \
-    }
+#define CTD_CM_PER_S { wxT("cm/s") }
 #endif
 
 //
@@ -125,10 +104,8 @@
 
 #ifndef ORIENTATION_NAMES
 #define ORIENTATION_NAMES                                                      \
-    {                                                                          \
-        _("Head up"), _("Head up (Stabilized)"), _("North up"),                \
-            _("Course up"), _("Unknown")                                       \
-    }
+    { _("Head up"), _("Head up (Stabilized)"), _("North up"), _("Course up"),  \
+        _("Unknown") }
 #endif
 // Orientation HEAD_UP is available if there is no heading or dev mode is
 // switched on Other orientations are available if there is a heading
@@ -143,9 +120,7 @@
 
 #ifndef VIEW_NAMES
 #define VIEW_NAMES                                                             \
-    {                                                                          \
-        _("Dragged View"), _("Center View"), _("Forward View"), _("Aft View")  \
-    }
+    { _("Dragged View"), _("Center View"), _("Forward View"), _("Aft View") }
 #endif
 #define DRAGGED_VIEW (0)
 #define CENTER_VIEW (1)
@@ -154,30 +129,19 @@
 
 #ifndef TARGET_TRAIL_NAMES
 #define TARGET_TRAIL_NAMES                                                     \
-    {                                                                          \
-        _("15 sec"), _("30 sec"), _("1 min"), _("3 min"), _("5 min"),          \
-            _("10 min"), _("Continuous")                                       \
-    }
+    { _("15 sec"), _("30 sec"), _("1 min"), _("3 min"), _("5 min"),            \
+        _("10 min"), _("Continuous") }
 #endif
 #ifndef TRAIL_MOTION_NAMES
-#define TRAIL_MOTION_NAMES                                                     \
-    {                                                                          \
-        _("Relative"), _("True")                                               \
-    }
+#define TRAIL_MOTION_NAMES { _("Relative"), _("True") }
 #endif
 #define TARGET_MOTION_RELATIVE (0)
 #define TARGET_MOTION_TRUE (1)
 #ifndef OFF_ON_NAMES
-#define OFF_ON_NAMES                                                           \
-    {                                                                          \
-        _("Off"), _("On")                                                      \
-    }
+#define OFF_ON_NAMES { _("Off"), _("On") }
 #endif
 #ifndef TARGET_ON_PPI_NAMES
-#define TARGET_ON_PPI_NAMES                                                    \
-    {                                                                          \
-        _("Off"), _("On")                                                      \
-    }
+#define TARGET_ON_PPI_NAMES { _("Off"), _("On") }
 #endif
 
 HAVE_CONTROL(CT_ANTENNA_FORWARD, CTD_AUTO_NO, CTD_DEF_ZERO, -500, +500,

@@ -51,47 +51,27 @@
 // Note that for range the min, max, step values are ignored, see TODO.
 
 #ifndef OFF_LOW_MEDIUM_HIGH_NAMES
-#define OFF_LOW_MEDIUM_HIGH_NAMES                                              \
-    {                                                                          \
-        _("Off"), _("Low"), _("Medium"), _("High")                             \
-    }
+#define OFF_LOW_MEDIUM_HIGH_NAMES { _("Off"), _("Low"), _("Medium"), _("High") }
 #endif
 #ifndef OFF_MEDIUM_SKIP_HIGH_NAMES
-#define OFF_MEDIUM_SKIP_HIGH_NAMES                                             \
-    {                                                                          \
-        _("Off"), _("Medium"), wxT(""), _("High")                              \
-    }
+#define OFF_MEDIUM_SKIP_HIGH_NAMES { _("Off"), _("Medium"), wxT(""), _("High") }
 #endif
 #ifndef OFF_LOW_HIGH_NAMES
-#define OFF_LOW_HIGH_NAMES                                                     \
-    {                                                                          \
-        _("Off"), _("Low"), _("High")                                          \
-    }
+#define OFF_LOW_HIGH_NAMES { _("Off"), _("Low"), _("High") }
 #endif
 #ifndef NAVICO_SEA_AUTO_NAMES
-#define NAVICO_SEA_AUTO_NAMES                                                  \
-    {                                                                          \
-        _("Harbour"), _("Offshore")                                            \
-    }
+#define NAVICO_SEA_AUTO_NAMES { _("Harbour"), _("Offshore") }
 #endif
 #ifndef NAVICO_HALO_SEA_STATE_NAMES
-#define NAVICO_HALO_SEA_STATE_NAMES                                            \
-    {                                                                          \
-        _("Calm"), _("Moderate"), _("Rough")                                   \
-    }
+#define NAVICO_HALO_SEA_STATE_NAMES { _("Calm"), _("Moderate"), _("Rough") }
 #endif
 #ifndef DOPPLER_NAMES
-#define DOPPLER_NAMES                                                          \
-    {                                                                          \
-        _("Off"), _("Normal"), _("Approaching")                                \
-    }
+#define DOPPLER_NAMES { _("Off"), _("Normal"), _("Approaching") }
 #endif
 #ifndef MODE_NAMES
 #define MODE_NAMES                                                             \
-    {                                                                          \
-        _("Custom"), _("Harbor"), _("Offshore"), wxT(""), _("Weather"),        \
-            _("Bird")                                                          \
-    }
+    { _("Custom"), _("Harbor"), _("Offshore"), wxT(""), _("Weather"),          \
+        _("Bird") }
 #endif
 
 if (radarType >= RT_HaloA) {

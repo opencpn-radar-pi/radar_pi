@@ -30,9 +30,9 @@
 
 #include "ControlsDialog.h"
 
+#include "Arpa.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
-#include "Arpa.h"
 #include "RadarPanel.h"
 
 PLUGIN_BEGIN_NAMESPACE
@@ -1741,7 +1741,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
     }
   }
 
-//#define HIDE_TRANSMIT
+// #define HIDE_TRANSMIT
 #ifdef HIDE_TRANSMIT
   if (state != RADAR_OFF) {
     if (m_top_sizer->IsShown(m_control_sizer) && !m_control_sizer->IsShown(m_transmit_sizer)) {

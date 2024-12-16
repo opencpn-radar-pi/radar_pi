@@ -46,8 +46,8 @@ PLUGIN_BEGIN_NAMESPACE
 
 // easy define of mcast addresses. Note that these are in network order already.
 #define IPV4_ADDR(a, b, c, d)                                                  \
-    ((uint32_t)(((a)&0xff) << 24) | (((b)&0xff) << 16) | (((c)&0xff) << 8)     \
-        | ((d)&0xff))
+    ((uint32_t)(((a) & 0xff) << 24) | (((b) & 0xff) << 16)                     \
+        | (((c) & 0xff) << 8) | ((d) & 0xff))
 
 #define IPV4_PORT(p) (htons(p))
 

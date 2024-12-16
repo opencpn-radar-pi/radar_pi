@@ -31,13 +31,13 @@
 
 #include "RadarInfo.h"
 
+#include "Arpa.h"
 #include "ControlsDialog.h"
 #include "GuardZone.h"
 #include "MessageBox.h"
 #include "RadarCanvas.h"
 #include "RadarDraw.h"
 #include "RadarFactory.h"
-#include "Arpa.h"
 #include "RadarPanel.h"
 #include "RadarReceive.h"
 #include "TrailBuffer.h"

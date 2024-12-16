@@ -108,35 +108,34 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   // Fixed heading and position
 
-  wxStaticBox* FixedHeadingBox = new wxStaticBox(this, wxID_ANY, _("Fixed radar / for testing"));
-  wxStaticBoxSizer* fixedHeadingSizer = new wxStaticBoxSizer(FixedHeadingBox, wxVERTICAL);
+  wxStaticBox *FixedHeadingBox = new wxStaticBox(this, wxID_ANY, _("Fixed radar / for testing"));
+  wxStaticBoxSizer *fixedHeadingSizer = new wxStaticBoxSizer(FixedHeadingBox, wxVERTICAL);
 
   m_FixedHeading = new wxCheckBox(this, wxID_ANY, _("Fixed radar heading"), wxDefaultPosition, wxDefaultSize,
-    wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   fixedHeadingSizer->Add(m_FixedHeading, 0, wxALL, border_size);
   m_FixedHeading->SetValue(m_settings.fixed_heading);
   m_FixedHeading->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnFixedHeadingClick), NULL, this);
 
-
   m_FixedHeadingValue = new wxTextCtrl(this, wxID_ANY);
   fixedHeadingSizer->Add(m_FixedHeadingValue, 1, wxALL, border_size);
   m_FixedHeadingValue->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(OptionsDialog::OnFixedHeadingValueClick), NULL,
-    this);
+                               this);
   m_FixedHeadingValue->SetValue(wxString::Format(wxT("%1.1f"), m_settings.fixed_heading_value));
 
   m_FixedPosition = new wxCheckBox(this, wxID_ANY, _("Fixed radar position"), wxDefaultPosition, wxDefaultSize,
-    wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+                                   wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   fixedHeadingSizer->Add(m_FixedPosition, 0, wxALL, border_size);
   m_FixedPosition->SetValue(m_settings.pos_is_fixed);
   m_FixedPosition->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(OptionsDialog::OnFixedPositionClick), NULL, this);
 
   m_CopyOCPNPosition = new wxButton(this, wxID_ANY, _("Copy OpenCPN position"), wxDefaultPosition, wxDefaultSize,
-    wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+                                    wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   fixedHeadingSizer->Add(m_CopyOCPNPosition, 0, wxALL, border_size);
   m_CopyOCPNPosition->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(OptionsDialog::OnCopyOCPNPositionClick), NULL,
-    this);
+                              this);
 
-  wxStaticText* FixedLatText = new wxStaticText(this, wxID_ANY, _("Fixed lat / lon"), wxDefaultPosition, wxDefaultSize, 0);
+  wxStaticText *FixedLatText = new wxStaticText(this, wxID_ANY, _("Fixed lat / lon"), wxDefaultPosition, wxDefaultSize, 0);
   fixedHeadingSizer->Add(FixedLatText, 0, wxALL, border_size);
 
   m_FixedLatValue = new wxTextCtrl(this, wxID_ANY);
@@ -150,7 +149,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   m_FixedLonValue->SetValue(wxString::Format(wxT("%f"), m_settings.fixed_pos.lon));
 
   /* Following taken out to save space
-  
+
   wxStaticText* RadarDescription = new wxStaticText(this, wxID_ANY, _("Radar Description"), wxDefaultPosition, wxDefaultSize, 0);
   fixedHeadingSizer->Add(RadarDescription, 0, wxALL, border_size);
 
@@ -325,7 +324,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   PPIColourSizer->Add(m_AisTextColour);
 
   DisplayOptionsBox->Add(m_RangeUnits, 0, wxALL | wxEXPAND, border_size);
-  
+
   DisplayOptionsBox->Add(drawingMethodSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(menuOptionsSizer, 0, wxALL | wxEXPAND, border_size);
   DisplayOptionsBox->Add(m_GuardZoneStyle, 0, wxALL | wxEXPAND, border_size);
@@ -496,24 +495,23 @@ void OptionsDialog::OnTestSoundClick(wxCommandEvent &event) {
   }
 }
 
-void OptionsDialog::OnFixedHeadingValueClick(wxCommandEvent& event) {
+void OptionsDialog::OnFixedHeadingValueClick(wxCommandEvent &event) {
   wxString temp = m_FixedHeadingValue->GetValue();
   double t;
   temp.ToDouble(&t);
   m_settings.fixed_heading_value = t;
 }
 
-void OptionsDialog::OnFixedHeadingClick(wxCommandEvent& event) {
+void OptionsDialog::OnFixedHeadingClick(wxCommandEvent &event) {
   m_settings.fixed_heading = m_FixedHeading->GetValue();
   if (m_FixedHeading->GetValue()) {
     m_pi->m_heading_source = HEADING_FIXED;
-  }
-  else {
+  } else {
     m_pi->m_heading_source = HEADING_NONE;
   }
 }
 
-void OptionsDialog::OnFixedPositionClick(wxCommandEvent& event) {
+void OptionsDialog::OnFixedPositionClick(wxCommandEvent &event) {
   // Activate fixed position at the position shown in the lat lon fields
   m_settings.pos_is_fixed = m_FixedPosition->GetValue();
   if (m_settings.pos_is_fixed) {
@@ -522,35 +520,33 @@ void OptionsDialog::OnFixedPositionClick(wxCommandEvent& event) {
     temp.ToDouble(&t);
     if (t < 90 && t > -90 && !isnan(t)) {
       m_settings.fixed_pos.lat = t;
-    }
-    else {
+    } else {
       m_settings.fixed_pos.lat = 0.;
     }
     temp = m_FixedLonValue->GetValue();
     temp.ToDouble(&t);
     if (t <= 180 && t >= -180 && !isnan(t)) {
       m_settings.fixed_pos.lon = t;
-    }
-    else {
+    } else {
       m_settings.fixed_pos.lon = 0.;
     }
     m_pi->m_bpos_set = true;
   }
 }
 
-void OptionsDialog::OnCopyOCPNPositionClick(wxCommandEvent& event) {
+void OptionsDialog::OnCopyOCPNPositionClick(wxCommandEvent &event) {
   // Copy current OCPN position to the lat lon fields
   m_FixedLatValue->SetValue(wxString::Format(wxT("%f"), m_pi->m_last_fixed.pos.lat));
   m_FixedLonValue->SetValue(wxString::Format(wxT("%f"), m_pi->m_last_fixed.pos.lon));
   m_settings.fixed_pos.lat = m_pi->m_last_fixed.pos.lat;
   LOG_VERBOSE(wxT("m_GPS_position.pos.lat=%f, m_pi->m_GPS_position.pos.lon=%f"), m_pi->m_last_fixed.pos.lat,
-    m_pi->m_last_fixed.pos.lon);
+              m_pi->m_last_fixed.pos.lon);
   m_settings.fixed_pos.lon = m_pi->m_last_fixed.pos.lon;
   m_FixedLatValue->Update();
   m_FixedLonValue->Update();
 }
 
-void OptionsDialog::OnFixedLatTextClick(wxCommandEvent& event) {
+void OptionsDialog::OnFixedLatTextClick(wxCommandEvent &event) {
   wxString temp = m_FixedLatValue->GetValue();
   double t;
   temp.ToDouble(&t);
@@ -559,7 +555,7 @@ void OptionsDialog::OnFixedLatTextClick(wxCommandEvent& event) {
   }
 }
 
-void OptionsDialog::OnFixedLonTextClick(wxCommandEvent& event) {
+void OptionsDialog::OnFixedLonTextClick(wxCommandEvent &event) {
   wxString temp = m_FixedLonValue->GetValue();
   double t;
   temp.ToDouble(&t);
@@ -568,7 +564,7 @@ void OptionsDialog::OnFixedLonTextClick(wxCommandEvent& event) {
   }
 }
 
-void OptionsDialog::OnRadarDescriptionTextClick(wxCommandEvent& event) {
+void OptionsDialog::OnRadarDescriptionTextClick(wxCommandEvent &event) {
   wxString temp = m_RadarDescriptionText->GetValue();
   m_settings.radar_description_text = temp;
 }

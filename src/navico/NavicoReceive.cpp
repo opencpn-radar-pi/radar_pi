@@ -45,7 +45,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 // On HALO we need to send data every 50 ms or so, so sleep is short ...
 #define MILLIS_PER_SELECT 50
-#define SECONDS_SELECT(x) ((x)*MILLISECONDS_PER_SECOND / MILLIS_PER_SELECT)
+#define SECONDS_SELECT(x) ((x) * MILLISECONDS_PER_SECOND / MILLIS_PER_SELECT)
 #define IS_HALO (m_ri->m_radar_type == RT_HaloA || m_ri->m_radar_type == RT_HaloB)
 
 // A marker that uniquely identifies BR24 generation scanners, as opposed to 4G(eneration)
@@ -153,7 +153,7 @@ struct br24_header {
   uint8_t u01[2];          // 2 bytes blank
   uint8_t u02[2];          // 2 bytes
   uint8_t u03[4];          // 4 bytes blank
-};                         /* total size = 24 */
+}; /* total size = 24 */
 
 struct br4g_header {
   uint8_t headerLen;       // 1 bytes
@@ -167,7 +167,7 @@ struct br4g_header {
   uint8_t rotation[2];     // 2 bytes, rotation/angle
   uint8_t u02[4];          // 4 bytes signed integer, always -1
   uint8_t u03[4];          // 4 bytes signed integer, mostly -1 (0x80 in last byte) or 0xa0 in last byte
-};                         /* total size = 24 */
+}; /* total size = 24 */
 
 struct radar_line {
   union {
