@@ -1,12 +1,12 @@
 ---
 version: 2.1
 
-debian-steps: &debian-steps
+debian-docker-steps: &debian-docker-steps
   steps:
     - checkout
-    - run: ci/circleci-build-debian.sh
-    - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
-    - run: sh -c "ci/git-push.sh /build-$OCPN_TARGET"
+    - run: ci/circleci-build-debian-docker.sh
+    - run: cd build-debian; /bin/bash < upload.sh
+    - run: ci/git-push.sh build-debian
 
 flatpak-steps: &flatpak-steps
   steps:
@@ -26,21 +26,21 @@ flatpak-steps: &flatpak-steps
 jobs:
   build-bullseye:
     docker:
-      - image: circleci/buildpack-deps:bullseye-scm
+      - image: ubuntu-2204:current
     environment:
       - OCPN_TARGET: bullseye
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    <<: *debian-steps
+    <<: *debian-docker-steps
 
   build-bullseye-wx32:
     docker:
-      - image: circleci/buildpack-deps:bullseye-scm
+      - image: ubuntu-2204:current
     environment:
       - OCPN_TARGET: bullseye
       - BUILD_WX32: true
       - TARGET_TUPLE: debian-wx32;11;x86_64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    <<: *debian-steps
+    <<: *debian-docker-steps
 
   build-bullseye-armhf:
     machine:
