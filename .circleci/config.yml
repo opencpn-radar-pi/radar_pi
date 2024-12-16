@@ -33,7 +33,7 @@ jobs:
 
   build-bullseye-wx32:
     machine:
-      - image: ubuntu-2204:current
+      image: ubuntu-2204:current
     resource_class: medium
     environment:
       - OCPN_TARGET: bullseye
