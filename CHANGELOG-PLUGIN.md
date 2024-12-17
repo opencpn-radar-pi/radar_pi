@@ -11,6 +11,18 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ## [Unreleased]
 
+## [5.5.5]
+
+### Fixed
+ 
+- Fix colors not showing in Preferences dialog on Linux
+- Allow setting of loglevel, fixed heading and position in Preferences dialog
+- Fixed a crash in weather mode
+- Small Raymarine fixes
+- Small Navico fixes
+- Do not overlay radar on chart without heading source
+- Updated translations
+
 ## [5.5.4]
 
 ### Fixed
