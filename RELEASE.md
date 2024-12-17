@@ -15,7 +15,7 @@ For step 2 you need a Linux or macOS+homebrew installation, with the 'jq' and 'c
 ## Publish the "download files" on Cloudsmith
 
 If you `git push` a version that is _not_ tagged, it ends up in the _unstable_ repository at
-https://cloudsmith.io/~opencpn-radar-pi/repos/opencpn-radar-pi-unstable/packages/
+https://cloudsmith.io/~opencpn-radar-pi/repos/radar-unstable/packages/
 which is fine; you can test that the code builds. Do not worry about cleaning this up; cloudsmith will do this
 automatically.
 
@@ -73,20 +73,12 @@ That concludes the building actions.
 You can check the build progress at the following sites.
 
 [Circle CI pipelines](https://app.circleci.com/github/opencpn-radar-pi/radar_pi/pipelines) for Linux x86 and macOS builds
-[Drone](https://cloud.drone.io/opencpn-radar-pi/radar_pi) for Raspberry Pi (armhf) builds
-[Appveyor](https://ci.appveyor.com/project/keesverruijt/radar-pi) for Microsoft Windows
+[Github](https://github.com/opencpn-radar-pi/radar_pi/actions) for Linux, Mac and Windows.
 
-### New cloudsmith packages (>= 5.1.5)
+### Cloudsmith packages
 
-[CloudSmith Prod Packages](https://cloudsmith.io/~opencpn-radar-pi/repos/opencpn-radar-pi-prod/packages/)
-[CloudSmith Beta Packages](https://cloudsmith.io/~opencpn-radar-pi/repos/opencpn-radar-pi-beta/packages/)
-
-### Old cloudsmith packages (<= 5.1.4)
-
-These were used for old releases, once we have 5.2.0 out in both production and beta they can be removed:
-
-[CloudSmith Stable Packages](https://cloudsmith.io/~kees-verruijt/repos/ocpn-plugins-stable/packages/)
-[CloudSmith Unstable Packages](https://cloudsmith.io/~kees-verruijt/repos/ocpn-plugins-unstable/packages/)
+[CloudSmith Prod Packages](https://cloudsmith.io/~opencpn-radar-pi/repos/radar-prod/packages/)
+[CloudSmith Beta Packages](https://cloudsmith.io/~opencpn-radar-pi/repos/radar-beta/packages/)
 
 ## Create a pull request for `opencpn-plugins`
 
