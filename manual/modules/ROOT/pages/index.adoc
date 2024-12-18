@@ -14,7 +14,7 @@ The following radar scanners are supported:
 * Navico Broadband Radar 3G
 * Navico Broadband Radar 4G
 * Navico HALO (20, 20+, 24, 4, 6, 8)
-* xref:Raymarine-radome-model-support.adoc[Raymarine (older) radars]
+* xref:Raymarine-radome-model-support.adoc[Raymarine radars]
 * A simple emulator
 * (Not fully verified support for Garmin GMR18 is reported)
 

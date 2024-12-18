@@ -19,7 +19,37 @@ weatherproof collar.
 Connect an Ethernet switch and link it to the Seatalk _hs_ port on your
 display.
 
-<< more to come >>
+From release 5.5.5 the support of Quantum radars is improved.
+
+As of now only Ethernet connected Quantum radars are supported. 
+To install: Connect both radar and Axiom MFD (if you have one) to a switch. The computer running
+OpenCPN with radar_pi should also be connected to that switch. For the switch you may use an 
+original Raymarine or a third party model with standard RJ45 connectors. Better not use a managed switch, 
+this adds a lot of complexity.
+In this setup, as soon as the radar functions on the MFD, it will function on radar_pi.
+The radar can be controlled from any device.
+
+== Quantum radar without a Raymarine MFD
+
+Attention: the solution below has been reported as working several times, but is not not guaranteed to function in your case, 
+like anything we say about Raymarine radars. 
+
+If you want to use the Quantum radar without a Raymarine MFD some additional actions are needed.
+For the radar to function it requires a DHCP server on the network. The Axiom MFD has a DHCP 
+server operational. To operate the radar without a Raymarine MFD (like Axiom) you will need to supply a 
+DHCP server on the network.
+On Linux based machines a software DHCP server can be added easily. On Windows this is less straightforward. 
+But the simplest solution is not to use an Ethernet switch, but a router. A typical 20$ home router 
+should do the job. And you may find a 12 volt model. It seems that no special configuration for the DHCP server
+is required. So the default setting should be OK. As it may take some time before the radar will refresh its 
+IP-address power toggling the radar may help.
+
+If you put you own DHCP server on the network, make sure that the DHCP server on the Axiom (or other plotter) is "off"
+or "automatic" (diagnose menu), there should never be more than one DHCP server. 
+
+In case your radar is WiFi connected to the Axiom we have no tested solution available. However you could try 
+to connect the computer to the Raynet (Ethernet), as we expect that the Axiom retransmits the radar information on the
+network.
 
 xref:Raymarine-radome-model-support.adoc[Supported Raymarine models]
 

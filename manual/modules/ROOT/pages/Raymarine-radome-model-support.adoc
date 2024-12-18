@@ -1,10 +1,9 @@
 :imagesdir: ../images/
-Release 5.2.0 contains support for (older) Raymarine radars.
+Release 5.5.5 contains support for Raymarine radars.
 
 This is based on the Raymarine plugin project originally written by
-ab2nkovs who never contacted us and just cloned the original BR24 code
-and then published it here: https://github.com/ab2nkovs/RMRadar_pi –
-never to be heard from again.
+ab2nkovs who cloned the original BR24 code and then published it 
+here: https://github.com/ab2nkovs/RMRadar_pi 
 
 As far as we know this will support the RD4xxD models and possibly the
 older ``Pathfinder'' models attached to E series classic and maybe even
@@ -37,9 +36,9 @@ FIND OUT YOUR SELF AND INFORM US!!
 |RD424D |Ethernet |Magnetron + Digital |24 | |?
 |RD418HD |Ethernet |Magnetron + Digital |18 |MC/48 |NY
 |RD424HD |Ethernet |Magnetron + Digital |24 |MC/48 |NY
-|Q24C |Eth+WiFi |Full digital |24 | |NY
+|Q24C |Ethernet |Full digital |24 | |Yes
 |Q24W |WiFi |Full digital |24 | |NY
-|Q24D |Eth+Wifi |Chirp |24 |MC/48/DO |NY
+|Q24D |Ethernet |Chirp |24 |MC/48/DO |Yes
 |===
 
 Interface:
@@ -57,7 +56,12 @@ Features:
 Plugin Support: 
 
 * ? = We hope that this will work, we just don’t know yet 
-* Yes = This is what the original plugin by ab2knovs (https://github.com/ab2nkovs/RMRadar_pi) claimed to support 
+* Yes = This is what the original plugin by ab2knovs (https://github.com/ab2nkovs/RMRadar_pi) claimed to support. 
+Later functionality for the Quantum radars was added by the radar team with further assistance from Andrei (ab2nkovs). 
+Note that we do not (yet) support WiFi connected Quantum radars.
+
 * NY = Not yet, please help if you have such a scanner
+
+xref:Hardware-installation-(Raymarine).adoc[Installation of Raymarine radars]
 
 xref:index.adoc[Back to overview Plugin radar_pi]
