@@ -920,6 +920,7 @@ void *NavicoReceive::Entry(void) {
  * TODO: This function should really be removed, it is undesired to set RadarType on the fly, will create inconsistencies, (DF)
  */
 void NavicoReceive::SetRadarType(RadarType t) {
+  return; // disable this function
   m_ri->m_radar_type = t;
   // m_pi->m_pMessageBox->SetRadarType(t);
 }
@@ -1205,6 +1206,8 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
       case (129 << 8) + 0x03: {  // 129 bytes starting with 03 C4
         RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
         LOG_RECEIVE(wxT("%s RadarReport_03C4_129 radar_type=%u hours=%u"), m_ri->m_name.c_str(), s->radar_type, s->hours);
+
+        // should be cleaned out, currently only SetRadarType disabled, user defines radartype, not the radar
 
         switch (s->radar_type) {
           case REPORT_TYPE_BR24:
