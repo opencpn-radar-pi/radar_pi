@@ -1006,6 +1006,7 @@ struct RadarReport_03C4_129 {
   uint8_t what;
   uint8_t command;
   uint8_t radar_type;  // I hope! 01 = 4G and new 3G, 08 = 3G, 0F = BR24, 00 = HALO
+  // Now we have a case with a 4G radar with radar_type 00, our building is collapsing
   uint8_t u00[31];     // Lots of unknown
   uint32_t hours;      // Hours of operation
   uint8_t u01[20];     // Lots of unknown

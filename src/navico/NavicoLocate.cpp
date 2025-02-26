@@ -451,6 +451,12 @@ void NavicoLocate::FoundNavicoLocationInfo(const NetworkAddress &addr, const Net
     // if there are 1 or 2 navico radars and at least one is a Halo, we assume the received data is from a halo
     halo_type = true;
   }
+  // However, if there is a 4G radar, make halo_type false.
+  if (navicos <= 2 && (navico[RT_4GA] || navico[RT_4GB])) {
+    // if there are 1 or 2 navico radars and at least one is a 4G, we assume the received data is from a 4G
+    halo_type = false;
+  }
+
   if (halo_type) {
     radar_order[RT_4GA] = 0;
     radar_order[RT_4GB] = 0;
