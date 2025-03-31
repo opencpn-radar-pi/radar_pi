@@ -37,10 +37,10 @@
 PLUGIN_BEGIN_NAMESPACE
 
 // Factory to generate a particular draw implementation
-RadarDraw* RadarDraw::make_Draw(RadarInfo* ri, int draw_method) {
+RadarDraw* RadarDraw::make_Draw(radar_pi* m_pi, RadarInfo* ri, int draw_method) {
   switch (draw_method) {
     case 0:
-      return new RadarDrawVertex(ri);
+      return new RadarDrawVertex(m_pi, ri);
     case 1:
       return new RadarDrawShader(ri);
     default:

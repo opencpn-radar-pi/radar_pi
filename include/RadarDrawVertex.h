@@ -41,11 +41,12 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarDrawVertex : public RadarDraw {
 public:
-    RadarDrawVertex(RadarInfo* ri)
+    RadarDrawVertex(radar_pi* pi, RadarInfo* ri)
     {
         wxCriticalSectionLocker lock(m_exclusive);
 
         m_ri = ri;
+        m_pi = pi;
         m_vertices = 0;
         m_count = 0;
         m_oom = false;
@@ -68,6 +69,7 @@ public:
 
 private:
     RadarInfo* m_ri;
+    radar_pi* m_pi;
     size_t m_spokes;
     size_t m_spoke_len_max;
 
