@@ -11,7 +11,6 @@
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
  *   Copyright (C) 2012-2016 by Kees Verruijt         canboat@verruijt.net *
- *   Copyright (C) 2013-2016 by Douwe Fokkkema             df@percussion.nl*
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -33,35 +32,39 @@
 #ifndef _RADAR_MARPA_H_
 #define _RADAR_MARPA_H_
 
-// #include "pi_common.h"
-
-// #include "radar_pi.h"
+#include "Doppler.h"
 #include "Kalman.h"
 #include "Matrix.h"
 #include "RadarInfo.h"
+#include <bitset>
+#include <deque>
+#include <memory>
 
 PLUGIN_BEGIN_NAMESPACE
 
 //    Forward definitions
 class KalmanFilter;
 
-#define MAX_NUMBER_OF_TARGETS (100) //
 #define TARGET_SEARCH_RADIUS1                                                  \
-    (2) // radius of target search area for pass 1 (on top of the size of the
+    (5) // radius of target search area for pass 1 (on top of the size of the
         // blob)
-#define TARGET_SEARCH_RADIUS2 (15) // radius of target search area for pass 1
+#define TARGET_SEARCH_RADIUS2                                                  \
+    (10) // radius of target search area for pass 2   // used to be 15 in open
+         // version
 #define SCAN_MARGIN                                                            \
-    (150) // number of lines that a next scan of the target may have moved
+    (200) // number of lines that a next scan of the target may have moved
 #define SCAN_MARGIN2                                                           \
     (1000) // if target is refreshed after this time you will be shure it is the
-           // next sweep
+// next sweep
+
 #define MAX_CONTOUR_LENGTH                                                     \
-    (500) // defines maximal size of target contour in pixels
+    (2000) // defines maximal size of target contour in pixels
+#define MAX_CONTOUR_LENGTH_USED (500);
 #define MAX_TARGET_DIAMETER                                                    \
     (200) // target will be set lost if diameter in pixels is larger than this
           // value
 #define MAX_LOST_COUNT                                                         \
-    (3) // number of sweeps that target can be missed before it is set to lost
+    (12) // number of sweeps that target can be missed before it is set to lost
 
 #define FOR_DELETION                                                           \
     (-2) // status of a duplicate target used to delete a target
@@ -79,7 +82,8 @@ class KalmanFilter;
 #define STATUS_TO_OCPN (5) // First status to be send to OCPN
 #define START_UP_SPEED                                                         \
     (0.5) // maximum allowed speed (m/sec) for new target, real format with .
-#define DISTANCE_BETWEEN_TARGETS (4) // minimum separation between targets
+#define DISTANCE_BETWEEN_TARGETS (30) // minimum separation between targets
+#define STATUS_TO_OCPN (5) // First status to be send to OCPN
 
 typedef int target_status;
 enum OCPN_target_status {
@@ -88,96 +92,137 @@ enum OCPN_target_status {
     L // lost
 };
 
-enum TargetProcessStatus { UNKNOWN, NOT_FOUND_IN_PASS1 };
-enum PassN { PASS1, PASS2 };
+struct DynamicTargetData {
+    int target_id;
+    Matrix<double, 4> P;
+    ExtendedPosition position;
+    int status;
+};
+
+enum RefresState { NOT_FOUND, OUT_OF_SCOPE, FOUND };
 
 class ArpaTarget {
     friend class Arpa; // Allow Arpa access to private members
 
 public:
-    ArpaTarget(radar_pi* pi, RadarInfo* ri);
-    ArpaTarget();
+    // ArpaTarget(radar_pi* pi, RadarInfo* ri);
+    ArpaTarget(radar_pi* pi, RadarInfo* ri, int uid);
     ~ArpaTarget();
 
     int GetContour(Polar* p);
-    void set(radar_pi* pi, RadarInfo* ri);
     bool FindNearestContour(Polar* pol, int dist);
     bool FindContourFromInside(Polar* p);
     bool GetTarget(Polar* pol, int dist);
-    void RefreshTarget(int dist);
-    void PassARPAtoOCPN(Polar* p, OCPN_target_status s);
+    void RefreshTarget(int dist, int pass);
+    void PassAIVDMtoOCPN(Polar* p);
+    void PassTTMtoOCPN(Polar* p, OCPN_target_status s);
+    void MakeAndTransmitTargetMessage();
+    void MakeAndTransmitCoT();
     void SetStatusLost();
     void ResetPixels();
+    void PixelCounter();
+    void StateTransition(Polar* pol);
     bool Pix(int ang, int rad);
     bool MultiPix(int ang, int rad);
+    wxString EncodeAIVDM(
+        int mmsi, double speed, double lon, double lat, double course);
+    void TransferTargetToOtherRadar();
+    void SendTargetToNearbyRadar(); 
+    int m_status;
+    int m_average_contour_length;
+    bool m_small_fast; // For small and fast targets the Kalman filter will be overwritten for the initial positions
 
 private:
     RadarInfo* m_ri;
     radar_pi* m_pi;
-    KalmanFilter* m_kalman;
+    KalmanFilter m_kalman;
     int m_target_id;
-    target_status m_status;
     // radar position at time of last target fix, the polars in the contour
     // refer to this origin
+    RefresState m_refreshed;
     GeoPosition m_radar_pos;
     ExtendedPosition m_position; // holds actual position of target
-    double m_speed_kn; // Average speed of target. TODO: Merge with
-                       // m_position.speed?
-    wxLongLong m_refresh; // time of last refresh
+    // double m_speed_kn; // Average speed of target. TODO: Merge with
+    //                    // m_position.speed?
+    wxLongLong m_refresh_time; // time of last refresh
     double m_course;
     int m_stationary; // number of sweeps target was stationary
     int m_lost_count;
-    bool m_check_for_duplicate;
-    TargetProcessStatus m_pass1_result;
-    PassN m_pass_nr;
     Polar m_contour[MAX_CONTOUR_LENGTH
         + 1]; // contour of target, only valid immediately after finding it
     int m_contour_length;
-    Polar m_max_angle, m_min_angle, m_max_r,
-        m_min_r; // charasterictics of contour
+    int m_previous_contour_length;
+    Polar m_max_angle, m_min_angle, m_max_r, m_min_r,
+        m_polar_pos; // charasterictics of contour
     Polar m_expected;
     bool m_automatic; // True for ARPA, false for MARPA.
-    uint8_t
-        m_doppler_target; // 0: no doppler, 1 approaching, 2 receiding; 3 any
+    Doppler m_doppler_target; // ANY, NO_DOPPLER, APPROACHING, RECEDING,
+                              // ANY_DOPPLER, NOT_APPROACHING, NOT_RECEDING
+    bool m_transferred_target;
+    uint32_t m_total_pix;
+    uint32_t m_approaching_pix;
+    uint32_t m_receding_pix;
 
     ExtendedPosition Polar2Pos(Polar pol, ExtendedPosition own_ship);
     Polar Pos2Polar(ExtendedPosition p, ExtendedPosition own_ship);
 };
 
 class Arpa {
+
+    // Thread Analysis for locking purposes. All public functions are annotated
+    // which thread calls them. THR(...) where it contains the following
+    // letters:
+    //          M = Main GUI thread
+    //          R = RadarReceive
+    //          I = InterRadar
+    // LCK(...) where it indicates the following locks are already held:
+    //          ri = RadarInfo exclusive lock
 public:
-    Arpa(radar_pi* pi, RadarInfo* ri);
-    ~Arpa();
-    void DrawArpaTargetsOverlay(double scale, double arpa_rotate);
-    void DrawArpaTargetsPanel(double scale, double arpa_rotate);
-    void RefreshArpaTargets();
-    int AcquireNewARPATarget(Polar pol, int status, uint8_t doppler);
-    void AcquireNewMARPATarget(ExtendedPosition p);
-    void DeleteTarget(ExtendedPosition p);
-    bool MultiPix(int ang, int rad, bool doppler);
-    void DeleteAllTargets();
-    void CleanUpLostTargets();
-    void RadarLost()
+    Arpa(radar_pi* pi, RadarInfo* ri); // THR(M)
+    ~Arpa(); // THR(M)
+    void DrawArpaTargetsOverlay(double scale, double arpa_rotate); // THR(M)
+    void DrawArpaTargetsPanel(double scale, double arpa_rotate); // THR(M)
+    void RefreshAllArpaTargets(); // THR(M LCK(ri))
+    bool AcquireNewARPATarget(Polar pol, int status, Doppler doppler); // THR(M)
+    void AcquireNewMARPATarget(ExtendedPosition pos); // THR(M)
+    void DeleteTarget(const GeoPosition& pos); // THR(M)
+    bool MultiPix(int ang, int rad, Doppler doppler); // THR(M)
+    void DeleteAllTargets(); // THR(M)
+    void RadarLost() // THR(M LCK(ri))
     {
         DeleteAllTargets(); // Let ARPA targets disappear
     }
-    void ClearContours();
-    int GetTargetCount() { return m_number_of_targets; }
+    void InsertOrUpdateTargetFromOtherRadar(
+        const DynamicTargetData* data, bool remote); // THR(M)
+    void ClearContours(); // THR(R)
+    int GetTargetCount()
+    {
+        return m_targets.size();
+    } // THR(M), not sensitive to exact #
+    void SearchDopplerTargets(); // THR(M)
+    void StoreRemoteTarget(DynamicTargetData* target); // THR(I)
+    void ProcessIncomingMessages(); // THR(M)
 
 private:
-    int m_number_of_targets;
-    ArpaTarget* m_targets[MAX_NUMBER_OF_TARGETS];
+    std::deque<std::unique_ptr<ArpaTarget>> m_targets;
     wxLongLong m_doppler_arpa_update_time[SPOKES_MAX];
+    bool m_clear_contours;
+
+    std::deque<GeoPosition> m_delete_target_position;
+
+    std::deque<DynamicTargetData*> m_remote_target_queue;
+    wxCriticalSection m_remote_target_lock;
 
     radar_pi* m_pi;
     RadarInfo* m_ri;
 
     void AcquireOrDeleteMarpaTarget(ExtendedPosition p, int status);
     void CalculateCentroid(ArpaTarget* t);
-    void DrawContour(ArpaTarget* t);
-    bool Pix(int ang, int rad, bool doppler);
-    void SearchDopplerTargets();
+    void DrawContour(const ArpaTarget* t);
+    bool Pix(int ang, int rad, Doppler doppler);
     bool IsAtLeastOneRadarTransmitting();
+    void CleanUpLostTargets();
+    DynamicTargetData* GetIncomingRemoteTarget();
 };
 
 PLUGIN_END_NAMESPACE

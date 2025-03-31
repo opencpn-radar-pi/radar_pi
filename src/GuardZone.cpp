@@ -134,31 +134,26 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, uint8_t* hist, s
 // Search guard zone for ARPA targets
 void GuardZone::SearchTargets() {
   ExtendedPosition own_pos;
+  Doppler doppler = ANY;
   if (!m_arpa_on) {
-    return;
-  }
-  if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 2) {
-    LOG_INFO(wxT("No more scanning for ARPA targets, maximum number of targets reached"));
     return;
   }
   if (!m_pi->m_settings.show                       // No radar shown
       || !m_ri->GetRadarPosition(&own_pos.pos)     // No position
       || m_pi->GetHeadingSource() == HEADING_NONE  // No heading
       || (m_pi->GetHeadingSource() == HEADING_FIX_HDM && m_pi->m_var_source == VARIATION_SOURCE_NONE)) {
-    return;
-  }
-  if (m_pi->m_radar[0] == 0 && m_pi->m_radar[1] == 0) {
-    return;
-  }
-  for (size_t r = 0; r < RADARS; r++) {
-    if (m_pi->m_radar[r] != 0) {
-      if (m_pi->m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT)  // There is at least one radar transmitting
-        break;
-    }
+    LOG_ARPA(wxT(" returned1"));
     return;
   }
 
+  if (m_ri == 0) {
+    return;
+  }
+  if (m_ri->m_state.GetValue() != RADAR_TRANSMIT) {  // Current radar is transmitting
+    return;
+  }
   if (m_ri->m_pixels_per_meter == 0.) {
+    LOG_ARPA(wxT(" returned4"));
     return;
   }
   size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to 0..511
@@ -166,21 +161,31 @@ void GuardZone::SearchTargets() {
   if (range_start < 1) range_start = 1;
   if (range_start >= range_end) return;
   int hdt = SCALE_DEGREES_TO_SPOKES(m_pi->GetHeadingTrue());
-  SpokeBearing hdt_spokes = MOD_SPOKES(hdt);
-  SpokeBearing start_bearing = SCALE_DEGREES_TO_SPOKES(m_start_bearing) + hdt_spokes;
-  SpokeBearing end_bearing = SCALE_DEGREES_TO_SPOKES(m_end_bearing) + hdt_spokes;
+  while (hdt >= (int)m_ri->m_spokes) {
+    hdt -= m_ri->m_spokes;
+  }
+  while (hdt < 0) {
+    hdt += m_ri->m_spokes;
+  }
+  int start_bearing = SCALE_DEGREES_TO_SPOKES(m_start_bearing) + hdt;
+  int end_bearing = SCALE_DEGREES_TO_SPOKES(m_end_bearing) + hdt;
   start_bearing = MOD_SPOKES(start_bearing);
   end_bearing = MOD_SPOKES(end_bearing);
   if (start_bearing > end_bearing) {
     end_bearing += m_ri->m_spokes;
   }
   if (m_type == GZ_CIRCLE) {
-    start_bearing = 0;
-    end_bearing = m_ri->m_spokes;
+    start_bearing = m_ri->m_last_received_spoke + 600;  // forward of the beam
+    end_bearing = m_ri->m_last_received_spoke - 500;
+  }
+  if (start_bearing > end_bearing) {
+    end_bearing += m_ri->m_spokes;
   }
   if (range_start < m_ri->m_spoke_len_max) {
-    if (range_end > m_ri->m_spoke_len_max) {
-      range_end = m_ri->m_spoke_len_max;
+    size_t outer_limit = m_ri->m_spoke_len_max;
+    outer_limit = (size_t)outer_limit * 0.93;
+    if (range_end > outer_limit) {
+      range_end = outer_limit;
     }
     if (range_end < range_start) return;
 
@@ -198,16 +203,13 @@ void GuardZone::SearchTargets() {
                                // point SCANMARGIN further set new refresh time
         m_arpa_update_time[angle] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
-          if (m_ri->m_arpa->GetTargetCount() >= MAX_NUMBER_OF_TARGETS - 1) {
-            LOG_INFO(wxT("No more scanning for ARPA targets in loop, maximum number of targets reached"));
-            return;
-          }
-          if (m_ri->m_arpa->MultiPix(angle, rrr, 0)) {
+          if (m_ri->m_arpa->MultiPix(angle, rrr, doppler)) {
             // pixel found that does not belong to a known target
             Polar pol;
             pol.angle = angle;
             pol.r = rrr;
-            int target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0, 0);
+            LOG_ARPA(wxT("Found blob angle=%i, r=%i, doppler=%i"), angle, rrr, doppler);
+            int target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0, doppler);
             if (target_i == -1) break;
           }
         }
