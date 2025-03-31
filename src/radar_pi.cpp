@@ -1752,7 +1752,7 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ColourDopplerReceding"), &s, "cyan");
     m_settings.doppler_receding_colour = wxColour(s);
     pConf->Read(wxT("DeveloperMode"), &m_settings.developer_mode, false);
-    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 1);
+    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
     pConf->Read(wxT("OverlayStandby"), &m_settings.overlay_on_standby, true);
@@ -2340,7 +2340,7 @@ bool radar_pi::IsRadarOnScreen(int radar) {
 }
 
 RadarInfo *radar_pi::GetLongRangeRadar() {
-  // In case of 1 radar the LongRangeRadar is validl
+  // In case of 1 radar the LongRangeRadar is valid
   RadarInfo *ri = 0;
   if (m_radar[0] && m_radar[1] && M_SETTINGS.radar_count == 2) {
     if (m_radar[0]->m_pixels_per_meter > m_radar[1]->m_pixels_per_meter) {

@@ -33,7 +33,7 @@ set(OCPN_RELEASE_REPO
 # -------  Plugin setup --------
 #
 set(PKG_NAME radar_pi)
-set(PKG_VERSION 5.6.0)
+set(PKG_VERSION 5.5.7)
 set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME radar)    # Dialogs, installer artifacts, ...
@@ -92,6 +92,7 @@ set(SRC
   include/radar_pi.h
   include/shaderutil.h
   include/socketutil.h
+  include/Doppler.h
 
   # Source files that are repeatedly included to get a 
   # different effect every time
