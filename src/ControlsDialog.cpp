@@ -1629,12 +1629,12 @@ void ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
     m_ri->m_overlay_canvas[canvasIndex].Update(1);
     m_ri->UpdateControlState(false);
     // no other radars can do overlay on same canvas
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    /*for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       if (m_pi->m_radar[r] != m_ri) {
         m_pi->m_radar[r]->m_overlay_canvas[canvasIndex].Update(0);
         m_pi->m_radar[r]->UpdateControlState(false);
       }
-    }
+    }*/   // both overlays enabled
   } else {
     // flip overlay to off
     button->m_item->Update(0);
@@ -1715,10 +1715,8 @@ void ControlsDialog::OnAcquireTargetButtonClick(wxCommandEvent& event) {
 }
 
 void ControlsDialog::OnDeleteTargetButtonClick(wxCommandEvent& event) {
-  ExtendedPosition target_pos;
-  target_pos.pos = m_ri->m_mouse_pos;
-  LOG_DIALOG(wxT("%s OnDeleteTargetButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.pos.lat, target_pos.pos.lon);
-  m_ri->m_arpa->DeleteTarget(target_pos);
+  LOG_DIALOG(wxT("%s OnDeleteTargetButtonClick mouse=%f/%f"), m_log_name.c_str(), m_ri->m_mouse_pos.lat, m_ri->m_mouse_pos.lon);
+  m_ri->m_arpa->DeleteTarget(m_ri->m_mouse_pos);
 }
 
 void ControlsDialog::OnDeleteAllTargetsButtonClick(wxCommandEvent& event) {

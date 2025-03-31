@@ -125,6 +125,7 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_rotation_period.Update(0);
   m_magnetron_current.Update(0);
   m_rotation_period.Update(0);
+  m_last_received_spoke = 0;
   m_stay_alive_type = 0;
 
   m_range_adjustment.Update(0, RCS_MANUAL);
@@ -464,7 +465,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
                                   wxLongLong time_rec) {
   int orientation;
   int i;
-
+  m_last_received_spoke = MOD_SPOKES(bearing);
   SampleCourse(angle);            // Calculate course as the moving average of m_hdt over one revolution
   CalculateRotationSpeed(angle);  // Find out how fast the radar is rotating
 
@@ -915,7 +916,7 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
 
   // Determine if a new draw method is required
   if (!di->draw || (drawing_method != di->drawing_method)) {
-    RadarDraw *newDraw = RadarDraw::make_Draw(this, drawing_method);
+    RadarDraw *newDraw = RadarDraw::make_Draw(m_pi, this, drawing_method);
     if (!newDraw) {
       wxLogError(wxT("out of memory"));
       return;

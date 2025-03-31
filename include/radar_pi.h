@@ -81,13 +81,12 @@ class GPSKalmanFilter;
 class RaymarineLocate;
 class NavicoLocate;
 
-#define MAX_CHART_CANVAS (2)  // How many canvases OpenCPN supports
-#define RADARS \
-  (4)  // Arbitrary limit, anyone running this many is already crazy!
-#define GUARD_ZONES (2)    // Could be increased if wanted
-#define BEARING_LINES (2)  // And these as well
-#define NO_TRANSMIT_ZONES \
-  (4)  // Max that any radar supports, currently xHD=1 HALO=4
+#define MAX_CHART_CANVAS (2) // How many canvases OpenCPN supports
+#define RADARS  (4) 
+#define GUARD_ZONES (2) // Could be increased if wanted
+#define BEARING_LINES (2) // And these as well
+#define NO_TRANSMIT_ZONES                                                      \
+    (4) // Max that any radar supports, currently xHD=1 HALO=4
 
 #define CANVAS_COUNT (wxMin(MAX_CHART_CANVAS, GetCanvasCount()))
 
@@ -118,6 +117,7 @@ typedef int AngleDegrees;  // An angle relative to North or HeadUp. Generally
 #define SCALE_SPOKES_TO_DEGREES(raw) \
   ((raw) * (double)DEGREES_PER_ROTATION / m_ri->m_spokes)
 #define MOD_SPOKES(raw) (((raw) + 2 * m_ri->m_spokes) % m_ri->m_spokes)
+// #define MOD_SPOKES(raw) ((raw)&0x7ff) // only for 2024 spokes
 #define MOD_DEGREES(angle) \
   (((angle) + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
 #define MOD_DEGREES_FLOAT(angle) \
@@ -578,6 +578,10 @@ public:
   bool EnsureRadarSelectionComplete(bool force);
   bool MakeRadarSelection();
 
+
+  RadarInfo* GetLongRangeRadar();
+  RadarInfo* GetShortRangeRadar();
+
   void NotifyRadarWindowViz();
   void NotifyControlDialog();
 
@@ -686,27 +690,28 @@ public:
   bool m_ais_drawgl_broken;
 
 private:
-  void RadarSendState(void);
-  void UpdateState(void);
-  void UpdateHeadingPositionState(void);
-  void DoTick(void);
-  void Select_Clutter(int req_clutter_index);
-  void Select_Rejection(int req_rejection_index);
-  void CheckGuardZoneBogeys(void);
-  void RenderRadarBuffer(wxDC* pdc, int width, int height);
-  void PassHeadingToOpenCPN();
-  void CacheSetToolbarToolBitmaps();
-  void SetRadarWindowViz(bool reparent = false);
-  void UpdateCOGAvg(double cog);
-  void OnTimerNotify(wxTimerEvent& event);
-  void TimedControlUpdate();
-  void TimedUpdate(wxTimerEvent& event);
-  void ScheduleWindowRefresh();
-  void SetOpenGLMode(OpenGLMode mode);
-  int GetArpaTargetCount(void);
 
-  wxCriticalSection
-      m_exclusive;  // protects callbacks that come from multiple radars
+    void RadarSendState(void);
+    void UpdateState(void);
+    void UpdateHeadingPositionState(void);
+    void DoTick(void);
+    void Select_Clutter(int req_clutter_index);
+    void Select_Rejection(int req_rejection_index);
+    void CheckGuardZoneBogeys(void);
+    void RenderRadarBuffer(wxDC* pdc, int width, int height);
+    void PassHeadingToOpenCPN();
+    void CacheSetToolbarToolBitmaps();
+    void SetRadarWindowViz(bool reparent = false);
+    void UpdateCOGAvg(double cog);
+    void OnTimerNotify(wxTimerEvent& event);
+    void TimedControlUpdate();
+    void TimedUpdate(wxTimerEvent& event);
+    void ScheduleWindowRefresh();
+    void SetOpenGLMode(OpenGLMode mode);
+    int GetArpaTargetCount(void);
+    RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
+    
+    wxCriticalSection m_exclusive; // protects callbacks that come from multiple radars
 
   double m_hdt;  // this is the heading that the pi is using for all heading
                  // operations, in degrees. m_hdt will come from the radar if
@@ -722,10 +727,9 @@ public:
                                     // this canvas
   bool m_render_busy;
   int m_draw_time_overlay_ms[MAX_CHART_CANVAS];
-
+  int MakeNewTargetId();
   bool m_bpos_set;
   time_t m_bpos_timestamp;
-
   double m_sog;  // Speed over ground
 
   // Variation. Used to convert magnetic into true heading.
@@ -738,13 +742,15 @@ public:
   VariationSource m_var_source;
   time_t m_var_timeout;
 
-  wxFileConfig* m_pconfig;
-  int m_context_menu_control_id[RADARS];
-  int m_context_menu_show_id;
-  int m_context_menu_hide_id;
-  int m_context_menu_acquire_radar_target;
-  int m_context_menu_delete_radar_target;
-  int m_context_menu_delete_all_radar_targets;
+    wxFileConfig* m_pconfig;
+    int m_context_menu_control_id[RADARS];
+    int m_context_menu_show_id;
+    int m_context_menu_hide_id;
+    int m_context_menu_acquire_radar_target;
+    int m_context_menu_delete_radar_target;
+    int m_context_menu_delete_all_radar_targets;
+    int m_target_id_count;                        // counter for issueing new target UID's
+    # define MAX_TARGET_ID 10000                  // Maximum target UID
 
   int m_tool_id;
   wxBitmap* m_pdeficon;
@@ -757,7 +763,6 @@ public:
   // wxBitmap *m_ptemp_icon;
 
   NMEA0183 m_NMEA0183;
-
   ToolbarIconColor m_toolbar_button;
   ToolbarIconColor m_sent_toolbar_button;
 

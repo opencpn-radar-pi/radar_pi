@@ -143,6 +143,8 @@ public:
     RadarControlItem m_parking_angle;
     RadarControlItem m_main_bang_size;
     RadarControlItem m_accent_light;
+    RadarControlItem m_AIVDMtoO;
+    RadarControlItem m_TTMtoO;
     RadarControlItem m_local_interference_rejection;
     RadarControlItem m_side_lobe_suppression;
     RadarControlItem m_target_trails;
@@ -222,6 +224,7 @@ public:
     int m_dir_lat;
     int m_dir_lon;
     TrailBuffer* m_trails;
+    uint16_t m_last_received_spoke;
 
     // Timed Transmit
     time_t m_idle_standby; // When we will change to standby
