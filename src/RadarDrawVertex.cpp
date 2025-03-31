@@ -131,6 +131,24 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   if (angle < 0 || angle >= (int)m_spokes || len > m_spoke_len_max || !m_vertices) {
     return;
   }
+  size_t start_radius = 0;
+    // find other radar
+      if (m_pi->m_settings.radar_count == 2) {
+    RadarInfo* other_radar;
+    if (m_pi->m_radar[0] == m_ri) {
+      other_radar = m_pi->m_radar[1];
+    }
+    else {
+      other_radar = m_pi->m_radar[0];
+    }
+    if (m_ri->m_overlay_canvas[0].GetValue() == 1 && other_radar->m_overlay_canvas[0].GetValue() == 1) {
+        // both overlays on
+          if (m_ri->m_pixels_per_meter < other_radar->m_pixels_per_meter) {
+          // this range is largest
+            start_radius = (int)(len * m_ri->m_pixels_per_meter / other_radar->m_pixels_per_meter);
+      }
+    }
+  }
   VertexLine* line = &m_vertices[angle];
 
   if (!line->points) {
@@ -151,7 +169,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   line->count = 0;
   line->timeout = now + m_ri->m_pi->m_settings.max_age;
   line->spoke_pos = spoke_pos;
-  for (size_t radius = 0; radius < len; radius++) {
+  for (size_t radius = start_radius; radius < len; radius++) {
     strength = data[radius];
     BlobColour actual_colour = m_ri->m_colour_map[strength];
 

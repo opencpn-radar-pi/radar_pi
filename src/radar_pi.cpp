@@ -256,6 +256,7 @@ int radar_pi::Init(void) {
   m_COGAvg = 0.;
   m_heading_source = HEADING_NONE;
   m_vp_rotation = 0.;
+  m_target_id_count = 0;
   m_arpa_max_range = BASE_ARPA_DIST;
 
   // Set default settings before we load config. Prevents random behavior on uninitalized behavior.
@@ -406,6 +407,18 @@ void radar_pi::StartRadarLocators(size_t r) {
       LOG_INFO(wxT("radar_pi Raymarine locator started"));
     }
   }
+}
+
+int radar_pi::MakeNewTargetId() {
+  wxString str, str1;
+
+  int target_id = m_target_id_count + MAX_TARGET_ID;
+  m_target_id_count++;
+  if (m_target_id_count >= MAX_TARGET_ID) {
+    m_target_id_count = 1;
+    LOG_INFO(wxT("Target counter reset"));
+  }
+  return target_id;
 }
 
 void radar_pi::StopRadarLocators() {
@@ -798,6 +811,17 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     current_radar = m_chart_overlay[m_context_menu_canvas_index];
   }
 
+  // Find radar with the largeset range
+  RadarInfo *large_range_radar = m_radar[current_radar];
+  if (M_SETTINGS.radar_count == 2 && m_radar[0] && m_radar[1] && m_radar[0]->m_arpa && m_radar[1]->m_arpa) {
+    if (m_radar[0]->m_pixels_per_meter > m_radar[1]->m_pixels_per_meter) {
+      large_range_radar = m_radar[1];
+    }
+    else {
+      large_range_radar = m_radar[0];
+    }
+  }
+
   if (id == m_context_menu_hide_id) {
     m_settings.show = false;
     SetRadarWindowViz();
@@ -805,15 +829,27 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     m_settings.show = true;
     SetRadarWindowViz();
   } else if (id == m_context_menu_acquire_radar_target) {
-    if (m_settings.show                                                  // radar shown
-        && HaveOverlay()                                                 // overlay desired
-        && m_radar[current_radar]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
-        && !isnan(m_right_click_pos.lat) && !isnan(m_right_click_pos.lon)) {
-      if (m_right_click_pos.lat < 90. && m_right_click_pos.lat > -90. && m_right_click_pos.lon < 180. &&
-          m_right_click_pos.lon > -180.) {
+    if (m_right_click_pos.lat < 90. && m_right_click_pos.lat > -90. && m_right_click_pos.lon < 180. &&
+        m_right_click_pos.lon > -180.) {
+      RadarInfo *best_radar = FindBestRadarForTarget(m_right_click_pos);
+      if (best_radar && best_radar->m_arpa &&                  // radar exists
+          m_settings.show &&                                   // radar shown
+          HaveOverlay() &&                                     // overlay desired
+          best_radar->m_state.GetValue() == RADAR_TRANSMIT) {  // Radar  transmitting
         ExtendedPosition target_pos;
         target_pos.pos = m_right_click_pos;
-        m_radar[current_radar]->m_arpa->AcquireNewMARPATarget(target_pos);
+        best_radar->m_arpa->AcquireNewMARPATarget(target_pos);
+      
+
+    //if (m_settings.show                                                  // radar shown
+    //    && HaveOverlay()                                                 // overlay desired
+    //    && large_range_radar->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
+    //    && !isnan(m_right_click_pos.lat) && !isnan(m_right_click_pos.lon)) {
+    //  if (m_right_click_pos.lat < 90. && m_right_click_pos.lat > -90. && m_right_click_pos.lon < 180. &&
+    //      m_right_click_pos.lon > -180.) {
+    //    ExtendedPosition target_pos;
+    //    target_pos.pos = m_right_click_pos;
+    //    large_range_radar->m_arpa->AcquireNewMARPATarget(target_pos);
       } else {
         LOG_INFO(wxT(" **error right click pos lat=%f, lon=%f"), m_right_click_pos.lat, m_right_click_pos.lon);
       }
@@ -822,10 +858,8 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     // Targets can also be deleted when the overlay is not shown
     // In this case targets can be made by a guard zone in a radarwindow
     if (m_settings.show && current_radar >= 0) {
-      ExtendedPosition target_pos;
-      target_pos.pos = m_right_click_pos;
-      if (m_radar[current_radar]->m_arpa) {
-        m_radar[current_radar]->m_arpa->DeleteTarget(target_pos);
+      if (large_range_radar->m_arpa) {
+        m_radar[current_radar]->m_arpa->DeleteTarget(m_right_click_pos);
       }
     }
   } else if (id == m_context_menu_delete_all_radar_targets) {
@@ -1233,12 +1267,13 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
     return;
   }
 
-  //// for testing only, simple trick to get position and heading
-  // wxString nmea;
-  // nmea = wxT("$APHDM,000.0,M*33");
-  // PushNMEABuffer(nmea);
-  // nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
-  // PushNMEABuffer(nmea);
+  //// for testing only, simple trick to get position and heading $$$
+  LOG_INFO(wxT("$$$ fixed pos and heading"));
+   wxString nmea;
+   nmea = wxT("$APHDM,000.0,M*33");
+   PushNMEABuffer(nmea);
+   nmea = wxT("$GPRMC,123519,A,5326.038,N,00611.000,E,022.4,,230394,,W,*41<0x0D><0x0A>");
+   PushNMEABuffer(nmea);
 
   // update own ship position to best estimate
   ExtendedPosition intermediate_pos;
@@ -1257,26 +1292,82 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   }
 
   // refresh ARPA targets
-  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    bool arpa_on = false;
-    if (m_radar[r]) {
-      wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
-      if (m_radar[r]->m_arpa) {
-        for (int i = 0; i < GUARD_ZONES; i++) {
-          if (m_radar[r]->m_guard_zone[i]->m_arpa_on) {
-            arpa_on = true;
-          }
-        }
-        if (m_radar[r]->m_arpa->GetTargetCount() > 0) {
+
+  // Refresh radar with smallest range first
+  m_radar[0]->m_arpa->GetTargetCount(); // $$$
+  int first = 1;
+  int last = 0;
+
+  if (M_SETTINGS.radar_count >= 2) {
+    if (m_radar[0] && m_radar[1] && m_radar[0]->m_pixels_per_meter < m_radar[1]->m_pixels_per_meter) {
+      first = 1;
+      last = 0;
+    } else {
+      first = 0;
+      last = 1;
+    }
+  }
+  // if there is only one radar, only last is valid
+
+  bool arpa_on = false;
+  if (m_radar[first]) {
+    wxCriticalSectionLocker lock(m_radar[first]->m_exclusive);
+    if (m_radar[first]->m_arpa) {
+      for (int i = 0; i < GUARD_ZONES; i++) {
+        if (m_radar[first]->m_guard_zone[i]->m_arpa_on) {
           arpa_on = true;
         }
       }
-      if (m_radar[r]->m_doppler.GetValue() > 0 && m_radar[r]->m_autotrack_doppler.GetValue() > 0) {
+      if (m_radar[first]->m_arpa->GetTargetCount() > 0) {
         arpa_on = true;
       }
-      if (arpa_on) {
-        m_radar[r]->m_arpa->RefreshArpaTargets();
+    }
+    if (m_radar[first]->m_doppler.GetValue() > 0 && m_radar[first]->m_autotrack_doppler.GetValue() > 0) {
+      arpa_on = true;
+    }
+    if (arpa_on && m_radar[first]->m_state.GetValue() == RADAR_TRANSMIT) {
+      m_radar[first]->m_arpa->RefreshAllArpaTargets();
+    }
+  }
+
+  
+
+  if (m_radar[last] && m_radar[last]->m_state.GetValue() == RADAR_TRANSMIT) {
+    wxCriticalSectionLocker lock(m_radar[last]->m_exclusive);
+    if (m_radar[last]->m_arpa) {
+      m_radar[last]->m_arpa->ProcessIncomingMessages();  // messages only processed by the large range radar
+      for (int i = 0; i < GUARD_ZONES; i++) {
+        if (m_radar[last]->m_guard_zone[i]->m_arpa_on) {
+          arpa_on = true;
+        }
       }
+      if (m_radar[last]->m_arpa->GetTargetCount() > 0) {
+        arpa_on = true;
+      }
+    }
+    if (m_radar[last]->m_doppler.GetValue() > 0 && m_radar[last]->m_autotrack_doppler.GetValue() > 0) {
+      arpa_on = true;
+    }
+    if (arpa_on) {
+      m_radar[last]->m_arpa->RefreshAllArpaTargets();
+    }
+  }
+
+  if (m_radar[first]) {
+    for (int i = 0; i < GUARD_ZONES; i++) {
+      m_radar[first]->m_guard_zone[i]->SearchTargets();
+    }
+    if (m_radar[first]->m_doppler.GetValue() > 0 && m_radar[first]->m_autotrack_doppler.GetValue() > 0) {
+      m_radar[first]->m_arpa->SearchDopplerTargets();  // this is for autotrack Doppler only
+    }
+  }
+
+  if (m_radar[last]) {
+    for (int i = 0; i < GUARD_ZONES; i++) {
+      m_radar[last]->m_guard_zone[i]->SearchTargets();
+    }
+    if (m_radar[last]->m_doppler.GetValue() > 0 && m_radar[last]->m_autotrack_doppler.GetValue() > 0) {
+      m_radar[last]->m_arpa->SearchDopplerTargets();
     }
   }
 
@@ -1467,7 +1558,12 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     double rotation = MOD_DEGREES_FLOAT(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
     LOG_DIALOG(wxT("RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat, vp->clon,
                vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
-    m_radar[current_overlay_radar]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
+    if (m_radar[0] && m_radar[0]->m_overlay_canvas[canvasIndex].GetValue()) {
+      m_radar[0]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
+    }
+    if (m_radar[1] && m_radar[1]->m_overlay_canvas[canvasIndex].GetValue()) {
+      m_radar[1]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
+    }
   }
 
   m_draw_time_overlay_ms[canvasIndex] = (wxGetUTCTimeMillis() - now).GetLo();
@@ -1599,6 +1695,11 @@ bool radar_pi::LoadConfig(void) {
         ri->m_overlay_canvas[i].Update(v);
       }
 
+      pConf->Read(wxString::Format(wxT("Radar%dUid"), r), &v, 0);
+      pConf->Read(wxString::Format(wxT("Radar%dAIVDMtoO"), r), &v, 1);
+      ri->m_AIVDMtoO.Update(v);
+      pConf->Read(wxString::Format(wxT("Radar%dTTMtoO"), r), &v, 0);
+      ri->m_TTMtoO.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], true);
       pConf->Read(wxString::Format(wxT("Radar%dWindowDock"), r), &m_settings.dock_radar[n], false);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * n);
@@ -1773,6 +1874,8 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dDopplerAutoTrack"), r), m_radar[r]->m_autotrack_doppler.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dMinContourLength"), r), m_radar[r]->m_min_contour_length);
 
+      pConf->Write(wxString::Format(wxT("Radar%dAIVDMtoO"), r), m_radar[r]->m_AIVDMtoO.GetValue());
+      pConf->Write(wxString::Format(wxT("Radar%dTTMtoO"), r), m_radar[r]->m_TTMtoO.GetValue());
       for (int i = 0; i < MAX_CHART_CANVAS; i++) {
         pConf->Write(wxString::Format(wxT("Radar%dOverlayCanvas%d"), r, i), m_radar[r]->m_overlay_canvas[i].GetValue());
       }
@@ -2176,6 +2279,32 @@ void radar_pi::SetCursorLatLon(double lat, double lon) {
   m_cursor_pos.lon = lon;
 }
 
+/**
+ * Find the radar with the smallest range that is able to see this target
+ *
+ * Returns NULL if there is no valid radar.
+ */
+RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
+  int best_range = INT_MAX;
+  RadarInfo *best_radar = NULL;
+
+  int range;
+  GeoPosition radar_position;
+
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (m_radar[r] && m_radar[r]->m_arpa &&                          // Radar is valid
+        m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT &&          // Is transmitting
+        ((range = m_radar[r]->m_range.GetValue()) < best_range) &&   // Best range
+        m_radar[r]->GetRadarPosition(&radar_position) &&             // Get position
+        local_distance(radar_position, position) < (double)range) {  // Is in range
+      best_range = range;
+      best_radar = m_radar[r];
+    }
+  }
+  return best_radar;
+}
+
+
 bool radar_pi::MouseEventHook(wxMouseEvent &event) {
   if (event.LeftDown()) {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -2208,6 +2337,36 @@ void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size
 
 bool radar_pi::IsRadarOnScreen(int radar) {
   return m_settings.show && (m_settings.show_radar[radar] || m_radar[radar]->GetOverlayCanvasIndex() > -1);
+}
+
+RadarInfo *radar_pi::GetLongRangeRadar() {
+  // In case of 1 radar the LongRangeRadar is validl
+  RadarInfo *ri = 0;
+  if (m_radar[0] && m_radar[1] && M_SETTINGS.radar_count == 2) {
+    if (m_radar[0]->m_pixels_per_meter > m_radar[1]->m_pixels_per_meter) {
+      ri = m_radar[1];  // largest range
+    } else {
+      ri = m_radar[0];  // largest range
+    }
+  } else {
+    ri = m_radar[0];
+  }
+  return ri;
+}
+
+RadarInfo *radar_pi::GetShortRangeRadar() {
+  // returns NULL in case of a single radar
+  RadarInfo *ri = 0;
+  if (m_radar[0] && m_radar[1] && M_SETTINGS.radar_count == 2) {
+    if (m_radar[0]->m_pixels_per_meter < m_radar[1]->m_pixels_per_meter) {
+      ri = m_radar[1];  // smallest range
+    } else {
+      ri = m_radar[0];  // smallest range
+    }
+  } else {
+    ri = NULL;
+  }
+  return ri;
 }
 
 }  // namespace RadarPlugin

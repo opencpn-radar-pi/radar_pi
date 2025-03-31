@@ -83,7 +83,7 @@ class NavicoLocate;
 
 #define MAX_CHART_CANVAS (2) // How many canvases OpenCPN supports
 #define RADARS                                                                 \
-    (4) // Arbitrary limit, anyone running this many is already crazy!
+    (2) // Limit fjor multi radar overlay
 #define GUARD_ZONES (2) // Could be increased if wanted
 #define BEARING_LINES (2) // And these as well
 #define NO_TRANSMIT_ZONES                                                      \
@@ -117,7 +117,7 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
     ((angle) * (m_ri->m_spokes) / DEGREES_PER_ROTATION)
 #define SCALE_SPOKES_TO_DEGREES(raw)                                           \
     ((raw) * (double)DEGREES_PER_ROTATION / m_ri->m_spokes)
-#define MOD_SPOKES(raw) (((raw) + 2 * m_ri->m_spokes) % m_ri->m_spokes)
+#define MOD_SPOKES(raw) ((raw)&0x7ff)
 #define MOD_DEGREES(angle)                                                     \
     (((angle) + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
 #define MOD_DEGREES_FLOAT(angle)                                               \
@@ -601,6 +601,9 @@ public:
     bool EnsureRadarSelectionComplete(bool force);
     bool MakeRadarSelection();
 
+    RadarInfo* GetLongRangeRadar();
+    RadarInfo* GetShortRangeRadar();
+
     void NotifyRadarWindowViz();
     void NotifyControlDialog();
 
@@ -735,7 +738,8 @@ private:
     void ScheduleWindowRefresh();
     void SetOpenGLMode(OpenGLMode mode);
     int GetArpaTargetCount(void);
-
+    RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
+    
     wxCriticalSection
         m_exclusive; // protects callbacks that come from multiple radars
 
@@ -746,6 +750,7 @@ private:
     double m_hdm; // Last magnetic heading obtained
     time_t m_hdm_timeout; // When we consider heading is lost
 public:
+    int MakeNewTargetId();
     HeadingSource m_heading_source;
     int m_chart_overlay[MAX_CHART_CANVAS]; // The overlay for canvas x, -1 =
                                            // none, otherwise = radar #
@@ -776,6 +781,8 @@ public:
     int m_context_menu_acquire_radar_target;
     int m_context_menu_delete_radar_target;
     int m_context_menu_delete_all_radar_targets;
+    int m_target_id_count;                        // counter for issueing new target UID's
+    # define MAX_TARGET_ID 10000                  // Maximum target UID
 
     int m_tool_id;
     wxBitmap* m_pdeficon;
