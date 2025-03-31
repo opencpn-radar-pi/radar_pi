@@ -1766,7 +1766,7 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("ColourDopplerReceding"), &s, "cyan");
     m_settings.doppler_receding_colour = wxColour(s);
     pConf->Read(wxT("DeveloperMode"), &m_settings.developer_mode, false);
-    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 1);
+    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
     pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
     pConf->Read(wxT("OverlayStandby"), &m_settings.overlay_on_standby, true);
@@ -2294,7 +2294,6 @@ void radar_pi::SetCursorLatLon(double lat, double lon) {
   m_cursor_pos.lon = lon;
 }
 
-<<<<<<< HEAD
 void radar_pi::SetColorScheme(PI_ColorScheme cs) {
   m_color_scheme = cs;
 
@@ -2316,8 +2315,6 @@ void radar_pi::SetColorScheme(PI_ColorScheme cs) {
   }
 }
 
-bool radar_pi::MouseEventHook(wxMouseEvent& event) {
-=======
 /**
  * Find the radar with the smallest range that is able to see this target
  *
@@ -2343,7 +2340,6 @@ RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
 
 
 bool radar_pi::MouseEventHook(wxMouseEvent &event) {
->>>>>>> 69a0506 (Not tested but showing dual overlays)
   if (event.LeftDown()) {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       m_radar[r]->SetMousePosition(m_cursor_pos);
@@ -2378,7 +2374,7 @@ bool radar_pi::IsRadarOnScreen(int radar) {
 }
 
 RadarInfo *radar_pi::GetLongRangeRadar() {
-  // In case of 1 radar the LongRangeRadar is validl
+  // In case of 1 radar the LongRangeRadar is valid
   RadarInfo *ri = 0;
   if (m_radar[0] && m_radar[1] && M_SETTINGS.radar_count == 2) {
     if (m_radar[0]->m_pixels_per_meter > m_radar[1]->m_pixels_per_meter) {
