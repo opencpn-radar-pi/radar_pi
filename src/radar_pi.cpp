@@ -271,6 +271,7 @@ int radar_pi::Init(void) {
   m_settings.enable_cog_heading = false;
   m_settings.AISatARPAoffset = 50;
   m_ais_drawgl_broken = false;
+  m_arpa = 0;
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
@@ -343,6 +344,10 @@ int radar_pi::Init(void) {
 
   for (size_t r = 0; r < MAX_CHART_CANVAS; r++) {
     m_draw_time_overlay_ms[r] = 0;
+  }
+
+  if (!m_arpa) {
+    m_arpa = new Arpa(this);
   }
 
   m_initialized = true;
@@ -447,7 +452,10 @@ bool radar_pi::DeInit(void) {
   if (!m_initialized) {
     return false;
   }
-
+  if (m_arpa) {
+    delete m_arpa;
+    m_arpa = 0;
+  }
   LOG_INFO(wxT("DeInit of plugin"));
 
   m_initialized = false;
@@ -705,7 +713,7 @@ int radar_pi::GetArpaTargetCount(void) {
   int arpa_targets = 0;
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (m_radar[r]->m_arpa) arpa_targets += m_radar[r]->m_arpa->GetTargetCount();
+    if (m_arpa) arpa_targets += m_arpa->GetTargetCount();
   }
   return arpa_targets;
 }
@@ -811,16 +819,8 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     current_radar = m_chart_overlay[m_context_menu_canvas_index];
   }
 
-  // Find radar with the largeset range
-  RadarInfo *large_range_radar = m_radar[current_radar];
-  if (M_SETTINGS.radar_count == 2 && m_radar[0] && m_radar[1] && m_radar[0]->m_arpa && m_radar[1]->m_arpa) {
-    if (m_radar[0]->m_pixels_per_meter > m_radar[1]->m_pixels_per_meter) {
-      large_range_radar = m_radar[1];
-    }
-    else {
-      large_range_radar = m_radar[0];
-    }
-  }
+  // Find radar with the largest range
+  RadarInfo *large_range_radar = GetLongRangeRadar();
 
   if (id == m_context_menu_hide_id) {
     m_settings.show = false;
@@ -832,13 +832,13 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     if (m_right_click_pos.lat < 90. && m_right_click_pos.lat > -90. && m_right_click_pos.lon < 180. &&
         m_right_click_pos.lon > -180.) {
       RadarInfo *best_radar = FindBestRadarForTarget(m_right_click_pos);
-      if (best_radar && best_radar->m_arpa &&                  // radar exists
+      if (best_radar && m_arpa &&                  // radar exists
           m_settings.show &&                                   // radar shown
           HaveOverlay() &&                                     // overlay desired
           best_radar->m_state.GetValue() == RADAR_TRANSMIT) {  // Radar  transmitting
         ExtendedPosition target_pos;
         target_pos.pos = m_right_click_pos;
-        best_radar->m_arpa->AcquireNewMARPATarget(target_pos);
+        m_arpa->AcquireNewMARPATarget(best_radar, target_pos);
       
 
     //if (m_settings.show                                                  // radar shown
@@ -858,14 +858,14 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     // Targets can also be deleted when the overlay is not shown
     // In this case targets can be made by a guard zone in a radarwindow
     if (m_settings.show && current_radar >= 0) {
-      if (large_range_radar->m_arpa) {
-        m_radar[current_radar]->m_arpa->DeleteTarget(m_right_click_pos);
+      if (m_arpa) {
+        m_arpa->DeleteTarget(m_right_click_pos);
       }
     }
   } else if (id == m_context_menu_delete_all_radar_targets) {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_radar[r]->m_arpa) {
-        m_radar[r]->m_arpa->DeleteAllTargets();
+      if (m_arpa) {
+        m_arpa->DeleteAllTargets();
       }
     }
   } else {
@@ -1294,81 +1294,50 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   // refresh ARPA targets
 
   // Refresh radar with smallest range first
-  m_radar[0]->m_arpa->GetTargetCount(); // $$$
-  int first = 1;
-  int last = 0;
-
-  if (M_SETTINGS.radar_count >= 2) {
-    if (m_radar[0] && m_radar[1] && m_radar[0]->m_pixels_per_meter < m_radar[1]->m_pixels_per_meter) {
-      first = 1;
-      last = 0;
-    } else {
-      first = 0;
-      last = 1;
-    }
-  }
-  // if there is only one radar, only last is valid
 
   bool arpa_on = false;
-  if (m_radar[first]) {
-    wxCriticalSectionLocker lock(m_radar[first]->m_exclusive);
-    if (m_radar[first]->m_arpa) {
+  RadarInfo *short_range_radar = GetShortRangeRadar();
+  RadarInfo *long_range_radar = GetLongRangeRadar();
+  if (m_arpa) {
+    if (short_range_radar) {
+      wxCriticalSectionLocker lock(short_range_radar->m_exclusive);
       for (int i = 0; i < GUARD_ZONES; i++) {
-        if (m_radar[first]->m_guard_zone[i]->m_arpa_on) {
+        if (short_range_radar->m_guard_zone[i]->m_arpa_on) {
           arpa_on = true;
         }
       }
-      if (m_radar[first]->m_arpa->GetTargetCount() > 0) {
-        arpa_on = true;
-      }
     }
-    if (m_radar[first]->m_doppler.GetValue() > 0 && m_radar[first]->m_autotrack_doppler.GetValue() > 0) {
-      arpa_on = true;
-    }
-    if (arpa_on && m_radar[first]->m_state.GetValue() == RADAR_TRANSMIT) {
-      m_radar[first]->m_arpa->RefreshAllArpaTargets();
-    }
-  }
-
-  
-
-  if (m_radar[last] && m_radar[last]->m_state.GetValue() == RADAR_TRANSMIT) {
-    wxCriticalSectionLocker lock(m_radar[last]->m_exclusive);
-    if (m_radar[last]->m_arpa) {
-      m_radar[last]->m_arpa->ProcessIncomingMessages();  // messages only processed by the large range radar
+    if (long_range_radar) {
+      wxCriticalSectionLocker lock(long_range_radar->m_exclusive);
       for (int i = 0; i < GUARD_ZONES; i++) {
-        if (m_radar[last]->m_guard_zone[i]->m_arpa_on) {
+        if (long_range_radar->m_guard_zone[i]->m_arpa_on) {
           arpa_on = true;
         }
       }
-      if (m_radar[last]->m_arpa->GetTargetCount() > 0) {
-        arpa_on = true;
-      }
     }
-    if (m_radar[last]->m_doppler.GetValue() > 0 && m_radar[last]->m_autotrack_doppler.GetValue() > 0) {
+    if (m_arpa->GetTargetCount() > 0) {
       arpa_on = true;
     }
-    if (arpa_on) {
-      m_radar[last]->m_arpa->RefreshAllArpaTargets();
+  }
+  if (arpa_on && short_range_radar->m_state.GetValue() == RADAR_TRANSMIT) {
+    m_arpa->RefreshAllArpaTargets();
+  }
+
+  if (short_range_radar) {
+    for (int i = 0; i < GUARD_ZONES; i++) {
+      short_range_radar->m_guard_zone[i]->SearchTargets();
     }
   }
 
-  if (m_radar[first]) {
+  if (long_range_radar) {
     for (int i = 0; i < GUARD_ZONES; i++) {
-      m_radar[first]->m_guard_zone[i]->SearchTargets();
-    }
-    if (m_radar[first]->m_doppler.GetValue() > 0 && m_radar[first]->m_autotrack_doppler.GetValue() > 0) {
-      m_radar[first]->m_arpa->SearchDopplerTargets();  // this is for autotrack Doppler only
+      long_range_radar->m_guard_zone[i]->SearchTargets();
     }
   }
 
-  if (m_radar[last]) {
-    for (int i = 0; i < GUARD_ZONES; i++) {
-      m_radar[last]->m_guard_zone[i]->SearchTargets();
-    }
-    if (m_radar[last]->m_doppler.GetValue() > 0 && m_radar[last]->m_autotrack_doppler.GetValue() > 0) {
-      m_radar[last]->m_arpa->SearchDopplerTargets();
-    }
+  if ((long_range_radar->m_doppler.GetValue() > 0 && long_range_radar->m_autotrack_doppler.GetValue() > 0) ||
+      (long_range_radar->m_doppler.GetValue() > 0 && long_range_radar->m_autotrack_doppler.GetValue() > 0)) {
+    m_arpa->SearchDopplerTargets();
   }
 
   UpdateHeadingPositionState();
@@ -1386,10 +1355,13 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
           || state != RADAR_TRANSMIT  // Radar not transmitting
           || !m_bpos_set) {           // No overlay possible (yet)
                                       // Conditions for ARPA not fulfilled, delete all targets
-        m_radar[r]->m_arpa->RadarLost();
       }
       m_radar[r]->UpdateTransmitState();
     }
+  }
+  
+  if (!GetShortRangeRadar() || !m_bpos_set) {
+    m_arpa->RadarLost();   // conditions for target tracking not set, delete all targets
   }
   if (any_data_seen && m_settings.show) {
     CheckGuardZoneBogeys();
@@ -2091,7 +2063,7 @@ void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
     // Check for ARPA targets
     bool arpa_is_present = false;
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_radar[r]->m_arpa->GetTargetCount() > 0) {
+      if (m_arpa->GetTargetCount() > 0) {
         arpa_is_present = true;
         break;
       }
@@ -2292,7 +2264,7 @@ RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
   GeoPosition radar_position;
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (m_radar[r] && m_radar[r]->m_arpa &&                          // Radar is valid
+    if (m_radar[r] && m_arpa &&                          // Radar is valid
         m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT &&          // Is transmitting
         ((range = m_radar[r]->m_range.GetValue()) < best_range) &&   // Best range
         m_radar[r]->GetRadarPosition(&radar_position) &&             // Get position
@@ -2340,23 +2312,41 @@ bool radar_pi::IsRadarOnScreen(int radar) {
 }
 
 RadarInfo *radar_pi::GetLongRangeRadar() {
-  // In case of 1 radar the LongRangeRadar is valid
+  // returns NULL in case of a single radar
+  // In case of 1 radar the ShortRangeRadar is valid
   RadarInfo *ri = 0;
-  if (m_radar[0] && m_radar[1] && M_SETTINGS.radar_count == 2) {
-    if (m_radar[0]->m_pixels_per_meter > m_radar[1]->m_pixels_per_meter) {
-      ri = m_radar[1];  // largest range
-    } else {
-      ri = m_radar[0];  // largest range
-    }
+  if (M_SETTINGS.radar_count != 2 || m_radar[0] == 0 || m_radar[1] == 0) {
+    return NULL;
+  };
+  if (m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT || m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT) {
+    return NULL;
+  }
+  if (m_radar[0]->m_pixels_per_meter > m_radar[1]->m_pixels_per_meter) {
+    ri = m_radar[1];  // largest range
   } else {
-    ri = m_radar[0];
+    ri = m_radar[0];  // largest range
   }
   return ri;
 }
 
 RadarInfo *radar_pi::GetShortRangeRadar() {
-  // returns NULL in case of a single radar
+  // In case of 1 radar the ShortRangeRadar is valid
+  // Only returns a valid transmitting radar
   RadarInfo *ri = 0;
+  if (m_radar[0] == 0 && m_radar[1] == 0) {
+      return NULL;
+  }
+  if (m_radar[0] != 0 && m_radar[1] == 0 && m_radar[0]->m_state.GetValue() == RADAR_TRANSMIT) {
+      return m_radar[0];
+  } else {
+      return NULL;
+  }
+  if (m_radar[0] == 0 && m_radar[1] != 0 && m_radar[1]->m_state.GetValue() == RADAR_TRANSMIT) {
+      return m_radar[1];
+  } else {
+      return NULL;
+  }
+
   if (m_radar[0] && m_radar[1] && M_SETTINGS.radar_count == 2) {
     if (m_radar[0]->m_pixels_per_meter < m_radar[1]->m_pixels_per_meter) {
       ri = m_radar[1];  // smallest range

@@ -1252,8 +1252,7 @@ void ArpaTarget::ResetPixels() {
   }
 }
 
-Arpa::Arpa(radar_pi* pi, RadarInfo* ri) {
-  m_ri = ri;
+Arpa::Arpa(radar_pi* pi) {
   m_pi = pi;
   m_clear_contours = false;
   CLEAR_STRUCT(m_doppler_arpa_update_time);
@@ -1366,7 +1365,7 @@ bool Arpa::MultiPix(int ang, int rad, Doppler doppler) {
   return false;
 }
 
-void Arpa::AcquireNewMARPATarget(ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
+void Arpa::AcquireNewMARPATarget(RadarInfo* m_ri, ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
 
 void Arpa::DeleteTarget(const GeoPosition& pos) {
   // delete the target that is closest to the position

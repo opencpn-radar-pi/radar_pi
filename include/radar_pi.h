@@ -709,6 +709,7 @@ public:
 
     MessageBox* m_pMessageBox;
     wxWindow* m_parent_window;
+    Arpa* m_arpa;
 
     // Check for AIS targets inside ARPA zone
     vector<AisArpa> m_ais_in_arpa_zone; // Array for AIS targets in ARPA zone(s)
