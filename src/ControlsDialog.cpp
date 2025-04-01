@@ -1711,7 +1711,7 @@ void ControlsDialog::OnAcquireTargetButtonClick(wxCommandEvent& event) {
   ExtendedPosition target_pos;
   target_pos.pos = m_ri->m_mouse_pos;
   LOG_DIALOG(wxT("%s OnAcquireTargetButtonClick mouse=%f/%f"), m_log_name.c_str(), target_pos.pos.lat, target_pos.pos.lon);
-  m_ri->m_arpa->AcquireNewMARPATarget(target_pos);
+  m_pi->m_arpa->AcquireNewMARPATarget(m_ri, target_pos);
 }
 
 void ControlsDialog::OnDeleteTargetButtonClick(wxCommandEvent& event) {
