@@ -56,7 +56,6 @@ bool g_first_render = true;
 RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_pi = pi;
   m_radar = radar;
-  m_arpa = 0;
   m_range.UpdateState(RCS_AUTO_1);
   m_timed_run.Update(1, RCS_MANUAL);
   m_timed_idle.Update(1, RCS_OFF);
@@ -194,10 +193,6 @@ RadarInfo::~RadarInfo() {
     delete m_control;
     m_control = 0;
   }
-  if (m_arpa) {
-    delete m_arpa;
-    m_arpa = 0;
-  }
   if (m_trails) {
     delete m_trails;
     m_trails = 0;
@@ -267,9 +262,7 @@ bool RadarInfo::Init() {
       return false;
     }
   }
-  if (!m_arpa) {
-    m_arpa = new Arpa(m_pi, this);
-  }
+  
   m_trails = new TrailBuffer(this, m_spokes, m_spoke_len_max);
   ComputeTargetTrails();
   UpdateControlState(true);

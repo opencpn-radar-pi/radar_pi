@@ -178,13 +178,13 @@ class Arpa {
     // LCK(...) where it indicates the following locks are already held:
     //          ri = RadarInfo exclusive lock
 public:
-    Arpa(radar_pi* pi, RadarInfo* ri); // THR(M)
+    Arpa(radar_pi* pi); // THR(M)
     ~Arpa(); // THR(M)
     void DrawArpaTargetsOverlay(double scale, double arpa_rotate); // THR(M)
     void DrawArpaTargetsPanel(double scale, double arpa_rotate); // THR(M)
     void RefreshAllArpaTargets(); // THR(M LCK(ri))
     bool AcquireNewARPATarget(Polar pol, int status, Doppler doppler); // THR(M)
-    void AcquireNewMARPATarget(ExtendedPosition pos); // THR(M)
+    void AcquireNewMARPATarget(RadarInfo* m_ri, ExtendedPosition pos); // THR(M)
     void DeleteTarget(const GeoPosition& pos); // THR(M)
     bool MultiPix(int ang, int rad, Doppler doppler); // THR(M)
     void DeleteAllTargets(); // THR(M)
@@ -214,7 +214,7 @@ private:
     wxCriticalSection m_remote_target_lock;
 
     radar_pi* m_pi;
-    RadarInfo* m_ri;
+    
 
     void AcquireOrDeleteMarpaTarget(ExtendedPosition p, int status);
     void CalculateCentroid(ArpaTarget* t);

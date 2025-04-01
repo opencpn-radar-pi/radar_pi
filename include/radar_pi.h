@@ -686,10 +686,11 @@ public:
   // Check for AIS targets inside ARPA zone
   vector<AisArpa> m_ais_in_arpa_zone;  // Array for AIS targets in ARPA zone(s)
   bool FindAIS_at_arpaPos(const GeoPosition& pos, const double& arpa_dist);
+
 #define BASE_ARPA_DIST (750.)
   double m_arpa_max_range;  //  Temporary distance(m) fron own ship to collect
                             //  AIS targets.
-
+  Arpa* m_arpa;
   bool m_ais_drawgl_broken;
   bool m_late_init_done;    // True after LateInit() called, safe to call PlugInAISDrawGL.
   PI_ColorScheme m_color_scheme;  // Current OpenCPN color scheme
