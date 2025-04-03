@@ -191,7 +191,7 @@ protected:
 
 private:
   void Notify();
-  wxString MWD, VHW, MWVA, MWVT, GLL, VTG, HDT, RMC;
+  wxString MWD, VHW, MWVA, MWVT, GLL, VTG, HDT, RMC, MDBT;
   double initDir, initSpd, initRudder, myDist, followStepDistance;
 
   vector<rte> my_routes;
@@ -335,6 +335,8 @@ private:
   bool m_bInvalidPolarsFile;
   bool m_bInvalidGribFile;
   bool m_bShipDriverHasStarted;
+
+  wxString createDBTSentence(double myDepth);
 
   Plugin_WaypointExList* myList;
 };

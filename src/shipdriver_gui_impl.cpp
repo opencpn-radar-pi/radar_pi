@@ -875,12 +875,14 @@ void Dlg::Notify() {
   VHW = createVHWSentence(initSpd, myDir);
   RMC = createRMCSentence(mdt, initLat, initLon, initSpd, myDir);
   HDT = createHDTSentence(myDir);
+  MDBT = createDBTSentence(1.0);
 
   PushNMEABuffer(GLL + "\r\n");
   PushNMEABuffer(VTG + "\r\n");
   PushNMEABuffer(VHW + "\r\n");
   PushNMEABuffer(RMC + "\r\n");
   PushNMEABuffer(HDT + "\r\n");
+  PushNMEABuffer(MDBT + "\r\n");
 
   if (m_bUseAis) {
     PushNMEABuffer(myNMEAais + "\r\n");
@@ -1624,6 +1626,47 @@ wxString Dlg::createDSCAlertRelayCancelSentence(double lat, double lon,
 
   nForCheckSum = nDSC + nC + "12" + nC + nMMSI + nC + nature + nC + "00" + nC +
                  nLatLon + nC + time + nC + dMMSI + nC + nC + "S" + nC;
+
+  nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
+
+  return nFinal;
+}
+
+/*
+$--DBT,a.a,F,b.b,M,c.c,F*hh<CR><LF>
+
+    $--: Talker identifier*
+    DBT: Sentence formatter*
+    a.a,F: Water depth, feet*
+    b.b,M: Water depth, meters*
+    c.c,F: Water depth, fathoms*
+    *hh: Checksum*
+
+*/
+wxString Dlg::createDBTSentence(double myDepth) {
+  wxString nDepth;
+  wxString nDir;
+  wxString nTime;
+  wxString nDate;
+  wxString nValid;
+  wxString nForCheckSum;
+  wxString nFinal;
+  wxString nC = ",";
+  wxString nA = "A";
+  wxString nT = "T,";
+  wxString nM = "M,";
+  wxString nN = "N,";
+  wxString nK = "K,";
+  wxString nF = "F";
+
+  wxString nDeep = "IIDBT,";
+  nValid = "A,A";
+  wxString ndlr = "$";
+  wxString nast = "*";
+
+  nDepth = wxString::Format("%f", myDepth);
+
+  nForCheckSum = nDeep + nC + nC + nDepth + nC + nM + nC + nF;
 
   nFinal = ndlr + nForCheckSum + nast + makeCheckSum(nForCheckSum);
 
