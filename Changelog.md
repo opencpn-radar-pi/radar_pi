@@ -1,3 +1,45 @@
+3.4.0-beta1 Apr 17, 2025
+
+* Revert to API118
+* Update fbp, Add MDBT sentence
+* Targets.cmake: Fix missing POST_BUILD configi warning
+* AndroidLibs: Fix outdated cmale version requirement
+* Add NMEA file recording
+* ci: Handle changed bullseye container permissions (#602)
+The need to restore the build dir permissions is actually only on
+non-CI builds. Avoid problems which occurred after the Bullseye
+containers updated default permissions by leaving the CI build dir
+open on CI builds.
+* Correct error in GPRMC sentence
+* Flatpak: Add new 24.08 beta builds (#598)
+The default runtime used when building Flatpak is as of
+flatpak/org.opencpn*.yaml. Hence, building with 24.08 must use something
+like -DOCPN_TARGET_TUPLE="flatpak-x86_64;24.08;x86_64"
+* Flatpak: Add new 24.08 beta builds - part 2 (#598)
+The default runtime used when building Flatpak is as of
+flatpak/org.opencpn*.yaml. Hence, building with 24.08 must use something
+like -DOCPN_TARGET_TUPLE="flatpak-x86_64;24.08;x86_64"
+* Plugin.cmake: MAcos FTBGS fix
+* GetPluginDataDir() path generic handling
+gitignore: Add Clion's default build dirs
+* src: run clang-format
+* ShipDriverPi: Refactor icon loading
+Drop all globals holding various icons, add generic methods for
+locating and loading icons.
+Instead of using #ifdef to determine to use svg or png, always use
+svg if such icons are found, otherwise fall back to use png icons.
+* Plugin.cmake: Use new std_filesystem lib
+* libs: New library std_filesystem
+* macos bugfix
+* gitignore: Add .idea
+* shipdriver: Fix broken ctor, clean up
+* Aismaker.h: no using namespace std in header!
+* shipdriver: Normalize identifiers (Google GL)
+* shipdriver.cpp: Handle some clang-tidy warnings
+* Implement missing API 18 methods
+* Fix hardcoded build path (#593)
+Closes: #593
+
 3.3.0 Aug 15, 2024
 * New release to complete the v3.3 work
 
