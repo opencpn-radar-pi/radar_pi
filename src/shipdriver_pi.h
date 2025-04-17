@@ -78,7 +78,7 @@ static inline bool GribCurrent(GribRecordSet* grib, double lat, double lon,
 
 #define ShipDriver_TOOL_POSITION (-1)  ///< toolbar tool default positioning
 
-class ShipDriverPi : public opencpn_plugin_119 {
+class ShipDriverPi : public opencpn_plugin_118 {
 public:
   explicit ShipDriverPi(void* ppimgr);
   ~ShipDriverPi() override;

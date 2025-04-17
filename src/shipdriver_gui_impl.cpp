@@ -281,9 +281,6 @@ void Dlg::StartDriving() {
     return;
   }
 
-  m_bShipDriverHasStarted = true;
-  m_bUsingWind = false;
-
   if (m_bUseFile) {
     wxString caption = wxT("Choose a file");
     wxString wildcard = wxT("Text files (*.txt)|*.txt|All files (*.*)|*.*");
@@ -306,7 +303,7 @@ void Dlg::StartDriving() {
     }
   }
 
-  if (m_bUseNMEA) {
+  if (m_bUseNMEA && !m_bShipDriverHasStarted) {
     wxString caption = wxT("Choose a file");
     wxString wildcard = wxT("Text files (*.txt)|*.txt|All files (*.*)|*.*");
 
@@ -316,7 +313,7 @@ void Dlg::StartDriving() {
 
     wxString defaultFilename = wxEmptyString;
     wxFileDialog filedlg2(this->m_parent, caption, defaultDir, defaultFilename,
-                         wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+                          wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
     if (filedlg2.ShowModal() != wxID_OK) {
       wxMessageBox(_("ShipDriver has been stopped"));
@@ -327,6 +324,9 @@ void Dlg::StartDriving() {
       nmeastream->Clear();
     }
   }
+
+  m_bShipDriverHasStarted = true;
+  m_bUsingWind = false;
 
   m_textCtrlRudderStbd->SetValue("");
   m_textCtrlRudderPort->SetValue("");
@@ -889,7 +889,7 @@ void Dlg::Notify() {
   }
 
   wxString rn = "\r\n";
- 
+
   if (m_bUseAis && m_bUseNMEA) {
     nmeastream->AddLine(myNMEAais + rn);
   }
@@ -900,8 +900,6 @@ void Dlg::Notify() {
     nmeastream->AddLine(RMC + "\r\n");
     nmeastream->AddLine(HDT + "\r\n");
   }
-
- 
 
   initLat = stepLat;
   initLon = stepLon;

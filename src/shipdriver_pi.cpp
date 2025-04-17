@@ -64,7 +64,7 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) { delete p; }
 //---------------------------------------------------------------------------------------------------------
 
 ShipDriverPi::ShipDriverPi(void* ppimgr)
-    : opencpn_plugin_119(ppimgr),
+    : opencpn_plugin_118(ppimgr),
       m_hr_dialog_x(0),
       m_hr_dialog_y(8),
       m_is_grib_valid(false),
