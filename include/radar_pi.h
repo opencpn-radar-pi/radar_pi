@@ -48,6 +48,7 @@
 #include "raymarine/RaymarineLocate.h"
 #include "socketutil.h"
 #include "wx/jsonreader.h"
+#include "Arpa.h"
 
 // Load the ocpn_plugin. On OS X this generates many warnings, suppress these.
 #ifdef __WXOSX__
@@ -122,6 +123,10 @@ typedef int AngleDegrees;  // An angle relative to North or HeadUp. Generally
   (((angle) + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
 #define MOD_DEGREES_FLOAT(angle) \
   (fmod((double)(angle) + 2 * DEGREES_PER_ROTATION, DEGREES_PER_ROTATION))
+#define MOD_DEGREES(angle)                                                     \
+    (((angle) + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
+#define MOD_DEGREES_FLOAT(angle)                                               \
+    (fmod((double)(angle) + 2 * DEGREES_PER_ROTATION, DEGREES_PER_ROTATION))
 #define MOD_DEGREES_180(angle) (((int)(angle) + 900) % 360 - 180)
 
 #define WATCHDOG_TIMEOUT \
@@ -710,7 +715,6 @@ private:
     void ScheduleWindowRefresh();
     void SetOpenGLMode(OpenGLMode mode);
     int GetArpaTargetCount(void);
-    RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
     
     wxCriticalSection m_exclusive; // protects callbacks that come from multiple radars
 
@@ -729,6 +733,7 @@ public:
   bool m_render_busy;
   int m_draw_time_overlay_ms[MAX_CHART_CANVAS];
   int MakeNewTargetId();
+  RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
   bool m_bpos_set;
   time_t m_bpos_timestamp;
   double m_sog;  // Speed over ground
