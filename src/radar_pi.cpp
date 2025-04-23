@@ -1337,7 +1337,7 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
 
   if ((long_range_radar->m_doppler.GetValue() > 0 && long_range_radar->m_autotrack_doppler.GetValue() > 0) ||
       (long_range_radar->m_doppler.GetValue() > 0 && long_range_radar->m_autotrack_doppler.GetValue() > 0)) {
-    m_arpa->SearchDopplerTargets();
+    m_arpa->SearchDopplerTargets(long_range_radar);
   }
 
   UpdateHeadingPositionState();
@@ -2269,7 +2269,7 @@ RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
         ((range = m_radar[r]->m_range.GetValue()) < best_range) &&   // Best range
         m_radar[r]->GetRadarPosition(&radar_position) &&             // Get position
         local_distance(radar_position, position) < (double)range) {  // Is in range
-      best_range = range;
+      best_range = (int) range * 0.95;  // allow some room for target size
       best_radar = m_radar[r];
     }
   }

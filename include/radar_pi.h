@@ -48,6 +48,7 @@
 #include "raymarine/RaymarineLocate.h"
 #include "socketutil.h"
 #include "wx/jsonreader.h"
+#include "Arpa.h"
 
 // Load the ocpn_plugin. On OS X this generates many warnings, suppress these.
 #ifdef __WXOSX__
@@ -117,7 +118,8 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
     ((angle) * (m_ri->m_spokes) / DEGREES_PER_ROTATION)
 #define SCALE_SPOKES_TO_DEGREES(raw)                                           \
     ((raw) * (double)DEGREES_PER_ROTATION / m_ri->m_spokes)
-#define MOD_SPOKES(raw) ((raw)&0x7ff)
+#define MOD_SPOKES(raw) (((raw) + 2 * m_ri->m_spokes) % m_ri->m_spokes)
+// #define MOD_SPOKES(raw) ((raw)&0x7ff) only for 2048 spokes
 #define MOD_DEGREES(angle)                                                     \
     (((angle) + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
 #define MOD_DEGREES_FLOAT(angle)                                               \
@@ -739,7 +741,6 @@ private:
     void ScheduleWindowRefresh();
     void SetOpenGLMode(OpenGLMode mode);
     int GetArpaTargetCount(void);
-    RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
     
     wxCriticalSection
         m_exclusive; // protects callbacks that come from multiple radars
@@ -751,6 +752,7 @@ private:
     double m_hdm; // Last magnetic heading obtained
     time_t m_hdm_timeout; // When we consider heading is lost
 public:
+    RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
     int MakeNewTargetId();
     HeadingSource m_heading_source;
     int m_chart_overlay[MAX_CHART_CANVAS]; // The overlay for canvas x, -1 =
