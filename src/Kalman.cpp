@@ -48,8 +48,8 @@ static Matrix<double, 2, 4> ZeroMatrix24;
 static Matrix<double, 4> ZeroMatrix4;
 static Matrix<double, 2> ZeroMatrix2;
 
-KalmanFilter::KalmanFilter(size_t spokes) {
-  m_spokes = spokes;
+KalmanFilter::KalmanFilter() {
+  //m_spokes = spokes; $$$
 
   // as the measurement to state transformation is non-linear, the extended Kalman filter is used
   // as the state transformation is linear, the state transformation matrix F is equal to the jacobian A
@@ -113,7 +113,7 @@ void KalmanFilter::ResetFilter() {
 
 KalmanFilter::~KalmanFilter() {}
 
-void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
+void KalmanFilter::Predict(ExtendedPosition* xx, double delta_time) {
   Matrix<double, 4, 1> X;
   X(0, 0) = xx->pos.lat;
   X(1, 0) = xx->pos.lon;
@@ -130,7 +130,7 @@ void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
   xx->pos.lon = X(1, 0);
   xx->dlat_dt = X(2, 0);
   xx->dlon_dt = X(3, 0);
-  xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
+  //xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
   return;
 }
 
@@ -142,14 +142,14 @@ void KalmanFilter::Update_P() {
   return;
 }
 
-void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected, double scale) {
+void KalmanFilter::SetMeasurement(RadarInfo* ri, Polar* pol, LocalPosition* x, Polar* expected) {
   // pol measured angular position
   // x expected local position
   // expected, same but in polar coordinates
-#define SQUARED(x) ((x) * (x))
-  double q_sum = SQUARED(x->pos.lon) + SQUARED(x->pos.lat);
-
-  double c = m_spokes / (2. * PI);
+  double scale = ri->m_pixels_per_meter;
+  size_t spokes = ri->m_spokes;
+  double q_sum = x->pos.lon * x->pos.lon + x->pos.lat * x->pos.lat;
+  double c = spokes / (2. * PI);
   H(0, 0) = -c * x->pos.lon / q_sum;
   H(0, 1) = c * x->pos.lat / q_sum;
 
@@ -161,11 +161,11 @@ void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected,
 
   Matrix<double, 2, 1> Z;
   Z(0, 0) = (double)(pol->angle - expected->angle);  // Z is  difference between measured and expected
-  if (Z(0, 0) > m_spokes / 2) {
-    Z(0, 0) -= m_spokes;
+  if (Z(0, 0) > spokes / 2) {
+    Z(0, 0) -= spokes;
   }
-  if (Z(0, 0) < -(int)m_spokes / 2) {
-    Z(0, 0) += m_spokes;
+  if (Z(0, 0) < -(int)spokes / 2) {
+    Z(0, 0) += spokes;
   }
   Z(1, 0) = (double)(pol->r - expected->r);
 

@@ -106,14 +106,13 @@ class ArpaTarget {
 
 public:
     // ArpaTarget(radar_pi* pi, RadarInfo* ri);
-    ArpaTarget(radar_pi* pi, RadarInfo* ri, int uid);
+    ArpaTarget(radar_pi* pi, Arpa* arpa, int uid);
     ~ArpaTarget();
 
     int GetContour(Polar* p);
     bool FindNearestContour(Polar* pol, int dist);
-    bool FindContourFromInside(Polar* p);
-    bool GetTarget(Polar* pol, int dist);
-    void RefreshTarget(int dist, int pass);
+    bool GetTarget(Polar expected_pol, Polar* target_pol, int dist);
+    void RefreshTarget(int speed, int pass);
     void PassAIVDMtoOCPN(Polar* p);
     void PassTTMtoOCPN(Polar* p, OCPN_target_status s);
     void MakeAndTransmitTargetMessage();
@@ -123,7 +122,7 @@ public:
     void PixelCounter();
     void StateTransition(Polar* pol);
     bool Pix(int ang, int rad);
-    bool MultiPix(int ang, int rad);
+    //bool MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler);
     wxString EncodeAIVDM(
         int mmsi, double speed, double lon, double lat, double course);
     void TransferTargetToOtherRadar();
@@ -131,17 +130,18 @@ public:
     int m_status;
     int m_average_contour_length;
     bool m_small_fast; // For small and fast targets the Kalman filter will be overwritten for the initial positions
+    RadarInfo* m_ri;
+    Arpa* m_arpa;
 
 private:
-    RadarInfo* m_ri;
     radar_pi* m_pi;
     KalmanFilter m_kalman;
     int m_target_id;
     // radar position at time of last target fix, the polars in the contour
     // refer to this origin
     RefresState m_refreshed;
-    GeoPosition m_radar_pos;
-    ExtendedPosition m_position; // holds actual position of target
+    //GeoPosition m_radar_pos;
+    ExtendedPosition m_position; // holds actual position of target, after last SetMeasurement() // $$$ to do verify!! 
     // double m_speed_kn; // Average speed of target. TODO: Merge with
     //                    // m_position.speed?
     wxLongLong m_refresh_time; // time of last refresh
@@ -154,17 +154,17 @@ private:
     int m_previous_contour_length;
     Polar m_max_angle, m_min_angle, m_max_r, m_min_r,
         m_polar_pos; // charasterictics of contour
-    Polar m_expected;
+   // Polar m_expected_pol;   $$$
     bool m_automatic; // True for ARPA, false for MARPA.
-    Doppler m_doppler_target; // ANY, NO_DOPPLER, APPROACHING, RECEDING,
+    Doppler m_target_doppler; // ANY, NO_DOPPLER, APPROACHING, RECEDING,
                               // ANY_DOPPLER, NOT_APPROACHING, NOT_RECEDING
-    bool m_transferred_target;
+    
     uint32_t m_total_pix;
     uint32_t m_approaching_pix;
     uint32_t m_receding_pix;
 
-    ExtendedPosition Polar2Pos(Polar pol, ExtendedPosition own_ship);
-    Polar Pos2Polar(ExtendedPosition p, ExtendedPosition own_ship);
+    ExtendedPosition Polar2Pos(Polar pol, GeoPosition own_ship);
+    Polar Pos2Polar(ExtendedPosition p, GeoPosition own_ship);
 };
 
 class Arpa {
@@ -186,7 +186,7 @@ public:
     bool AcquireNewARPATarget(Polar pol, int status, Doppler doppler); // THR(M)
     void AcquireNewMARPATarget(RadarInfo* m_ri, ExtendedPosition pos); // THR(M)
     void DeleteTarget(const GeoPosition& pos); // THR(M)
-    bool MultiPix(int ang, int rad, Doppler doppler); // THR(M)
+    bool MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler); // THR(M)
     void DeleteAllTargets(); // THR(M)
     void RadarLost() // THR(M LCK(ri))
     {
@@ -199,9 +199,9 @@ public:
     {
         return m_targets.size();
     } // THR(M), not sensitive to exact #
-    void SearchDopplerTargets(); // THR(M)
+    void SearchDopplerTargets(RadarInfo* ri); // THR(M)
     void StoreRemoteTarget(DynamicTargetData* target); // THR(I)
-    void ProcessIncomingMessages(); // THR(M)
+    bool FindContourFromInside(RadarInfo* ri, Polar* p, Doppler doppler);
 
 private:
     std::deque<std::unique_ptr<ArpaTarget>> m_targets;
@@ -219,7 +219,7 @@ private:
     void AcquireOrDeleteMarpaTarget(ExtendedPosition p, int status);
     void CalculateCentroid(ArpaTarget* t);
     void DrawContour(const ArpaTarget* t);
-    bool Pix(int ang, int rad, Doppler doppler);
+    bool Pix(RadarInfo* ri, int ang, int rad, Doppler doppler);
     bool IsAtLeastOneRadarTransmitting();
     void CleanUpLostTargets();
     DynamicTargetData* GetIncomingRemoteTarget();

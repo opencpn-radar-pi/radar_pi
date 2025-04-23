@@ -63,12 +63,10 @@ public:
 
 class KalmanFilter {
 public:
-    KalmanFilter(size_t spokes);
+    KalmanFilter();
     ~KalmanFilter();
-    void SetMeasurement(
-        Polar* p, LocalPosition* x, Polar* expected, double scale);
-    void Predict(LocalPosition* x,
-        double delta_time); // measured position and expected position
+    void SetMeasurement(RadarInfo* ri, Polar* p, LocalPosition* x, Polar* expected);
+    void Predict(ExtendedPosition* x, double delta_time); // measured position and expected position
     void ResetFilter();
     void Update_P();
 
@@ -85,7 +83,7 @@ public:
     Matrix<double, 4> I;
 
 private:
-    size_t m_spokes;
+   // size_t m_spokes;  $$$
 };
 
 class GPSKalmanFilter {
