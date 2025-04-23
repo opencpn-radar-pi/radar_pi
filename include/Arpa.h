@@ -135,12 +135,12 @@ public:
 
 private:
     radar_pi* m_pi;
+    GeoPosition m_radar_position;
     KalmanFilter m_kalman;
     int m_target_id;
     // radar position at time of last target fix, the polars in the contour
     // refer to this origin
     RefresState m_refreshed;
-    //GeoPosition m_radar_pos;
     ExtendedPosition m_position; // holds actual position of target, after last SetMeasurement() // $$$ to do verify!! 
     // double m_speed_kn; // Average speed of target. TODO: Merge with
     //                    // m_position.speed?
