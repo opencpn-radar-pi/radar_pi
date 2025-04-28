@@ -67,6 +67,7 @@ enum {
 
 #define COURSE_SAMPLES (16)
 
+
 class RadarInfo {
     friend class TrailBuffer;
 
