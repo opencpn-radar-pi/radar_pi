@@ -48,7 +48,7 @@
 #include "raymarine/RaymarineLocate.h"
 #include "socketutil.h"
 #include "wx/jsonreader.h"
-#include "Arpa.h"
+//#include "Arpa.h"
 
 // Load the ocpn_plugin. On OS X this generates many warnings, suppress these.
 #ifdef __WXOSX__
@@ -119,6 +119,7 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
 #define SCALE_SPOKES_TO_DEGREES(raw)                                           \
     ((raw) * (double)DEGREES_PER_ROTATION / m_ri->m_spokes)
 #define MOD_SPOKES(raw) (((raw) + 2 * m_ri->m_spokes) % m_ri->m_spokes)
+#define MOD_SPOKESri(raw) (((raw) + 2 * ri->m_spokes) % ri->m_spokes)
 // #define MOD_SPOKES(raw) ((raw)&0x7ff) only for 2048 spokes
 #define MOD_DEGREES(angle)                                                     \
     (((angle) + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
