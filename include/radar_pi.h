@@ -48,7 +48,7 @@
 #include "raymarine/RaymarineLocate.h"
 #include "socketutil.h"
 #include "wx/jsonreader.h"
-#include "Arpa.h"
+//#include "Arpa.h"
 
 // Load the ocpn_plugin. On OS X this generates many warnings, suppress these.
 #ifdef __WXOSX__

@@ -98,20 +98,19 @@ Polar ArpaTarget::Pos2Polar(ExtendedPosition p, GeoPosition position) {
 }
 
 bool Arpa::Pix(RadarInfo* ri, int ang, int rad, Doppler doppler) {
-  RadarInfo* m_ri = ri;
-  if (rad <= 0 || rad >= (int)m_ri->m_spoke_len_max) {
+  if (rad <= 0 || rad >= (int)ri->m_spoke_len_max) {
     return false;
   }
-  int angle1 = MOD_SPOKES(ang);
+  int angle1 = MOD_SPOKESri(ang);
   if (angle1 < 0) return false;
   size_t angle = angle1;
-  if (angle >= m_ri->m_spokes || angle < 0) {
+  if (angle >= ri->m_spokes || angle < 0) {
     return false;
   }
-  bool bit0 = (m_ri->m_history[angle].line[rad] & 0x80) != 0;  // above threshold bit
-  bool bit1 = (m_ri->m_history[angle].line[rad] & 0x40) != 0;  // backup bit does not get cleared when target is refreshed
-  bool bit2 = (m_ri->m_history[angle].line[rad] & 0x20) != 0;  // this is Doppler approaching bit
-  bool bit3 = (m_ri->m_history[angle].line[rad] & 0x10) != 0;  // this is Doppler receding bit
+  bool bit0 = (ri->m_history[angle].line[rad] & 0x80) != 0;  // above threshold bit
+  bool bit1 = (ri->m_history[angle].line[rad] & 0x40) != 0;  // backup bit does not get cleared when target is refreshed
+  bool bit2 = (ri->m_history[angle].line[rad] & 0x20) != 0;  // this is Doppler approaching bit
+  bool bit3 = (ri->m_history[angle].line[rad] & 0x10) != 0;  // this is Doppler receding bit
   switch (doppler) {
     case ANY:
       return bit0;
@@ -722,10 +721,7 @@ void ArpaTarget::RefreshTarget(int speed, int pass) {
       if (m_status > FORCED_POSITION_STATUS) {
         position_pol = Pos2Polar(m_position, m_radar_position);
       }
-      if (m_status > 4) {  // 4? quite arbitrary, target should be stable
-        TransferTargetToOtherRadar();
-        SendTargetToNearbyRadar();
-      }
+      
 #define WEIGHT_FACTOR 0.1
       if (m_contour_length != 0) {
         if (m_average_contour_length == 0 && m_contour_length != 0) {
@@ -1385,7 +1381,7 @@ void Arpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int status) {
 #ifdef __WXMSW__
   std::unique_ptr<ArpaTarget> target = std::make_unique<ArpaTarget>(m_pi, this, 0);
   #else
-  std::unique_ptr<ArpaTarget> target = make_unique<ArpaTarget>(m_pi, m_ri, 0);
+  std::unique_ptr<ArpaTarget> target = make_unique<ArpaTarget>(m_pi, this, 0);
  #endif
   target->m_position = target_pos;  // Expected position
   target->m_status = status;
@@ -1536,8 +1532,8 @@ void Arpa::CleanUpLostTargets() {
 }
 
 void Arpa::RefreshAllArpaTargets() {
-  LOG_ARPA(wxT("\n\n\n\n%s: ********************************refresh loop start m_targets.size=%i, last spoke=%u "), m_ri->m_name,
-           m_targets.size(), m_ri->m_last_received_spoke);
+  LOG_ARPA(wxT("\n\n\n\n: ********************************refresh loop start m_targets.size=%i "),
+           m_targets.size());
   CleanUpLostTargets();
   sort(m_targets.begin(), m_targets.end(), SortTargetStatus);
 
@@ -1600,7 +1596,7 @@ void Arpa::RefreshAllArpaTargets() {
 //#ifdef __WXMSW__
 //    std::unique_ptr<ArpaTarget> new_target = std::make_unique<ArpaTarget>(m_pi, m_arpa, uid);
 //    #else
-//    std::unique_ptr<ArpaTarget> new_target = make_unique<ArpaTarget>(m_pi, m_ri, uid);
+//    std::unique_ptr<ArpaTarget> new_target = make_unique<ArpaTarget>(m_pi, m_arpa, uid);
 //    #endif
 //    updated_target = new_target.get();
 //    m_targets.push_back(std::move(new_target));
@@ -1638,7 +1634,7 @@ void Arpa::CalculateCentroid(ArpaTarget* target) {
 
 void Arpa::DeleteAllTargets() { m_targets.clear(); }
 
-bool Arpa::AcquireNewARPATarget(Polar pol, int status, Doppler doppler) {
+bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler doppler) {  // $$$ todo improve, without radar?
   // acquires new target at polar position pol
   // no contour taken yet
   // target status status, normally 0, if dummy target to delete a target -2
@@ -1646,15 +1642,16 @@ bool Arpa::AcquireNewARPATarget(Polar pol, int status, Doppler doppler) {
   ExtendedPosition own_pos;
   ExtendedPosition target_pos;
   Doppler doppl = doppler;
-  if (!m_ri->GetRadarPosition(&own_pos.pos)) {
+  if (!ri->GetRadarPosition(&own_pos.pos)) {
     return false;
   }
 
   // make new target
+  
 #ifdef __WXMSW__
-  std::unique_ptr<ArpaTarget> target = std::make_unique<ArpaTarget>(m_pi, 0);
+  std::unique_ptr<ArpaTarget> target = std::make_unique<ArpaTarget>(m_pi, m_pi->m_arpa, 0);
   #else
-  std::unique_ptr<ArpaTarget> target = make_unique<ArpaTarget>(m_pi, m_ri, 0);
+  std::unique_ptr<ArpaTarget> target = make_unique<ArpaTarget>(m_pi, m_pi->m_arpa, 0);
   #endif
   target_pos = target->Polar2Pos(pol, own_pos.pos);
   target->m_target_doppler = doppl;
@@ -1711,14 +1708,14 @@ void Arpa::SearchDopplerTargets(RadarInfo* ri) {
   range_end = outer_limit;  // Convert from meters to 0..511
 
   SpokeBearing start_bearing = 0;
-  SpokeBearing end_bearing = m_ri->m_spokes;
+  SpokeBearing end_bearing = ri->m_spokes;
 
   // loop with +2 increments as target must be larger than 2 pixels in width
   for (int angleIter = start_bearing; angleIter < end_bearing; angleIter += 2) {
-    SpokeBearing angle = MOD_SPOKES(angleIter);
-    wxLongLong angle_time = m_ri->m_history[angle].time;
+    SpokeBearing angle = MOD_SPOKESri(angleIter);
+    wxLongLong angle_time = ri->m_history[angle].time;
     // angle_time_plus_margin must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
-    wxLongLong angle_time_plus_margin = m_ri->m_history[MOD_SPOKES(angle + 3 * SCAN_MARGIN)].time;
+    wxLongLong angle_time_plus_margin = ri->m_history[MOD_SPOKESri(angle + 3 * SCAN_MARGIN)].time;
 
     // check if target has been refreshed since last time
     // and if the beam has passed the target location with SCAN_MARGIN spokes
@@ -1727,19 +1724,18 @@ void Arpa::SearchDopplerTargets(RadarInfo* ri) {
                                                    // point SCANMARGIN further set new refresh time
       m_doppler_arpa_update_time[angle] = angle_time;
       for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
-        if (m_ri->m_arpa->MultiPix(angle, rrr, ANY_DOPPLER)) {
+        if (m_pi->m_arpa->MultiPix(ri, angle, rrr, ANY_DOPPLER)) {
           // pixel found that does not belong to a known target
           Polar pol;
           pol.angle = angle;
           pol.r = rrr;
-          if (!m_ri->m_arpa->AcquireNewARPATarget(pol, 0, ANY_DOPPLER)) {
+          if (!m_pi->m_arpa->AcquireNewARPATarget(ri, pol, 0, ANY_DOPPLER)) {
             break;
           }
         }
       }
     }
   }
-
   return;
 }
 

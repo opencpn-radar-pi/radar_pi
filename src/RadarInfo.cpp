@@ -458,6 +458,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
                                   wxLongLong time_rec) {
   int orientation;
   int i;
+  RadarInfo *m_ri = this;
   m_last_received_spoke = MOD_SPOKES(bearing);
   SampleCourse(angle);            // Calculate course as the moving average of m_hdt over one revolution
   CalculateRotationSpeed(angle);  // Find out how fast the radar is rotating
@@ -488,8 +489,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
                 pixels_per_meter, range_meters);
     m_pixels_per_meter = pixels_per_meter;
     ResetSpokes();
-    if (m_arpa) {
-      m_arpa->ClearContours();
+    if (m_pi->m_arpa) {  // $$$ move to radar_pi? check all arpa in this
+      m_pi->m_arpa->ClearContours();
     }
   }
 
@@ -882,9 +883,9 @@ void RadarInfo::UpdateControlState(bool all) {
 void RadarInfo::ResetRadarImage() {
   ResetSpokes();
   ClearTrails();
-  if (m_arpa) {
+  /*if (m_arpa) {  // $$$ move to radar_pi
     m_arpa->ClearContours();
-  }
+  }*/
 }
 
 /**
@@ -964,14 +965,14 @@ int RadarInfo::GetOrientation() {
 
 void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_rotate, bool overlay) {
   bool arpa_on = false;
-  if (m_arpa) {
+  /*if (m_pi->m_arpa) {  // $$$ move to radar_pi
     for (int i = 0; i < GUARD_ZONES; i++) {
       if (m_guard_zone[i]->m_arpa_on) arpa_on = true;
     }
-    if (m_arpa->GetTargetCount() > 0) {
+    if (m_pi->m_arpa->GetTargetCount() > 0) {
       arpa_on = true;
     }
-  }
+  }*/
 
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);  // Save state
   glEnable(GL_BLEND);
@@ -1045,13 +1046,13 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
     }
   }
 
-  if (arpa_on) {
+  /*if (arpa_on) {   // $$$ move to radar-pi
     if (overlay) {
       m_arpa->DrawArpaTargetsOverlay(scale, arpa_rotate);
     } else {
       m_arpa->DrawArpaTargetsPanel(scale, arpa_rotate);
     }
-  }
+  }*/
   m_draw_time_ms = (wxGetUTCTimeMillis() - now).GetLo();
   glPopAttrib();
   if (!overlay) {
@@ -1549,7 +1550,7 @@ wxString RadarInfo::GetRadarStateText() {
     case RADAR_TRANSMIT:
       o = _("Transmitting");
       if (next_state_change > 0 && m_timed_idle.GetState() == RCS_MANUAL &&
-          ((m_arpa && m_arpa->GetTargetCount() > 0) || m_pi->m_guard_bogey_seen)) {
+          ((m_pi->m_arpa &&m_pi->m_arpa->GetTargetCount() > 0) || m_pi->m_guard_bogey_seen)) {
         o << wxT(" ") << _("for targets");
         return o;
       }
@@ -1592,7 +1593,7 @@ void RadarInfo::CheckTimedTransmit() {
 
   if (m_timed_idle_hardware) {
     // Send a reset of the countdown if ARPA targets are found
-    if ((m_control && m_arpa && m_arpa->GetTargetCount() > 0) || m_pi->m_guard_bogey_seen) {
+    if ((m_control && m_pi->m_arpa && m_pi->m_arpa->GetTargetCount() > 0) || m_pi->m_guard_bogey_seen) {
       // Send another 'enable timed transmit' followed by a transmit command..
       // The idea is that this enables transmit but does reset the countdown timer
       // in the radar.
@@ -1611,7 +1612,7 @@ void RadarInfo::CheckTimedTransmit() {
   }
 
   // If there are (M)ARPA targets being tracked or zone alarm we should not go to standbye, targets would be lost
-  if (m_arpa->GetTargetCount() > 0 || m_pi->m_guard_bogey_seen) {
+  if (m_pi->m_arpa->GetTargetCount() > 0 || m_pi->m_guard_bogey_seen) {
     return;
   }
 

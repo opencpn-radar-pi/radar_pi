@@ -1716,14 +1716,14 @@ void ControlsDialog::OnAcquireTargetButtonClick(wxCommandEvent& event) {
 
 void ControlsDialog::OnDeleteTargetButtonClick(wxCommandEvent& event) {
   LOG_DIALOG(wxT("%s OnDeleteTargetButtonClick mouse=%f/%f"), m_log_name.c_str(), m_ri->m_mouse_pos.lat, m_ri->m_mouse_pos.lon);
-  m_ri->m_arpa->DeleteTarget(m_ri->m_mouse_pos);
+  m_pi->m_arpa->DeleteTarget(m_ri->m_mouse_pos);
 }
 
 void ControlsDialog::OnDeleteAllTargetsButtonClick(wxCommandEvent& event) {
   LOG_DIALOG(wxT("%s OnDeleteAllTargetsButtonClick"), m_log_name.c_str());
   for (size_t i = 0; i < M_SETTINGS.radar_count; i++) {
-    if (m_pi->m_radar[i]->m_arpa) {
-      m_pi->m_radar[i]->m_arpa->DeleteAllTargets();
+    if (m_pi->m_arpa) {
+      m_pi->m_arpa->DeleteAllTargets();
     }
   }
 }
@@ -1837,7 +1837,7 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
     m_orientation_button->Enable();
   }
 
-  int arpa_targets = m_ri->m_arpa->GetTargetCount();
+  int arpa_targets = m_pi->m_arpa->GetTargetCount();
   if (arpa_targets) {
     m_delete_target->Enable();
     m_delete_all->Enable();
