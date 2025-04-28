@@ -203,13 +203,13 @@ void GuardZone::SearchTargets() {
                                // point SCANMARGIN further set new refresh time
         m_arpa_update_time[angle] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
-          if (m_ri->m_arpa->MultiPix(angle, rrr, doppler)) {
+          if (m_pi->m_arpa->MultiPix(m_ri, angle, rrr, doppler)) {
             // pixel found that does not belong to a known target
             Polar pol;
             pol.angle = angle;
             pol.r = rrr;
             LOG_ARPA(wxT("Found blob angle=%i, r=%i, doppler=%i"), angle, rrr, doppler);
-            int target_i = m_ri->m_arpa->AcquireNewARPATarget(pol, 0, doppler);
+            int target_i = m_pi->m_arpa->AcquireNewARPATarget(m_ri, pol, 0, doppler);
             if (target_i == -1) break;
           }
         }

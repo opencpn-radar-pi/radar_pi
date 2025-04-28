@@ -29,8 +29,8 @@
  ***************************************************************************
  */
 
-#ifndef _RADAR_MARPA_H_
-#define _RADAR_MARPA_H_
+#ifndef _RADAR_ARPA_H_
+#define _RADAR_ARPA_H_
 
 #include "Doppler.h"
 #include "Kalman.h"
@@ -115,8 +115,6 @@ public:
     void RefreshTarget(int speed, int pass);
     void PassAIVDMtoOCPN(Polar* p);
     void PassTTMtoOCPN(Polar* p, OCPN_target_status s);
-    void MakeAndTransmitTargetMessage();
-    void MakeAndTransmitCoT();
     void SetStatusLost();
     void ResetPixels();
     void PixelCounter();
@@ -125,12 +123,10 @@ public:
     //bool MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler);
     wxString EncodeAIVDM(
         int mmsi, double speed, double lon, double lat, double course);
-    void TransferTargetToOtherRadar();
-    void SendTargetToNearbyRadar(); 
     int m_status;
     int m_average_contour_length;
     bool m_small_fast; // For small and fast targets the Kalman filter will be overwritten for the initial positions
-    RadarInfo* m_ri;
+    RadarInfo* m_ri;  // this is the radar used for the last refresh of the target
     Arpa* m_arpa;
 
 private:
@@ -183,7 +179,8 @@ public:
     void DrawArpaTargetsOverlay(double scale, double arpa_rotate); // THR(M)
     void DrawArpaTargetsPanel(double scale, double arpa_rotate); // THR(M)
     void RefreshAllArpaTargets(); // THR(M LCK(ri))
-    bool AcquireNewARPATarget(Polar pol, int status, Doppler doppler); // THR(M)
+    bool AcquireNewARPATarget(
+        RadarInfo* ri, Polar pol, int status, Doppler doppler); // THR(M)
     void AcquireNewMARPATarget(RadarInfo* m_ri, ExtendedPosition pos); // THR(M)
     void DeleteTarget(const GeoPosition& pos); // THR(M)
     bool MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler); // THR(M)
@@ -192,8 +189,6 @@ public:
     {
         DeleteAllTargets(); // Let ARPA targets disappear
     }
-    void InsertOrUpdateTargetFromOtherRadar(
-        const DynamicTargetData* data, bool remote); // THR(M)
     void ClearContours(); // THR(R)
     int GetTargetCount()
     {
