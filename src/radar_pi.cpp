@@ -1825,6 +1825,11 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
 
   LOG_VERBOSE(wxT("SetPositionFixEx var=%f var_wd=%d"), pfix.Var, NOT_TIMED_OUT(now, m_var_timeout));
 
+  if (!wxIsNaN(pfix.Sog)) {
+   m_sog=pfix.Sog;
+   LOG_VERBOSE(wxT("SOG from OpenCPN (%d)"), m_sog);
+  }
+
   if (!wxIsNaN(pfix.Hdt)) {
     if (m_heading_source < HEADING_FIX_HDT) {
       LOG_VERBOSE(wxT("Heading source is now HDT from OpenCPN (%d->%d)"), m_heading_source, HEADING_FIX_HDT);

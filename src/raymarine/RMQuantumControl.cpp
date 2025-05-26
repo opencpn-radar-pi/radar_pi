@@ -157,6 +157,8 @@ bool RMQuantumControl::SetControlValue(ControlType controlType, RadarControlItem
 
   switch (controlType) {
     case CT_ACCENT_LIGHT:
+    case CT_ANTENNA_SIZE:
+    case CT_PARKING_ANGLE:
     case CT_ANTENNA_FORWARD:
     case CT_ANTENNA_HEIGHT:
     case CT_ANTENNA_STARBOARD:

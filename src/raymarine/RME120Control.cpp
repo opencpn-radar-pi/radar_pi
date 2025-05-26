@@ -180,6 +180,8 @@ bool RME120Control::SetControlValue(ControlType controlType, RadarControlItem &i
 
   switch (controlType) {
     case CT_ACCENT_LIGHT:
+    case CT_ANTENNA_SIZE:
+    case CT_PARKING_ANGLE:
     case CT_ALL_TO_AUTO:
     case CT_ANTENNA_FORWARD:
     case CT_ANTENNA_HEIGHT:

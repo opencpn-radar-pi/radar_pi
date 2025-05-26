@@ -134,6 +134,8 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_main_bang_size.Update(0);
   m_antenna_forward.Update(0);
   m_antenna_starboard.Update(0);
+  m_antenna_size.Update(0);
+  m_parking_angle.Update(0);
   m_range_adjustment.Update(0);
   m_timed_run.Update(1);
   for (int i = 0; i < MAX_CHART_CANVAS; i++) {
@@ -1089,6 +1091,48 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
   if (s.Right(1) != wxT("\n")) {
     s << wxT("\n");
   }
+  
+  wxString mode;
+  switch (m_pi->m_heading_source) {
+    default:
+    case HEADING_NONE:
+      mode << "None";
+      break;
+
+    case HEADING_FIX_COG:
+      mode << "Fixed COG";
+      break;
+
+    case HEADING_FIX_HDM:
+      mode << "Fixed HDM";
+      break;
+
+    case HEADING_FIX_HDT:
+      mode << "Fixed HDT";
+      break;
+
+    case HEADING_FIXED:
+      mode << "Fixed";
+      break;
+
+    case HEADING_NMEA_HDM:
+      mode << "NMEA HDM";
+      break;
+
+    case HEADING_NMEA_HDT:
+      mode << "NMEA HDT";
+      break;
+
+    case  HEADING_RADAR_HDM:
+      mode << "Radar HDM";
+      break;
+
+    case HEADING_RADAR_HDT:
+      mode << "Radar HDT";
+      break;
+  }
+ 
+  s << wxT("Mode: ") << mode << "\n"; 
 
   if (m_target_trails.GetState() != RCS_OFF) {
     if (m_trails_motion.GetValue() == TARGET_MOTION_TRUE) {
