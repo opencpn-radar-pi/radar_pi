@@ -1092,48 +1092,6 @@ wxString RadarInfo::GetCanvasTextTopLeft() {
     s << wxT("\n");
   }
   
-  wxString mode;
-  switch (m_pi->m_heading_source) {
-    default:
-    case HEADING_NONE:
-      mode << "None";
-      break;
-
-    case HEADING_FIX_COG:
-      mode << "Fixed COG";
-      break;
-
-    case HEADING_FIX_HDM:
-      mode << "Fixed HDM";
-      break;
-
-    case HEADING_FIX_HDT:
-      mode << "Fixed HDT";
-      break;
-
-    case HEADING_FIXED:
-      mode << "Fixed";
-      break;
-
-    case HEADING_NMEA_HDM:
-      mode << "NMEA HDM";
-      break;
-
-    case HEADING_NMEA_HDT:
-      mode << "NMEA HDT";
-      break;
-
-    case  HEADING_RADAR_HDM:
-      mode << "Radar HDM";
-      break;
-
-    case HEADING_RADAR_HDT:
-      mode << "Radar HDT";
-      break;
-  }
- 
-  s << wxT("Mode: ") << mode << "\n"; 
-
   if (m_target_trails.GetState() != RCS_OFF) {
     if (m_trails_motion.GetValue() == TARGET_MOTION_TRUE) {
       s << wxT("RM(T)");
