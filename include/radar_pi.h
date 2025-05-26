@@ -563,7 +563,6 @@ public:
     radar_pi(void* ppimgr);
     ~radar_pi();
     // void PrepareRadarImage(int angle); remove?
-
     //    The required PlugIn Methods
     int Init(void);
     bool DeInit(void);
@@ -655,12 +654,21 @@ public:
         wxCriticalSectionLocker lock(m_exclusive);
         return m_cog;
     }
+    double GetSOG()
+    {
+        wxCriticalSectionLocker lock(m_exclusive);
+        return m_sog;
+    }
     HeadingSource GetHeadingSource() { return m_heading_source; }
     bool IsInitialized() { return m_initialized; }
     bool IsBoatPositionValid()
     {
         wxCriticalSectionLocker lock(m_exclusive);
         return m_bpos_set;
+    } 
+    GeoPosition GetBoatPosition() { 
+     wxCriticalSectionLocker lock(m_exclusive);
+     return m_ownship;
     }
 
     wxLongLong GetBootMillis() { return m_boot_time; }
@@ -747,6 +755,8 @@ public:
 
     bool m_bpos_set;
     time_t m_bpos_timestamp;
+
+    double m_sog;  // Speed over ground
 
     // Variation. Used to convert magnetic into true heading.
     // Can come from SetPositionFixEx, which may hail from the WMM plugin

@@ -73,12 +73,19 @@
     { _("Custom"), _("Harbor"), _("Offshore"), wxT(""), _("Weather"),          \
         _("Bird") }
 #endif
+#ifndef ANTENNA_SIZE_NAMES
+#define ANTENNA_SIZE_NAMES { _("3 ft"), _("4 ft"), _("6 ft") }
+#endif
 
 if (radarType >= RT_HaloA) {
     HAVE_CONTROL(
         CT_MODE, CTD_AUTO_NO, 2, CTD_MIN_ZERO, 5, CTD_STEP_1, MODE_NAMES)
     HAVE_CONTROL(CT_ACCENT_LIGHT, CTD_AUTO_NO, 0, CTD_MIN_ZERO, 3, CTD_STEP_1,
         OFF_LOW_MEDIUM_HIGH_NAMES)
+    HAVE_CONTROL(CT_ANTENNA_SIZE, CTD_AUTO_NO, CTD_DEF_ZERO, 0, 2,
+        CTD_STEP_1, ANTENNA_SIZE_NAMES)
+    HAVE_CONTROL(CT_PARKING_ANGLE, CTD_AUTO_NO, CTD_DEF_ZERO, -179, +180,
+        CTD_STEP_1, CTD_NUMERIC)
 
     HAVE_CONTROL(CT_NO_TRANSMIT_START_1, CTD_AUTO_NO, CTD_DEF_OFF, -180, +180,
         CTD_STEP_1, CTD_NUMERIC)
