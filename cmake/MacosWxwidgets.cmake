@@ -12,7 +12,7 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 set(wx_repo https://github.com/wxWidgets/wxWidgets.git)
-set(wx_tag v3.2.2.1)
+set(wx_tag v3.2.4)
 
 option(IGNORE_SYSTEM_WX "Never use system wxWidgets installation" FALSE)
 

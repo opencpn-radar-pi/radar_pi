@@ -7,10 +7,10 @@
 # Set up the compilation environment, compiler options etc.
 # ~~~
 
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free Software
-# Foundation; either version 3 of the License, or (at your option) any later
-# version.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -20,25 +20,24 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(BUILD_SHARED_LIBS TRUE)
 
 set(_ocpn_cflags " -Wall -Wno-unused-result -fexceptions")
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+string(APPEND _ocpn_cflags " -DwxABI_VERSION=30202")  # See #584.
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   string(APPEND CMAKE_C_FLAGS " ${_ocpn_cflags}")
   string(APPEND CMAKE_CXX_FLAGS " ${_ocpn_cflags}")
   string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-Bsymbolic")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Apple is AppleClang
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")           # Apple is AppleClang
   string(APPEND CMAKE_C_FLAGS " ${_ocpn_cflags}")
   string(APPEND CMAKE_CXX_FLAGS " ${_ocpn_cflags}")
   string(APPEND CMAKE_CXX_FLAGS " -Wno-inconsistent-missing-override")
   string(APPEND CMAKE_CXX_FLAGS " -Wno-potentially-evaluated-expression")
   string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl -undefined dynamic_lookup")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
-endif()
+  add_definitions(-DwxABI_VERSION=30202)     # See #584
+endif ()
 
-if(UNIX AND NOT APPLE) # linux, see OpenCPN/OpenCPN#1977
-  set_target_properties(${PACKAGE_NAME} PROPERTIES INSTALL_RPATH
-                                                   "$ORIGIN:$ORIGIN/..")
-endif()
-
-if(MINGW)
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L../buildwin")
-endif()
+if (UNIX AND NOT APPLE)   # linux, see OpenCPN/OpenCPN#1977
+  set_target_properties(${PACKAGE_NAME}
+    PROPERTIES INSTALL_RPATH "$ORIGIN:$ORIGIN/.."
+  )
+endif ()
