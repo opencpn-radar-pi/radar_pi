@@ -10,3 +10,4 @@ plugins
 *.bat
 *.bak
 buildwin/*.7z
+rel-*/
