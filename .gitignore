@@ -1,6 +1,5 @@
 build
 build-*
-rel-*
 !build-conf.rc
 !build-deps
 po/*.pot
@@ -10,3 +9,4 @@ cache
 plugins
 *.bat
 *.bak
+buildwin/*.7z
