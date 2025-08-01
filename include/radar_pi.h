@@ -471,6 +471,7 @@ struct PersistentSettings {
     double skew_factor; // Set to -1 or other value to correct skewing
     RangeUnits range_units; // See enum
     int max_age; // Scans older than this in seconds will be removed
+    int heading_timeout; // Max age of heading data before we consider it invalid
     RadarControlItem refreshrate; // How quickly to refresh the display
     int menu_auto_hide; // 0 = none, 1 = 10s, 2 = 30s
     int drawing_method; // VertexBuffer, Shader, etc.

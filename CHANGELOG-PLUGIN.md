@@ -11,6 +11,12 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ## [Unreleased]
 
+### Fixed
+
+- Bump opencpn-libs for running against O 5.12
+- Raymarine documentation
+- Allow override of HeadingTimeout in config file; normal is 5s.
+
 ## [5.5.5]
 
 ### Fixed

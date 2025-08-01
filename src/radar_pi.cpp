@@ -954,12 +954,12 @@ void radar_pi::SetRadarHeading(double heading, bool isTrue) {
     if (isTrue) {
       m_heading_source = HEADING_RADAR_HDT;
       m_hdt = heading;
-      m_hdt_timeout = now + HEADING_TIMEOUT;
+      m_hdt_timeout = now + m_settings.heading_timeout;
     } else {
       m_heading_source = HEADING_RADAR_HDM;
       m_hdm = heading;
       m_hdt = heading + m_var;
-      m_hdm_timeout = now + HEADING_TIMEOUT;
+      m_hdm_timeout = now + m_settings.heading_timeout;
     }
   } else if (m_heading_source == HEADING_RADAR_HDM || m_heading_source == HEADING_RADAR_HDT) {
     // no heading on radar and heading source is still radar
@@ -1515,6 +1515,7 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("DockSize"), &v, 0);
     m_settings.dock_size = v;
 
+    pConf->Read(wxT("HeadingTimeout"), &m_settings.heading_timeout, HEADING_TIMEOUT);
     pConf->Read(wxT("FixedHeading"), &m_settings.fixed_heading, 0);
     if (m_settings.fixed_heading == 1) {
       m_heading_source = HEADING_FIXED;
@@ -1709,6 +1710,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("IgnoreRadarHeading"), m_settings.ignore_radar_heading);
     pConf->Write(wxT("ShowExtremeRange"), m_settings.show_extreme_range);
     pConf->Write(wxT("MenuAutoHide"), m_settings.menu_auto_hide);
+    pConf->Write(wxT("HeadingTimeout"), m_settings.heading_timeout);
     pConf->Write(wxT("PassHeadingToOCPN"), m_settings.pass_heading_to_opencpn);
     pConf->Write(wxT("RangeUnits"), (int)m_settings.range_units);
     pConf->Write(wxT("Refreshrate"), m_settings.refreshrate.GetValue());
@@ -1832,7 +1834,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     }
     if (m_heading_source == HEADING_FIX_HDT) {
       m_hdt = pfix.Hdt;
-      m_hdt_timeout = now + HEADING_TIMEOUT;
+      m_hdt_timeout = now + m_settings.heading_timeout;
     }
   } else if (!wxIsNaN(pfix.Hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     if (m_heading_source < HEADING_FIX_HDM) {
@@ -1842,7 +1844,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     if (m_heading_source == HEADING_FIX_HDM) {
       m_hdm = pfix.Hdm;
       m_hdt = pfix.Hdm + m_var;
-      m_hdm_timeout = now + HEADING_TIMEOUT;
+      m_hdm_timeout = now + m_settings.heading_timeout;
     }
   } else if (!wxIsNaN(pfix.Cog) && m_settings.enable_cog_heading) {
     if (m_heading_source < HEADING_FIX_COG) {
@@ -1851,7 +1853,7 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
     }
     if (m_heading_source == HEADING_FIX_COG) {
       m_hdt = pfix.Cog;
-      m_hdt_timeout = now + HEADING_TIMEOUT;
+      m_hdt_timeout = now + m_settings.heading_timeout;
     }
   }
   if (!wxIsNaN(pfix.Cog)) {
@@ -2145,7 +2147,7 @@ void radar_pi::SetNMEASentence(wxString &sentence) {
     }
     if (m_heading_source == HEADING_NMEA_HDT) {
       m_hdt = hdt;
-      m_hdt_timeout = now + HEADING_TIMEOUT;
+      m_hdt_timeout = now + m_settings.heading_timeout;
     }
   } else if (!wxIsNaN(hdm) && NOT_TIMED_OUT(now, m_var_timeout)) {
     if (m_heading_source < HEADING_NMEA_HDM) {
@@ -2156,7 +2158,7 @@ void radar_pi::SetNMEASentence(wxString &sentence) {
     if (m_heading_source == HEADING_NMEA_HDM) {
       m_hdm = hdm;
       m_hdt = hdm + m_var;
-      m_hdm_timeout = now + HEADING_TIMEOUT;
+      m_hdm_timeout = now + m_settings.heading_timeout;
     }
   }
 }
