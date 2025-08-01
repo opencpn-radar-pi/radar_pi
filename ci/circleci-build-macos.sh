@@ -30,7 +30,7 @@ rm -rf build-osx  && mkdir build-osx
 # Create a log file.
 exec > >(tee build-osx/build.log) 2>&1
 
-export MACOSX_DEPLOYMENT_TARGET=10.13
+export MACOSX_DEPLOYMENT_TARGET=10.10
 
 # Return latest version of $1, optionally using option $2
 pkg_version() { brew list --versions $2 $1 | tail -1 | awk '{print $2}'; }
@@ -59,7 +59,7 @@ cmake \
   "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}" \
   -DCMAKE_INSTALL_PREFIX= \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} \
-  -DOCPN_TARGET_TUPLE="darwin-wx32;10;x86_64" \
+  -DOCPN_TARGET_TUPLE="darwin-wx32;10;universal" \
   -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
   ..
 
@@ -74,8 +74,10 @@ fi
 make VERBOSE=1 tarball || make VERBOSE=1 tarball
 
 # Install cloudsmith needed by upload script
-python3 -m pip install cloudsmith-cli
-python3 -m pip install cryptography
+python3 -m pip install -q --user cloudsmith-cli
+
+# Required by git-push
+python3 -m pip install -q --user cryptography
 
 # Create the cached /usr/local archive
 if [ -n "$CI"  ]; then

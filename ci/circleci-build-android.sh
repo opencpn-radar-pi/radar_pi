@@ -43,7 +43,7 @@ exec > >(tee $builddir/build.log) 2>&1
 # The local container needs to access the cache directory
 test -d cache || sudo mkdir cache
 test -w cache || sudo chmod -R go+w cache || :
-
+ 
 
 sudo apt -q update
 sudo apt install -q cmake git gettext
@@ -61,7 +61,9 @@ python3 -m pip install --user -q cmake
 # Build tarball
 cd $builddir
 
-sudo ln -sf /opt/android/android-ndk-* /opt/android/ndk
+last_ndk=$(ls -d /home/circleci/android-sdk/ndk/* | tail -1)
+test -d /opt/android || sudo mkdir -p /opt/android
+sudo ln -sf $last_ndk /opt/android/ndk
 cmake -DCMAKE_TOOLCHAIN_FILE=cmake/$OCPN_TARGET-toolchain.cmake ..
 make VERBOSE=1
 

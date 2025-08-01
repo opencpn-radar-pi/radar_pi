@@ -71,13 +71,13 @@ else
   cd wxwidgets3.2
   git fetch origin master:master
   git fetch origin pristine-tar:pristine-tar
-
+  
   echo "Creating the .orig tarball"
   git checkout pristine-tar
   pristine-tar checkout $(pristine-tar list | tail -1)
   mv *xz ..
   rm *
-
+  
   echo "Patch and building package"
   git checkout master
   patch -p1 < ../patch1.patch
@@ -85,10 +85,11 @@ else
   mk-build-deps --root-cmd=sudo -i -r
   rm *changes *buildinfo
   debuild -us -uc
-
+  
   echo "Installing pkg in /usr/local/pkg"
   test -d /usr/local/pkg || sudo mkdir /usr/local/pkg
   sudo cp ../*deb /usr/local/pkg
-  sudo rm /usr/local/pkg/*dbgsym*
+  sudo rm /usr/local/pkg/*dbgsym* 
   cd ../...
 fi
+
