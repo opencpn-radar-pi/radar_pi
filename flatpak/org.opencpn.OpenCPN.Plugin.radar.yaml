@@ -1,6 +1,6 @@
 id: org.opencpn.OpenCPN.Plugin.radar
 runtime: org.opencpn.OpenCPN
-runtime-version: beta
+runtime-version: stable
 # runtime-version: master
 sdk: org.freedesktop.Sdk//22.08
 build-extension: true
