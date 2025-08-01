@@ -56,7 +56,6 @@ if platform.system() == "Linux":
         'Bionic': {'job': 'build-bionic'},
         'Bionic-gtk3': {'job': 'build-bionic-gtk3'},
         'Focal': {'job': 'build-focal'},
-        'Buster': {'job': 'build-buster'},
         'Android-armhf': {'job': 'build-android-armhf'},
         'Android-arm64': {'job': 'build-android-arm64'},
         'Flatpak-2008': {
