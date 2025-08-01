@@ -175,18 +175,21 @@ git commit -m "Templates: Updating other files"
 
 # Handle opencpn-libs submodule
 test -d opencpn-libs || \
-    git submodule add https://github.com/leamas/opencpn-libs.git opencpn-libs
+    git submodule add https://github.com/opencpn/opencpn-libs.git opencpn-libs
 git submodule update --remote --merge opencpn-libs
 git add opencpn-libs
 git diff-index --quiet --cached HEAD -- || {
     echo "Updating opencpn-libs submodule"
     git commit -m "opencpn-libs: Update to latest version."
 }
+sed -i 's|leamas/opencpn-libs|opencpn/opencpn-libs|g' \
+    .git/modules/opencpn-libs/config || :
+
 
 # Update flatpak runtime version as required:
 $SED_I \
     -e '/sdk: org.freedesktop.Sdk/s/20.08/22.08/' \
-    -e '/^runtime-version:/s/:.*/: beta/' \
+    -e '/^runtime-version:/s/:.*/: stable/' \
   flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
 git add flatpak
 git diff-index --quiet --cached HEAD -- || {
@@ -201,7 +204,8 @@ for f in  \
     build-conf.rc \
     libs \
     build-deps/macos-cache-stamp \
-    build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch
+    build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch \
+    UPDATE_PLUGIN_API.md
 do
     if test -e $f; then continue; fi
     git checkout $source_treeish $f
