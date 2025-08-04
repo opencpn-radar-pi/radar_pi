@@ -54,7 +54,7 @@ case $(uname -s) in
             sudo tar -C /usr/local -xJf /tmp/macos_deps_universal.tar.xz
         else
             brew update
-            brew install wxwidgets
+            brew install wxwidgets@3.2
         fi
         ;;
 esac
