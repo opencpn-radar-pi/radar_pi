@@ -20,7 +20,7 @@ if [[ "$BRANCH" == beta ]]; then
   export SDK=24.08
   export FLATHUB_REPO=flathub-beta
 else
-  export SDK=22.08
+  export SDK=24.08
   export FLATHUB_REPO=flathub
 fi
 
