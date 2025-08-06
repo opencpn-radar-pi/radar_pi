@@ -26,14 +26,11 @@ host=$(hostname)
 echo "Adapting to $host-$BUILD_TYPE"
 case $host-$BUILD_TYPE in
 
-  kees-m*cli)
-    BUILDDIR=rel-mac
-    WX="${HOME}/src/wx315_opencpn50_macos1010"
-    CMAKE_OPTIONS=" -DwxWidgets_CONFIG_EXECUTABLE=${WX}/bin/wx-config
-                    -DwxWidgets_CONFIG_OPTIONS='--prefix=${WX}'
-                    -DCMAKE_INSTALL_PREFIX=
-                    -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10
-                    -DCMAKE_OSX_ARCHITECTURES=x86_64
+  kees-m16*cli)
+    #BUILDDIR=rel-mac
+    #WX="${HOME}/src/wx315_opencpn50_macos1010"
+    CMAKE_OPTIONS=" 
+                    -DwxWidgets_CONFIG_OPTIONS='--version=3.2'
                   "
     export CMAKE_BUILD_PARALLEL_LEVEL=8
     ;;
