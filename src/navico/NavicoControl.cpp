@@ -470,6 +470,24 @@ bool NavicoControl::SetControlValue(ControlType controlType, RadarControlItem &i
       break;
     }
 
+    case CT_ANTENNA_SIZE: {
+      uint8_t cmd[10] = {0x30, 0xc1, 0x03, 0, 0, 0, (uint8_t)value, 0, 0, 0};
+      LOG_VERBOSE(wxT("%s Antenna size: %d"), m_name.c_str(), value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+     break;
+    }
+
+    case CT_PARKING_ANGLE: {
+      int v = value * 10;
+      if (v < 0) v = 3600 + v;
+      int v1 = v / 256;
+      int v2 = v & 255;
+      uint8_t cmd[] = {0x40, 0xc1, (uint8_t)v2, (uint8_t)v1, 0x00, 0x00};
+      LOG_VERBOSE(wxT("%s Parking angle: %d"), m_name.c_str(), value);
+      r = TransmitCmd(cmd, sizeof(cmd));
+      break;
+    }
+
     case CT_ACCENT_LIGHT: {
       uint8_t cmd[] = {0x31, 0xc1, (uint8_t)value};
       LOG_VERBOSE(wxT("%s Accent light: %d"), m_name.c_str(), value);

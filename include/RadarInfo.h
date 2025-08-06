@@ -139,6 +139,8 @@ public:
     RadarControlItem m_antenna_height;
     RadarControlItem m_antenna_forward;
     RadarControlItem m_antenna_starboard;
+    RadarControlItem m_antenna_size;
+    RadarControlItem m_parking_angle;
     RadarControlItem m_main_bang_size;
     RadarControlItem m_accent_light;
     RadarControlItem m_local_interference_rejection;

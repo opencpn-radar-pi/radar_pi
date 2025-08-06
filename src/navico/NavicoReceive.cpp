@@ -69,6 +69,9 @@ PLUGIN_BEGIN_NAMESPACE
 // Without this the Doppler function doesn't work
 static const NetworkAddress haloInfoAddress(239, 238, 55, 73, 7527);
 
+static const NetworkAddress haloSpeedAddressA(236, 6, 7, 20, 6690);
+static const NetworkAddress haloSpeedAddressB(236, 6, 7, 15, 6005);
+
 SOCKET g_HaloInfoSocket = INVALID_SOCKET;  // Only _one_ radar is able to create this socket at a time.
 wxCriticalSection g_HaloInfoSocketLock;
 
@@ -100,7 +103,7 @@ struct halo_heading_packet {
   // 72
 };
 
-struct halo_mystery_packet {
+struct halo_navigation_packet {
   char marker[4];    // 4 bytes containing 'NKOE'
   uint8_t u00[4];    // 4 bytes containing '00 01 90 02'
   uint16_t counter;  // 2 byte counter incrementing by 1 every transmission, in BigEndian
@@ -122,13 +125,22 @@ struct halo_mystery_packet {
   // 65
   uint8_t u07[1];  // 1 byte containing 0xfc
   // 66
-  uint16_t mystery1;  // 2 bytes containing some varying field
+  uint16_t cog;  // 2 bytes containing cog
   // 68
-  uint16_t mystery2;  // 2 bytes containing some varying field
+  uint16_t sog;  // 2 bytes containing sog
   // 70
   uint8_t u08[2];  // 2 bytes containg 0xff 0xff
   // 72
 };
+
+struct halo_speed_packet {
+  uint8_t  marker[6];  // 6 bytes containing '01 d3 01 00 00 00'
+  uint16_t sog;        // Speed m/s
+  uint8_t  u00[6];     // 6 bytes containing '00 00 01 00 00 00'
+  uint16_t cog;        // COG
+  uint8_t  u02[6];     // 6 bytes containing '00 00 01 33 00 00'
+  uint8_t  u03;        // 00
+ };
 
 #define SCAN_MAX (256)
 
@@ -596,7 +608,7 @@ static halo_heading_packet g_heading_msg = {
     {0xff, 0x7f, 0x79, 0xf8, 0xfc}                                                               // u07
 };
 
-static halo_mystery_packet g_mystery_msg = {
+static halo_navigation_packet g_navigation_msg = {
     {'N', 'K', 'O', 'E'},  // marker
     {0, 1, 0x90, 0x02},    // u00 bytes containing '00 01 90 02'
     0,                     // counter
@@ -614,6 +626,15 @@ static halo_mystery_packet g_mystery_msg = {
     {0xff, 0xff}                                                                                 // u08
 };
 
+static halo_speed_packet g_halo_speed_msg = {
+   {0x01, 0xd3, 0x01, 0x00, 0x00, 0x00},
+   0, 
+   {0x00, 0x00, 0x01, 0x00, 0x00, 0x00},
+   0,
+   {0x00, 0x00, 0x01, 0x33, 0x00, 0x00},
+   0x00
+   };
+
 static uint16_t g_counter;
 
 void NavicoReceive::SendHeadingPacket() {
@@ -624,7 +645,7 @@ void NavicoReceive::SendHeadingPacket() {
     g_heading_msg.counter = htons(g_counter);
     g_heading_msg.epoch = wxGetUTCTimeMillis();
     g_heading_msg.heading = (uint16_t)(m_pi->GetHeadingTrue() * 63488.0 / 360.0);
-
+    
     LOG_TRANSMIT(wxT("%s SendHeadingPacket ctr=%u hdt=%g hdg=%u"), m_ri->m_name.c_str(), ntohs(g_heading_msg.counter),
                  m_pi->GetHeadingTrue(), g_heading_msg.heading);
 
@@ -632,19 +653,32 @@ void NavicoReceive::SendHeadingPacket() {
   }
 }
 
-void NavicoReceive::SendMysteryPacket() {
+void NavicoReceive::SendNavigationPacket() {
   NavicoControl *control = (NavicoControl *)m_ri->m_control;
 
   if (control != NULL) {
     g_counter++;
-    g_mystery_msg.counter = htons(g_counter);
-    g_mystery_msg.epoch = wxGetUTCTimeMillis();
-    g_mystery_msg.mystery1 = 0;
-    g_mystery_msg.mystery2 = 0;
+    g_navigation_msg.counter = htons(g_counter);
+    g_navigation_msg.epoch = wxGetUTCTimeMillis();
+    g_navigation_msg.cog = (uint16_t)(m_pi->GetCOG() * 63488.0 /360.0);
+    g_navigation_msg.sog = m_pi->GetSOG() * 0.514444444 * 10 * 10;  // kn -> mm/s
 
-    LOG_TRANSMIT(wxT("%s SendMysteryPacket ctr=%u"), m_ri->m_name.c_str(), ntohs(g_mystery_msg.counter));
+    LOG_TRANSMIT(wxT("%s SendNavigationPacket ctr=%u"), m_ri->m_name.c_str(), ntohs(g_navigation_msg.counter));
 
-    control->TransmitCmd(haloInfoAddress, (uint8_t *)&g_mystery_msg, sizeof g_mystery_msg);
+    control->TransmitCmd(haloInfoAddress, (uint8_t *)&g_navigation_msg, sizeof g_navigation_msg);
+   } 
+}
+
+void NavicoReceive::SendSpeedPacket() {
+  NavicoControl *control = (NavicoControl *)m_ri->m_control;
+
+  if (control != NULL) {
+    g_halo_speed_msg.sog = m_pi->GetSOG() * 0.514444444 * 10;  // kn -> mm/s
+    g_halo_speed_msg.cog = m_pi->GetCOG() * 10.0;
+
+    LOG_TRANSMIT(wxT("%s SendSpeedPacket ctr=%u"), m_ri->m_name.c_str(), g_halo_speed_msg.sog);
+    control->TransmitCmd(haloSpeedAddressA, (uint8_t *)&g_halo_speed_msg, sizeof g_halo_speed_msg);
+    control->TransmitCmd(haloSpeedAddressB, (uint8_t *)&g_halo_speed_msg, sizeof g_halo_speed_msg);
   }
 }
 
@@ -813,18 +847,17 @@ void *NavicoReceive::Entry(void) {
               LOG_RECEIVE(wxT("Received and set radar_heading from network %f"), heading);
               m_pi->SetRadarHeading(heading, true);  // only set HEADING_RADAR_HDT if nothing better is available
             }
-
             LOG_RECEIVE(wxT("msg.counter = %u"), msg->counter);
             LOG_RECEIVE(wxT("msg.epoch   = %lld"), msg->epoch);
             LOG_RECEIVE(wxT("msg.heading = %u -> %f"), msg->heading, heading);
             LOG_RECEIVE(wxT("msg.u05a    = %x"), msg->u05a);
             LOG_RECEIVE(wxT("msg.u05b    = %x"), msg->u05b);
           } else {
-            halo_mystery_packet *msg2 = (halo_mystery_packet *)data;
+            halo_navigation_packet *msg2 = (halo_navigation_packet *)data;
             LOG_RECEIVE(wxT("msg.counter = %u"), msg2->counter);
             LOG_RECEIVE(wxT("msg.epoch   = %lld"), msg2->epoch);
-            LOG_RECEIVE(wxT("msg.mystery1 = %u"), msg2->mystery1);
-            LOG_RECEIVE(wxT("msg.mystery2 = %u"), msg2->mystery2);
+            LOG_RECEIVE(wxT("msg.navigation = %u"), msg2->cog);
+            LOG_RECEIVE(wxT("msg.navigation = %u"), msg2->sog);
           }
         }
       }
@@ -860,8 +893,12 @@ void *NavicoReceive::Entry(void) {
           m_halo_sent_heading = now;
         }
         if (m_halo_sent_mystery + 250 < now) {
-          SendMysteryPacket();
+          SendNavigationPacket();
           m_halo_sent_mystery = now;
+        }
+        if (m_halo_sent_speed + 250 < now) {
+          SendSpeedPacket();
+          m_halo_sent_speed = now;
         }
       }
     }
@@ -1018,7 +1055,7 @@ struct RadarReport_04C4_66 {   // 04 C4 with length 66
   uint8_t command;             // 1   0xC4
   uint32_t field2;             // 2-5
   uint16_t bearing_alignment;  // 6-7
-  uint16_t field8;             // 8-9
+  uint16_t parking_angle;      // 8-9
   uint16_t antenna_height;     // 10-11
   uint32_t field12;            // 12-15  0x00
   uint8_t field16[3];          // 16-18  0x00
@@ -1036,9 +1073,11 @@ struct RadarReport_06C4_68 {         // 06 C4 with length 68
   uint8_t command;                   // 1   0xC4
   uint32_t field1;                   // 2-5
   char name[6];                      // 6-11 "Halo;\0"
-  uint8_t field2[24];                // 12-35 unknown
+  uint8_t field2[18];                // 12-29 unknown
+  uint8_t antenna_size;              // 30 
+  uint8_t field3[5];                 // 31-35
   SectorBlankingReport blanking[4];  // 36-55
-  uint8_t field3[12];                // 56-67
+  uint8_t field4[12];                // 56-67
 };
 
 struct RadarReport_06C4_74 {         // 06 C4 with length 74
@@ -1075,6 +1114,11 @@ struct RadarReport_08C4_21 {
   RadarReport_08C4_18 old;
   uint8_t doppler_state;
   uint16_t doppler_speed;
+};
+
+struct RadarReport_08C4_24 {   // With length 24 seen on HALO 2000
+  RadarReport_08C4_21 old;
+  uint8_t field15[3];
 };
 
 struct RadarReport_12C4_66 {  // 12 C4 with length 66
@@ -1267,6 +1311,11 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         // antenna height
         m_ri->m_antenna_height.Update(data->antenna_height / 1000);
 
+        // parking angle
+        int pa = data->parking_angle / 10;
+        if (pa>180) pa=pa-360;
+        m_ri->m_parking_angle.Update(pa);
+
         // accent light
         m_ri->m_accent_light.Update(data->accent_light);
 
@@ -1289,7 +1338,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
       }
 #endif
 
-      case (68 << 8) + 0x06: {  // 68 bytes starting with 04 C4
+      case (68 << 8) + 0x06: {  // 68 bytes starting with 06 C4
                                 // Seen on HALO 4 (Vlissingen)
         RadarReport_06C4_68 *data = (RadarReport_06C4_68 *)report;
         for (int i = 0; i <= 3; i++) {
@@ -1300,6 +1349,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
           m_ri->m_no_transmit_end[i].Update(MOD_DEGREES_180(SCALE_DECIDEGREES_TO_DEGREES(data->blanking[i].end_angle)),
                                             data->blanking[i].enabled ? RCS_MANUAL : RCS_OFF);
         }
+        m_ri->m_antenna_size.Update(data->antenna_size);
         m_ri->m_no_transmit_zones = 4;
         LOG_BINARY_RECEIVE(wxT("received sector blanking message"), report, len);
         break;
@@ -1324,6 +1374,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         /* Over time we have seen this report with 3 various lengths!!
          */
 
+      case (24 << 8) + 0x08:    // FALLTHRU HALO 2000
       case (22 << 8) + 0x08:    // FALLTHRU
       case (21 << 8) + 0x08: {  // length 21, 08 C4
                                 // contains Doppler data in extra 3 bytes

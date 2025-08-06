@@ -78,6 +78,7 @@ public:
         m_halo_received_info = wxGetUTCTimeMillis();
         m_halo_sent_heading = m_halo_received_info;
         m_halo_sent_mystery = m_halo_received_info;
+        m_halo_sent_speed = m_halo_received_info;
         m_hours = 0;
 
         m_receive_socket = GetLocalhostServerTCPSocket();
@@ -140,7 +141,8 @@ private:
     void ProcessFrame(const uint8_t* data, size_t len);
     void ReleaseInfoSocket();
     void SendHeadingPacket();
-    void SendMysteryPacket();
+    void SendNavigationPacket();
+    void SendSpeedPacket();
     void SetRadarType(RadarType t);
 
     SOCKET m_receive_socket; // Where we listen for message from m_send_socket
@@ -157,6 +159,7 @@ private:
     wxLongLong m_halo_received_info; // When some mfd sent info
     wxLongLong m_halo_sent_heading; // When we send it, every 100 ms
     wxLongLong m_halo_sent_mystery; // When we send it, every 250 ms
+    wxLongLong m_halo_sent_speed; // When we send it, every 250 ms
 
     wxCriticalSection m_lock; // Protects m_status
     wxString m_status; // Userfriendly string

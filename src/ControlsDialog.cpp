@@ -901,6 +901,20 @@ void ControlsDialog::CreateControls() {
     m_installation_sizer->Add(m_antenna_starboard_button, 0, wxALL, BORDER);
   }
 
+  // The ANTENNA SIZE button
+  if (m_ctrl[CT_ANTENNA_SIZE].type) {
+    m_antenna_size_button =
+        new RadarControlButton(this, ID_CONTROL_BUTTON, _("Antenna size"), m_ctrl[CT_ANTENNA_SIZE], &m_ri->m_antenna_size);
+    m_installation_sizer->Add(m_antenna_size_button, 0, wxALL, BORDER);
+  }
+
+  // The ANTENNA PARKING ANGLE button
+  if (m_ctrl[CT_PARKING_ANGLE].type) {
+    m_parking_angle_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("Parking angle"), m_ctrl[CT_PARKING_ANGLE],
+                                                     &m_ri->m_parking_angle);
+    m_installation_sizer->Add(m_parking_angle_button, 0, wxALL, BORDER);
+  }
+
   // The LOCAL INTERFERENCE REJECTION button
   if (m_ctrl[CT_LOCAL_INTERFERENCE_REJECTION].type) {
     m_local_interference_rejection_button =
@@ -1945,6 +1959,12 @@ void ControlsDialog::DisableRadarControls() {
   if (m_antenna_height_button) {
     m_antenna_height_button->Disable();
   }
+  if (m_antenna_size_button) {
+    m_antenna_size_button->Disable();
+  }
+  if (m_parking_angle_button) {
+    m_parking_angle_button->Disable();
+  }
   if (m_local_interference_rejection_button) {
     m_local_interference_rejection_button->Disable();
   }
@@ -2057,6 +2077,12 @@ void ControlsDialog::EnableRadarControls() {
   }
   if (m_antenna_height_button) {
     m_antenna_height_button->Enable();
+  }
+  if (m_antenna_size_button) {
+    m_antenna_size_button->Enable();
+  }
+  if (m_parking_angle_button) {
+    m_parking_angle_button->Enable();
   }
   if (m_local_interference_rejection_button) {
     m_local_interference_rejection_button->Enable();
@@ -2307,6 +2333,16 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
   //   antenna height
   if (m_antenna_height_button) {
     m_antenna_height_button->UpdateLabel();
+  }
+
+  //   antenna size
+  if (m_antenna_size_button) {
+    m_antenna_size_button->UpdateLabel();
+  }
+
+  //   parking angle
+  if (m_parking_angle_button) {
+    m_parking_angle_button->UpdateLabel();
   }
 
   //  bearing alignment

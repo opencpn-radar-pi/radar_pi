@@ -210,6 +210,8 @@ public:
         m_antenna_height_button = 0;
         m_antenna_forward_button = 0;
         m_antenna_starboard_button = 0;
+        m_antenna_size_button = 0;
+        m_parking_angle_button = 0;
         m_local_interference_rejection_button = 0;
         m_side_lobe_suppression_button = 0;
         m_main_bang_size_button = 0;
@@ -418,6 +420,8 @@ protected:
     RadarControlButton* m_antenna_height_button;
     RadarControlButton* m_antenna_forward_button;
     RadarControlButton* m_antenna_starboard_button;
+    RadarControlButton* m_antenna_size_button;
+    RadarControlButton* m_parking_angle_button;
     RadarControlButton* m_local_interference_rejection_button;
     RadarControlButton* m_side_lobe_suppression_button;
     RadarControlButton* m_main_bang_size_button;

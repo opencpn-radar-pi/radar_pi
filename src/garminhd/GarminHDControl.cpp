@@ -205,6 +205,8 @@ bool GarminHDControl::SetControlValue(ControlType controlType, RadarControlItem 
     // The following are settings that are not radar commands. Made them explicit so the
     // compiler can catch missing control types.
     case CT_ACCENT_LIGHT:
+    case CT_ANTENNA_SIZE: 
+    case CT_PARKING_ANGLE:
     case CT_ALL_TO_AUTO:
     case CT_ANTENNA_FORWARD:
     case CT_ANTENNA_STARBOARD:
