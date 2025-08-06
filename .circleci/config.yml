@@ -82,7 +82,7 @@ jobs:
         default: "fp-arm20-v2"
     <<: *flatpak-steps
 
-  build-flatpak-arm64-2408:
+  build-flatpak-arm64-beta:
     machine:
       image: ubuntu-2204:current
     resource_class: arm.medium
@@ -112,7 +112,7 @@ jobs:
         default: "fp-x86-20-v2"
     <<: *flatpak-steps
 
-  build-flatpak-x86-2408:
+  build-flatpak-x86-beta:
     machine:
       image: ubuntu-2204:current
     environment:
