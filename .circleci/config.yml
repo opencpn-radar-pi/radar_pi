@@ -195,19 +195,10 @@ workflows:
       - build-flatpak-x86:
           <<: *std-filters
 
-      - build-flatpak-arm64-2408:
-          <<: *std-filters
-
-      - build-flatpak-x86-2408:
-          <<: *std-filters
-
       - build-macos:
           <<: *std-filters
 
-      - build-android-arm64:
-          <<: *std-filters
-
-      - build-android-armhf:
+      - build-bookworm-arm64:
           <<: *std-filters
 
       - build-bookworm-armhf:
