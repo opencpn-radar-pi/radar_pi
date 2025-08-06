@@ -47,7 +47,7 @@ case $(uname -s) in
 
 	pipx install cloudsmith-cli
 
-        if [ ${USE_HOMEBREW:-0} -ne 1 ]; then
+        if [ ${USE_HOMEBREW:-0} -ne 2 ]; then
             # Install the pre-built wxWidgets package
             wget -q https://dl.cloudsmith.io/public/nohal/opencpn-plugins/raw/files/macos_deps_universal.tar.xz \
                 -O /tmp/macos_deps_universal.tar.xz
