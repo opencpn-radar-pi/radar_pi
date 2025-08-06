@@ -181,7 +181,8 @@ std-filters: &std-filters
     branches:
       ignore:
         - tmp
-        - /tmp-.*/
+    tags:
+      only: /v.*/
 
 workflows:
   version: 2
