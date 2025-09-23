@@ -6,6 +6,8 @@ full integration of certain radar scanners.
 
 _This manual is updated to include radar_pi version 5.2.2
 
+image::radar_garmin_with_switch.png[Garmin direct connection]
+
 The following radar scanners are supported:
 
 * Garmin HD
