@@ -1129,8 +1129,8 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
 // Called between 1 and 10 times per second by RenderGLOverlay call
 void radar_pi::TimedControlUpdate() {
   if (m_heading_source == HEADING_FIXED) {
-    while (m_settings.fixed_heading_value >= 360) m_settings.fixed_heading_value -= 360;
-    while (m_settings.fixed_heading_value < -180) m_settings.fixed_heading_value += 360;
+    while (m_settings.fixed_heading_value >= 360.) m_settings.fixed_heading_value -= 360;
+    while (m_settings.fixed_heading_value < -180.) m_settings.fixed_heading_value += 360;
     SetRadarHeading(m_settings.fixed_heading_value);
   }
   wxLongLong now = wxGetUTCTimeMillis();
@@ -1334,12 +1334,16 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
       long_range_radar->m_guard_zone[i]->SearchTargets();
     }
   }
+  int doppler = false;
+  int autotrack = false;
 
-  if ((long_range_radar->m_doppler.GetValue() > 0 && long_range_radar->m_autotrack_doppler.GetValue() > 0) ||
-      (long_range_radar->m_doppler.GetValue() > 0 && long_range_radar->m_autotrack_doppler.GetValue() > 0)) {
+  if (long_range_radar) {
+    autotrack = long_range_radar->m_autotrack_doppler.GetValue();
+    doppler = long_range_radar->m_doppler.GetValue();
+  }
+  if (doppler && autotrack) {
     m_arpa->SearchDopplerTargets(long_range_radar);
   }
-
   UpdateHeadingPositionState();
 
   // Check the age of "radar_seen", if too old radar_seen = false
