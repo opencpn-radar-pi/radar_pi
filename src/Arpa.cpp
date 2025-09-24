@@ -72,7 +72,7 @@ ArpaTarget::ArpaTarget(radar_pi* pi, Arpa* arpa, int uid) : m_kalman(KalmanFilte
 
 ArpaTarget::~ArpaTarget() {}
 
-ExtendedPosition ArpaTarget::Polar2Pos(Polar pol, GeoPosition position) {
+ExtendedPosition ArpaTarget::Polar2Pos(RadarInfo ri, Polar pol, GeoPosition position) {
   // converts in a radar image angular data r ( 0 - max_spoke_len ) and angle (0 - max_spokes) to position (lat, lon)
  
   ExtendedPosition pos;
@@ -616,7 +616,7 @@ void ArpaTarget::RefreshTarget(int speed, int pass) {
     LOG_ARPA(wxT("%s: p_own lat= %f, lon= %f, m_target_id=%i,"), m_ri->m_name, m_radar_position.lat, m_radar_position.lon, m_target_id);
     if (m_status == ACQUIRE0) {
       // as this is the first measurement, move target to measured position
-      m_position = Polar2Pos(measured_pol, m_radar_position);  // using own ship location from the time of reception, only lat and lon
+      m_position = Polar2Pos(m_ri, measured_pol, m_radar_position);  // using own ship location from the time of reception, only lat and lon
       m_position.dlat_dt = 0.;
       m_position.dlon_dt = 0.;
       m_position.sd_speed_kn = 0.;
@@ -649,7 +649,7 @@ void ArpaTarget::RefreshTarget(int speed, int pass) {
       m_position.dlon_dt = local_pos.dlon_dt;  // meters /sec
       m_position.sd_speed_kn = local_pos.sd_speed_m_s * 3600. / 1852.;
     } else {
-      m_position = Polar2Pos(measured_pol, m_radar_position);  // here m_position gets updated when a target is found
+      m_position = Polar2Pos(m_ri, measured_pol, m_radar_position);  // here m_position gets updated when a target is found
     }
     Polar previous_position_pol = position_pol;
     position_pol = Pos2Polar(m_position, m_radar_position);  // Set polar to new position
@@ -677,7 +677,7 @@ void ArpaTarget::RefreshTarget(int speed, int pass) {
 
     if (m_status >= 2 && m_status < FORCED_POSITION_STATUS && (m_status < 5 || m_position.speed_kn > 10.) && m_small_fast) {
       GeoPosition prev_pos = previous_position.pos;
-      GeoPosition new_pos = Polar2Pos(measured_pol, m_radar_position).pos;
+      GeoPosition new_pos = Polar2Pos(m_ri, measured_pol, m_radar_position).pos;
       double delta_lat = new_pos.lat - prev_pos.lat;
       double delta_lon = new_pos.lon - prev_pos.lon;
       int delta_t = (measured_pol.time - previous_position.time).GetLo();
@@ -1639,6 +1639,7 @@ bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler do
   // no contour taken yet
   // target status status, normally 0, if dummy target to delete a target -2
   // constructs Kalman filter
+  RadarInfo xxx = m_ri; // $$$ ??? should not work
   ExtendedPosition own_pos;
   ExtendedPosition target_pos;
   Doppler doppl = doppler;
@@ -1653,7 +1654,7 @@ bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler do
   #else
   std::unique_ptr<ArpaTarget> target = make_unique<ArpaTarget>(m_pi, m_pi->m_arpa, 0);
   #endif
-  target_pos = target->Polar2Pos(pol, own_pos.pos);
+  target_pos = target->Polar2Pos(ri, pol, own_pos.pos);
   target->m_target_doppler = doppl;
   target->m_position = target_pos;  // Expected position
   target->m_position.time = wxGetUTCTimeMillis();
