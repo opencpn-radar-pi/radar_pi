@@ -126,7 +126,7 @@ public:
     int m_status;
     int m_average_contour_length;
     bool m_small_fast; // For small and fast targets the Kalman filter will be overwritten for the initial positions
-    RadarInfo* m_ri;  // this is the radar used for the last refresh of the target
+    //RadarInfo* m_ri;  // this is the radar used for the last refresh of the target  // $$$ new target fails
     Arpa* m_arpa;
 
 private:
@@ -150,7 +150,7 @@ private:
     int m_previous_contour_length;
     Polar m_max_angle, m_min_angle, m_max_r, m_min_r,
         m_polar_pos; // charasterictics of contour
-   // Polar m_expected_pol;   $$$
+   // Polar m_expected_pol;   $$$ target has no radar, no polar
     bool m_automatic; // True for ARPA, false for MARPA.
     Doppler m_target_doppler; // ANY, NO_DOPPLER, APPROACHING, RECEDING,
                               // ANY_DOPPLER, NOT_APPROACHING, NOT_RECEDING
@@ -159,8 +159,8 @@ private:
     uint32_t m_approaching_pix;
     uint32_t m_receding_pix;
 
-    ExtendedPosition Polar2Pos(Polar pol, GeoPosition own_ship);
-    Polar Pos2Polar(ExtendedPosition p, GeoPosition own_ship);
+    ExtendedPosition Polar2Pos(RadarInfo ri, Polar pol, GeoPosition own_ship);
+    Polar Pos2Polar(ExtendedPosition p, GeoPosition own_ship);  // $$$ which radar??
 };
 
 class Arpa {
@@ -181,7 +181,7 @@ public:
     void RefreshAllArpaTargets(); // THR(M LCK(ri))
     bool AcquireNewARPATarget(
         RadarInfo* ri, Polar pol, int status, Doppler doppler); // THR(M)
-    void AcquireNewMARPATarget(RadarInfo* m_ri, ExtendedPosition pos); // THR(M)
+    void AcquireNewMARPATarget(RadarInfo* ri, ExtendedPosition pos); // THR(M)
     void DeleteTarget(const GeoPosition& pos); // THR(M)
     bool MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler); // THR(M)
     void DeleteAllTargets(); // THR(M)
