@@ -11,6 +11,7 @@
  *   Copyright (C) 2010 by David S. Register              bdbcat@yahoo.com *
  *   Copyright (C) 2012-2013 by Dave Cowell                                *
  *   Copyright (C) 2012-2016 by Kees Verruijt         canboat@verruijt.net *
+ *   Copyright (C) 2013-2025 by Douwe Fokkema             df@percussion.nl *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -141,7 +142,8 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
     else {
       other_radar = m_pi->m_radar[0];
     }
-    if (m_ri->m_overlay_canvas[0].GetValue() == 1 && other_radar->m_overlay_canvas[0].GetValue() == 1) {
+    if (m_ri->m_overlay_canvas[0].GetValue() == 1 && m_ri->m_state.GetValue() == RADAR_TRANSMIT &&
+        other_radar->m_overlay_canvas[0].GetValue() == 1 && other_radar->m_state.GetValue() == RADAR_TRANSMIT) {
         // both overlays on
           if (m_ri->m_pixels_per_meter < other_radar->m_pixels_per_meter) {
           // this range is largest
