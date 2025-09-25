@@ -126,7 +126,7 @@ public:
     int m_status;
     int m_average_contour_length;
     bool m_small_fast; // For small and fast targets the Kalman filter will be overwritten for the initial positions
-    //RadarInfo* m_ri;  // this is the radar used for the last refresh of the target  // $$$ new target fails
+    RadarInfo* m_ri;  // Remove $$$ this is the radar used for the last refresh of the target  // $$$ new target fails
     Arpa* m_arpa;
 
 private:
@@ -159,8 +159,8 @@ private:
     uint32_t m_approaching_pix;
     uint32_t m_receding_pix;
 
-    ExtendedPosition Polar2Pos(RadarInfo ri, Polar pol, GeoPosition own_ship);
-    Polar Pos2Polar(ExtendedPosition p, GeoPosition own_ship);  // $$$ which radar??
+    ExtendedPosition Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition own_ship);  // $$$ should be radar position
+    Polar Pos2Polar(RadarInfo* ri, ExtendedPosition p, GeoPosition own_ship);
 };
 
 class Arpa {
