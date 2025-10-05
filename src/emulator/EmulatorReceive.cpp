@@ -97,7 +97,7 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
 
   for (int scanline = 0; scanline < scanlines_in_packet; scanline++) {
     int angle = m_next_spoke;
-    m_next_spoke = MOD_SPOKES(m_next_spoke + 1);
+    m_next_spoke = MOD_SPOKES(m_ri, m_next_spoke + 1);
     m_ri->m_statistics.spokes++;
 
     if (range_meters == ranges[count - 1]) {
@@ -130,8 +130,8 @@ void EmulatorReceive::EmulateFakeBuffer(void) {
       }
     }
 
-    int hdt = SCALE_DEGREES_TO_SPOKES(m_pi->GetHeadingTrue());
-    int bearing = MOD_SPOKES(angle + hdt);
+    int hdt = SCALE_DEGREES_TO_SPOKES(m_ri, m_pi->GetHeadingTrue());
+    int bearing = MOD_SPOKES(m_ri, angle + hdt);
 
     wxLongLong time_rec = wxGetUTCTimeMillis();
     m_ri->ProcessRadarSpoke(angle, bearing, data, sizeof(data), range_meters, time_rec);

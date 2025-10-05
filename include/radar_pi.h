@@ -114,12 +114,11 @@ typedef int AngleDegrees; // An angle relative to North or HeadUp. Generally
 //(((raw) + 2 * SPOKES) % SPOKES)
 
 // NEW GENERIC
-#define SCALE_DEGREES_TO_SPOKES(angle)                                         \
-    ((angle) * (m_ri->m_spokes) / DEGREES_PER_ROTATION)
-#define SCALE_SPOKES_TO_DEGREES(raw)                                           \
-    ((raw) * (double)DEGREES_PER_ROTATION / m_ri->m_spokes)
-#define MOD_SPOKES(raw) (((raw) + 2 * m_ri->m_spokes) % m_ri->m_spokes)
-#define MOD_SPOKESri(raw) (((raw) + 2 * ri->m_spokes) % ri->m_spokes)
+#define SCALE_DEGREES_TO_SPOKES(radar, angle)                                         \
+    (((angle) * (radar)->m_spokes) / DEGREES_PER_ROTATION)
+#define SCALE_SPOKES_TO_DEGREES(radar, raw)                                           \
+    ((raw) * (double)DEGREES_PER_ROTATION / (radar)->m_spokes)
+#define MOD_SPOKES(radar, raw) (((raw) + 2 * (radar)->m_spokes) % (radar)->m_spokes)
 // #define MOD_SPOKES(raw) ((raw)&0x7ff) only for 2048 spokes
 #define MOD_DEGREES(angle)                                                     \
     (((angle) + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
@@ -469,6 +468,8 @@ struct PersistentSettings {
     bool guard_zone_on_overlay; // Show the guard zone on chart overlay?
     bool trails_on_overlay; // Show radar trails on chart overlay?
     bool overlay_on_standby; // Show guard zone when radar is in standby?
+    bool AIVDMtoO;         // Show AIVDM targets on overlay
+    bool TTMtoO;            // Show TTM targets on overlay
     int guard_zone_debug_inc; // Value to add on every cycle to guard zone
                               // bearings, for testing.
     double skew_factor; // Set to -1 or other value to correct skewing

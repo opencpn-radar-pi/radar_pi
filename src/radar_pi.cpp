@@ -424,6 +424,7 @@ int radar_pi::MakeNewTargetId() {
     m_target_id_count = 1;
     LOG_INFO(wxT("Target counter reset"));
   }
+  LOG_ARPA(wxT("new target_id made %i"), target_id);
   return target_id;
 }
 
@@ -1666,10 +1667,6 @@ bool radar_pi::LoadConfig(void) {
       }
 
       pConf->Read(wxString::Format(wxT("Radar%dUid"), r), &v, 0);
-      pConf->Read(wxString::Format(wxT("Radar%dAIVDMtoO"), r), &v, 1);
-      ri->m_AIVDMtoO.Update(v);
-      pConf->Read(wxString::Format(wxT("Radar%dTTMtoO"), r), &v, 0);
-      ri->m_TTMtoO.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dWindowShow"), r), &m_settings.show_radar[n], true);
       pConf->Read(wxString::Format(wxT("Radar%dWindowDock"), r), &m_settings.dock_radar[n], false);
       pConf->Read(wxString::Format(wxT("Radar%dWindowPosX"), r), &x, 30 + 540 * n);
@@ -1750,6 +1747,8 @@ bool radar_pi::LoadConfig(void) {
     m_settings.trail_end_colour = wxColour(s);
     pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, false);
     pConf->Read(wxT("Transparency"), &v, DEFAULT_OVERLAY_TRANSPARENCY);
+    pConf->Read(wxT("AIVDMtoO"), &v, m_settings.AIVDMtoO);
+    pConf->Read(wxT("TTMtoO"), &v, m_settings.TTMtoO);
     m_settings.overlay_transparency.Update(v);
 
     m_settings.max_age = wxMax(wxMin(m_settings.max_age, MAX_AGE), MIN_AGE);
@@ -1815,6 +1814,8 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("FixedLonValue"), m_settings.fixed_pos.lon);
     pConf->Write(wxT("RadarDescription"), m_settings.radar_description_text);
     pConf->Write(wxT("TargetMixerAddress"), m_settings.target_mixer_address.to_string());
+    pConf->Write(wxT("AIVDMtoO"), m_settings.AIVDMtoO);
+    pConf->Write(wxT("TTMtoO"), m_settings.TTMtoO);
 
     for (int r = 0; r < (int)m_settings.radar_count; r++) {
       pConf->Write(wxString::Format(wxT("Radar%dType"), r), RadarTypeName[m_radar[r]->m_radar_type]);
@@ -1843,9 +1844,6 @@ bool radar_pi::SaveConfig(void) {
       pConf->Write(wxString::Format(wxT("Radar%dRunTimeOnIdle"), r), m_radar[r]->m_timed_run.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dDopplerAutoTrack"), r), m_radar[r]->m_autotrack_doppler.GetValue());
       pConf->Write(wxString::Format(wxT("Radar%dMinContourLength"), r), m_radar[r]->m_min_contour_length);
-
-      pConf->Write(wxString::Format(wxT("Radar%dAIVDMtoO"), r), m_radar[r]->m_AIVDMtoO.GetValue());
-      pConf->Write(wxString::Format(wxT("Radar%dTTMtoO"), r), m_radar[r]->m_TTMtoO.GetValue());
       for (int i = 0; i < MAX_CHART_CANVAS; i++) {
         pConf->Write(wxString::Format(wxT("Radar%dOverlayCanvas%d"), r, i), m_radar[r]->m_overlay_canvas[i].GetValue());
       }

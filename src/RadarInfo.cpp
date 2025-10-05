@@ -460,7 +460,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   int orientation;
   int i;
   RadarInfo *m_ri = this;
-  m_last_received_spoke = MOD_SPOKES(bearing);
+  m_last_received_spoke = MOD_SPOKES(this, bearing);
   SampleCourse(angle);            // Calculate course as the moving average of m_hdt over one revolution
   CalculateRotationSpeed(angle);  // Find out how fast the radar is rotating
 
@@ -966,14 +966,11 @@ int RadarInfo::GetOrientation() {
 
 void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_rotate, bool overlay) {
   bool arpa_on = false;
-  /*if (m_pi->m_arpa) {  // $$$ move to radar_pi
-    for (int i = 0; i < GUARD_ZONES; i++) {
-      if (m_guard_zone[i]->m_arpa_on) arpa_on = true;
-    }
+  if (m_pi->m_arpa) {
     if (m_pi->m_arpa->GetTargetCount() > 0) {
       arpa_on = true;
     }
-  }*/
+  }
 
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);  // Save state
   glEnable(GL_BLEND);
@@ -1047,13 +1044,13 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
     }
   }
 
-  /*if (arpa_on) {   // $$$ move to radar-pi
+  if (arpa_on) {
     if (overlay) {
-      m_arpa->DrawArpaTargetsOverlay(scale, arpa_rotate);
+      m_pi->m_arpa->DrawArpaTargetsOverlay(scale, arpa_rotate);
     } else {
-      m_arpa->DrawArpaTargetsPanel(scale, arpa_rotate);
+      m_pi->m_arpa->DrawArpaTargetsPanel(this, scale, arpa_rotate);
     }
-  }*/
+  }
   m_draw_time_ms = (wxGetUTCTimeMillis() - now).GetLo();
   glPopAttrib();
   if (!overlay) {
