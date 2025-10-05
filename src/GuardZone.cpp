@@ -57,7 +57,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, uint8_t* hist, s
   size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to [0..spoke_len_max>
   size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to [0..spoke_len_max>
   bool in_guard_zone = false;
-  AngleDegrees degAngle = SCALE_SPOKES_TO_DEGREES(angle);
+  AngleDegrees degAngle = SCALE_SPOKES_TO_DEGREES(m_ri, angle);
 
   switch (m_type) {
     case GZ_ARC:
@@ -161,17 +161,17 @@ void GuardZone::SearchTargets() {
   size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to 0..511
   if (range_start < 1) range_start = 1;
   if (range_start >= range_end) return;
-  int hdt = SCALE_DEGREES_TO_SPOKES(m_pi->GetHeadingTrue());
+  int hdt = SCALE_DEGREES_TO_SPOKES(m_ri, m_pi->GetHeadingTrue());
   while (hdt >= (int)m_ri->m_spokes) {
     hdt -= m_ri->m_spokes;
   }
   while (hdt < 0) {
     hdt += m_ri->m_spokes;
   }
-  int start_bearing = SCALE_DEGREES_TO_SPOKES(m_start_bearing) + hdt;
-  int end_bearing = SCALE_DEGREES_TO_SPOKES(m_end_bearing) + hdt;
-  start_bearing = MOD_SPOKES(start_bearing);
-  end_bearing = MOD_SPOKES(end_bearing);
+  int start_bearing = SCALE_DEGREES_TO_SPOKES(m_ri, m_start_bearing) + hdt;
+  int end_bearing = SCALE_DEGREES_TO_SPOKES(m_ri, m_end_bearing) + hdt;
+  start_bearing = MOD_SPOKES(m_ri, start_bearing);
+  end_bearing = MOD_SPOKES(m_ri, end_bearing);
   if (start_bearing > end_bearing) {
     end_bearing += m_ri->m_spokes;
   }
@@ -192,10 +192,12 @@ void GuardZone::SearchTargets() {
 
     // loop with +2 increments as target must be larger than 2 pixels in width
     for (int angleIter = start_bearing; angleIter < end_bearing; angleIter += 2) {
-      SpokeBearing angle = MOD_SPOKES(angleIter);
+      
+      SpokeBearing angle = MOD_SPOKES(m_ri, angleIter);
+      LOG_ARPA(wxT("Found blob continue angle=%i, end_bearing=%i"), angle, end_bearing);
       wxLongLong time1 = m_ri->m_history[angle].time;
       // time2 must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
-      wxLongLong time2 = m_ri->m_history[MOD_SPOKES(angle + 3 * SCAN_MARGIN)].time;
+      wxLongLong time2 = m_ri->m_history[MOD_SPOKES(m_ri, angle + 3 * SCAN_MARGIN)].time;
 
       // check if target has been refreshed since last time
       // and if the beam has passed the target location with SCAN_MARGIN spokes
@@ -212,6 +214,7 @@ void GuardZone::SearchTargets() {
             LOG_ARPA(wxT("Found blob angle=%i, r=%i, doppler=%i"), angle, rrr, doppler);
             int target_i = m_pi->m_arpa->AcquireNewARPATarget(m_ri, pol, 0, doppler);
             if (target_i == -1) break;
+            LOG_ARPA(wxT("Found blob  rrr=%i"), rrr);
           }
         }
       }

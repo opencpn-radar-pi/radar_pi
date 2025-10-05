@@ -424,8 +424,8 @@ void NavicoReceive::ProcessFrame(const uint8_t *data, size_t len) {
     bearing_raw = angle_raw + heading_raw;
     // until here all is based on 4096 (NAVICO_SPOKES_RAW) scanlines
 
-    SpokeBearing a = MOD_SPOKES(angle_raw / 2);    // divide by 2 to map on 2048 scanlines
-    SpokeBearing b = MOD_SPOKES(bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
+    SpokeBearing a = MOD_SPOKES(m_ri, angle_raw / 2);  // divide by 2 to map on 2048 scanlines
+    SpokeBearing b = MOD_SPOKES(m_ri, bearing_raw / 2);  // divide by 2 to map on 2048 scanlines
     size_t len = NAVICO_SPOKE_LEN;
     uint8_t data_highres[NAVICO_SPOKE_LEN];
 

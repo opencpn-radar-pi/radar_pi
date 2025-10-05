@@ -146,8 +146,8 @@ void GarminHDReceive::ProcessFrame(radar_line *packet) {
     heading_raw = SCALE_DEGREES_TO_RAW(m_pi->GetHeadingTrue());  // include variation
     bearing_raw = angle_raw + heading_raw;
 
-    SpokeBearing a = MOD_SPOKES(angle_raw);
-    SpokeBearing b = MOD_SPOKES(bearing_raw);
+    SpokeBearing a = MOD_SPOKES(m_ri, angle_raw);
+    SpokeBearing b = MOD_SPOKES(m_ri, bearing_raw);
 
     m_ri->ProcessRadarSpoke(a, b, line, p - line, packet->display_meters, time_rec);
 
