@@ -492,6 +492,9 @@ struct PersistentSettings {
   wxPoint control_pos[RADARS];  // Saved position of control menu windows
   wxPoint window_pos[RADARS];   // Saved position of radar windows, when
                                 // floating and not docked
+  bool AIVDMtoO;                // Show AIVDM targets on overlay
+  bool TTMtoO;                  // Show TTM targets on overlay
+    
   wxPoint alarm_pos;            // Saved position of alarm window
   wxString alert_audio_file;    // Filepath of alarm audio file. Must be WAV.
   wxColour trail_start_colour;  // Starting colour of a trail

@@ -109,29 +109,31 @@ public:
     ArpaTarget(radar_pi* pi, Arpa* arpa, int uid);
     ~ArpaTarget();
 
-    int GetContour(Polar* p);
-    bool FindNearestContour(Polar* pol, int dist);
-    bool GetTarget(Polar expected_pol, Polar* target_pol, int dist);
+    int GetContour(RadarInfo* ri, Polar* p);
+    bool FindNearestContour(RadarInfo* ri, Polar* pol, int dist);
+    bool GetTarget(RadarInfo* ri, Polar expected_pol, Polar* target_pol, int dist);
     void RefreshTarget(int speed, int pass);
     void PassAIVDMtoOCPN(Polar* p);
     void PassTTMtoOCPN(Polar* p, OCPN_target_status s);
     void SetStatusLost();
-    void ResetPixels();
-    void PixelCounter();
-    void StateTransition(Polar* pol);
-    bool Pix(int ang, int rad);
+    void ResetPixels(RadarInfo* ri);
+    void PixelCounter(RadarInfo* ri);
+    void StateTransition(RadarInfo* ri, Polar* pol);
+    bool Pix(RadarInfo* ri, int ang, int rad);
     //bool MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler);
     wxString EncodeAIVDM(
         int mmsi, double speed, double lon, double lat, double course);
     int m_status;
     int m_average_contour_length;
     bool m_small_fast; // For small and fast targets the Kalman filter will be overwritten for the initial positions
-    RadarInfo* m_ri;  // Remove $$$ this is the radar used for the last refresh of the target  // $$$ new target fails
     Arpa* m_arpa;
+    RadarInfo* m_ri;  // this is the radar used for the last refresh of the target 
+                      // the contour is given in polars defined from this radar
 
 private:
     radar_pi* m_pi;
     GeoPosition m_radar_position;
+    wxCriticalSection m_protect_target_data;
     KalmanFilter m_kalman;
     int m_target_id;
     // radar position at time of last target fix, the polars in the contour
@@ -150,7 +152,6 @@ private:
     int m_previous_contour_length;
     Polar m_max_angle, m_min_angle, m_max_r, m_min_r,
         m_polar_pos; // charasterictics of contour
-   // Polar m_expected_pol;   $$$ target has no radar, no polar
     bool m_automatic; // True for ARPA, false for MARPA.
     Doppler m_target_doppler; // ANY, NO_DOPPLER, APPROACHING, RECEDING,
                               // ANY_DOPPLER, NOT_APPROACHING, NOT_RECEDING
@@ -177,7 +178,7 @@ public:
     Arpa(radar_pi* pi); // THR(M)
     ~Arpa(); // THR(M)
     void DrawArpaTargetsOverlay(double scale, double arpa_rotate); // THR(M)
-    void DrawArpaTargetsPanel(double scale, double arpa_rotate); // THR(M)
+    void DrawArpaTargetsPanel(RadarInfo* ri, double scale, double arpa_rotate); // THR(M)
     void RefreshAllArpaTargets(); // THR(M LCK(ri))
     bool AcquireNewARPATarget(
         RadarInfo* ri, Polar pol, int status, Doppler doppler); // THR(M)
@@ -207,13 +208,11 @@ private:
 
     std::deque<DynamicTargetData*> m_remote_target_queue;
     wxCriticalSection m_remote_target_lock;
-
     radar_pi* m_pi;
-    
 
     void AcquireOrDeleteMarpaTarget(ExtendedPosition p, int status);
     void CalculateCentroid(ArpaTarget* t);
-    void DrawContour(const ArpaTarget* t);
+    void DrawContour(ArpaTarget* t);
     bool Pix(RadarInfo* ri, int ang, int rad, Doppler doppler);
     bool IsAtLeastOneRadarTransmitting();
     void CleanUpLostTargets();

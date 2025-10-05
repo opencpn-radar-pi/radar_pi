@@ -144,8 +144,6 @@ public:
     RadarControlItem m_parking_angle;
     RadarControlItem m_main_bang_size;
     RadarControlItem m_accent_light;
-    RadarControlItem m_AIVDMtoO;
-    RadarControlItem m_TTMtoO;
     RadarControlItem m_local_interference_rejection;
     RadarControlItem m_side_lobe_suppression;
     RadarControlItem m_target_trails;

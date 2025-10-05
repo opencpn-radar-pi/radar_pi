@@ -122,8 +122,8 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, size_t len) {
   heading_raw = SCALE_DEGREES_TO_RAW(m_pi->GetHeadingTrue());  // include variation
   bearing_raw = angle_raw + heading_raw;
 
-  SpokeBearing a = MOD_SPOKES(angle_raw);
-  SpokeBearing b = MOD_SPOKES(bearing_raw);
+  SpokeBearing a = MOD_SPOKES(m_ri, angle_raw);
+  SpokeBearing b = MOD_SPOKES(m_ri, bearing_raw);
 
   m_ri->m_range.Update(packet->range_meters);
   m_ri->ProcessRadarSpoke(a, b, packet->line_data, len, packet->display_meters, time_rec);
