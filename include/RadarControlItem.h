@@ -161,7 +161,7 @@ public:
 
     int GetValue()
     {
-        wxCriticalSectionLocker lock(m_exclusive);
+        //wxCriticalSectionLocker lock(m_exclusive);  $$$? crasht
 
         return m_value;
     }

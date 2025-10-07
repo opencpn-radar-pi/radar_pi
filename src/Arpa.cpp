@@ -453,6 +453,7 @@ void ArpaTarget::RefreshTarget(int speed, int pass) {  // $$$ make speed double 
 
   if (m_status == LOST) {
     m_refreshed = OUT_OF_SCOPE;
+    LOG_ARPA(wxT("OUT_OF_SCOPE lost"));
     return;
   }
 
@@ -505,7 +506,7 @@ void ArpaTarget::RefreshTarget(int speed, int pass) {  // $$$ make speed double 
   }
   ExtendedPosition predicted_position = m_position;
   m_kalman.Predict(&predicted_position, delta_t);  // predicted_position is new predicted position of the target
-
+  LOG_ARPA(wxT("$$$ predicted_position= %f, %f"), predicted_position.pos.lat, predicted_position.pos.lon);
   RadarInfo* ri = m_pi->FindBestRadarForTarget(predicted_position.pos);
   if (!ri) {
     m_refreshed = OUT_OF_SCOPE;
@@ -524,6 +525,7 @@ void ArpaTarget::RefreshTarget(int speed, int pass) {  // $$$ make speed double 
   // Update the radar position to the position recorded in the spoke
   m_radar_position =
       best_radar->m_history[MOD_SPOKES (best_radar, predicted_pol.angle)].pos;
+  LOG_ARPA(wxT("$$$ m_radar_position= %f, %f"), m_radar_position.lat, m_radar_position.lon);
   // and recalculate polar with updated radar position
   predicted_pol = Pos2Polar(best_radar, predicted_position, m_radar_position);
 
@@ -538,8 +540,9 @@ void ArpaTarget::RefreshTarget(int speed, int pass) {  // $$$ make speed double 
   if (predicted_pol.r >= (int)best_radar->m_spoke_len_max || predicted_pol.r <= 0) {
     m_refreshed = OUT_OF_SCOPE;
     // delete target if too far out
-    LOG_ARPA(wxT("%s: R too big target deleted m_target_id=%i, angle=%i, r= %i, contour=%i, pass=%i"), best_radar->m_name, m_target_id,
-             predicted_pol.angle, predicted_pol.r, m_contour_length, pass);
+    LOG_ARPA(wxT("%s: R too big target deleted m_target_id=%i, angle=%i, r= %i, contour=%i, pass=%i, spokemax=%i"), 
+      best_radar->m_name, m_target_id, predicted_pol.angle, predicted_pol.r, m_contour_length, pass, 
+      (int)best_radar->m_spoke_len_max);
     SetStatusLost();
     return;
   }
@@ -1295,7 +1298,9 @@ void ArpaTarget::RefreshTarget(int speed, int pass) {  // $$$ make speed double 
   }
 
 
-void Arpa::AcquireNewMARPATarget(RadarInfo* ri, ExtendedPosition target_pos) { AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
+void Arpa::AcquireNewMARPATarget(RadarInfo* ri, ExtendedPosition target_pos) { 
+  LOG_ARPA(wxT("$$$AcquireNewMARPATarget"));
+  AcquireOrDeleteMarpaTarget(target_pos, ACQUIRE0); }
 
 void Arpa::DeleteTarget(const GeoPosition& pos) {
   // delete the target that is closest to the position
@@ -1341,7 +1346,6 @@ void Arpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int status) {
   target->m_status = status;
   target->m_target_doppler = ANY;
   target->m_automatic = false;
-
   m_targets.push_back(std::move(target));
 }
 
@@ -1371,10 +1375,8 @@ void Arpa::DrawContour(ArpaTarget* target) {
     vertex_array[i].x = vertex_array[i].x / radar->m_pixels_per_meter;
     vertex_array[i].y = vertex_array[i].y / radar->m_pixels_per_meter;
   }
-
   glVertexPointer(2, GL_FLOAT, 0, vertex_array);
   glDrawArrays(GL_LINE_STRIP, 0, target->m_contour_length);
-
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
 }
 
