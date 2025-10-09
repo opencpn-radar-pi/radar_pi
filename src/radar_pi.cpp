@@ -841,7 +841,6 @@ void radar_pi::OnContextMenuItemCallback(int id) {
           best_radar->m_state.GetValue() == RADAR_TRANSMIT) {  // Radar  transmitting
         ExtendedPosition target_pos;
         target_pos.pos = m_right_click_pos;
-        LOG_ARPA(wxT("$$$"));
         m_arpa->AcquireNewMARPATarget(best_radar, target_pos);
       
 
@@ -1270,7 +1269,6 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   if (!m_initialized) {
     return;
   }
-  LOG_ARPA(wxT("$$$"));
   // update own ship position to best estimate
   ExtendedPosition intermediate_pos;
   if (m_predicted_position_initialised) {
@@ -1286,7 +1284,6 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
       }
     }
   }
-  LOG_ARPA(wxT("$$$"));
   // refresh ARPA targets
 
   // Refresh radar with smallest range first
@@ -1303,7 +1300,6 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
         }
       }
     }
-    LOG_ARPA(wxT("$$$"));
     if (long_range_radar) {
       wxCriticalSectionLocker lock(long_range_radar->m_exclusive);
       for (int i = 0; i < GUARD_ZONES; i++) {
@@ -1312,24 +1308,19 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
         }
       }
     }
-    LOG_ARPA(wxT("$$$"));
     if (m_arpa->GetTargetCount() > 0) {
-      LOG_ARPA(wxT("$$$"));
       arpa_on = true;
     }
   }
   if (short_range_radar && arpa_on && short_range_radar->m_state.GetValue() == RADAR_TRANSMIT) {
-    LOG_ARPA(wxT("$$$"));
     m_arpa->RefreshAllArpaTargets();
   }
-  LOG_ARPA(wxT("$$$"));
   if (short_range_radar) {
     wxCriticalSectionLocker lock(short_range_radar->m_exclusive);
     for (int i = 0; i < GUARD_ZONES; i++) {
       short_range_radar->m_guard_zone[i]->SearchTargets();
     }
   }
-  LOG_ARPA(wxT("$$$"));
   if (long_range_radar) {
     for (int i = 0; i < GUARD_ZONES; i++) {
       long_range_radar->m_guard_zone[i]->SearchTargets();
@@ -1346,7 +1337,6 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
     m_arpa->SearchDopplerTargets(long_range_radar);
   }
   UpdateHeadingPositionState();
-  LOG_ARPA(wxT("$$$"));
   // Check the age of "radar_seen", if too old radar_seen = false
   bool any_data_seen = false;
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -1518,7 +1508,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
         highest = i;
       }
     }
-    /*if (canvasIndex == highest) {  // $$$ disable automatic range
+    /*if (canvasIndex == highest) {  // $$$ disable automatic range, make automatic depending on radars
       m_radar[current_overlay_radar]->SetAutoRangeMeters(auto_range_meters);
     }*/
 
@@ -2261,17 +2251,17 @@ void radar_pi::SetCursorLatLon(double lat, double lon) {
 RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
   int best_range = INT_MAX;
   RadarInfo *best_radar = NULL;
-  LOG_ARPA(wxT("$$$FindBestRadarForTargett"));
+  LOG_ARPA(wxT("$$$FindBestRadarForTarget, pos= %f, %f"), position.lat, position.lon);
   int range;
   GeoPosition radar_position;
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     if (m_radar[r] && m_arpa &&                          // Radar is valid
         m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT &&          // Is transmitting
-        ((range = m_radar[r]->m_range.GetValue()) < best_range) &&   // Best range
+        ((range = m_radar[r]->m_range.GetValue()) < best_range) &&   // Best range in meters
         m_radar[r]->GetRadarPosition(&radar_position) &&             // Get position
-        local_distance(radar_position, position) < (double)range) {  // Is in range
-      best_range = (int) range * 0.95;  // allow some room for target size
+        local_distance(radar_position, position) * 1852. < (double)range) {  // Is in range
+      best_range = (int) range * 0.95;  // allow some room for target size, convert to meters
       best_radar = m_radar[r];
     }
   }

@@ -131,13 +131,14 @@ public:
                       // the contour is given in polars defined from this radar
 
 private:
+  // Radar used to make the contour
     radar_pi* m_pi;
+  // radar position at time of last target fix, the polars in the contour refer to this origin
     GeoPosition m_radar_position;
     wxCriticalSection m_protect_target_data;
     KalmanFilter m_kalman;
     int m_target_id;
-    // radar position at time of last target fix, the polars in the contour
-    // refer to this origin
+    
     RefresState m_refreshed;
     ExtendedPosition m_position; // holds actual position of target, after last SetMeasurement() // $$$ to do verify!! 
     // double m_speed_kn; // Average speed of target. TODO: Merge with
