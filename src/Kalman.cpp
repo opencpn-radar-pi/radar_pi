@@ -113,7 +113,7 @@ void KalmanFilter::ResetFilter() {
 
 KalmanFilter::~KalmanFilter() {}
 
-void KalmanFilter::Predict(ExtendedPosition* xx, double delta_time) {
+void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
   Matrix<double, 4, 1> X;
   X(0, 0) = xx->pos.lat;
   X(1, 0) = xx->pos.lon;

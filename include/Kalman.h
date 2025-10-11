@@ -66,7 +66,7 @@ public:
     KalmanFilter();
     ~KalmanFilter();
     void SetMeasurement(RadarInfo* ri, Polar* p, LocalPosition* x, Polar* expected);
-    void Predict(ExtendedPosition* x, double delta_time); // measured position and expected position
+    void Predict(LocalPosition* x, double delta_time); // measured position and expected position
     void ResetFilter();
     void Update_P();
 
