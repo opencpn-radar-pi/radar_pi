@@ -1743,10 +1743,9 @@ bool radar_pi::LoadConfig(void) {
     m_settings.trail_end_colour = wxColour(s);
     pConf->Read(wxT("TrailsOnOverlay"), &m_settings.trails_on_overlay, false);
     pConf->Read(wxT("Transparency"), &v, DEFAULT_OVERLAY_TRANSPARENCY);
-    pConf->Read(wxT("AIVDMtoO"), &v, m_settings.AIVDMtoO);
-    pConf->Read(wxT("TTMtoO"), &v, m_settings.TTMtoO);
     m_settings.overlay_transparency.Update(v);
-
+    pConf->Read(wxT("AIVDMtoO"), &m_settings.AIVDMtoO, 1);
+    pConf->Read(wxT("TTMtoO"), &m_settings.TTMtoO, 0);
     m_settings.max_age = wxMax(wxMin(m_settings.max_age, MAX_AGE), MIN_AGE);
 
     SaveConfig();
