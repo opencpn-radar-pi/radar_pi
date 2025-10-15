@@ -112,8 +112,8 @@ public:
     int GetContour(RadarInfo* ri, Polar* p);
     bool FindNearestContour(RadarInfo* ri, Polar* pol, int dist);
     bool GetTarget(RadarInfo* ri, Polar expected_pol, Polar* target_pol, int dist);
-    void RefreshTarget(int speed, int pass);
-    void PassAIVDMtoOCPN(Polar* p);
+    void RefreshTarget(double speed, int pass);
+    void PassAIVDMtoOCPN();
     void PassTTMtoOCPN(Polar* p, OCPN_target_status s);
     void SetStatusLost();
     void ResetPixels(RadarInfo* ri);
@@ -131,9 +131,11 @@ public:
                       // the contour is given in polars defined from this radar
 
 private:
-  // Radar used to make the contour
     radar_pi* m_pi;
-  // radar position at time of last target fix, the polars in the contour refer to this origin
+    // Values that were used when making the contour of the target
+    int m_spokes;
+    double m_pixels_per_meter;
+    // Radar position at time of last target fix, the polars in the contour refer to this origin
     GeoPosition m_radar_position;
     wxCriticalSection m_protect_target_data;
     KalmanFilter m_kalman;
