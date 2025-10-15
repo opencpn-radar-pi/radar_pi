@@ -194,7 +194,7 @@ void GuardZone::SearchTargets() {
     for (int angleIter = start_bearing; angleIter < end_bearing; angleIter += 2) {
       
       SpokeBearing angle = MOD_SPOKES(m_ri, angleIter);
-      LOG_ARPA(wxT("Found blob continue angle=%i, end_bearing=%i"), angle, end_bearing);
+      //LOG_ARPA(wxT("Found blob continue angle=%i, end_bearing=%i"), angle, end_bearing);
       wxLongLong time1 = m_ri->m_history[angle].time;
       // time2 must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
       wxLongLong time2 = m_ri->m_history[MOD_SPOKES(m_ri, angle + 3 * SCAN_MARGIN)].time;
@@ -211,10 +211,10 @@ void GuardZone::SearchTargets() {
             Polar pol;
             pol.angle = angle;
             pol.r = rrr;
-            LOG_ARPA(wxT("Found blob angle=%i, r=%i, doppler=%i"), angle, rrr, doppler);
+           // LOG_ARPA(wxT("Found blob angle=%i, r=%i, doppler=%i"), angle, rrr, doppler);
             int target_i = m_pi->m_arpa->AcquireNewARPATarget(m_ri, pol, 0, doppler);
             if (target_i == -1) break;
-            LOG_ARPA(wxT("Found blob  rrr=%i"), rrr);
+           // LOG_ARPA(wxT("Found blob  rrr=%i"), rrr);
           }
         }
       }
