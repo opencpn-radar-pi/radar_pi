@@ -59,7 +59,7 @@ public:
     void DrawRadarOverlayImage(double radar_scale, double panel_rotate);
     void DrawRadarPanelImage(double panel_scale, double panel_rotate);
     void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data,
-        size_t len, GeoPosition spoke_pos);
+        size_t len, GeoPosition spoke_pos, bool overlay);
 
     ~RadarDrawVertex()
     {

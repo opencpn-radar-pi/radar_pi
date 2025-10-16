@@ -412,12 +412,12 @@ void RadarInfo::ResetSpokes() {
 
   if (m_draw_panel.draw) {
     for (size_t r = 0; r < m_spokes; r++) {
-      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max, pos);
+      m_draw_panel.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max, pos, false);
     }
   }
   if (m_draw_overlay.draw) {
     for (size_t r = 0; r < m_spokes; r++) {
-      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max, pos);
+      m_draw_overlay.draw->ProcessRadarSpoke(0, r, zap, m_spoke_len_max, pos, true);
     }
   }
 
@@ -543,7 +543,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
   bool draw_trails_on_overlay = M_SETTINGS.trails_on_overlay;
   if (m_draw_overlay.draw && !draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len, m_history[bearing].pos);
+    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len, m_history[bearing].pos, true);
   }
   m_trails->UpdateTrailPosition();
 
@@ -554,11 +554,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   m_trails->UpdateRelativeTrails(angle, data, trail_len);
 
   if (m_draw_overlay.draw && draw_trails_on_overlay) {
-    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len, m_history[bearing].pos);
+    m_draw_overlay.draw->ProcessRadarSpoke(M_SETTINGS.overlay_transparency.GetValue(), bearing, data, len, m_history[bearing].pos, true);
   }
 
   if (m_draw_panel.draw) {
-    m_draw_panel.draw->ProcessRadarSpoke(4, stabilized_mode ? bearing : angle, data, len, m_history[bearing].pos);
+    m_draw_panel.draw->ProcessRadarSpoke(4, stabilized_mode ? bearing : angle, data, len, m_history[bearing].pos,false);
   }
 }
 
