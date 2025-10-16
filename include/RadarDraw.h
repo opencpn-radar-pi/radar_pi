@@ -47,7 +47,7 @@ public:
     virtual void DrawRadarPanelImage(double panel_scale, double panel_rotate)
         = 0;
     virtual void ProcessRadarSpoke(int transparency, SpokeBearing angle,
-        uint8_t* data, size_t len, GeoPosition spoke_pos)
+        uint8_t* data, size_t len, GeoPosition spoke_pos, bool overlay)
         = 0;
 
     virtual ~RadarDraw() = 0;

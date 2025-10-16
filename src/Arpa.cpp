@@ -369,12 +369,12 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   LOG_ARPA(wxT("$$$e m_position %f, %f, pass = %i"), m_position.pos.lat, m_position.pos.lon, pass);
   best_radar = m_pi->FindBestRadarForTarget(
       m_position.pos);  // priliminary radar selection, choice of radar can change based on predicted position
-  best_radar->GetRadarPosition(&m_radar_position);
   if (!best_radar) {
     m_refreshed = OUT_OF_SCOPE;
     LOG_ARPA(wxT("OUT_OF_SCOPE"));
     return;
   }
+  best_radar->GetRadarPosition(&m_radar_position);
   rotation_period = best_radar->m_rotation_period.GetValue();
   if (rotation_period == 0) {
     rotation_period = 2400;  // default value

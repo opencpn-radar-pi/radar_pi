@@ -31,7 +31,6 @@
  */
 
 #include "RadarDrawVertex.h"
-
 #include "RadarCanvas.h"
 #include "RadarInfo.h"
 
@@ -119,7 +118,7 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
   line->count = count;
 }
 
-void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len, GeoPosition spoke_pos) {
+void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len, GeoPosition spoke_pos, bool overlay) {
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
   BlobColour previous_colour = BLOB_NONE;
   GLubyte strength = 0;
@@ -143,7 +142,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
       other_radar = m_pi->m_radar[0];
     }
     if (m_ri->m_overlay_canvas[0].GetValue() == 1 && m_ri->m_state.GetValue() == RADAR_TRANSMIT &&
-        other_radar->m_overlay_canvas[0].GetValue() == 1 && other_radar->m_state.GetValue() == RADAR_TRANSMIT) {
+        other_radar->m_overlay_canvas[0].GetValue() == 1 && other_radar->m_state.GetValue() == RADAR_TRANSMIT && overlay) {
         // both overlays on
           if (m_ri->m_pixels_per_meter < other_radar->m_pixels_per_meter) {
           // this range is largest
