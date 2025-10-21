@@ -120,6 +120,7 @@ public:
 
     RadarControlItem m_overlay_canvas[MAX_CHART_CANVAS];
     RadarRangeControlItem m_range; // value in meters, shown on display
+    RadarControlItem m_range_meters; // actualrange as transmitted by radar in meters
     RadarControlItem m_gain;
     RadarControlItem m_interference_rejection;
     RadarControlItem m_target_separation;

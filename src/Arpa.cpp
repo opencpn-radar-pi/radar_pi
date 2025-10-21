@@ -420,13 +420,9 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       (m_position.pos.lon - m_radar_position.lon) * 60. * 1852. * cos(deg2rad(m_radar_position.lat));  // in meters
   x_local.dlat_dt = m_position.dlat_dt;                                                                    // meters / sec
   x_local.dlon_dt = m_position.dlon_dt;                                                                    // meters / sec
-  LOG_ARPA(wxT("$$$ before locallat= %f, locallon= %f"), x_local.pos.lat, x_local.pos.lon);
-
 
   m_kalman.Predict(&x_local, delta_t);  // x_local is now new predicted local position of the target
 
-
-  LOG_ARPA(wxT("$$$ after locallat= %f, locallon= %f"), x_local.pos.lat, x_local.pos.lon);
   Polar predicted_pol;
   predicted_pol.angle = (int)(atan2(x_local.pos.lon, x_local.pos.lat) * best_radar->m_spokes / (2. * PI));
   if (predicted_pol.angle < 0) predicted_pol.angle += best_radar->m_spokes;
@@ -632,6 +628,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       if (test > 2.) {
         m_small_fast = true;
       }
+      m_small_fast = true;  // $$$ all targets satisfy
     }
 
     if (m_status >= 2 && m_status < FORCED_POSITION_STATUS && (m_status < 5 || m_position.speed_kn > 10.) && m_small_fast) {
@@ -662,9 +659,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       double s2 = m_position.dlon_dt;                                   // m  per second
       m_position.speed_kn = (sqrt(s1 * s1 + s2 * s2)) * 3600. / 1852.;  // and convert to nautical miles per hour
       m_course = rad2deg(atan2(s2, s1));
-
       if (m_course < -0.001) m_course += 360.;
-
       m_previous_contour_length = m_contour_length;
       // send target data to OCPN and other radar
       if (m_target_id == 0) {
@@ -883,13 +878,9 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     int a = pol.angle;
     int r = pol.r;
     if (Pix(ri, a, r)) {
-      LOG_ARPA(wxT("$$$ search inside a=%i, r=%i"), a, r);
       contour_found = m_arpa->FindContourFromInside(ri, &pol, ANY);
-      if (contour_found) LOG_ARPA(wxT("$$$ found inside"));
     } else {
-      LOG_ARPA(wxT("$$$ search outside a=%i, r=%i"), a, r);
       contour_found = FindNearestContour(ri, &pol, dist);
-      if (contour_found) LOG_ARPA(wxT("$$$ found outside"));
     }
     if (!contour_found) {
       pol.angle = backup_angle;

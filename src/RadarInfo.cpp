@@ -460,6 +460,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   int orientation;
   int i;
   RadarInfo *m_ri = this;
+  m_ri->m_range_meters = range_meters;
   m_last_received_spoke = MOD_SPOKES(this, bearing);
   SampleCourse(angle);            // Calculate course as the moving average of m_hdt over one revolution
   CalculateRotationSpeed(angle);  // Find out how fast the radar is rotating
