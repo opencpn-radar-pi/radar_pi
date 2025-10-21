@@ -2255,12 +2255,13 @@ RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
   GeoPosition radar_position;
 
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (m_radar[r] && m_arpa &&                          // Radar is valid
+    if (m_radar[r] &&                          // Radar is valid
         m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT &&          // Is transmitting
-        ((range = m_radar[r]->m_range.GetValue()) < best_range) &&   // Best range in meters
+        ((range = m_radar[r]->m_range_meters.GetValue()) < best_range) &&   // Best range in meters
         m_radar[r]->GetRadarPosition(&radar_position) &&             // Get position
-        local_distance(radar_position, position) * 1852. < (double)range) {  // Is in range
-      best_range = (int) range * 0.95;  // allow some room for target size, convert to meters
+                      // allow some room for target size, convert to meters
+        local_distance(radar_position, position) * 1852. < (double)range * 0.98) {  // Is in range
+      best_range = (int) range;
       best_radar = m_radar[r];
     }
   }
