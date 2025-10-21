@@ -133,7 +133,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   }
   size_t start_radius = 0;
     // find other radar
-      if (m_pi->m_settings.radar_count == 2) {
+  if (m_pi->m_settings.radar_count == 2 && m_pi->m_radar[0] && m_pi->m_radar[1]) {
     RadarInfo* other_radar;
     if (m_pi->m_radar[0] == m_ri) {
       other_radar = m_pi->m_radar[1];

@@ -159,6 +159,30 @@ void GuardZone::SearchTargets() {
   }
   size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to 0..511
   size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to 0..511
+
+    // find other radar check if range_start overlaps with smaller range radar and need to be increased
+  if (m_pi->m_settings.radar_count == 2 && m_pi->m_radar[0] && m_pi->m_radar[1]) {
+    RadarInfo* other_radar;
+    if (m_pi->m_radar[0] == m_ri) {
+      other_radar = m_pi->m_radar[1];
+    } else {
+      other_radar = m_pi->m_radar[0];
+    }
+    if (m_ri->m_overlay_canvas[0].GetValue() == 1 && m_ri->m_state.GetValue() == RADAR_TRANSMIT &&
+        other_radar->m_overlay_canvas[0].GetValue() == 1 && other_radar->m_state.GetValue() == RADAR_TRANSMIT) {
+      // both overlays on
+      if (m_ri->m_pixels_per_meter < other_radar->m_pixels_per_meter) {
+        // this range is largest
+        size_t start = (int)(m_ri->m_spoke_len_max * m_ri->m_pixels_per_meter / other_radar->m_pixels_per_meter);
+        if (start > range_start) {
+          range_start = start;
+          LOG_ARPA(wxT("$$$ %s, guard range_start= %i"), m_ri->m_name, range_start);
+        }
+      }
+    }
+  }
+
+
   if (range_start < 1) range_start = 1;
   if (range_start >= range_end) return;
   int hdt = SCALE_DEGREES_TO_SPOKES(m_ri, m_pi->GetHeadingTrue());
