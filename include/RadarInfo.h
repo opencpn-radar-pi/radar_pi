@@ -92,10 +92,11 @@ public:
     // The 'official' value, which is also what we tell users, is set via
     // m_range.Update() by the receive threads. The 'display' value
     // (m_range_meters), used to compute the proper display, which is up to 40%
-    // larger is set by ProcessRadarSpoke. int m_range_meters;  // internal
+    // larger is set by ProcessRadarSpoke. int m_actual_range_meters;  // internal
     // value, length of m_spoke_len_max in meters
     double m_pixels_per_meter; // How many pixels of a line in a meter
 
+    int m_actual_range_meters;  // actualrange as transmitted by radar in meters
     double
         m_course; // m_course is the moving everage of m_hdt used for course_up
     double m_predictor;
@@ -120,7 +121,6 @@ public:
 
     RadarControlItem m_overlay_canvas[MAX_CHART_CANVAS];
     RadarRangeControlItem m_range; // value in meters, shown on display
-    RadarControlItem m_range_meters; // actualrange as transmitted by radar in meters
     RadarControlItem m_gain;
     RadarControlItem m_interference_rejection;
     RadarControlItem m_target_separation;
