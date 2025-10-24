@@ -139,8 +139,7 @@ void GuardZone::SearchTargets() {
   if (!m_arpa_on) {
     return;
   }
-  if (!m_pi->m_settings.show                       // No radar shown
-      || !m_ri->GetRadarPosition(&own_pos.pos)     // No position
+  if ( !m_ri->GetRadarPosition(&own_pos.pos)     // No position // new: $$$ radar will also track targets in background
       || m_pi->GetHeadingSource() == HEADING_NONE  // No heading
       || (m_pi->GetHeadingSource() == HEADING_FIX_HDM && m_pi->m_var_source == VARIATION_SOURCE_NONE)) {
     LOG_ARPA(wxT(" returned1"));
@@ -157,10 +156,11 @@ void GuardZone::SearchTargets() {
     LOG_ARPA(wxT(" returned4"));
     return;
   }
-  size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to 0..511
-  size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to 0..511
-
-    // find other radar check if range_start overlaps with smaller range radar and need to be increased
+  
+  size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to 0..1024
+  size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to 0..1024 (for Navico)
+  LOG_ARPA(wxT("$$$ m_inner_range= %i, range_start= %i, m_outer_range= %i, range_end= %i"), m_inner_range, range_start, m_outer_range, range_end);
+    // find other radar and check if range_start overlaps with smaller range radar and need to be increased
   if (m_pi->m_settings.radar_count == 2 && m_pi->m_radar[0] && m_pi->m_radar[1]) {
     RadarInfo* other_radar;
     if (m_pi->m_radar[0] == m_ri) {
@@ -182,7 +182,6 @@ void GuardZone::SearchTargets() {
     }
   }
 
-
   if (range_start < 1) range_start = 1;
   if (range_start >= range_end) return;
   int hdt = SCALE_DEGREES_TO_SPOKES(m_ri, m_pi->GetHeadingTrue());
@@ -200,9 +199,10 @@ void GuardZone::SearchTargets() {
     end_bearing += m_ri->m_spokes;
   }
   if (m_type == GZ_CIRCLE) {
-    start_bearing = m_ri->m_last_received_spoke + 600;  // forward of the beam
-    end_bearing = m_ri->m_last_received_spoke - 500;
+    start_bearing = m_ri->m_last_received_spoke - 1100;  // forward of the beam  // $$$ this is all empty! before mod
+    end_bearing = m_ri->m_last_received_spoke ;
   }
+  
   if (start_bearing > end_bearing) {
     end_bearing += m_ri->m_spokes;
   }
@@ -213,7 +213,7 @@ void GuardZone::SearchTargets() {
       range_end = outer_limit;
     }
     if (range_end < range_start) return;
-
+    LOG_ARPA(wxT("$$$ start_bearing= %i, end_bearing= %i, m_last_spoke= %i, range_start=%i, range_end= %i"), start_bearing, end_bearing, m_ri->m_last_received_spoke, range_start, range_end);
     // loop with +2 increments as target must be larger than 2 pixels in width
     for (int angleIter = start_bearing; angleIter < end_bearing; angleIter += 2) {
       
@@ -223,12 +223,12 @@ void GuardZone::SearchTargets() {
       // time2 must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
       wxLongLong time2 = m_ri->m_history[MOD_SPOKES(m_ri, angle + 3 * SCAN_MARGIN)].time;
 
-      // check if target has been refreshed since last time
+      // check if target has been refreshed since last time   // check this
       // and if the beam has passed the target location with SCAN_MARGIN spokes
-      if ((time1 > (m_arpa_update_time[angle] + SCAN_MARGIN2) &&
-           time2 >= time1)) {  // the beam sould have passed our "angle" AND a
+      /*if ((time1 > (m_arpa_update_time[angle] + SCAN_MARGIN2) &&
+           time2 >= time1))*/ {  // the beam sould have passed our "angle" AND a
                                // point SCANMARGIN further set new refresh time
-        m_arpa_update_time[angle] = time1;
+       // m_arpa_update_time[angle] = time1;
         for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
           if (m_pi->m_arpa->MultiPix(m_ri, angle, rrr, doppler)) {
             // pixel found that does not belong to a known target

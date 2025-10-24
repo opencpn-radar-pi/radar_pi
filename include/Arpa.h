@@ -82,7 +82,7 @@ class KalmanFilter;
 #define STATUS_TO_OCPN (5) // First status to be send to OCPN
 #define START_UP_SPEED                                                         \
     (0.5) // maximum allowed speed (m/sec) for new target, real format with .
-#define DISTANCE_BETWEEN_TARGETS (30) // minimum separation between targets
+#define DISTANCE_BETWEEN_TARGETS (5) // minimum separation between targets
 #define STATUS_TO_OCPN (5) // First status to be send to OCPN
 
 typedef int target_status;
