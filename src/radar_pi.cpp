@@ -842,6 +842,11 @@ void radar_pi::OnContextMenuItemCallback(int id) {
           best_radar->m_state.GetValue() == RADAR_TRANSMIT) {  // Radar  transmitting
         ExtendedPosition target_pos;
         target_pos.pos = m_right_click_pos;
+        target_pos.dlat_dt = 0.;
+        target_pos.dlon_dt = 0.;
+        target_pos.sd_speed_kn = 0.;
+        target_pos.speed_kn = 0.;
+        target_pos.time = 0;
         m_arpa->AcquireNewMARPATarget(best_radar, target_pos);
       
 
@@ -2260,7 +2265,7 @@ RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     if (m_radar[r] &&                          // Radar is valid
         m_radar[r]->m_state.GetValue() == RADAR_TRANSMIT &&          // Is transmitting
-        ((range = m_radar[r]->m_range_meters.GetValue()) < best_range) &&   // Best range in meters
+        ((range = m_radar[r]->m_actual_range_meters) < best_range) &&  // Best range in meters
         m_radar[r]->GetRadarPosition(&radar_position) &&             // Get position
                       // allow some room for target size, convert to meters
         local_distance(radar_position, position) * 1852. < (double)range * 0.98) {  // Is in range
@@ -2270,7 +2275,6 @@ RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
   }
   return best_radar;
 }
-
 
 bool radar_pi::MouseEventHook(wxMouseEvent &event) {
   if (event.LeftDown()) {
