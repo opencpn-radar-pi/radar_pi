@@ -81,17 +81,16 @@ ArpaTarget::~ArpaTarget() {}
 
 // return M_XY((angle + m_spokes) % m_spokes, radius);
 
-ExtendedPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position) {
+GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position) {
   // converts in a radar image angular data r ( 0 - max_spoke_len ) and angle (0 - max_spokes) to position (lat, lon)
  
-  ExtendedPosition pos;
+  GeoPosition pos;
   // should be revised, use Mercator formula PositionBearingDistanceMercator()  TODO
 
-  pos.pos.lat = position.lat + ri->m_polar_lookup->GetPoint(pol.angle, pol.r).x / ri->m_pixels_per_meter / 60. / 1852.;
+  pos.lat = position.lat + ri->m_polar_lookup->GetPoint(pol.angle, pol.r).x / ri->m_pixels_per_meter / 60. / 1852.;
 
-  pos.pos.lon = position.lon + ri->m_polar_lookup->GetPoint(pol.angle, pol.r).y / ri->m_pixels_per_meter / 
+  pos.lon = position.lon + ri->m_polar_lookup->GetPoint(pol.angle, pol.r).y / ri->m_pixels_per_meter / 
     cos(deg2rad(position.lat)) / 60. / 1852.;
-  pos.time = pol.time;
 
   //pos.pos.lat = position.lat + ((double)pol.r / ri->m_pixels_per_meter)  // Scale to fraction of distance from radar
   //                                     * cos(deg2rad(SCALE_SPOKES_TO_DEGREES(ri, pol.angle))) / 60. / 1852.;
@@ -465,7 +464,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
            best_radar->m_name, m_target_id, pass, m_status, predicted_pol.angle, predicted_pol.r, m_contour_length,
            m_position.speed_kn, m_position.sd_speed_kn, m_lost_count);
 
-  ExtendedPosition predicted_position = Polar2Pos(best_radar, predicted_pol, m_radar_position);
+  GeoPosition predicted_position = Polar2Pos(best_radar, predicted_pol, m_radar_position);
   RadarInfo* ri = m_pi->FindBestRadarForTarget(predicted_position.pos);
   if (!ri) {
     LOG_ARPA(wxT(" Change of radar, target out of range"));
