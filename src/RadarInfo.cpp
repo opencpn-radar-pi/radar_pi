@@ -462,6 +462,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   int i;
   RadarInfo *m_ri = this;
   m_ri->m_actual_range_meters = range_meters;
+  if (MOD_SPOKES(this, bearing) < m_last_received_spoke)
+    LOG_ARPA(wxT("$$$$$ bearing=%i, previous=%i"), MOD_SPOKES(this, bearing), m_last_received_spoke);
   m_last_received_spoke = MOD_SPOKES(this, bearing);
   SampleCourse(angle);            // Calculate course as the moving average of m_hdt over one revolution
   CalculateRotationSpeed(angle);  // Find out how fast the radar is rotating
@@ -1154,7 +1156,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
   GeoPosition radar_pos;
   wxString s = GetTimedIdleText();
 
-  LOG_VERBOSE(wxT("%s BottomLeft = %s"), m_name.c_str(), s.c_str());
+ //$$$ LOG_VERBOSE(wxT("%s BottomLeft = %s"), m_name.c_str(), s.c_str());
 
   for (int z = 0; z < GUARD_ZONES; z++) {
     int bogeys = m_guard_zone[z]->GetBogeyCount();

@@ -833,7 +833,6 @@ void radar_pi::OnContextMenuItemCallback(int id) {
   } else if (id == m_context_menu_acquire_radar_target) {
     if (m_right_click_pos.lat < 90. && m_right_click_pos.lat > -90. && m_right_click_pos.lon < 180. &&
         m_right_click_pos.lon > -180.) {
-      LOG_ARPA(wxT("$$$AcquireNewMARPATarget1"));
       RadarInfo *best_radar = FindBestRadarForTarget(m_right_click_pos);
       if (best_radar && m_arpa &&                  // radar exists
           m_settings.show &&                                   // radar shown
@@ -1323,11 +1322,13 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   if (short_range_radar) {
     wxCriticalSectionLocker lock(short_range_radar->m_exclusive);
     for (int i = 0; i < GUARD_ZONES; i++) {
+      LOG_ARPA(wxT("$$$ call SearchTargets from short range radar=%s"), short_range_radar->m_name);
       short_range_radar->m_guard_zone[i]->SearchTargets();
     }
   }
   if (long_range_radar) {
     for (int i = 0; i < GUARD_ZONES; i++) {
+      LOG_ARPA(wxT("$$$ call SearchTargets from long range radar=%s"), long_range_radar->m_name);
       long_range_radar->m_guard_zone[i]->SearchTargets();
     }
   }
@@ -2263,7 +2264,7 @@ RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
         ((range = m_radar[r]->m_actual_range_meters) < best_range) &&  // Best range in meters
         m_radar[r]->GetRadarPosition(&radar_position) &&             // Get position
                       // allow some room for target size, convert to meters
-        local_distance(radar_position, position) * 1852. < (double)range * 0.98) {  // Is in range
+        local_distance(radar_position, position) * 1852. < (double)range * 0.99) {  // Is in range
       best_range = (int) range;
       best_radar = m_radar[r];
     }
