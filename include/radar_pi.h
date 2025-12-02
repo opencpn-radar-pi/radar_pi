@@ -83,8 +83,7 @@ class RaymarineLocate;
 class NavicoLocate;
 
 #define MAX_CHART_CANVAS (2) // How many canvases OpenCPN supports
-#define RADARS                                                                 \
-    (2) // Limit fjor multi radar overlay
+#define RADARS (4) 
 #define GUARD_ZONES (2) // Could be increased if wanted
 #define BEARING_LINES (2) // And these as well
 #define NO_TRANSMIT_ZONES                                                      \

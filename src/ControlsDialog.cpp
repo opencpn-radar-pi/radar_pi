@@ -1629,8 +1629,9 @@ void ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
     button->m_item->Update(1);
     m_ri->m_overlay_canvas[canvasIndex].Update(1);
     m_ri->UpdateControlState(false);
-    // no other radars can do overlay on same canvas for shader
-    if (m_pi->m_settings.drawing_method != 0) {
+    // no other radars can do overlay on same canvas for shader and
+    // for dual overlay number of radar should be 2
+    if (m_pi->m_settings.drawing_method != 0 || M_SETTINGS.radar_count > 2) {
       for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
         if (m_pi->m_radar[r] != m_ri) {
           m_pi->m_radar[r]->m_overlay_canvas[canvasIndex].Update(0);

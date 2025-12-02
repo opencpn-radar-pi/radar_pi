@@ -605,6 +605,9 @@ bool radar_pi::MakeRadarSelection() {
     }
 
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (!m_radar[r]) {
+        continue;
+      }
       m_radar[r]->Init();
     }
     for (size_t r = M_SETTINGS.radar_count; r < RADARS; r++) {
@@ -1322,13 +1325,11 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   if (short_range_radar) {
     wxCriticalSectionLocker lock(short_range_radar->m_exclusive);
     for (int i = 0; i < GUARD_ZONES; i++) {
-      LOG_ARPA(wxT("$$$ call SearchTargets from short range radar=%s"), short_range_radar->m_name);
       short_range_radar->m_guard_zone[i]->SearchTargets();
     }
   }
   if (long_range_radar) {
     for (int i = 0; i < GUARD_ZONES; i++) {
-      LOG_ARPA(wxT("$$$ call SearchTargets from long range radar=%s"), long_range_radar->m_name);
       long_range_radar->m_guard_zone[i]->SearchTargets();
     }
   }
@@ -1339,7 +1340,7 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
     autotrack = long_range_radar->m_autotrack_doppler.GetValue();
     doppler = long_range_radar->m_doppler.GetValue();
   }
-  if (doppler && autotrack) {
+  if (doppler && autotrack && long_range_radar) {
     m_arpa->SearchDopplerTargets(long_range_radar);
   }
   UpdateHeadingPositionState();
@@ -2313,9 +2314,6 @@ RadarInfo *radar_pi::GetLongRangeRadar() {
   if (M_SETTINGS.radar_count != 2 || m_radar[0] == 0 || m_radar[1] == 0) {
     return NULL;
   };
-  if (m_radar[0]->m_state.GetValue() != RADAR_TRANSMIT || m_radar[1]->m_state.GetValue() != RADAR_TRANSMIT) {
-    return NULL;
-  }
   if (m_radar[0]->m_pixels_per_meter > m_radar[1]->m_pixels_per_meter) {
     ri = m_radar[1];  // largest range
   } else {
@@ -2326,25 +2324,19 @@ RadarInfo *radar_pi::GetLongRangeRadar() {
 
 RadarInfo *radar_pi::GetShortRangeRadar() {
   // In case of 1 radar the ShortRangeRadar is valid
-  // Only returns a valid transmitting radar
   if (m_radar[0] == 0 && m_radar[1] == 0) {
-      return NULL;
+    return NULL;
   }
-  bool radar0transmit = m_radar[0] != 0 && m_radar[0]->m_state.GetValue() == RADAR_TRANSMIT;
-  bool radar1transmit = m_radar[1] != 0 && m_radar[1]->m_state.GetValue() == RADAR_TRANSMIT;
-  if (radar0transmit && !radar1transmit) {
+  if (M_SETTINGS.radar_count > 2) {
     return m_radar[0];
   }
-  if (radar1transmit && !radar0transmit) {
-    return m_radar[1];
+
+  if (m_radar[0]->m_pixels_per_meter < m_radar[1]->m_pixels_per_meter) {
+    return m_radar[1];  // smallest range
+  } else {
+    return m_radar[0];  // smallest range
   }
-  if (radar0transmit && radar1transmit) {
-    if (m_radar[0]->m_pixels_per_meter < m_radar[1]->m_pixels_per_meter) {
-      return m_radar[1];  // smallest range
-    } else {
-      return m_radar[0];  // smallest range
-    }
-  }
+
   return NULL;
 }
 
