@@ -109,7 +109,7 @@ public:
     ArpaTarget(radar_pi* pi, Arpa* arpa, int uid);
     ~ArpaTarget();
 
-    void CheckTiming();
+    bool CheckRefreshTiming();
     int GetContour(RadarInfo* ri, Polar* p);
     bool FindNearestContour(RadarInfo* ri, Polar* pol, int dist);
     bool GetTarget(RadarInfo* ri, Polar expected_pol, Polar* target_pol, int dist);
@@ -165,7 +165,7 @@ private:
     uint32_t m_receding_pix;
 
     GeoPosition Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition own_ship);  // $$$ should be radar position
-    Polar Pos2Polar(RadarInfo* ri, ExtendedPosition p, GeoPosition own_ship);
+    Polar Pos2Polar(RadarInfo* ri, GeoPosition p, GeoPosition own_ship);
 };
 
 class Arpa {
