@@ -99,9 +99,11 @@ public:
             // are correct, these don't really change in the wild according to
             // our data, so write them into the RadarLocationInfo object.
             m_ri->SetRadarLocationInfo(m_info);
-            LOG_INFO(wxT("%s info van constuctor RadarReceive "
+            LOG_INFO(wxT("$$$3 test location info"));
+            LOG_INFO(wxT("$$$%s info van constuctor RadarReceive "
                          "SetRadarLocationInfo m_info= %s "),
                 m_ri->m_name, m_info.to_string());
+            LOG_INFO(wxT("$$$3 test location info"));
         } else if (!info.report_addr.IsNull() && ri->m_radar_type != RT_BR24) {
             // Restart, when ini file contains multicast addresses, that are
             // hopefully still correct. This will also overwrite the initial
@@ -112,9 +114,11 @@ public:
         }
         LOG_INFO(wxT("%s navico receive using addresses: %s"), m_ri->m_name,
             m_info.to_string());
+        LOG_INFO(wxT("$$$5 test location info"));
         m_ri->SetRadarLocationInfo(
             m_info); //  in case the initial value from constuctor are used,
                      //  write these to radar_pi
+        LOG_INFO(wxT("$$$6 test location info"));
     };
 
     ~NavicoReceive() {};

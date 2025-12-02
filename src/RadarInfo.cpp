@@ -228,9 +228,13 @@ RadarInfo::~RadarInfo() {
  * multiple times.
  */
 bool RadarInfo::Init() {
-  m_verbose = M_SETTINGS.verbose;
+  LOG_INFO(wxT("$$$azname"));
+  //m_verbose = M_SETTINGS.verbose;
+  LOG_INFO(wxT("$$$azname"));
   m_name = RadarTypeName[m_radar_type];
+  LOG_INFO(wxT("$$$azname"));
   m_spokes = RadarSpokes[m_radar_type];
+  LOG_INFO(wxT("$$$name=%s"), m_name);
   m_spoke_len_max = RadarSpokeLenMax[m_radar_type];
   m_history = (line_history *)calloc(sizeof(line_history), m_spokes);
   for (size_t i = 0; i < m_spokes; i++) {
@@ -462,8 +466,6 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
   int i;
   RadarInfo *m_ri = this;
   m_ri->m_actual_range_meters = range_meters;
-  if (MOD_SPOKES(this, bearing) < m_last_received_spoke)
-    LOG_ARPA(wxT("$$$$$ bearing=%i, previous=%i"), MOD_SPOKES(this, bearing), m_last_received_spoke);
   m_last_received_spoke = MOD_SPOKES(this, bearing);
   SampleCourse(angle);            // Calculate course as the moving average of m_hdt over one revolution
   CalculateRotationSpeed(angle);  // Find out how fast the radar is rotating
@@ -1681,9 +1683,13 @@ RadarLocationInfo RadarInfo::GetRadarLocationInfo() {
 }
 
 void RadarInfo::SetRadarLocationInfo(const RadarLocationInfo &info) {
+  LOG_INFO(wxT("$$$ test location info"));
   wxCriticalSectionLocker lock(m_exclusive);
+  LOG_INFO(wxT("$$$1 test location info"));
   m_radar_location_info = info;
+  LOG_INFO(wxT("$$$2 test location info"));
   LOG_VERBOSE(wxT("Set radar location info to %s"), info.to_string());
+  LOG_INFO(wxT("$$$2a test location info"));
 }
 
 void RadarInfo::SetRadarInterfaceAddress(NetworkAddress &ifaddr, NetworkAddress &addr) {
