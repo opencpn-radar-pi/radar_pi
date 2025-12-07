@@ -228,13 +228,9 @@ RadarInfo::~RadarInfo() {
  * multiple times.
  */
 bool RadarInfo::Init() {
-  LOG_INFO(wxT("$$$azname"));
   //m_verbose = M_SETTINGS.verbose;
-  LOG_INFO(wxT("$$$azname"));
   m_name = RadarTypeName[m_radar_type];
-  LOG_INFO(wxT("$$$azname"));
   m_spokes = RadarSpokes[m_radar_type];
-  LOG_INFO(wxT("$$$name=%s"), m_name);
   m_spoke_len_max = RadarSpokeLenMax[m_radar_type];
   m_history = (line_history *)calloc(sizeof(line_history), m_spokes);
   for (size_t i = 0; i < m_spokes; i++) {
@@ -1683,13 +1679,9 @@ RadarLocationInfo RadarInfo::GetRadarLocationInfo() {
 }
 
 void RadarInfo::SetRadarLocationInfo(const RadarLocationInfo &info) {
-  LOG_INFO(wxT("$$$ test location info"));
   wxCriticalSectionLocker lock(m_exclusive);
-  LOG_INFO(wxT("$$$1 test location info"));
   m_radar_location_info = info;
-  LOG_INFO(wxT("$$$2 test location info"));
   LOG_VERBOSE(wxT("Set radar location info to %s"), info.to_string());
-  LOG_INFO(wxT("$$$2a test location info"));
 }
 
 void RadarInfo::SetRadarInterfaceAddress(NetworkAddress &ifaddr, NetworkAddress &addr) {
