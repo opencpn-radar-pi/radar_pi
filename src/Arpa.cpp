@@ -79,7 +79,6 @@ ArpaTarget::ArpaTarget(radar_pi* pi, Arpa* arpa, int uid) : m_kalman(KalmanFilte
   m_max_angle.r = 0;
   m_min_angle.angle = 0;
   m_min_angle.r = 0;
-  if (m_target_id == 0) m_target_id = m_pi->MakeNewTargetId();  // $$$ remove, only for test
   LOG_ARPA(wxT(" number of targets=%i, new target id=%i"), m_pi->m_arpa->GetTargetCount(), m_target_id);
 }
 
@@ -732,9 +731,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       if (m_course < -0.001) m_course += 360.;
       m_previous_contour_length = m_contour_length;
       // send target data to OCPN and other radar
-      if (m_target_id == 0) {
-        m_target_id = m_pi->MakeNewTargetId();
-      }
+      
 
       if (m_status > FORCED_POSITION_STATUS) {
         position_pol = Pos2Polar(m_ri, m_position.pos, m_radar_position);
@@ -752,6 +749,9 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
 
       if (m_status >= STATUS_TO_OCPN) {
         //  double dist2target = pol.r / m_ri->m_pixels_per_meter;
+        if (m_target_id == 0) {
+          m_target_id = m_pi->MakeNewTargetId();
+        }
         PassAIVDMtoOCPN();  // status s not used
         position_pol = Pos2Polar(m_ri, m_position.pos, m_radar_position);
         PassTTMtoOCPN(&position_pol, T);  // T indicates status Active
