@@ -38,9 +38,10 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-#define LAST_PASS (2) // adapt this when more passes added
+#define LAST_PASS (2)              // adapt this when more passes added
 #define MAX_DETECTION_SPEED (20.)  // in meters/second
 
+class LocalPosition;
 
 static bool SortTargetStatus(const std::unique_ptr<ArpaTarget>& one, const std::unique_ptr<ArpaTarget>& two) {
   return one->m_status > two->m_status;
@@ -410,6 +411,36 @@ bool ArpaTarget::CheckRefreshTiming() {
   }
 }
 
+void ArpaTarget::Local2Ext(LocalPosition local_pos, ExtendedPosition* ext_pos) {
+  ext_pos->pos.lat = local_pos.radar_pos.lat + local_pos.lat / 60. / 1852.;
+  ext_pos->pos.lon = local_pos.radar_pos.lon + local_pos.lon / 60. / 1852. / cos(deg2rad(local_pos.radar_pos.lat));
+  ext_pos->dlat_dt = local_pos.dlat_dt;  // m per second
+  ext_pos->dlon_dt = local_pos.dlon_dt;  // m per second
+  double speed_m_sec = sqrt(ext_pos->dlat_dt * ext_pos->dlat_dt + ext_pos->dlon_dt * ext_pos->dlon_dt);
+  ext_pos->speed_kn = speed_m_sec * 3600. / 1852.;  // nautical miles per hour
+  ext_pos->sd_speed_kn = local_pos.sd_speed_m_s * 3600. / 1852.;
+};
+
+void ArpaTarget::Ext2Local(ExtendedPosition ext_pos, LocalPosition* local_pos) {
+  local_pos->lat = (ext_pos.pos.lat - local_pos->radar_pos.lat) * 60. * 1852.;
+  local_pos->lon = (ext_pos.pos.lon - local_pos->radar_pos.lon) * 60. * 1852. * cos(deg2rad(local_pos->radar_pos.lat));
+  local_pos->dlat_dt = ext_pos.dlat_dt;  // m per second
+  local_pos->dlon_dt = ext_pos.dlon_dt;  // m per second
+  local_pos->sd_speed_m_s = ext_pos.sd_speed_kn / 3600. * 1852.;
+}
+
+LocalPosition::LocalPosition(GeoPosition radar_position) {
+  lat = 0.;
+  lon = 0.;
+  dlat_dt = 0.;
+  dlon_dt = 0.;
+  speed = 0.;
+  sd_speed_m_s = 0.;
+  radar_pos = radar_position;
+}
+
+
+
 
 void ArpaTarget::RefreshTarget(double speed, int pass) {
   
@@ -417,7 +448,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   ExtendedPosition previous_position = m_position;
   double delta_t;
   wxLongLong prev_refresh = m_refresh_time;
-  LocalPosition x_local;
+  LocalPosition x_local(m_radar_position);
   wxLongLong now = wxGetUTCTimeMillis();  // millis
 
   if (m_refreshed == FOUND || m_refreshed == OUT_OF_SCOPE) {
@@ -451,17 +482,17 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   }
 
   // Convert to a local position in meters
-  x_local.pos.lat = (m_position.pos.lat - m_radar_position.lat) * 60. * 1852.;                         // in meters
-  x_local.pos.lon =
+  x_local.lat = (m_position.pos.lat - m_radar_position.lat) * 60. * 1852.;                         // in meters
+  x_local.lon =
       (m_position.pos.lon - m_radar_position.lon) * 60. * 1852. * cos(deg2rad(m_radar_position.lat));  // in meters
   x_local.dlat_dt = m_position.dlat_dt;                                                                    // meters / sec
   x_local.dlon_dt = m_position.dlon_dt;                                                                    // meters / sec
   m_kalman.Predict(&x_local, delta_t);  // x_local is now new predicted local position of the target
   //LOG_ARPA(wxT("$$$1 x_local.pos.lat= %f, x_local.pos.lon= %f, dlat= %f"), x_local.pos.lat, x_local.pos.lon, //x_local.dlat_dt);
   Polar predicted_pol;
-  predicted_pol.angle = (int)(atan2(x_local.pos.lon, x_local.pos.lat) * m_ri->m_spokes / (2. * PI));
+  predicted_pol.angle = (int)(atan2(x_local.lon, x_local.lat) * m_ri->m_spokes / (2. * PI));
   if (predicted_pol.angle < 0) predicted_pol.angle += m_ri->m_spokes;
-  predicted_pol.r = (int)(sqrt(x_local.pos.lat * x_local.pos.lat + x_local.pos.lon * x_local.pos.lon) * m_ri->m_pixels_per_meter);
+  predicted_pol.r = (int)(sqrt(x_local.lat * x_local.lat + x_local.lon * x_local.lon) * m_ri->m_pixels_per_meter);
 
   // zooming and target movement may  cause r to be out of bounds
 
@@ -642,8 +673,8 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
 
     if (m_status != ACQUIRE1) {
       // if status == 1, then this was first measurement, keep position at measured position
-      m_position.pos.lat = m_radar_position.lat + x_local.pos.lat / 60. / 1852.;
-      m_position.pos.lon = m_radar_position.lon + x_local.pos.lon / 60. / 1852. / long_correction;
+      m_position.pos.lat = m_radar_position.lat + x_local.lat / 60. / 1852.;
+      m_position.pos.lon = m_radar_position.lon + x_local.lon / 60. / 1852. / long_correction;
       m_position.dlat_dt = x_local.dlat_dt;  // meters / sec
       m_position.dlon_dt = x_local.dlon_dt;  // meters /sec   no correction for lattidude needed, already in m/sec
       m_position.sd_speed_kn = x_local.sd_speed_m_s * 3600. / 1852.;

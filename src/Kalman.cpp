@@ -115,8 +115,8 @@ KalmanFilter::~KalmanFilter() {}
 
 void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
   Matrix<double, 4, 1> X;
-  X(0, 0) = xx->pos.lat;
-  X(1, 0) = xx->pos.lon;
+  X(0, 0) = xx->lat;
+  X(1, 0) = xx->lon;
   X(2, 0) = xx->dlat_dt;
   X(3, 0) = xx->dlon_dt;
   A(0, 2) = delta_time;  // time in seconds
@@ -126,8 +126,8 @@ void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
   AT(3, 1) = delta_time;
 
   X = A * X;
-  xx->pos.lat = X(0, 0);
-  xx->pos.lon = X(1, 0);
+  xx->lat = X(0, 0);
+  xx->lon = X(1, 0);
   xx->dlat_dt = X(2, 0);
   xx->dlon_dt = X(3, 0);
   //xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
@@ -148,14 +148,14 @@ void KalmanFilter::SetMeasurement(RadarInfo* ri, Polar* pol, LocalPosition* x, P
   // expected, same but in polar coordinates
   double scale = ri->m_pixels_per_meter;
   size_t spokes = ri->m_spokes;
-  double q_sum = x->pos.lon * x->pos.lon + x->pos.lat * x->pos.lat;
+  double q_sum = x->lon * x->lon + x->lat * x->lat;
   double c = spokes / (2. * PI);
-  H(0, 0) = -c * x->pos.lon / q_sum;
-  H(0, 1) = c * x->pos.lat / q_sum;
+  H(0, 0) = -c * x->lon / q_sum;
+  H(0, 1) = c * x->lat / q_sum;
 
   q_sum = sqrt(q_sum);
-  H(1, 0) = x->pos.lat / q_sum * scale;
-  H(1, 1) = x->pos.lon / q_sum * scale;
+  H(1, 0) = x->lat / q_sum * scale;
+  H(1, 1) = x->lon / q_sum * scale;
 
   HT = H.Transpose();
 
@@ -170,8 +170,8 @@ void KalmanFilter::SetMeasurement(RadarInfo* ri, Polar* pol, LocalPosition* x, P
   Z(1, 0) = (double)(pol->r - expected->r);
 
   Matrix<double, 4, 1> X;
-  X(0, 0) = x->pos.lat;
-  X(1, 0) = x->pos.lon;
+  X(0, 0) = x->lat;
+  X(1, 0) = x->lon;
   X(2, 0) = x->dlat_dt;
   X(3, 0) = x->dlon_dt;
 
@@ -180,8 +180,8 @@ void KalmanFilter::SetMeasurement(RadarInfo* ri, Polar* pol, LocalPosition* x, P
 
   // calculate apostriori expected position
   X = X + K * Z;
-  x->pos.lat = X(0, 0);
-  x->pos.lon = X(1, 0);
+  x->lat = X(0, 0);
+  x->lon = X(1, 0);
   x->dlat_dt = X(2, 0);
   x->dlon_dt = X(3, 0);
 
