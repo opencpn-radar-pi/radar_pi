@@ -118,6 +118,8 @@ public:
     void PixelCounter(RadarInfo* ri);
     void StateTransition(RadarInfo* ri, Polar* pol);
     bool Pix(RadarInfo* ri, int ang, int rad);
+    void Local2Ext(LocalPosition local_pos, ExtendedPosition* ext_pos);
+    void Ext2Local(ExtendedPosition ext_pos, LocalPosition* local_pos);
     //bool MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler);
     wxString EncodeAIVDM(
         int mmsi, double speed, double lon, double lat, double course);
