@@ -55,10 +55,15 @@ public:
 
 class LocalPosition {
 public:
-    GeoPosition pos;
-    double dlat_dt; // latitude  of speed vector, m/s
-    double dlon_dt; // longitude of speed vector, m/s
-    double sd_speed_m_s; // standard deviation of the speed, m/s
+  LocalPosition(GeoPosition radar_position);
+  ~LocalPosition() {};
+  double lat;
+  double lon;
+  double dlat_dt;       // latitude  of speed vector, m/s
+  double dlon_dt;       // longitude of speed vector, m/s
+  double speed;         // m/sec
+  double sd_speed_m_s;  // standard deviation of the speed, m/s
+  GeoPosition radar_pos;
 };
 
 class KalmanFilter {
