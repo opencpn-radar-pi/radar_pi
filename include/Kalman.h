@@ -48,6 +48,8 @@ PLUGIN_BEGIN_NAMESPACE
 
 class Polar {
 public:
+  Polar();
+  ~Polar() {};
     int angle;
     int r;
     wxLongLong time; // wxGetUTCTimeMillis
