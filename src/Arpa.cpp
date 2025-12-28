@@ -120,8 +120,12 @@ Polar ArpaTarget::Pos2Polar(RadarInfo* ri, GeoPosition pos, GeoPosition position
   while (pol.angle >= (int) ri->m_spokes){
     pol.angle -= ri->m_spokes;
   }
-  if (pol.r < 0) pol.r = 0;
-  if (pol.r > (int)ri->m_spoke_len_max) {
+  if (pol.r < 0) {
+    LOG_INFO(wxT("$$$ error spokelength pol.r"), pol.r);
+    pol.r = 0;
+  }
+  if (pol.r >= (int)ri->m_spoke_len_max) {
+    LOG_INFO(wxT("$$$ error spokelength pol.r"), pol.r);
     pol.r = ri->m_spoke_len_max - 1;
   }
   LOG_ARPA(wxT("$$$Pos2Polar pol.r=%i"), pol.r);
