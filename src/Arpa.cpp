@@ -126,7 +126,7 @@ Polar ArpaTarget::Pos2Polar(RadarInfo* ri, GeoPosition pos, GeoPosition position
   }
   if (pol.r >= (int)ri->m_spoke_len_max) {
     LOG_INFO(wxT("$$$ error spokelength pol.r"), pol.r);
-    pol.r = ri->m_spoke_len_max - 1;
+    //pol.r = ri->m_spoke_len_max - 1;
   }
   LOG_ARPA(wxT("$$$Pos2Polar pol.r=%i"), pol.r);
   return pol;
@@ -491,30 +491,42 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   }
 
   // Convert to a local position in meters
+
+  // Following positions are used:
+  // m_position:      original target extended position
+  // predicted_local: predicted position in local coordinates (meters)
+  // predicted_pos:   predicted extended position of target
+  // predicted_pol:   predicted polar position of target
+
+
   Ext2Local(m_position, &predicted_local);
   ExtendedPosition predicted_pos;
   m_kalman.Predict(&predicted_local, delta_t);  // predicted_local is now new predicted local position of the target
-  //LOG_ARPA(wxT("$$$1 predicted_local.pos.lat= %f, predicted_local.pos.lon= %f, dlat= %f"), predicted_local.pos.lat, predicted_local.pos.lon, //predicted_local.dlat_dt);
-  Polar predicted_pol;
   Local2Ext(predicted_local, &predicted_pos);
+  // Check if radar is still the best radar
   RadarInfo* ri = m_pi->FindBestRadarForTarget(predicted_pos.pos);
-
   if (!ri) {
     LOG_ARPA(wxT(" Change of radar, target out of range"));
-    m_refreshed = OUT_OF_SCOPE;  // $$$ Or lost?
+    m_refreshed = OUT_OF_SCOPE;
+    SetStatusLost();
     return;
   }
-  LOG_ARPA(wxT(" find best2, id=%i"), m_target_id);  // $$$
-
   if (m_ri != ri) {
     LOG_ARPA(wxT(" find best2ab, id=%i"), m_target_id);  // $$$
     m_ri = ri;
     LOG_ARPA(wxT(" Change of radar, m_target_id= %i, new radar= %s"), m_target_id, m_ri->m_name);
     // change of radar
-    
-    LOG_ARPA(wxT("$$$0 predicted_pol.r=%i"), predicted_pol.r);
   }
+  Polar predicted_pol;
   predicted_pol = Pos2Polar(m_ri, predicted_pos.pos, m_radar_position);
+  if (predicted_pol.r > m_ri->m_spoke_len_max) {
+    m_refreshed = OUT_OF_SCOPE;
+    LOG_ARPA(wxT("$$$ %s, Target out of range target_id=%i, r= %i"), m_ri->m_name, m_target_id, m_ri->m_spoke_len_max);
+    SetStatusLost();
+    return;
+  }
+
+
 
  /* predicted_pol.angle = (int)(atan2(predicted_local.lon, predicted_local.lat) * m_ri->m_spokes / (2. * PI));
   if (predicted_pol.angle < 0) predicted_pol.angle += m_ri->m_spokes;
@@ -535,25 +547,11 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   }*/
 
   // zooming and target movement may  cause r to be out of bounds
- 
-  if (predicted_pol.r >= (int)m_ri->m_spoke_len_max || predicted_pol.r <= 0) {
-    m_refreshed = OUT_OF_SCOPE;
-    // delete target if too far out
-    LOG_ARPA(wxT("%s: R too big target deleted m_target_id=%i, angle=%i, r= %i, contour=%i, pass=%i"), m_ri->m_name, m_target_id,
-             pass, predicted_pol.angle, predicted_pol.r, m_contour_length, pass);
-    SetStatusLost();
-    LOG_ARPA(wxT("%s: Lost, m_target_id=%i"), m_ri->m_name, m_target_id);
-    return;
-  }
 
   LOG_ARPA(wxT("%s: PREDICTION m_target_id=%i, pass=%i, status=%i, angle=%i, r= %i, contour=%i, speed=%f, sd_speed_kn=%f,"
                " lostcount=%i"),
            m_ri->m_name, m_target_id, pass, m_status, predicted_pol.angle, predicted_pol.r, m_contour_length,
            m_position.speed_kn, m_position.sd_speed_kn, m_lost_count);
-
-  /*GeoPosition predicted_position = Polar2Pos(m_ri, predicted_pol, m_radar_position);
-  RadarInfo* ri = m_pi->FindBestRadarForTarget(predicted_position);
-  */
   
   Polar position_pol = Pos2Polar(m_ri, m_position.pos, m_radar_position);  // this is still the original target position
   LOG_ARPA(wxT("$$$2 predicted_pol.r=%i"), predicted_pol.r);
@@ -587,7 +585,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     m_target_doppler = ANY;  // in the last pass accept enything within reach
   }
   Polar measured_pol;
-
 
   found = GetTarget(m_ri, predicted_pol, &measured_pol, dist1);  // main target search****************************************
 
