@@ -492,19 +492,14 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
 
   // Convert to a local position in meters
 
-  // Following positions are used:
-  // m_position:      original target extended position
-  // predicted_local: predicted position in local coordinates (meters)
-  // predicted_pos:   predicted extended position of target
-  // predicted_pol:   predicted polar position of target
-
 
   Ext2Local(m_position, &predicted_local);
   ExtendedPosition predicted_pos;
   m_kalman.Predict(&predicted_local, delta_t);  // predicted_local is now new predicted local position of the target
+  //LOG_ARPA(wxT("$$$1 predicted_local.pos.lat= %f, predicted_local.pos.lon= %f, dlat= %f"), predicted_local.pos.lat, predicted_local.pos.lon, //predicted_local.dlat_dt);
   Local2Ext(predicted_local, &predicted_pos);
-  // Check if radar is still the best radar
   RadarInfo* ri = m_pi->FindBestRadarForTarget(predicted_pos.pos);
+  
   if (!ri) {
     LOG_ARPA(wxT(" Change of radar, target out of range"));
     m_refreshed = OUT_OF_SCOPE;
@@ -585,6 +580,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     m_target_doppler = ANY;  // in the last pass accept enything within reach
   }
   Polar measured_pol;
+
 
   found = GetTarget(m_ri, predicted_pol, &measured_pol, dist1);  // main target search****************************************
 
