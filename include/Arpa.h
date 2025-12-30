@@ -165,6 +165,7 @@ private:
 
     GeoPosition Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition own_ship);  // $$$ should be radar position
     Polar Pos2Polar(RadarInfo* ri, GeoPosition p, GeoPosition own_ship);
+    RadarInfo* CheckBestRadar(ExtendedPosition xx);
 };
 
 class Arpa {
