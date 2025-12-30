@@ -824,9 +824,6 @@ void radar_pi::OnContextMenuItemCallback(int id) {
     current_radar = m_chart_overlay[m_context_menu_canvas_index];
   }
 
-  // Find radar with the largest range
-  RadarInfo *large_range_radar = GetLongRangeRadar();
-
   if (id == m_context_menu_hide_id) {
     m_settings.show = false;
     SetRadarWindowViz();
@@ -849,17 +846,6 @@ void radar_pi::OnContextMenuItemCallback(int id) {
         target_pos.speed_kn = 0.;
         target_pos.time = 0;
         m_arpa->AcquireNewMARPATarget(best_radar, target_pos);
-      
-
-    //if (m_settings.show                                                  // radar shown
-    //    && HaveOverlay()                                                 // overlay desired
-    //    && large_range_radar->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
-    //    && !isnan(m_right_click_pos.lat) && !isnan(m_right_click_pos.lon)) {
-    //  if (m_right_click_pos.lat < 90. && m_right_click_pos.lat > -90. && m_right_click_pos.lon < 180. &&
-    //      m_right_click_pos.lon > -180.) {
-    //    ExtendedPosition target_pos;
-    //    target_pos.pos = m_right_click_pos;
-    //    large_range_radar->m_arpa->AcquireNewMARPATarget(target_pos);
       } else {
         LOG_INFO(wxT(" **error right click pos lat=%f, lon=%f"), m_right_click_pos.lat, m_right_click_pos.lon);
       }
@@ -2331,7 +2317,7 @@ RadarInfo *radar_pi::GetShortRangeRadar() {
     return m_radar[0];
   }
 
-  if (m_radar[0]->m_pixels_per_meter < m_radar[1]->m_pixels_per_meter) {
+  if (m_radar[0] && m_radar[1] && m_radar[0]->m_pixels_per_meter < m_radar[1]->m_pixels_per_meter) {
     return m_radar[1];  // smallest range
   } else {
     return m_radar[0];  // smallest range
