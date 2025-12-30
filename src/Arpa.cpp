@@ -488,6 +488,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   // predicted_local: predicted position in local coordinates (meters)
   // predicted_pos:   predicted extended position of target
   // predicted_pol:   predicted polar position of target
+  // measured_pol:    polar of the target as found in the radar image
 
 
   // PREDICTION CYCLE
@@ -546,6 +547,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     } else if (m_position.speed_kn > 15.) {
       dist1 *= 2;
     }
+    m_target_doppler = ANY;  // in the last pass accept enything within reach
   }
   bool found = false;
   LOG_ARPA(wxT("%s: MEASUREMENT m_target_id=%i, pass=%i, status=%i, pred-angle=%i, pred-r= %i, contour=%i, average contour=%i, speed=%f, "
@@ -554,9 +556,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
            m_ri->m_name, m_target_id, pass, m_status, predicted_pol.angle, predicted_pol.r, m_contour_length,
            m_average_contour_length, m_position.speed_kn, m_position.sd_speed_kn, m_target_doppler, m_lost_count);
   
-  if (pass == LAST_PASS) {
-    m_target_doppler = ANY;  // in the last pass accept enything within reach
-  }
   Polar measured_pol;
 
   found = GetTarget(m_ri, predicted_pol, &measured_pol, dist1);  // main target search****************************************
