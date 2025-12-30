@@ -447,6 +447,22 @@ LocalPosition::LocalPosition(GeoPosition radar_position) {
   LOG_INFO(wxT("$$$ radar_position.lat=%f, radar_position.lon=%f"), radar_position.lat, radar_position.lon);
 }
 
+RadarInfo* ArpaTarget::CheckBestRadar(ExtendedPosition predicted_pos) {
+  RadarInfo* ri = m_pi->FindBestRadarForTarget(predicted_pos.pos);
+  if (!ri) {
+    LOG_ARPA(wxT(" Change of radar, target out of range"));
+    m_refreshed = OUT_OF_SCOPE;
+    SetStatusLost();
+    return NULL;
+  }
+  if (m_ri != ri) {
+    m_ri = ri;
+    LOG_ARPA(wxT(" Change of radar, m_target_id= %i, new radar= %s"), m_target_id, m_ri->m_name);
+    // change of radar
+  }
+  return m_ri;
+}
+
 Polar::Polar() {
   r = 0;
   angle = 0;
@@ -466,7 +482,16 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   LOG_ARPA(wxT("\n\n $$$ Start with next target, id=%i, status=%i, pass=%i, last_spoke=%i"), m_target_id, m_status, pass, 
     m_ri->m_last_received_spoke);
 
+  
+  // Following positions are used:
+  // m_position:      original target extended position
+  // predicted_local: predicted position in local coordinates (meters)
+  // predicted_pos:   predicted extended position of target
+  // predicted_pol:   predicted polar position of target
+
+
   // PREDICTION CYCLE
+
   LocalPosition predicted_local(m_radar_position);
   int rotation_period = m_ri->m_rotation_period.GetValue();
   if (rotation_period == 0) {
@@ -489,37 +514,16 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     LOG_ARPA(wxT("%s: 1 target out of scope id=%u"), m_ri->m_name, m_target_id);
     return;
   }
-
-  // Convert to a local position in meters
-
-  // Following positions are used:
-  // m_position:      original target extended position
-  // predicted_local: predicted position in local coordinates (meters)
-  // predicted_pos:   predicted extended position of target
-  // predicted_pol:   predicted polar position of target
-  // measured_pol:    measured (seen) position of target
-
-
   Ext2Local(m_position, &predicted_local);
   ExtendedPosition predicted_pos;
   m_kalman.Predict(&predicted_local, delta_t);  // predicted_local is now new predicted local position of the target
   Local2Ext(predicted_local, &predicted_pos);
   // Check if radar is still the best radar
-  RadarInfo* ri = m_pi->FindBestRadarForTarget(predicted_pos.pos);
-  if (!ri) {
-    LOG_ARPA(wxT(" Change of radar, target out of range"));
-    m_refreshed = OUT_OF_SCOPE;
-    SetStatusLost();
-    return;
-  }
-  if (m_ri != ri) {
-    LOG_ARPA(wxT(" find best2ab, id=%i"), m_target_id);  // $$$
-    m_ri = ri;
-    LOG_ARPA(wxT(" Change of radar, m_target_id= %i, new radar= %s"), m_target_id, m_ri->m_name);
-    // change of radar
-  }
+  m_ri = CheckBestRadar(predicted_pos);
+  if (!m_ri) return;
   Polar predicted_pol;
   predicted_pol = Pos2Polar(m_ri, predicted_pos.pos, m_radar_position);
+  // Delete following check, it is already implicit in BestRadar $$$
   if (predicted_pol.r > m_ri->m_spoke_len_max) {
     m_refreshed = OUT_OF_SCOPE;
     LOG_ARPA(wxT("$$$ %s, Target out of range target_id=%i, r= %i"), m_ri->m_name, m_target_id, m_ri->m_spoke_len_max);
