@@ -48,7 +48,7 @@ static bool SortTargetStatus(const std::unique_ptr<ArpaTarget>& one, const std::
   return one->m_status > two->m_status;
 }
 
-ArpaTarget::ArpaTarget(radar_pi* pi, Arpa* arpa, int uid) : m_kalman(KalmanFilter()) {
+ArpaTarget::ArpaTarget(radar_pi* pi, Arpa* arpa, size_t uid) : m_kalman(KalmanFilter()) {
   // makes new target with an existing id
   m_approaching_pix = 0;
   m_receding_pix = 0;
@@ -86,9 +86,8 @@ ArpaTarget::ArpaTarget(radar_pi* pi, Arpa* arpa, int uid) : m_kalman(KalmanFilte
 
 ArpaTarget::~ArpaTarget() {}
 
-// return M_XY((angle + m_spokes) % m_spokes, radius);
 
-GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position) {
+GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position) {  // also copy time $$$
   // converts in a radar image angular data r ( 0 - max_spoke_len ) and angle (0 - max_spokes) to position (lat, lon)
  
   GeoPosition pos;
@@ -107,7 +106,7 @@ GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position
   return pos;  // $$$ initialize other vars of pos
 }
 
-Polar ArpaTarget::Pos2Polar(RadarInfo* ri, GeoPosition pos, GeoPosition position) {
+Polar ArpaTarget::Pos2Polar(RadarInfo* ri, GeoPosition pos, GeoPosition position) {  // also copy time $$$
   // converts in a radar image a lat-lon position to angular data relative to position own_ship
   Polar pol;
   double dif_lat = pos.lat;
@@ -484,11 +483,12 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
 
   
   // Following positions are used:
-  // m_position:      original target extended position
-  // predicted_local: predicted position in local coordinates (meters)
-  // predicted_pos:   predicted extended position of target
-  // predicted_pol:   predicted polar position of target
-  // measured_pol:    polar of the target as found in the radar image
+  // m_position:        original target extended position, later updated to newly found position
+  // previous_position: original target extended position, not updated
+  // predicted_local:   predicted position in local coordinates (meters)
+  // predicted_pos:     predicted extended position of target
+  // predicted_pol:     predicted polar position of target
+  // measured_pol:      polar of the target as found in the radar image
 
 
   // PREDICTION CYCLE
@@ -672,44 +672,33 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
 #define FORCED_POSITION_STATUS 8
     // Here we bypass the Kalman filter to predict the speed of the target
     // Kalman filter is too slow to adjust to the speed of (fast) new targets
-    // This method however only works for targets where the accuricy of the position is high,
-    // that is small targets in relation to the size of the target.
-
-    //if (m_status == 2) {  // determine if this is a small and fast target
-    //  int dist_angle = measured_pol.angle - previous_position_pol.angle;
-    //  int dist_r = measured_pol.r - previous_position_pol.r;
-    //  int size_angle = MOD_SPOKES(m_ri, m_max_angle.angle - m_min_angle.angle);
-    //  int size_r = m_max_r.r - m_min_r.r;
-    //  if (size_r == 0) size_r = 1;
-    //  if (size_angle == 0) size_angle = 1;
-    //  double test = abs((double)dist_r / (double)size_r) + abs((double)dist_angle / (double)size_angle);
-    //  LOG_ARPA(wxT("%s smallandfast, id=%i, status=%i, test=%f, dist_r=%i, size_r=%i, dist_angle=%i, size_angle=%i"), m_ri->m_name,
-    //           m_target_id, m_status, test, dist_r, size_r, dist_angle, size_angle);
-    //  if (test > 2.) {
-    //    m_small_fast = true;
-    //  }
-    //  m_small_fast = true;  // $$$ all targets satisfy
-    //}
+   
     if (m_status >= 2 && m_status < FORCED_POSITION_STATUS && (m_status < 5 || m_position.speed_kn > 10.) /*&& m_small_fast*/) {
-      GeoPosition prev_pos = previous_position.pos;
+     
       GeoPosition new_pos = Polar2Pos(m_ri, measured_pol, m_radar_position);
-      double delta_lat = new_pos.lat - prev_pos.lat;
-      double delta_lon = new_pos.lon - prev_pos.lon;
-      LOG_ARPA(wxT("Forced now= %u, measured= %u, previous= %u"), now.GetLo(), measured_pol.time.GetLo(), previous_position.time.GetLo());
+      double delta_lat = new_pos.lat - m_position.pos.lat;
+      double delta_lon = new_pos.lon - m_position.pos.lon;
+      
+      LOG_ARPA(wxT("Forced = %u, measd= %u, previous= %u, delta_lat=%f, delta_lon=%f, new_pos.lat=%f, prev_pos.lat=%f"), now.GetLo(), measured_pol.time.GetLo(), previous_position.time.GetLo(), delta_lat, delta_lon, 
+        new_pos.lat, m_position.pos.lat);
       int delta_t = (measured_pol.time - previous_position.time).GetLo();
       if (delta_t > 1000) {  // delta_t < 1000; speed unreliable due to uncertainties in location
+        // Calculate speed based on distance and time
         double d_lat_dt = (delta_lat / (double)(delta_t)) * 60. * 1852. * 1000.;  // convert degrees/milli to meters/sec
         double d_lon_dt = (delta_lon / (double)(delta_t)) * cos(deg2rad(new_pos.lat)) * 60. * 1852. * 1000.;
-        LOG_ARPA(wxT("%s, id=%i, FORCED m_status=%i, d_lat_dt=%f, d_lon_dt=%f, delta_lon_meter=%f, delta_lat_meter=%f, deltat=%u"), m_ri->m_name, m_target_id, m_status, d_lat_dt, d_lon_dt, delta_lon * 60 * 1852., delta_lat * 60 * 1852.,
-          delta_t);
+        double delta_d_lat_dt = d_lat_dt - m_position.dlat_dt;
+        double delta_d_lon_dt = d_lon_dt - m_position.dlon_dt;
+        LOG_ARPA(wxT("%s, id=%i, FORCED m_status=%i, d_lat_dt=%f, d_lon_dt=%f, delta_lon_meter=%f, delta_lat_meter=%f, deltat=%u"), m_ri->m_name, m_target_id, m_status, d_lat_dt, d_lon_dt, delta_lon * 60 * 1852., delta_lat * 60 * 1852., delta_t);
 
         // force new position and speed, dependent of overridefactor
         double factor = .8;
         factor = pow((factor), m_status - 1);
-        m_position.pos.lat = m_position.pos.lat + factor * (new_pos.lat - m_position.pos.lat);
-        m_position.pos.lon = m_position.pos.lon + factor * (new_pos.lon - m_position.pos.lon);
-        m_position.dlat_dt = m_position.dlat_dt + factor * (d_lat_dt - m_position.dlat_dt);  // in meters/sec
-        m_position.dlon_dt = m_position.dlon_dt + factor * (d_lon_dt - m_position.dlon_dt);  // in meters/sec
+        m_position.pos.lat += factor * delta_lat;
+        m_position.pos.lon += factor * delta_lon;
+        m_position.dlat_dt += factor * delta_d_lat_dt;  // in meters/sec
+        m_position.dlon_dt += factor * delta_d_lon_dt;   // in meters/sec
+        LOG_INFO(wxT("$$$ factor=%f, m_position.dlat_dt=%f, d_lat_dt=%f "), factor, m_position.dlat_dt, d_lat_dt);
+        LOG_INFO(wxT("$$$ factor=%f, m_position.dlon_dt=%f, d_lon_dt=%f "), factor, m_position.dlon_dt, d_lon_dt);
       }
     }
     
@@ -718,7 +707,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       double s2 = m_position.dlon_dt;                                   // m  per second
       double speed_m_sec = sqrt(s1 * s1 + s2 * s2);
       m_position.speed_kn = speed_m_sec * 3600. / 1852.;  // and convert to nautical miles per hour
-      if (speed_m_sec > 200.) LOG_ARPA(wxT("$$$ far too fast"));
+      if (speed_m_sec > 200.) LOG_ARPA(wxT("$$$ far too fast speed_m_sec=%f, square=%f"), speed_m_sec, s1 * s1 + s2 * s2);
       if (speed_m_sec > MAX_DETECTION_SPEED * 1.5) {
         SetStatusLost();
         LOG_ARPA(wxT("$$$ too fast lost speed-m/sec=%f"), speed_m_sec);

@@ -102,8 +102,7 @@ class ArpaTarget {
     friend class Arpa; // Allow Arpa access to private members
 
 public:
-    // ArpaTarget(radar_pi* pi, RadarInfo* ri);
-    ArpaTarget(radar_pi* pi, Arpa* arpa, int uid);
+    ArpaTarget(radar_pi* pi, Arpa* arpa, size_t uid);
     ~ArpaTarget();
 
     bool CheckRefreshTiming();
@@ -133,8 +132,6 @@ public:
 private:
     radar_pi* m_pi;
     // Values that were used when making the contour of the target
-    int m_spokes;
-    double m_pixels_per_meter;
     // Radar position at time of last target fix, the polars in the contour refer to this origin
     GeoPosition m_radar_position;
     wxCriticalSection m_protect_target_data;
