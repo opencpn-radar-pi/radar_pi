@@ -51,7 +51,7 @@ public:
   Polar();
   ~Polar() {};
     int angle;
-    int r;
+    size_t r;
     wxLongLong time; // wxGetUTCTimeMillis
 };
 

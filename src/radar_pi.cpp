@@ -2293,7 +2293,7 @@ bool radar_pi::IsRadarOnScreen(int radar) {
   return m_settings.show && (m_settings.show_radar[radar] || m_radar[radar]->GetOverlayCanvasIndex() > -1);
 }
 
-RadarInfo *radar_pi::GetLongRangeRadar() {
+RadarInfo *radar_pi::GetLongRangeRadar() {  // must be transmitting! $$$
   // returns NULL in case of a single radar
   // In case of 1 radar the ShortRangeRadar is valid
   RadarInfo *ri = 0;
