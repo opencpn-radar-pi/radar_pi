@@ -407,6 +407,7 @@ bool ArpaTarget::CheckRefreshTiming() {
   LOG_ARPA(wxT(" %s, id=%i, xangle=%i, r= %i, last_spoke=%i, angle_dist=%i "), m_ri->m_name, m_target_id, pol.angle, pol.r, m_ri->m_last_received_spoke, angle_dist);
   // 50 is a margin on the rotation period 
   if (((now > m_refresh_time + rotation_period * (m_lost_count + 1)) || m_status == 0) && abs(angle_dist) > 50) {
+    m_radar_position = m_ri->m_history[MOD_SPOKES(m_ri, pol.angle)].pos;
     return true;  // timing is OK to refresh target
   } else {
     // the next image of the target is not yet there
@@ -489,7 +490,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   // predicted_pos:      predicted extended position of target
   // predicted_pol:      predicted polar position of target
   // measured_pol:       polar of the target as found in the radar image
-  // best_position_local position established by Kalmanfilter
+  // apos_position_local apostriory position established by Kalmanfilter in local coordinates
 
 
   // PREDICTION CYCLE
@@ -563,10 +564,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
 
   LOG_ARPA(wxT("%s: found= %i, id=%i, meas_angle=%i, meas_r= %i"), m_ri->m_name, found, m_target_id, measured_pol.angle,
            measured_pol.r);
-
-  // Update radar position from estimated spoke position to found spoke position
-  m_radar_position = m_ri->m_history[MOD_SPOKES(m_ri, measured_pol.angle)].pos;
-
   if (found) {
     PixelCounter(m_ri);
     //StateTransition(m_ri ,&measured_pol);   // $$$
@@ -618,26 +615,29 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     // For the Kalman filter a local coordinate system in meters is used with radar_position as origin;
     // Set local_pos to the measured location of the target
     
+    LocalPosition apos_position_local(m_radar_position);
+    apos_position_local = predicted_local;
     if (m_status > 1) {
       m_kalman.Update_P();
-      LocalPosition best_position_local(m_radar_position);
-      best_position_local = predicted_local;
-      m_kalman.SetMeasurement(m_ri, &measured_pol, &predicted_local,
-                              &predicted_pol);  // pol is measured position in polar coordinates, result in predicted_local
+      m_kalman.SetMeasurement(m_ri, &measured_pol, &apos_position_local,
+                              &predicted_pol);  // pol is measured position in polar coordinates, 
+                                                // result in apos_position_local
     }
     measured_pol.time = m_ri->m_history[MOD_SPOKES(m_ri, measured_pol.angle)].time;
-    // predicted_local expected position in local coordinates
     m_position.time = m_ri->m_history[MOD_SPOKES(m_ri, measured_pol.angle)].time;
       // set the target time to the newly found time, this is the time the spoke was received
     double long_correction = cos(deg2rad(m_radar_position.lat));
 
-    if (m_status != ACQUIRE1) {
+    if (m_status > ACQUIRE1) {
       // if status == 1, then this was first measurement, keep position at measured position
-      m_position.pos.lat = m_radar_position.lat + predicted_local.lat / 60. / 1852.;
-      m_position.pos.lon = m_radar_position.lon + predicted_local.lon / 60. / 1852. / long_correction;
-      m_position.dlat_dt = predicted_local.dlat_dt;  // meters / sec
-      m_position.dlon_dt = predicted_local.dlon_dt;  // meters /sec   no correction for lattidude needed, already in m/sec
-      m_position.sd_speed_kn = predicted_local.sd_speed_m_s * 3600. / 1852.;
+      Local2Ext(apos_position_local, &m_position);
+
+      //m_position.pos.lat = m_radar_position.lat + apos_position_local.lat / 60. / 1852.;
+      //m_position.pos.lon = m_radar_position.lon + apos_position_local.lon / 60. / 1852. / long_correction;
+      //m_position.dlat_dt = apos_position_local.dlat_dt;  // meters / sec
+      //m_position.dlon_dt = apos_position_local.dlon_dt;  // meters /sec   no correction for lattidude needed, already in m/sec
+      //m_position.sd_speed_kn = apos_position_local.sd_speed_m_s * 3600. / 1852.;
+
     } else {   // status == 1
       (m_position.pos) = Polar2Pos(m_ri, measured_pol, m_radar_position);  // here m_position gets updated when a target is found
       m_position.dlat_dt = 0.;
@@ -645,8 +645,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       m_position.speed_kn = 0;
       m_position.time = m_refresh_time;
     }
-    //Polar previous_position_pol = position_pol;
-    //position_pol = Pos2Polar(m_ri, m_position.pos, m_radar_position);  // Set polar to new position
 
 #define FORCED_POSITION_STATUS 8
     // Here we bypass the Kalman filter to predict the speed of the target
