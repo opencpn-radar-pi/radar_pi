@@ -108,7 +108,7 @@ public:
     bool CheckRefreshTiming();
     int GetContour(RadarInfo* ri, Polar* p);
     bool FindNearestContour(RadarInfo* ri, Polar* pol, int dist);
-    bool GetTarget(RadarInfo* ri, Polar expected_pol, Polar* target_pol, int dist);
+    bool GetTarget(RadarInfo* ri, Polar expected_pol, Polar* target_pol, size_t dist);
     void RefreshTarget(double speed, int pass);
     void PassAIVDMtoOCPN();
     void PassTTMtoOCPN(Polar* p, OCPN_target_status s);
