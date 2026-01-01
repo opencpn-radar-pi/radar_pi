@@ -167,7 +167,7 @@ void KalmanFilter::SetMeasurement(RadarInfo* ri, Polar* pol, LocalPosition* x, P
   if (Z(0, 0) < -(int)spokes / 2) {
     Z(0, 0) += spokes;
   }
-  Z(1, 0) = (double)(pol->r - expected->r);
+  Z(1, 0) = (double)((int)pol->r - (int)expected->r);
 
   Matrix<double, 4, 1> X;
   X(0, 0) = x->lat;
