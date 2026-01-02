@@ -61,7 +61,6 @@ ArpaTarget::ArpaTarget(radar_pi* pi, Arpa* arpa, size_t uid) : m_kalman(KalmanFi
   m_status = LOST;
   m_contour_length = 0;
   m_average_contour_length = 0;
-  m_small_fast = false;
   m_previous_contour_length = 0;
   m_lost_count = 0;
   m_refresh_time = 0;
@@ -619,8 +618,8 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     apos_position_local = predicted_local;
     if (m_status > 1) {
       m_kalman.Update_P();
-      m_kalman.SetMeasurement(m_ri, &measured_pol, &apos_position_local,
-                              &predicted_pol);  // pol is measured position in polar coordinates, 
+      m_kalman.SetMeasurement(m_ri, &measured_pol, &apos_position_local, &predicted_pol);
+      // pol is measured position in polar coordinates, 
                                                 // result in apos_position_local
     }
     measured_pol.time = m_ri->m_history[MOD_SPOKES(m_ri, measured_pol.angle)].time;
@@ -631,13 +630,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     if (m_status > ACQUIRE1) {
       // if status == 1, then this was first measurement, keep position at measured position
       Local2Ext(apos_position_local, &m_position);
-
-      //m_position.pos.lat = m_radar_position.lat + apos_position_local.lat / 60. / 1852.;
-      //m_position.pos.lon = m_radar_position.lon + apos_position_local.lon / 60. / 1852. / long_correction;
-      //m_position.dlat_dt = apos_position_local.dlat_dt;  // meters / sec
-      //m_position.dlon_dt = apos_position_local.dlon_dt;  // meters /sec   no correction for lattidude needed, already in m/sec
-      //m_position.sd_speed_kn = apos_position_local.sd_speed_m_s * 3600. / 1852.;
-
     } else {   // status == 1
       (m_position.pos) = Polar2Pos(m_ri, measured_pol, m_radar_position);  // here m_position gets updated when a target is found
       m_position.dlat_dt = 0.;
@@ -650,19 +642,20 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     // Here we bypass the Kalman filter to predict the speed of the target
     // Kalman filter is too slow to adjust to the speed of (fast) new targets
    
-    if (m_status >= 2 && m_status < FORCED_POSITION_STATUS && (m_status < 5 || m_position.speed_kn > 10.) /*&& m_small_fast*/) {
+    if (m_status >= 2 && m_status < FORCED_POSITION_STATUS /*&& (m_status < 5 || m_position.speed_kn > 10.)*/) {
      
-      GeoPosition new_pos = Polar2Pos(m_ri, measured_pol, m_radar_position);
-      double delta_lat = new_pos.lat - m_position.pos.lat;
-      double delta_lon = new_pos.lon - m_position.pos.lon;
+      // measured_pos is the position found by GetTarget()
+      GeoPosition measured_pos = Polar2Pos(m_ri, measured_pol, m_radar_position);
+      double delta_lat = measured_pos.lat - m_position.pos.lat;
+      double delta_lon = measured_pos.lon - m_position.pos.lon;
       
-      LOG_ARPA(wxT("Forced = %u, measd= %u, previous= %u, delta_lat=%f, delta_lon=%f, new_pos.lat=%f, prev_pos.lat=%f"), now.GetLo(), measured_pol.time.GetLo(), previous_position.time.GetLo(), delta_lat, delta_lon, 
-        new_pos.lat, m_position.pos.lat);
+      LOG_ARPA(wxT("Forced = %u, measd= %u, previous= %u, delta_lat=%f, delta_lon=%f, measured_pos.lat=%f, prev_pos.lat=%f"), now.GetLo(), measured_pol.time.GetLo(), previous_position.time.GetLo(), delta_lat, delta_lon, 
+        measured_pos.lat, m_position.pos.lat);
       int delta_t = (measured_pol.time - previous_position.time).GetLo();
       if (delta_t > 1000) {  // delta_t < 1000; speed unreliable due to uncertainties in location
         // Calculate speed based on distance and time
         double d_lat_dt = (delta_lat / (double)(delta_t)) * 60. * 1852. * 1000.;  // convert degrees/milli to meters/sec
-        double d_lon_dt = (delta_lon / (double)(delta_t)) * cos(deg2rad(new_pos.lat)) * 60. * 1852. * 1000.;
+        double d_lon_dt = (delta_lon / (double)(delta_t)) * cos(deg2rad(measured_pos.lat)) * 60. * 1852. * 1000.;
         double delta_d_lat_dt = d_lat_dt - m_position.dlat_dt;
         double delta_d_lon_dt = d_lon_dt - m_position.dlon_dt;
         LOG_ARPA(wxT("%s, id=%i, FORCED m_status=%i, d_lat_dt=%f, d_lon_dt=%f, delta_lon_meter=%f, delta_lat_meter=%f, deltat=%u"), m_ri->m_name, m_target_id, m_status, d_lat_dt, d_lon_dt, delta_lon * 60 * 1852., delta_lat * 60 * 1852., delta_t);
@@ -673,9 +666,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
         m_position.pos.lat += factor * delta_lat;
         m_position.pos.lon += factor * delta_lon;
         m_position.dlat_dt += factor * delta_d_lat_dt;  // in meters/sec
-        m_position.dlon_dt += factor * delta_d_lon_dt;   // in meters/sec
-        LOG_INFO(wxT("$$$ factor=%f, m_position.dlat_dt=%f, d_lat_dt=%f "), factor, m_position.dlat_dt, d_lat_dt);
-        LOG_INFO(wxT("$$$ factor=%f, m_position.dlon_dt=%f, d_lon_dt=%f "), factor, m_position.dlon_dt, d_lon_dt);
+        m_position.dlon_dt += factor * delta_d_lon_dt;  // in meters/sec
       }
     }
     
@@ -708,12 +699,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       m_course = course;
       if (m_course < -0.001) m_course += 360.;
       m_previous_contour_length = m_contour_length;
-      // send target data to OCPN and other radar
-      
-
-      /*if (m_status > FORCED_POSITION_STATUS) {
-        position_pol = Pos2Polar(m_ri, m_position.pos, m_radar_position);
-      }*/
+    
       
 #define WEIGHT_FACTOR 0.1
       if (m_contour_length != 0) {
@@ -749,20 +735,9 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     // not found in pass 0 or 1 (An other chance will follow)
     // try again later in next pass with a larger distance
     if (pass < LAST_PASS) {
-      // LOG_ARPA(wxT(" NOT FOUND IN PASS=%i"), pass);
       // reset what we have done
-      
       m_refresh_time = prev_refresh;
       m_position = previous_position;
-    }
-    if (m_small_fast && pass == LAST_PASS - 1 && m_status == 2) {  // status 2, as it was not found,status was not increased.
-      // small and fast targets MUST be found in the third sweep, and on a small distance, that is in pass 1.
-      LOG_ARPA(wxT(" %s smallandfast set lost id=%i"), m_ri->m_name, m_target_id);
-      SetStatusLost();
-      LOG_ARPA(wxT("%s: Lost, m_target_id=%i"), m_ri->m_name, m_target_id);
-      m_refreshed = OUT_OF_SCOPE;
-      m_ri = 0;
-      return;
     }
 
     // delete low status targets immediately when not found

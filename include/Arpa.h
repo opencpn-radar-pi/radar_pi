@@ -79,7 +79,7 @@ class KalmanFilter;
 #define Q_NUM (4) // status Q to OCPN at target status
 #define T_NUM (6) // status T to OCPN at target status
 #define TARGET_SPEED_DIV_SDEV 2.
-#define STATUS_TO_OCPN (6) // First status to be send to OCPN
+#define STATUS_TO_OCPN (1) // First status to be send to OCPN
 #define DISTANCE_BETWEEN_TARGETS (1) // minimum separation between targets
 
 typedef int target_status;
@@ -124,7 +124,6 @@ public:
         int mmsi, double speed, double lon, double lat, double course);
     int m_status;
     int m_average_contour_length;
-    bool m_small_fast; // For small and fast targets the Kalman filter will be overwritten for the initial positions
     Arpa* m_arpa;
     RadarInfo* m_ri;  // this is the radar used for the last refresh of the target 
                       // the contour is given in polars defined from this radar
