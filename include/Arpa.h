@@ -79,7 +79,6 @@ class KalmanFilter;
 #define Q_NUM (4) // status Q to OCPN at target status
 #define T_NUM (6) // status T to OCPN at target status
 #define TARGET_SPEED_DIV_SDEV 2.
-#define STATUS_TO_OCPN (1) // First status to be send to OCPN
 #define DISTANCE_BETWEEN_TARGETS (1) // minimum separation between targets
 
 typedef int target_status;

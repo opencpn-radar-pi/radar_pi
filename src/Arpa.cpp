@@ -40,6 +40,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 #define LAST_PASS (2)              // adapt this when more passes added
 #define MAX_DETECTION_SPEED (20.)  // in meters/second
+#define STATUS_TO_OCPN (5)         // First status to be send to OCPN
 
 class LocalPosition;
 class Polar;
@@ -88,7 +89,7 @@ ArpaTarget::~ArpaTarget() {}
 
 GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position) {  // also copy time $$$
   // converts in a radar image angular data r ( 0 - max_spoke_len ) and angle (0 - max_spokes) to position (lat, lon)
- 
+ // check on r < 2048 $$$
   GeoPosition pos;
   // should be revised, use Mercator formula PositionBearingDistanceMercator()  TODO
 
@@ -519,6 +520,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   Ext2Local(m_position, &predicted_local);
   ExtendedPosition predicted_pos;
   m_kalman.Predict(&predicted_local, delta_t);  // predicted_local is now new predicted local position of the target
+  m_kalman.Predict(&predicted_local, delta_t);  // predicted_local is now new predicted local position of the target
   Local2Ext(predicted_local, &predicted_pos);
   // Check if radar is still the best radar
   m_ri = CheckBestRadar(predicted_pos);
@@ -545,11 +547,13 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   if (pass == LAST_PASS) {  // increase search radius for low status targets
     if (m_status <= 2) {
       dist1 *= 2;
-    } else if (m_position.speed_kn > 15.) {
+    } /*else if (m_position.speed_kn > 15.) {
       dist1 *= 2;
-    }
+    }*/
+    
     m_target_doppler = ANY;  // in the last pass accept enything within reach
   }
+  LOG_ARPA(wxT("$$$0 m_target_id=%i , m_status=%i, pass=%i, dist1=%i"), m_target_id, m_status, pass, dist1);
   bool found = false;
   LOG_ARPA(wxT("%s: MEASUREMENT m_target_id=%i, pass=%i, status=%i, pred-angle=%i, pred-r= %i, contour=%i, average contour=%i, speed=%f, "
                "sd_speed_kn=%f, "
@@ -560,21 +564,38 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   Polar measured_pol;
 
   found = GetTarget(m_ri, predicted_pol, &measured_pol, dist1);  // main target search
-
+  int delta_r = (int)predicted_pol.r - (int) measured_pol.r;
+  int delta_angle = predicted_pol.angle - measured_pol.angle;
+  LOG_ARPA(wxT("$$$0 delta_r=%i,  delta_angle=%i"), delta_r, delta_angle);
   LOG_ARPA(wxT("%s: found= %i, id=%i, meas_angle=%i, meas_r= %i"), m_ri->m_name, found, m_target_id, measured_pol.angle,
            measured_pol.r);
   if (found) {
     PixelCounter(m_ri);
     //StateTransition(m_ri ,&measured_pol);   // $$$
     
-    if (m_average_contour_length != 0 && pass <= LAST_PASS - 1 &&   //// $$$ don't accept big changes in contour
+    if (m_average_contour_length != 0 && pass < LAST_PASS &&
         (m_contour_length < m_average_contour_length / 2 || m_contour_length > m_average_contour_length * 2)) {
       // Don't accept this hit
+      if (m_status < 5) {  // new target should not behave strange
+        SetStatusLost();
+        LOG_ARPA(wxT(" %s, setlost id=%i, status=%i, reject weightedcontourlength=%i, m_contour_length=%i"), m_ri->m_name,
+                 m_target_id, m_status, m_average_contour_length, m_contour_length);
+        found = false;
+      }
       // Search again in next pass
       LOG_ARPA(wxT(" %s, id=%i, reject weightedcontourlength=%i, m_contour_length=%i"), m_ri->m_name, m_target_id,
                m_average_contour_length, m_contour_length);
       found = false;
-    } else {
+    }
+    if (m_average_contour_length != 0 && m_status < 8 &&
+        (m_contour_length < m_average_contour_length / 4 || m_contour_length > m_average_contour_length * 4)) {
+      // this difference is too large, delete target
+      SetStatusLost();
+      found = false;
+      LOG_ARPA(wxT(" %s, setlost id=%i, status=%i, reject weightedcontourlength=%i, m_contour_length=%i"), m_ri->m_name,
+               m_target_id, m_status, m_average_contour_length, m_contour_length);
+    }
+    if (found) {
       LOG_ARPA(wxT(" %s, id=%i, accept weightedcontourlength=%i, m_contour_length=%i"), m_ri->m_name, m_target_id,
                m_average_contour_length, m_contour_length);
     }
@@ -1119,7 +1140,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     }
     double distance_to_radar = m_polar_pos.r / ri->m_pixels_per_meter;
     // For larger targets clear the "shadow" of the target until 2 * r
-    if (m_contour_length > 80 && distance_to_radar < TARGET_DISTANCE_FOR_BLANKING_SHADOW) {  // $$$ remove false to enable shadow
+    if (m_contour_length > 80 && distance_to_radar < TARGET_DISTANCE_FOR_BLANKING_SHADOW) {
       LOG_ARPA(wxT("%s: Shadow cleared for target id=%i, m_min_angle.angle=%i, m_max_angle.angle=%i, m_max_r.r=%i "), 
         ri->m_name, m_target_id, m_min_angle.angle, m_max_angle.angle, m_max_r.r, distance_to_radar);
       int max = m_max_angle.angle;
@@ -1196,7 +1217,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       if (succes) break;
     }
     if (!succes) {
-      LOG_ARPA(wxT("$$$"));
       return false;
     }
     index += 1;  // determines starting direction
@@ -1467,7 +1487,7 @@ void Arpa::RefreshAllArpaTargets() {
   }
 
   // Pass 1 of target refresh
-  // Secondly refresh all targets with a slightly larger margin
+  // Refresh all targets with a slightly larger margin
   for (auto target = m_targets.begin(); target != m_targets.end(); ++target) {
     (*target)->RefreshTarget(speed / 3, 1);
   }
@@ -1479,7 +1499,6 @@ void Arpa::RefreshAllArpaTargets() {
   LOG_ARPA(wxT(" ********************************refresh loop end m_targets.size=%i \n\n\n"),
            m_targets.size());
 }
-
 
 
 void Arpa::CalculateCentroid(ArpaTarget* target) {
@@ -1524,12 +1543,12 @@ bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler do
   target->m_refreshed = NOT_FOUND;
   target->m_automatic = true;
   target->RefreshTarget(MAX_DETECTION_SPEED, 1);  // speed, pass
+  target->m_target_id = m_pi->MakeNewTargetId();  // only for test $$$$
   m_targets.push_back(std::move(target));
   return true;
 }
 
 void Arpa::ClearContours() { m_clear_contours = true; }
-
 
 bool Arpa::IsAtLeastOneRadarTransmitting() {
   for (size_t r = 0; r < RADARS; r++) {

@@ -415,9 +415,8 @@ void radar_pi::StartRadarLocators(size_t r) {
   }
 }
 
-int radar_pi::MakeNewTargetId() {
+int radar_pi::MakeNewTargetId() {   // should be in class Arpa? $$$
   wxString str, str1;
-
   int target_id = m_target_id_count + MAX_TARGET_ID;
   m_target_id_count++;
   if (m_target_id_count >= MAX_TARGET_ID) {
