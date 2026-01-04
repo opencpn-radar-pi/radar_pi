@@ -224,9 +224,6 @@ void GuardZone::SearchTargets() {
       // time2 must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
       wxLongLong time2 = m_ri->m_history[MOD_SPOKES(m_ri, angle + 3 * SCAN_MARGIN)].time;
 
-
-
-
       // check if this angle has been refreshed since last time
       // and if the beam has passed the target location with SCAN_MARGIN spokes
       /*if ((time1 > (m_arpa_update_time[angle] + SCAN_MARGIN2) &&
