@@ -690,6 +690,8 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
                  && m_chart_overlay[canvasIndex] >= 0                                            // overlay desired
                  && m_radar[m_chart_overlay[canvasIndex]]->m_state.GetValue() == RADAR_TRANSMIT  // Radar  transmitting
                  && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon);                        // position available
+  LOG_INFO(wxT("$$$ sett=%i, m_chart_overlay=%i, tx=%i, pos=%i, overlay=%i"), m_settings.show, m_chart_overlay[canvasIndex],
+           m_radar[m_chart_overlay[canvasIndex]]->m_state.GetValue(), !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon), overlay);
 
   bool show_acq_delete = overlay && targets_tracked;
 
@@ -699,6 +701,7 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   // SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
   // SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    LOG_INFO(wxT("$$$ overlay=%i, r=%u, settings.show=%i"), overlay, r, m_settings.show_radar_control[r]);
     if (m_settings.show_radar_control[r] == 0) {
       // SetCanvasContextMenuItemGrey(m_context_menu_control_id[r], enableShowRadarControl);
       SetCanvasContextMenuItemViz(m_context_menu_control_id[r], show);
@@ -708,7 +711,7 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   }
   SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
   SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
-  SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, overlay);
+  SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, show/*overlay*/); // $$$ correct
   SetCanvasContextMenuItemViz(m_context_menu_delete_radar_target, show_acq_delete);
   SetCanvasContextMenuItemViz(m_context_menu_delete_all_radar_targets, targets_tracked);
 }
@@ -844,6 +847,7 @@ void radar_pi::OnContextMenuItemCallback(int id) {
         target_pos.sd_speed_kn = 0.;
         target_pos.speed_kn = 0.;
         target_pos.time = 0;
+        LOG_ARPA(wxT("$$$ acquire new target"));
         m_arpa->AcquireNewMARPATarget(best_radar, target_pos);
       } else {
         LOG_INFO(wxT(" **error right click pos lat=%f, lon=%f"), m_right_click_pos.lat, m_right_click_pos.lon);
