@@ -713,7 +713,7 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   }
   SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
   SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
-  SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, show/*overlay*/); // $$$ forced to sow
+  SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, show/*overlay*/); // $$$ forced to show
   SetCanvasContextMenuItemViz(m_context_menu_delete_radar_target, show_acq_delete);
   SetCanvasContextMenuItemViz(m_context_menu_delete_all_radar_targets, targets_tracked);
 }
