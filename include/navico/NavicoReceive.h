@@ -114,11 +114,9 @@ public:
         }
         LOG_INFO(wxT("%s navico receive using addresses: %s"), m_ri->m_name,
             m_info.to_string());
-        LOG_INFO(wxT("$$$5 test location info"));
         m_ri->SetRadarLocationInfo(
             m_info); //  in case the initial value from constuctor are used,
                      //  write these to radar_pi
-        LOG_INFO(wxT("$$$6 test location info"));
     };
 
     ~NavicoReceive() {};

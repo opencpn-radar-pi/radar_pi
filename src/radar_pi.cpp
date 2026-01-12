@@ -681,6 +681,7 @@ void radar_pi::SetRadarWindowViz(bool reparent) {
  * @param canvasIndex      Canvas #
  */
 void radar_pi::PrepareContextMenu(int canvasIndex) {
+  LOG_INFO(wxT("$$$ menu"));
   int arpa_targets = GetArpaTargetCount();
   bool targets_tracked = arpa_targets > 0;
   bool show = m_settings.show;
@@ -711,7 +712,7 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   }
   SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
   SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
-  SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, show/*overlay*/); // $$$ correct
+  SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, show/*overlay*/); // $$$ forced to sow
   SetCanvasContextMenuItemViz(m_context_menu_delete_radar_target, show_acq_delete);
   SetCanvasContextMenuItemViz(m_context_menu_delete_all_radar_targets, targets_tracked);
 }
@@ -1440,8 +1441,10 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   // Update m_overlay[canvasIndex] by checking all radars, value may be modified by the buttons
   m_chart_overlay[canvasIndex] = -1;
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    LOG_INFO(wxT("$$$a overlay r=%u"), r);
     if (m_radar[r]->m_overlay_canvas[canvasIndex].GetValue() != 0) {
       m_chart_overlay[canvasIndex] = r;
+      LOG_INFO(wxT("$$$ canvasIndex=%u, radar=%i"), canvasIndex, (int)r);
     }
   }
   m_current_canvas_index = canvasIndex;
