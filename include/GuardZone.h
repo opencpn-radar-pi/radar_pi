@@ -98,8 +98,8 @@ public:
     /*
      * Check if data is in this GuardZone, if so update bogeyCount
      */
-    void ProcessSpoke(
-        SpokeBearing angle, uint8_t* data, uint8_t* hist, size_t len);
+    void ProcessSpoke(SpokeBearing angle, uint8_t* data, size_t start_r,
+                      size_t len);
 
     // Find targets inside the zone
     void SearchTargets();
@@ -113,7 +113,7 @@ public:
         return m_bogey_count;
     };
 
-    GuardZone(radar_pi* pi, RadarInfo* ri, int zone);
+    GuardZone(radar_pi* pi);
 
     ~GuardZone() { LOG_VERBOSE(wxT("%s destroyed"), m_log_name.c_str()); }
 

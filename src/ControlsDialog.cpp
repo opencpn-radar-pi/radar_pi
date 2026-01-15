@@ -476,7 +476,7 @@ void ControlsDialog::SetMenuAutoHideTimeout() {
 void ControlsDialog::ShowGuardZone(int zone) {
   double conversionFactor = RangeUnitsToMeters[m_pi->m_settings.range_units];
 
-  m_guard_zone = m_ri->m_guard_zone[zone];
+  m_guard_zone = m_pi->m_guard_zone[zone];
 
   wxString GuardZoneText;
   if (zone == 0) {
@@ -525,30 +525,30 @@ void ControlsDialog::SetGuardZoneVisibility() {
 
 void ControlsDialog::UpdateGuardZoneState() {
   wxString label1, label2, label3, label4;
-  if (m_ri->m_guard_zone[0]->m_alarm_on) {
+  if (m_pi->m_guard_zone[0]->m_alarm_on) {
     label3 << _T(" + ") << _("Alarm");
   }
-  if (m_ri->m_guard_zone[0]->m_arpa_on) {
+  if (m_pi->m_guard_zone[0]->m_arpa_on) {
     label3 << _T(" + ") << _("Arpa");
   }
-  if (!m_ri->m_guard_zone[0]->m_alarm_on && !m_ri->m_guard_zone[0]->m_arpa_on) {
+  if (!m_pi->m_guard_zone[0]->m_alarm_on && !m_ri->m_pi->m_guard_zone[0]->m_arpa_on) {
     label3 << _(" Off");
   }
 
-  if (m_ri->m_guard_zone[1]->m_alarm_on) {
+  if (m_pi->m_guard_zone[1]->m_alarm_on) {
     label4 << _T(" + ") << _("Alarm");
   }
-  if (m_ri->m_guard_zone[1]->m_arpa_on) {
+  if (m_pi->m_guard_zone[1]->m_arpa_on) {
     label4 << _T(" + ") << _("Arpa");
   }
-  if (!m_ri->m_guard_zone[1]->m_alarm_on && !m_ri->m_guard_zone[1]->m_arpa_on) {
+  if (!m_pi->m_guard_zone[1]->m_alarm_on && !m_ri->m_pi->m_guard_zone[1]->m_arpa_on) {
     label4 << _(" Off");
   }
 
-  label1 << MENU(_("Guard zone") + wxT(" 1 Green")) + wxT("\n") + guard_zone_names[m_ri->m_guard_zone[0]->m_type] + label3;
+  label1 << MENU(_("Guard zone") + wxT(" 1 Green")) + wxT("\n") + guard_zone_names[m_ri->m_pi->m_guard_zone[0]->m_type] + label3;
   m_guard_1_button->SetLabel(label1);
 
-  label2 << MENU(_("Guard zone") + wxT(" 2 Blue")) + wxT("\n") + guard_zone_names[m_ri->m_guard_zone[1]->m_type] + label4;
+  label2 << MENU(_("Guard zone") + wxT(" 2 Blue")) + wxT("\n") + guard_zone_names[m_ri->m_pi->m_guard_zone[1]->m_type] + label4;
   m_guard_2_button->SetLabel(label2);
 }
 

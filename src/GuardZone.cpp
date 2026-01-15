@@ -37,10 +37,9 @@ PLUGIN_BEGIN_NAMESPACE
 
 #undef TEST_GUARD_ZONE_LOCATION
 
-GuardZone::GuardZone(radar_pi* pi, RadarInfo* ri, int zone) {
+GuardZone::GuardZone(radar_pi* pi) {
   m_pi = pi;
-  m_ri = ri;
-  m_log_name = wxString::Format(wxT("Radar %c GuardZone %d:"), (char)(m_ri->m_radar + 'A'), zone + 1);
+  m_log_name = wxString::Format(wxT("Radar GuardZone"));
   m_type = GZ_CIRCLE;
   m_start_bearing = 0;
   m_end_bearing = 0;
@@ -53,7 +52,7 @@ GuardZone::GuardZone(radar_pi* pi, RadarInfo* ri, int zone) {
   ResetBogeys();
 }
 
-void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, uint8_t* hist, size_t len) {
+void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, size_t start_r, size_t len) {  // $$$ to be adapted, add radar
   size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to [0..spoke_len_max>
   size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to [0..spoke_len_max>
   bool in_guard_zone = false;
