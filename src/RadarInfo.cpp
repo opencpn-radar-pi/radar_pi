@@ -632,12 +632,13 @@ void RadarInfo::RequestRadarState(RadarState state) {
   if (/*m_pi->IsRadarOnScreen(m_radar) &&*/ oldState != RADAR_OFF && m_control) {        // if radar is visible and detected
     if (oldState != state && !(oldState != RADAR_STANDBY && state == RADAR_TRANSMIT)) {  // and change is wanted
       time_t now = time(0);
-
+      LOG_INFO(wxT("$$$ overlay "));
       if (state == RADAR_TRANSMIT) {
         m_control->RadarTxOn();
         // Refresh radar immediately so that we generate draw mechanisms
         for (int i = 0; i < wxMax(MAX_CHART_CANVAS, GetCanvasCount()); i++) {
           if (m_pi->m_chart_overlay[i] == (int)m_radar) {
+            LOG_INFO(wxT("$$$ overlay i=$i, radar=%i"), i, (int)m_radar);
             wxWindow *canvas = GetCanvasByIndex(i);
             if (canvas) {
               canvas->Refresh(false);
