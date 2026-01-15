@@ -130,7 +130,20 @@ void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
   xx->lon = X(1, 0);
   xx->dlat_dt = X(2, 0);
   xx->dlon_dt = X(3, 0);
-  //xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
+
+  double v_x = xx->dlat_dt;
+  double v_y = xx->dlon_dt;
+  double speed = sqrt(v_x * v_x + v_y * v_y);
+
+  if (speed > 1e-6) {
+    double Jx = v_x / speed;
+    double Jy = v_y / speed;
+    double var_speed = Jx * Jx * P(2, 2) + 2 * Jx * Jy * P(2, 3) + Jy * Jy * P(3, 3);
+    xx->sd_speed_m_s = sqrt(fabs(var_speed));  // fabs for numerical safety
+  } else {
+    xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2);
+  }
+
   return;
 }
 
@@ -233,7 +246,7 @@ GPSKalmanFilter::GPSKalmanFilter() {
 
   P = ZeroMatrix4;
   P(0, 0) = 6. * CONVERT;  // in degrees ^ 2
-  P(1, 1) = P(1, 1);
+  P(1, 1) = P(0, 0);
   P(2, 2) = 2. * CONVERT;
   P(3, 3) = P(2, 2);
 
