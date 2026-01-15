@@ -650,9 +650,9 @@ void RadarInfo::RequestRadarState(RadarState state) {
 
 void RadarInfo::RenderGuardZone() {
   int start_bearing = 0, end_bearing = 0;
-  GLubyte red = 0, green = 200, blue = 0, alpha = 50;  // $$$ change transparency
+  GLubyte red = 0, green = 200, blue = 0, alpha = 25;  // alpha sets transparancy of guard zones on overlay
 
-  for (size_t z = 0; z < GUARD_ZONES; z++) {  // adapt? at least more transparancy
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_pi->m_guard_zone[z]->m_alarm_on || m_pi->m_guard_zone[z]->m_arpa_on || m_pi->m_guard_zone[z]->m_show_time + 5 > time(0)) {
       if (m_pi->m_guard_zone[z]->m_type == GZ_CIRCLE) {
         start_bearing = 0;
