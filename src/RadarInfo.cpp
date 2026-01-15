@@ -143,10 +143,6 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   for (int i = 0; i < MAX_CHART_CANVAS; i++) {
     m_overlay_canvas[i].Update(0);
   }
-
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
-    m_guard_zone[z] = new GuardZone(m_pi, this, z);
-  }
 }
 
 void RadarInfo::Shutdown() {
@@ -199,12 +195,7 @@ RadarInfo::~RadarInfo() {
     delete m_trails;
     m_trails = 0;
   }
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
-    if (m_guard_zone[z]) {
-      delete m_guard_zone[z];
-      m_guard_zone[z] = 0;
-    }
-  }
+  
 
   if (m_history) {
     for (size_t i = 0; i < m_spokes; i++) {
@@ -422,9 +413,9 @@ void RadarInfo::ResetSpokes() {
     }
   }
 
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
+  for (size_t z = 0; z < GUARD_ZONES; z++) {  // $$$ ?
     // Zap them anyway just to be sure
-    m_guard_zone[z]->ResetBogeys();
+    m_pi->m_guard_zone[z]->ResetBogeys();
   }
 }
 
@@ -531,9 +522,11 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
     }
   }
 
+  // Check for alarms with all guard zones
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    if (m_guard_zone[z]->m_alarm_on) {
-      m_guard_zone[z]->ProcessSpoke(angle, data, m_history[bearing].line, len);
+    size_t start_r = 0;
+    if (m_pi->m_guard_zone[z]->m_alarm_on) {
+      m_pi->m_guard_zone[z]->ProcessSpoke(angle, data, start_r, len);
     }
   }
 
@@ -657,29 +650,31 @@ void RadarInfo::RequestRadarState(RadarState state) {
 
 void RadarInfo::RenderGuardZone() {
   int start_bearing = 0, end_bearing = 0;
-  GLubyte red = 0, green = 200, blue = 0, alpha = 50;
+  GLubyte red = 0, green = 200, blue = 0, alpha = 50;  // $$$ change transparency
 
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
-    if (m_guard_zone[z]->m_alarm_on || m_guard_zone[z]->m_arpa_on || m_guard_zone[z]->m_show_time + 5 > time(0)) {
-      if (m_guard_zone[z]->m_type == GZ_CIRCLE) {
+  for (size_t z = 0; z < GUARD_ZONES; z++) {  // adapt? at least more transparancy
+    if (m_pi->m_guard_zone[z]->m_alarm_on || m_pi->m_guard_zone[z]->m_arpa_on || m_pi->m_guard_zone[z]->m_show_time + 5 > time(0)) {
+      if (m_pi->m_guard_zone[z]->m_type == GZ_CIRCLE) {
         start_bearing = 0;
         end_bearing = 359;
       } else {
-        start_bearing = m_guard_zone[z]->m_start_bearing;
-        end_bearing = m_guard_zone[z]->m_end_bearing;
+        start_bearing = m_pi->m_guard_zone[z]->m_start_bearing;
+        end_bearing = m_pi->m_guard_zone[z]->m_end_bearing;
       }
       switch (m_pi->m_settings.guard_zone_render_style) {
         case 1:
           glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
-          DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing, true);
+          DrawOutlineArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing,
+                         true);
           break;
         case 2:
           glColor4ub(red, green, blue, alpha);
-          DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing, false);
+          DrawOutlineArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing,
+                         false);
         // fall thru
         default:
           glColor4ub(red, green, blue, alpha);
-          DrawFilledArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
+          DrawFilledArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
       }
     }
 
@@ -1157,8 +1152,8 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
 
  //$$$ LOG_VERBOSE(wxT("%s BottomLeft = %s"), m_name.c_str(), s.c_str());
 
-  for (int z = 0; z < GUARD_ZONES; z++) {
-    int bogeys = m_guard_zone[z]->GetBogeyCount();
+  for (int z = 0; z < GUARD_ZONES; z++) {  // move to radar-pi   $$$
+    int bogeys = m_pi->m_guard_zone[z]->GetBogeyCount();
     if (bogeys > 0 || (m_pi->m_guard_bogey_confirmed && bogeys == 0)) {
       if (s.length() > 0) {
         s << wxT("\n");
@@ -1646,7 +1641,7 @@ void RadarInfo::CheckTimedTransmit() {
 }
 
 bool RadarInfo::GetRadarPosition(GeoPosition *pos) {
-  wxCriticalSectionLocker lock(m_exclusive);
+ // wxCriticalSectionLocker lock(m_exclusive);  // $$$ crash
 
   if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
     *pos = m_radar_position;
