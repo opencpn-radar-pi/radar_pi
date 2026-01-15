@@ -594,7 +594,6 @@ public:
     void OnToolbarToolCallback(int id);
     void OnContextMenuItemCallback(int id);
     void ShowPreferencesDialog(wxWindow* parent);
-    void SetCursorPosition(GeoPosition pos);
     void SetCursorLatLon(double lat, double lon);
     bool MouseEventHook(wxMouseEvent& event);
     void PrepareContextMenu(int canvasIndex);
@@ -604,9 +603,10 @@ public:
     bool EnsureRadarSelectionComplete(bool force);
     bool MakeRadarSelection();
 
-    RadarInfo* GetLongRangeRadar();
-    RadarInfo* GetShortRangeRadar();
-
+    //RadarInfo* GetLongRangeRadar();
+    //RadarInfo* GetShortRangeRadar();
+    RadarInfo* m_sorted_tx_radars[RADARS];  // contains transmitting radars small range first
+    void SortTxRadars();
     void NotifyRadarWindowViz();
     void NotifyControlDialog();
 
@@ -754,7 +754,6 @@ private:
     time_t m_hdm_timeout; // When we consider heading is lost
 public:
     RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
-    int MakeNewTargetId();
     HeadingSource m_heading_source;
     int m_chart_overlay[MAX_CHART_CANVAS]; // The overlay for canvas x, -1 =
                                            // none, otherwise = radar #
@@ -767,6 +766,7 @@ public:
     time_t m_bpos_timestamp;
 
     double m_sog;  // Speed over ground
+    GuardZone* m_guard_zone[GUARD_ZONES];
 
     // Variation. Used to convert magnetic into true heading.
     // Can come from SetPositionFixEx, which may hail from the WMM plugin
@@ -785,7 +785,6 @@ public:
     int m_context_menu_acquire_radar_target;
     int m_context_menu_delete_radar_target;
     int m_context_menu_delete_all_radar_targets;
-    int m_target_id_count;                        // counter for issueing new target UID's
     # define MAX_TARGET_ID 10000                  // Maximum target UID
 
     int m_tool_id;

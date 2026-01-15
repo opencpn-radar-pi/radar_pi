@@ -735,7 +735,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       if (m_status >= STATUS_TO_OCPN) {
         //  double dist2target = pol.r / m_ri->m_pixels_per_meter;
         if (m_target_id == 0) {
-          m_target_id = m_pi->MakeNewTargetId();
+          m_target_id = m_arpa->MakeNewTargetId();
         }
         PassAIVDMtoOCPN();  // status s not used  
         Polar polar_position;
@@ -783,6 +783,20 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   }
   return;
 }  // end of target not found
+
+
+
+int Arpa::MakeNewTargetId() {  // should be in class Arpa? $$$
+  wxString str, str1;
+  int target_id = m_target_id_count + MAX_TARGET_ID;
+  m_target_id_count++;
+  if (m_target_id_count >= MAX_TARGET_ID) {
+    m_target_id_count = 1;
+    LOG_INFO(wxT("Target counter reset"));
+  }
+  LOG_ARPA(wxT("new target_id made %i"), target_id);
+  return target_id;
+}
 
   void ArpaTarget::PixelCounter(RadarInfo* ri) {
     LOG_ARPA(wxT("PixelCounter called, m_contour_length=%i"), m_contour_length);
@@ -1158,6 +1172,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   Arpa::Arpa(radar_pi * pi) {
     m_pi = pi;
     m_clear_contours = false;
+    m_target_id_count = 0;
     CLEAR_STRUCT(m_doppler_arpa_update_time);
   }
 
@@ -1543,7 +1558,7 @@ bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler do
   target->m_refreshed = NOT_FOUND;
   target->m_automatic = true;
   target->RefreshTarget(MAX_DETECTION_SPEED, 1);  // speed, pass
-  target->m_target_id = m_pi->MakeNewTargetId();  // only for test $$$$
+  target->m_target_id = MakeNewTargetId();  // only for test $$$$
   m_targets.push_back(std::move(target));
   return true;
 }
