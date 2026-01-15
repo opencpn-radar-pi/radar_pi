@@ -207,7 +207,6 @@ public:
 
     int m_refresh_millis;
 
-    GuardZone* m_guard_zone[GUARD_ZONES];
     double m_ebl[ORIENTATION_NUMBER][BEARING_LINES];
     double m_vrm[BEARING_LINES];
     receive_statistics m_statistics;

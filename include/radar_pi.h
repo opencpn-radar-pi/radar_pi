@@ -581,15 +581,16 @@ public:
   bool MouseEventHook(wxMouseEvent& event);
   void PrepareContextMenu(int canvasIndex);
 
+
   // Other public methods
 
   bool EnsureRadarSelectionComplete(bool force);
   bool MakeRadarSelection();
 
-
-  RadarInfo* GetLongRangeRadar();
-  RadarInfo* GetShortRangeRadar();
-
+  RadarInfo* m_sorted_tx_radars[RADARS];  // contains transmitting radars small range first
+  void SortTxRadars();
+  void NotifyRadarWindowViz();
+  void NotifyControlDialog();
   void NotifyRadarWindowViz();
   void NotifyControlDialog();
 
@@ -728,28 +729,30 @@ private:
   double m_hdm;          // Last magnetic heading obtained
   time_t m_hdm_timeout;  // When we consider heading is lost
 public:
-  HeadingSource m_heading_source;
-  int m_chart_overlay[MAX_CHART_CANVAS];  // The overlay for canvas x, -1 =
-                                          // none, otherwise = radar #
-  int m_context_menu_canvas_index;  // PrepareContextMenu() was last called for
-                                    // this canvas
-  bool m_render_busy;
-  int m_draw_time_overlay_ms[MAX_CHART_CANVAS];
-  int MakeNewTargetId();
-  RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
-  bool m_bpos_set;
-  time_t m_bpos_timestamp;
-  double m_sog;  // Speed over ground
+    RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
+    HeadingSource m_heading_source;
+    int m_chart_overlay[MAX_CHART_CANVAS]; // The overlay for canvas x, -1 =
+                                           // none, otherwise = radar #
+    int m_context_menu_canvas_index; // PrepareContextMenu() was last called for
+                                     // this canvas
+    bool m_render_busy;
+    int m_draw_time_overlay_ms[MAX_CHART_CANVAS];
 
-  // Variation. Used to convert magnetic into true heading.
-  // Can come from SetPositionFixEx, which may hail from the WMM plugin
-  // and is thus to be preferred, or GPS or a NMEA sentence. The latter will
-  // probably have an outdated variation model, so is less preferred. Besides,
-  // some devices transmit invalid (zero) values. So we also let non-zero
-  // values prevail.
-  double m_var;  // local magnetic variation, in degrees
-  VariationSource m_var_source;
-  time_t m_var_timeout;
+    bool m_bpos_set;
+    time_t m_bpos_timestamp;
+
+    double m_sog;  // Speed over ground
+    GuardZone* m_guard_zone[GUARD_ZONES];
+
+    // Variation. Used to convert magnetic into true heading.
+    // Can come from SetPositionFixEx, which may hail from the WMM plugin
+    // and is thus to be preferred, or GPS or a NMEA sentence. The latter will
+    // probably have an outdated variation model, so is less preferred. Besides,
+    // some devices transmit invalid (zero) values. So we also let non-zero
+    // values prevail.
+    double m_var; // local magnetic variation, in degrees
+    VariationSource m_var_source;
+    time_t m_var_timeout;
 
     wxFileConfig* m_pconfig;
     int m_context_menu_control_id[RADARS];
@@ -758,7 +761,6 @@ public:
     int m_context_menu_acquire_radar_target;
     int m_context_menu_delete_radar_target;
     int m_context_menu_delete_all_radar_targets;
-    int m_target_id_count;                        // counter for issueing new target UID's
     # define MAX_TARGET_ID 10000                  // Maximum target UID
 
   int m_tool_id;

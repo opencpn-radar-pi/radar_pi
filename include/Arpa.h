@@ -174,6 +174,7 @@ class Arpa {
     // LCK(...) where it indicates the following locks are already held:
     //          ri = RadarInfo exclusive lock
 public:
+
     Arpa(radar_pi* pi); // THR(M)
     ~Arpa(); // THR(M)
     void DrawArpaTargetsOverlay(double scale, double arpa_rotate); // THR(M)
@@ -197,6 +198,8 @@ public:
     void SearchDopplerTargets(RadarInfo* ri); // THR(M)
     void StoreRemoteTarget(DynamicTargetData* target); // THR(I)
     bool FindContourFromInside(RadarInfo* ri, Polar* p, Doppler doppler);
+    int m_target_id_count;  // counter for issueing new target UID's
+    int MakeNewTargetId();
 
 private:
     std::deque<std::unique_ptr<ArpaTarget>> m_targets;
