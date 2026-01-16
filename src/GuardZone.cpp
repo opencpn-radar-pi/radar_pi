@@ -53,6 +53,7 @@ GuardZone::GuardZone(radar_pi* pi) {
 }
 
 void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, size_t start_r, size_t len) {  // $$$ to be adapted, add radar
+  return; // crashing
   size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to [0..spoke_len_max>
   size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to [0..spoke_len_max>
   bool in_guard_zone = false;

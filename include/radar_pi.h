@@ -596,6 +596,7 @@ public:
 
   void OnControlDialogClose(RadarInfo* ri);
   void SetDisplayMode(DisplayModeType mode);
+  bool IsThereTxOverlayRadar(int canvas_index);
 
   void ShowRadarControl(int radar, bool show = true, bool reparent = true);
   void ShowGuardZoneDialog(int radar, int zone);
@@ -659,14 +660,6 @@ public:
   bool IsOpenGLEnabled() { return m_opengl_mode == OPENGL_ON; }
   wxGLContext* GetChartOpenGLContext();
 
-  bool HaveOverlay() {
-    for (int i = 0; i < CANVAS_COUNT; i++) {
-      if (m_chart_overlay[i] > -1) {
-        return true;
-      }
-    }
-    return false;
-  }
   bool m_guard_bogey_confirmed;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   int m_max_canvas;  // Number of canvasses in OCPN -1, 0 == single canvas, > 0
@@ -685,6 +678,22 @@ public:
                                    // plugin is disabled
   NavicoLocate* m_navico_locator;
   RaymarineLocate* m_raymarine_locator;
+  bool HaveOverlay()
+    {
+        for (int i = 0; i < CANVAS_COUNT; i++) {
+        if (IsThereTxOverlayRadar(i) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+  bool m_guard_bogey_confirmed;
+  bool m_guard_bogey_seen; // Saw guardzone bogeys on last check
+  int m_max_canvas; // Number of canvasses in OCPN -1, 0 == single canvas, > 0
+                    // multi
+  int m_current_canvas_index;
+  wxMenuItem* m_mi3[RADARS];
+  PlugIn_ViewPort* m_vp;
 
   MessageBox* m_pMessageBox;
   wxWindow* m_parent_window;
@@ -731,8 +740,6 @@ private:
 public:
     RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
     HeadingSource m_heading_source;
-    int m_chart_overlay[MAX_CHART_CANVAS]; // The overlay for canvas x, -1 =
-                                           // none, otherwise = radar #
     int m_context_menu_canvas_index; // PrepareContextMenu() was last called for
                                      // this canvas
     bool m_render_busy;

@@ -348,7 +348,7 @@ public:
     void AdjustRange(int adjustment, int current_range_meters);
     int GetNearestRange(int range_meters, int units);
 
-    int GetOverlayCanvasIndex()
+    int GetOverlayCanvasIndex()  // $$$ review
     {
         for (int i = 0; i < CANVAS_COUNT; i++) {
             if (m_overlay_canvas[i].GetValue() > 0) {
