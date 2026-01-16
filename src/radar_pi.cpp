@@ -1494,13 +1494,10 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     m_cog = m_COGAvg;
     m_vp_rotation = vp->rotation;
   }
-  LOG_INFO(wxT("$$$xrender show=%i, isther=%i, heading=%i"), 
-    M_SETTINGS.show, IsThereTxOverlayRadar(m_current_canvas_index),
-           m_heading_source != HEADING_NONE);
-  if (M_SETTINGS.show                                                     // Radar shown
-      && IsThereTxOverlayRadar(m_current_canvas_index)                    // Overlay desired
-      && m_heading_source != HEADING_NONE                                 // Heading is valid
-      && m_sorted_tx_radars[0] && m_sorted_tx_radars[0]->GetRadarPosition(&radar_pos)) {           // Boat position known
+  if (M_SETTINGS.show                                                                     // Radar shown
+      && IsThereTxOverlayRadar(m_current_canvas_index)                                    // Overlay desired
+      && m_heading_source != HEADING_NONE                                                 // Heading is valid
+      && m_sorted_tx_radars[0] && m_sorted_tx_radars[0]->GetRadarPosition(&radar_pos)) {  // Boat position known
 
     LOG_INFO(wxT("$$$xrender show"));
     GeoPosition pos_min = {vp->lat_min, vp->lon_min};
@@ -1540,17 +1537,14 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
       v_scale_ppm = vp->pix_height / dist_y;  // pixel height of screen div by equivalent meters
     }
     double rotation = MOD_DEGREES_FLOAT(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
-    LOG_INFO(wxT("$$$RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat, vp->clon,
-               vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation); // $$$DIALOG
-    LOG_INFO(wxT("$$$1 render 0, canvas=%i"), m_radar[0]->m_overlay_canvas[canvasIndex].GetValue());
-    if (m_radar[0] && m_radar[0]->m_overlay_canvas[canvasIndex].GetValue()) {
-      LOG_INFO(wxT("$$$2 render 0, canvas=%i"), m_radar[0]->m_overlay_canvas[canvasIndex].GetValue());
-      m_radar[0]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
-    }
-    LOG_INFO(wxT("$$$3 render 1, canvas=%i"), m_radar[1]->m_overlay_canvas[canvasIndex].GetValue());
-    if (m_radar[1] && m_radar[1]->m_overlay_canvas[canvasIndex].GetValue()) {
-      LOG_INFO(wxT("$$$4 render 1, canvas=%i"), m_radar[1]->m_overlay_canvas[canvasIndex].GetValue());
-      m_radar[1]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
+
+    LOG_DIALOG(wxT("RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat, vp->clon,
+               vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      // if radar is transmitting and has overlay on current canvas
+      if (m_sorted_tx_radars[r] && m_sorted_tx_radars[r]->m_overlay_canvas[canvasIndex].GetValue()) {
+        m_sorted_tx_radars[r]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
+      }
     }
   }
 
