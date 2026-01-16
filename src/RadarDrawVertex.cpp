@@ -118,7 +118,8 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
   line->count = count;
 }
 
-void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len, GeoPosition spoke_pos, bool overlay) {
+void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len, 
+  GeoPosition spoke_pos, bool overlay) {
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
   BlobColour previous_colour = BLOB_NONE;
   GLubyte strength = 0;
@@ -131,23 +132,29 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   if (angle < 0 || angle >= (int)m_spokes || len > m_spoke_len_max || !m_vertices) {
     return;
   }
-  size_t start_radius = 0;
-    // find other radar
-  if (m_pi->m_settings.radar_count == 2 && m_pi->m_radar[0] && m_pi->m_radar[1]) {
-    RadarInfo* other_radar;
-    if (m_pi->m_radar[0] == m_ri) {
-      other_radar = m_pi->m_radar[1];
-    }
-    else {
-      other_radar = m_pi->m_radar[0];
-    }
-    if (m_ri->m_overlay_canvas[0].GetValue() == 1 && m_ri->m_state.GetValue() == RADAR_TRANSMIT &&
-        other_radar->m_overlay_canvas[0].GetValue() == 1 && other_radar->m_state.GetValue() == RADAR_TRANSMIT && overlay) {
-        // both overlays on
-          if (m_ri->m_pixels_per_meter < other_radar->m_pixels_per_meter) {
-          // this range is largest
-            start_radius = (int)(len * m_ri->m_pixels_per_meter / other_radar->m_pixels_per_meter);
+  int start_radius = 0;
+  int current_radar_nr = -1;
+  int previous_radar_nr = -1;
+    // Find other radar, that is the radar with a smaller range than the current
+  // $$$ add lock
+
+  if (m_pi->m_sorted_tx_radars) {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      if (!m_pi->m_sorted_tx_radars[r]) {
+        break;
       }
+      LOG_INFO(wxT("$$$ current_radar_=%s"), m_pi->m_sorted_tx_radars[r]->m_name);
+      if (m_pi->m_sorted_tx_radars[r]->m_overlay_canvas[0].GetValue()) {
+        if (m_pi->m_sorted_tx_radars[r] == m_ri) {
+          // this is the current radar
+          current_radar_nr = r;
+          break;
+        }
+        previous_radar_nr = r;
+      }
+    }
+    if (current_radar_nr > 0 && previous_radar_nr != -1 && m_pi->m_sorted_tx_radars[previous_radar_nr]) {
+      start_radius = (int)(len * m_ri->m_pixels_per_meter / m_pi->m_sorted_tx_radars[previous_radar_nr]->m_pixels_per_meter);
     }
   }
   VertexLine* line = &m_vertices[angle];

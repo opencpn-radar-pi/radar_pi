@@ -339,7 +339,7 @@ bool RadarRangeControlButton::ToggleState() {
 
   LOG_VERBOSE(wxT("%s Button '%s' toggle Auto %d"), m_parent->m_log_name.c_str(), GetName(), state);
 
-  // If any of the canvases has this as overlay we allow auto range
+  // If any of the canvases has this as overlay we allow auto range  // $$$ check autorange
   bool allowManual = false;
   for (int i = 0; i < CANVAS_COUNT; i++) {
     if (m_parent->m_ri->m_overlay_canvas[i].GetValue() > 0) {
@@ -1481,7 +1481,7 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
     hasAuto = false;
     for (int i = 0; i < CANVAS_COUNT; i++) {
       if (m_ri->m_overlay_canvas[i].GetValue() > 0) {
-        hasAuto = true;
+        hasAuto = true;  // $$$ check auto needed here?
         break;
       }
     }
@@ -1629,9 +1629,8 @@ void ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
     button->m_item->Update(1);
     m_ri->m_overlay_canvas[canvasIndex].Update(1);
     m_ri->UpdateControlState(false);
-    // no other radars can do overlay on same canvas for shader and
-    // for dual overlay number of radar should be 2
-    if (m_pi->m_settings.drawing_method != 0 || M_SETTINGS.radar_count > 2) {
+    // No other radars can do overlay on same canvas for shader
+    if (m_pi->m_settings.drawing_method != 0 ) {
       for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
         if (m_pi->m_radar[r] != m_ri) {
           m_pi->m_radar[r]->m_overlay_canvas[canvasIndex].Update(0);
