@@ -628,8 +628,8 @@ void RadarInfo::RequestRadarState(RadarState state) {
       LOG_INFO(wxT("$$$ overlay "));
       if (state == RADAR_TRANSMIT) {
         m_control->RadarTxOn();
-        // Refresh radar immediately so that we generate draw mechanisms
-        for (int i = 0; i < wxMax(MAX_CHART_CANVAS, GetCanvasCount()); i++) {
+        // Refresh radar immediately so that we generate draw mechanisms  // $$$ immediate action please?
+        /*for (int i = 0; i < wxMax(MAX_CHART_CANVAS, GetCanvasCount()); i++) {
           if (m_pi->m_chart_overlay[i] == (int)m_radar) {
             LOG_INFO(wxT("$$$ overlay i=$i, radar=%i"), i, (int)m_radar);
             wxWindow *canvas = GetCanvasByIndex(i);
@@ -637,7 +637,7 @@ void RadarInfo::RequestRadarState(RadarState state) {
               canvas->Refresh(false);
             }
           }
-        }
+        }*/
       } else if (state == RADAR_STANDBY) {
         m_control->RadarTxOff();
       } else {

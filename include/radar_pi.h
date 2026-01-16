@@ -621,6 +621,7 @@ public:
     void logBinaryData(const wxString& what, const uint8_t* data, int size);
     void StartRadarLocators(size_t r);
     void StopRadarLocators();
+    bool IsThereTxOverlayRadar(int canvas_index);
 
     void UpdateAllControlStates(bool all);
 
@@ -685,7 +686,7 @@ public:
     bool HaveOverlay()
     {
         for (int i = 0; i < CANVAS_COUNT; i++) {
-            if (m_chart_overlay[i] > -1) {
+        if (IsThereTxOverlayRadar(i) ) {
                 return true;
             }
         }
@@ -755,8 +756,6 @@ private:
 public:
     RadarInfo* FindBestRadarForTarget(const GeoPosition& position);
     HeadingSource m_heading_source;
-    int m_chart_overlay[MAX_CHART_CANVAS]; // The overlay for canvas x, -1 =
-                                           // none, otherwise = radar #
     int m_context_menu_canvas_index; // PrepareContextMenu() was last called for
                                      // this canvas
     bool m_render_busy;
