@@ -136,7 +136,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   int current_radar_nr = -1;
   int previous_radar_nr = -1;
     // Find other radar, that is the radar with a smaller range than the current
-  // $$$ add lock
+  // $$$ add lock  use curent cancvas
 
   if (m_pi->m_sorted_tx_radars) {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -144,7 +144,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
         break;
       }
       LOG_INFO(wxT("$$$ current_radar_=%s"), m_pi->m_sorted_tx_radars[r]->m_name);
-      if (m_pi->m_sorted_tx_radars[r]->m_overlay_canvas[0].GetValue()) {
+      if (m_pi->m_sorted_tx_radars[r]->m_overlay_canvas[m_pi->m_current_canvas_index].GetValue()) {
         if (m_pi->m_sorted_tx_radars[r] == m_ri) {
           // this is the current radar
           current_radar_nr = r;
@@ -157,6 +157,7 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
       start_radius = (int)(len * m_ri->m_pixels_per_meter / m_pi->m_sorted_tx_radars[previous_radar_nr]->m_pixels_per_meter);
     }
   }
+
   VertexLine* line = &m_vertices[angle];
 
   if (!line->points) {
