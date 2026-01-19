@@ -132,32 +132,8 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
   if (angle < 0 || angle >= (int)m_spokes || len > m_spoke_len_max || !m_vertices) {
     return;
   }
-  int start_radius = 0;
-  int current_radar_nr = -1;
-  int previous_radar_nr = -1;
-    // Find other radar, that is the radar with a smaller range than the current
-  // $$$ add lock  use curent cancvas
-
-  if (m_pi->m_sorted_tx_radars) {
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (!m_pi->m_sorted_tx_radars[r]) {
-        break;
-      }
-      LOG_INFO(wxT("$$$ current_radar_=%s"), m_pi->m_sorted_tx_radars[r]->m_name);
-      if (m_pi->m_sorted_tx_radars[r]->m_overlay_canvas[m_pi->m_current_canvas_index].GetValue()) {
-        if (m_pi->m_sorted_tx_radars[r] == m_ri) {
-          // this is the current radar
-          current_radar_nr = r;
-          break;
-        }
-        previous_radar_nr = r;
-      }
-    }
-    if (current_radar_nr > 0 && previous_radar_nr != -1 && m_pi->m_sorted_tx_radars[previous_radar_nr]) {
-      start_radius = (int)(len * m_ri->m_pixels_per_meter / m_pi->m_sorted_tx_radars[previous_radar_nr]->m_pixels_per_meter);
-    }
-  }
-
+  size_t start_radius = 0;
+  start_radius = m_ri->m_start_overlay_r;
   VertexLine* line = &m_vertices[angle];
 
   if (!line->points) {

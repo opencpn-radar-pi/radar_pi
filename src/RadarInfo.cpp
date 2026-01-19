@@ -524,9 +524,8 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
 
   // Check for alarms with all guard zones
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    size_t start_r = 0;
     if (m_pi->m_guard_zone[z]->m_alarm_on) {
-      m_pi->m_guard_zone[z]->ProcessSpoke(angle, data, start_r, len);
+      m_pi->m_guard_zone[z]->ProcessSpoke(this, angle, data, len);
     }
   }
 
@@ -625,7 +624,6 @@ void RadarInfo::RequestRadarState(RadarState state) {
   if (/*m_pi->IsRadarOnScreen(m_radar) &&*/ oldState != RADAR_OFF && m_control) {        // if radar is visible and detected
     if (oldState != state && !(oldState != RADAR_STANDBY && state == RADAR_TRANSMIT)) {  // and change is wanted
       time_t now = time(0);
-      LOG_INFO(wxT("$$$ overlay "));
       if (state == RADAR_TRANSMIT) {
         m_control->RadarTxOn();
         // Refresh radar immediately so that we generate draw mechanisms  // $$$ immediate action please?
