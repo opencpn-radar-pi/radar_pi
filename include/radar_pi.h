@@ -611,13 +611,9 @@ public:
     void NotifyControlDialog();
 
     void OnControlDialogClose(RadarInfo* ri);
-    void SetDisplayMode(DisplayModeType mode);
 
     void ShowRadarControl(int radar, bool show = true, bool reparent = true);
-    void ShowGuardZoneDialog(int radar, int zone);
-    void OnGuardZoneDialogClose(RadarInfo* ri);
     void ConfirmGuardZoneBogeys();
-    void ResetOpenGLContext();
     void logBinaryData(const wxString& what, const uint8_t* data, int size);
     void StartRadarLocators(size_t r);
     void StopRadarLocators();
@@ -629,12 +625,7 @@ public:
 
     bool LoadConfig();
     bool SaveConfig();
-
-    long GetRangeMeters();
-    long GetOptimalRangeMeters();
-
     bool HaveRadarSerialNo(size_t r);
-    RadarLocationInfo& GetRadarLocationInfo(size_t r);
 
     void SetRadarHeading(double heading = nan(""), bool isTrue = false);
     double GetHeadingTrue()

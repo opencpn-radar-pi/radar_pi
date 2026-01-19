@@ -269,11 +269,9 @@ int radar_pi::Init(void) {
   m_settings.AISatARPAoffset = 50;
   m_ais_drawgl_broken = false;
   m_arpa = 0;
-  
   for (size_t r = 0; r < RADARS; r++) {
     m_sorted_tx_radars[r] = 0;
   }
-
 
   // Get a pointer to the opencpn display canvas, to use as a parent for the UI
   // dialog
@@ -785,11 +783,13 @@ void radar_pi::OnToolbarToolCallback(int id) {
     LOG_DIALOG(wxT("OnToolbarToolCallback show"));
     // Show the control dialogs of all overlay radars
     for (int i = 0; i < CANVAS_COUNT; i++) {
+      //wxCriticalSectionLocker lock(m_exclusive);
       for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+        RadarInfo* ri_r = m_sorted_tx_radars[r];
         if (m_sorted_tx_radars[r] != 0) {
-          if (!m_sorted_tx_radars[r]->m_control_dialog || !m_sorted_tx_radars[r]->m_control_dialog->IsShown()) {
+          if (!ri_r->m_control_dialog || !ri_r->m_control_dialog->IsShown()) {
             LOG_DIALOG(wxT("OnToolbarToolCallback: Show control canvas %d"), i);
-            ShowRadarControl(m_sorted_tx_radars[r]->m_radar, true);
+            ShowRadarControl(ri_r->m_radar, true);
           }
         }
       }
@@ -1268,27 +1268,64 @@ void radar_pi::SortTxRadars() {
     }
   }
 
-  // Sort: small range first -> larger m_pixels_per_meter first
-  std::sort(tx.begin(), tx.end(), [](RadarInfo *a, RadarInfo *b) {
-    // Null checks shouldn't be necessary here but keep defensive
-    if (!a) return false;
-    if (!b) return true;
-    return a->m_pixels_per_meter > b->m_pixels_per_meter;
-  });
+  if (tx.size() > 1) {
+    // Sort: small range first -> larger m_pixels_per_meter first
+    std::sort(tx.begin(), tx.end(), [](RadarInfo *a, RadarInfo *b) {
+      // Null checks shouldn't be necessary here but keep defensive
+      if (!a) return false;
+      if (!b) return true;
+      return a->m_pixels_per_meter > b->m_pixels_per_meter;
+    });
+  }
+
+  // If no transmitting radars, clear m_sorted_tx_radars and return.
+  if (tx.empty()) {
+    for (size_t i = 0; i < RADARS; ++i) m_sorted_tx_radars[i] = nullptr;
+    return;
+  }
 
   // Fill fixed-size array, pad with nullptr
   size_t i = 0;
+  double last_overlay_pix_per_m = 0.;
+  if (tx[0]) LOG_INFO(wxT("$$$ \n start sort with radar %s"), tx[0]->m_name);
   for (; i < tx.size() && i < radar_count; ++i) {
     m_sorted_tx_radars[i] = tx[i];
+    if (i == 0) {
+      if (m_sorted_tx_radars[0]) {
+        m_sorted_tx_radars[0]->m_start_r = 0;
+        m_sorted_tx_radars[0]->m_start_overlay_r = 0;
+      }
+    } else {
+      // Set starting r for searches
+      if (m_sorted_tx_radars[i - 1] && m_sorted_tx_radars[i - 1]->m_pixels_per_meter != 0.) {
+        m_sorted_tx_radars[i]->m_start_r =
+            (int)(m_sorted_tx_radars[i]->m_spoke_len_max * m_sorted_tx_radars[i]->m_pixels_per_meter /
+                  m_sorted_tx_radars[i - 1]->m_pixels_per_meter);
+      } else {
+        m_sorted_tx_radars[i]->m_start_r = 0;
+      }
+      if (last_overlay_pix_per_m != 0.) {
+        m_sorted_tx_radars[i]->m_start_overlay_r =
+            (int)(tx[i]->m_spoke_len_max * m_sorted_tx_radars[i]->m_pixels_per_meter / last_overlay_pix_per_m);
+      } else {
+        m_sorted_tx_radars[i]->m_start_overlay_r = 0;
+      }
+    }
+    LOG_INFO(wxT("$$$ sorted tx radars i=%i, found %s, overlay=%i, start_r=%u, startoverlay=%u"), i, m_sorted_tx_radars[i]->m_name,
+             m_sorted_tx_radars[i]->m_overlay_canvas[0].GetValue(), m_sorted_tx_radars[i]->m_start_r,
+             m_sorted_tx_radars[i]->m_start_overlay_r);
 
-    LOG_INFO(wxT("$$$ sorted tx radars i=%i, found %s, overlay=%i"), i, m_sorted_tx_radars[i]->m_name,
-             m_sorted_tx_radars[i]->m_overlay_canvas[0].GetValue());
-    
+    // If this is an overlay radar, save the pix/m for next i
+    if (m_sorted_tx_radars[i] && m_sorted_tx_radars[i]->m_overlay_canvas[m_current_canvas_index].GetValue()) {
+      last_overlay_pix_per_m = m_sorted_tx_radars[i]->m_pixels_per_meter;
+      LOG_INFO(wxT("$$$ set pix/m %f"), last_overlay_pix_per_m);
+    }
   }
   for (; i < RADARS; ++i) {
     m_sorted_tx_radars[i] = nullptr;
   }
 }
+
 
 void radar_pi::TimedUpdate(wxTimerEvent &event) {
   // Started in Init(), running every 500 ms
@@ -1314,11 +1351,14 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
       }
     }
   }
-
+  {
+    wxCriticalSectionLocker lock(m_exclusive);
+    SortTxRadars();
+  }
   // Refresh ARPA targets
   // Refresh radar with smallest range first
   bool arpa_on = false;
-  SortTxRadars();
+  
   // Is there at least one guardzone with ARPA on?
   if (m_arpa) {
     for (int i = 0; i < GUARD_ZONES; i++) {
@@ -1336,59 +1376,55 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
     m_arpa->RefreshAllArpaTargets();
   }
 
-  // All existing targets refreshed. Now search for new targets, all radars, all guardzones
-  for (size_t r = 0; r < RADARS; r++) {
-  if (m_sorted_tx_radars[r]) {
-    wxCriticalSectionLocker lock(m_sorted_tx_radars[r]->m_exclusive);
-    for (int i = 0; i < GUARD_ZONES; i++) {
-      if (m_guard_zone[i]->m_arpa_on) {
-        m_guard_zone[i]->SearchTargets();
-      }
+  // All existing targets refreshed now.
+  // Now search for new targets, all guardzones
+  for (int i = 0; i < GUARD_ZONES; i++) {
+    if (m_guard_zone[i]->m_arpa_on) {
+      m_guard_zone[i]->SearchTargets();
     }
   }
 
-    //int doppler = false;  // $$$?
-    //int autotrack = false;
+  // int doppler = false;  // $$$?
+  // int autotrack = false;
 
-    /*if (long_range_radar) { // remove autotrack Doppler $$$
-      autotrack = long_range_radar->m_autotrack_doppler.GetValue();
-      doppler = long_range_radar->m_doppler.GetValue();
-    }
-    if (doppler && autotrack && long_range_radar) {
-      m_arpa->SearchDopplerTargets(long_range_radar);
-    }*/
+  /*if (long_range_radar) { // remove autotrack Doppler $$$
+    autotrack = long_range_radar->m_autotrack_doppler.GetValue();
+    doppler = long_range_radar->m_doppler.GetValue();
+  }
+  if (doppler && autotrack && long_range_radar) {
+    m_arpa->SearchDopplerTargets(long_range_radar);
+  }*/
 
-    UpdateHeadingPositionState();
-    // Check the age of "radar_seen", if too old radar_seen = false
-    bool any_data_seen = false;
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_radar[r]) {
-        wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
-        int state = m_radar[r]->m_state.GetValue();  // Safe, protected by lock
-        if (state == RADAR_TRANSMIT) {
-          any_data_seen = true;
-        }
-        if (!m_settings.show            // No radar shown
-            || state != RADAR_TRANSMIT  // Radar not transmitting
-            || !m_bpos_set) {           // No overlay possible (yet)
-                                        // Conditions for ARPA not fulfilled, delete all targets
-        }
-        m_radar[r]->UpdateTransmitState();
+  UpdateHeadingPositionState();
+  // Check the age of "radar_seen", if too old radar_seen = false
+  bool any_data_seen = false;
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (m_radar[r]) {
+      wxCriticalSectionLocker lock(m_radar[r]->m_exclusive);
+      int state = m_radar[r]->m_state.GetValue();  // Safe, protected by lock
+      if (state == RADAR_TRANSMIT) {
+        any_data_seen = true;
       }
+      if (!m_settings.show            // No radar shown
+          || state != RADAR_TRANSMIT  // Radar not transmitting
+          || !m_bpos_set) {           // No overlay possible (yet)
+                                      // Conditions for ARPA not fulfilled, delete all targets
+      }
+      m_radar[r]->UpdateTransmitState();
     }
+  }
 
-    if (!m_sorted_tx_radars[0] || !m_bpos_set) {
-      m_arpa->RadarLost();  // conditions for target tracking not set, delete all targets
-    }
-    if (any_data_seen && m_settings.show) {
-      CheckGuardZoneBogeys();
-    }
-
-    if (m_settings.pass_heading_to_opencpn && m_heading_source >= HEADING_RADAR_HDM) {
-      PassHeadingToOpenCPN();
-    }
+  if (!m_sorted_tx_radars[0] || !m_bpos_set) {
+    m_arpa->RadarLost();  // conditions for target tracking not set, delete all targets
+  }
+  if (any_data_seen && m_settings.show) {
+    CheckGuardZoneBogeys();
+  }
+  if (m_settings.pass_heading_to_opencpn && m_heading_source >= HEADING_RADAR_HDM) {
+    PassHeadingToOpenCPN();
   }
 }
+
 
 void radar_pi::UpdateAllControlStates(bool all) {
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -1470,7 +1506,6 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     m_render_busy = false;
     return true;
   }
-  LOG_INFO(wxT("$$$ m_current_canvas_index=%i"), m_current_canvas_index);
   if (!m_initialized) {
     m_render_busy = false;
     return true;
@@ -1478,7 +1513,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
 
   m_vp = vp;
 
-  LOG_INFO(wxT("$$$RenderGLOverlayMultiCanvas context=%p canvas=%d"), pcontext, canvasIndex);  // $$$ dialog
+  LOG_DIALOG(wxT("$$$RenderGLOverlayMultiCanvas context=%p canvas=%d"), pcontext, canvasIndex);
   m_opencpn_gl_context = pcontext;
   if (!m_opencpn_gl_context && !m_opencpn_gl_context_broken) {
     LOG_INFO(wxT("OpenCPN does not pass OpenGL context. Resize of OpenCPN window may be broken!"));
@@ -1494,12 +1529,12 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     m_cog = m_COGAvg;
     m_vp_rotation = vp->rotation;
   }
-  if (M_SETTINGS.show                                                                     // Radar shown
-      && IsThereTxOverlayRadar(m_current_canvas_index)                                    // Overlay desired
-      && m_heading_source != HEADING_NONE                                                 // Heading is valid
-      && m_sorted_tx_radars[0] && m_sorted_tx_radars[0]->GetRadarPosition(&radar_pos)) {  // Boat position known
+  RadarInfo *ri_0 = m_sorted_tx_radars[0];
+  if (M_SETTINGS.show                                   // Radar shown
+      && IsThereTxOverlayRadar(m_current_canvas_index)  // Overlay desired
+      && m_heading_source != HEADING_NONE               // Heading is valid
+      && ri_0 && ri_0->GetRadarPosition(&radar_pos)) {  // Boat position known
 
-    LOG_INFO(wxT("$$$xrender show"));
     GeoPosition pos_min = {vp->lat_min, vp->lon_min};
     GeoPosition pos_max = {vp->lat_max, vp->lon_max};
     double max_distance = radar_distance(pos_min, pos_max, 'm');
@@ -1513,18 +1548,6 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
 
     wxPoint boat_center;
     GetCanvasPixLL(vp, &boat_center, radar_pos.lat, radar_pos.lon);
-
-    // if this radar is overlayed on multiple canvases only adjust auto range on one of them.  // $$$ check
-    // we choose the highest canvas, which is just an arbitrary choice by us.
-    /*int highest = -1;
-    for (int i = 0; i < CANVAS_COUNT; i++) {
-      if (m_chart_overlay[i] == current_overlay_radar) {
-        highest = i;
-      }
-    }*/
-    /*if (canvasIndex == highest) {  // $$$ disable automatic range, make automatic depending on radars
-      m_radar[current_overlay_radar]->SetAutoRangeMeters(auto_range_meters);
-    }*/
 
     //    Calculate image scale factor
     double dist_y, v_scale_ppm;
@@ -1542,11 +1565,14 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
                vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       // if radar is transmitting and has overlay on current canvas
-      if (m_sorted_tx_radars[r] && m_sorted_tx_radars[r]->m_overlay_canvas[canvasIndex].GetValue()) {
-        m_sorted_tx_radars[r]->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
+      // No wxCriticalSectionLocker here will hang_up
+      RadarInfo *ri_r = m_sorted_tx_radars[r];
+      if (ri_r && ri_r->m_overlay_canvas[canvasIndex].GetValue()) {
+        ri_r->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
       }
     }
   }
+  
 
   m_draw_time_overlay_ms[canvasIndex] = (wxGetUTCTimeMillis() - now).GetLo();
 
@@ -1565,15 +1591,14 @@ bool radar_pi::IsThereTxOverlayRadar(int canvas_index) {
   if (canvas_index < 0 || canvas_index >= CANVAS_COUNT) {
     return false;
   }
+  //wxCriticalSectionLocker lock(m_exclusive);
   // Check tx radars only
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    if (!m_sorted_tx_radars[r]) {
+    RadarInfo *ri_r = m_sorted_tx_radars[r];
+    if (!ri_r) {
       return false;
     }
-    // Guard access to radar state and controls
-   // wxCriticalSectionLocker lock(m_sorted_tx_radars[r]->m_exclusive);
-    if (m_sorted_tx_radars[r]->m_overlay_canvas[canvas_index].GetValue() == 1) {
-      LOG_INFO(wxT("$$$ overlay tx radar found = %u"), r);
+    if (ri_r->m_overlay_canvas[canvas_index].GetValue() == 1) {
       return true;
     }
   }
