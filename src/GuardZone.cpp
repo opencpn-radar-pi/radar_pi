@@ -52,21 +52,40 @@ GuardZone::GuardZone(radar_pi* pi) {
   ResetBogeys();
 }
 
-void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, size_t start_r, size_t len) {  // $$$ to be adapted, add radar
-  return; // crashing
-  size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to [0..spoke_len_max>
-  size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to [0..spoke_len_max>
+void GuardZone::ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, size_t len) {
+  size_t start_radius = ri->m_start_r;
+  int current_radar_nr = -1;
+  int previous_radar_nr = -1;
+  AngleDegrees degAngle = SCALE_SPOKES_TO_DEGREES(ri, angle);
+  if (m_type == GZ_ARC && !((degAngle >= m_start_bearing && degAngle < m_end_bearing) ||
+                            (m_start_bearing >= m_end_bearing && (degAngle >= m_start_bearing || degAngle < m_end_bearing)))) {
+    // for performance, get out if nothing to do
+    return;
+  }
+  LOG_INFO(wxT("$$$ current_radar= %s"), ri->m_name);
+  size_t range_start = m_inner_range * ri->m_pixels_per_meter;  // Convert from meters to [0..spoke_len_max>
+  size_t range_end = m_outer_range * ri->m_pixels_per_meter;    // Convert from meters to [0..spoke_len_max>
+  size_t max = ri->m_spoke_len_max;
+  LOG_INFO(wxT("$$$ range_start= %u, range_end=%u"), range_start, range_end);
   bool in_guard_zone = false;
-  AngleDegrees degAngle = SCALE_SPOKES_TO_DEGREES(m_ri, angle);
 
+  if (range_start < start_radius) {
+    range_start = start_radius;
+  }
+  if (range_end > len) {
+    range_end = len;
+  }
+  LOG_INFO(wxT("$$$1 range_start= %u, range_end=%u, len=%u, max=%u"), range_start, range_end, len, max);
   switch (m_type) {
     case GZ_ARC:
+      LOG_INFO(wxT("$$$ degAngle= %i, m_start_bearing= %i, m_end_bearing= %i"), degAngle, m_start_bearing, m_end_bearing);
       if ((degAngle >= m_start_bearing && degAngle < m_end_bearing) ||
           (m_start_bearing >= m_end_bearing && (degAngle >= m_start_bearing || degAngle < m_end_bearing))) {
         if (range_start < len) {
           if (range_end > len) {
             range_end = len;
           }
+          LOG_INFO(wxT("$$$1 degAngle= %i, m_start_bearing= %i, m_end_bearing= %i"), degAngle, m_start_bearing, m_end_bearing);
           for (size_t r = range_start; r <= range_end; r++) {
             if (data[r] >= m_pi->m_settings.threshold_blue) {
               m_running_count++;
@@ -110,7 +129,7 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, size_t start_r, 
       in_guard_zone = false;
       break;
   }
-
+  LOG_INFO(wxT("$$$ m_running_count=%i"), m_running_count);
   if (m_last_in_guard_zone && !in_guard_zone) {
     // last bearing that could add to m_running_count, so store as bogey_count;
     m_bogey_count = m_running_count;
@@ -127,13 +146,12 @@ void GuardZone::ProcessSpoke(SpokeBearing angle, uint8_t* data, size_t start_r, 
       m_end_bearing %= DEGREES_PER_ROTATION;
     }
   }
-
   m_last_in_guard_zone = in_guard_zone;
   m_last_angle = angle;
 }
 
 // Search guard zone for ARPA targets
-void GuardZone::SearchTargets() {
+void GuardZone::SearchTargets() { // $$$ pass m_ri
   ExtendedPosition own_pos;
   Doppler doppler = ANY;
   if (!m_arpa_on) {

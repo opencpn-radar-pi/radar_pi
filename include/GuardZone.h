@@ -98,9 +98,7 @@ public:
     /*
      * Check if data is in this GuardZone, if so update bogeyCount
      */
-    void ProcessSpoke(SpokeBearing angle, uint8_t* data, size_t start_r,
-                      size_t len);
-
+    void ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, size_t len);
     // Find targets inside the zone
     void SearchTargets();
 

@@ -178,6 +178,9 @@ public:
                                   // mode? True for Garmin, False for others
     bool m_timed_idle_hardware; // Does radar handle timed idle itself?
     bool m_quantum2type;
+    size_t m_start_r;           // Starting radius for search in case of multiple radars, set by TimedUpdate()
+    size_t m_start_overlay_r;   // Starting radius for overlay display in case of multiple overlays, set
+                                // by TimedUpdate()
 
     /* Per radar objects */
 

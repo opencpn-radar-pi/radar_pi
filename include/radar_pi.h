@@ -600,7 +600,6 @@ public:
   void OnControlDialogClose(RadarInfo* ri);
   void SetDisplayMode(DisplayModeType mode);
   bool IsThereTxOverlayRadar(int canvas_index);
-
   void ShowRadarControl(int radar, bool show = true, bool reparent = true);
   void ShowGuardZoneDialog(int radar, int zone);
   void OnGuardZoneDialogClose(RadarInfo* ri);
@@ -611,7 +610,6 @@ public:
   void StopRadarLocators();
 
   void UpdateAllControlStates(bool all);
-
   bool IsRadarOnScreen(int radar);
 
   bool LoadConfig();
