@@ -1151,7 +1151,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
  //$$$ LOG_VERBOSE(wxT("%s BottomLeft = %s"), m_name.c_str(), s.c_str());
 
   for (int z = 0; z < GUARD_ZONES; z++) {  // move to radar-pi   $$$
-    int bogeys = m_pi->m_guard_zone[z]->GetBogeyCount();
+    int bogeys = m_pi->m_guard_zone[z]->GetBogeyCount(this->m_radar);
     if (bogeys > 0 || (m_pi->m_guard_bogey_confirmed && bogeys == 0)) {
       if (s.length() > 0) {
         s << wxT("\n");

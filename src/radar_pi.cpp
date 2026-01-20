@@ -913,7 +913,7 @@ void radar_pi::CheckGuardZoneBogeys(void) {
       bool bogeys_found_this_radar = false;
 
       for (size_t z = 0; z < GUARD_ZONES; z++) {
-        int bogeys = m_guard_zone[z]->GetBogeyCount();
+        int bogeys = m_guard_zone[z]->GetBogeyCount(r);
         if (bogeys > m_settings.guard_zone_threshold) {
           bogeys_found = true;
           bogeys_found_this_radar = true;
