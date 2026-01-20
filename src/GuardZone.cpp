@@ -53,19 +53,16 @@ GuardZone::GuardZone(radar_pi* pi) {
 }
 
 void GuardZone::ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, size_t len) {
+  m_ri = ri;
+  if (!m_ri) return;
+  size_t radar_index = m_ri->m_radar;
   size_t start_radius = ri->m_start_r;
-  int current_radar_nr = -1;
-  int previous_radar_nr = -1;
   AngleDegrees degAngle = SCALE_SPOKES_TO_DEGREES(ri, angle);
-  if (m_type == GZ_ARC && !((degAngle >= m_start_bearing && degAngle < m_end_bearing) ||
-                            (m_start_bearing >= m_end_bearing && (degAngle >= m_start_bearing || degAngle < m_end_bearing)))) {
-    // for performance, get out if nothing to do
-    return;
-  }
-  LOG_INFO(wxT("$$$ current_radar= %s"), ri->m_name);
-  size_t range_start = m_inner_range * ri->m_pixels_per_meter;  // Convert from meters to [0..spoke_len_max>
-  size_t range_end = m_outer_range * ri->m_pixels_per_meter;    // Convert from meters to [0..spoke_len_max>
-  size_t max = ri->m_spoke_len_max;
+  
+  LOG_INFO(wxT("$$$ current_radar= %s"), m_ri->m_name);
+  size_t range_start = m_inner_range * m_ri->m_pixels_per_meter;  // Convert from meters to [0..spoke_len_max>
+  size_t range_end = m_outer_range * m_ri->m_pixels_per_meter;    // Convert from meters to [0..spoke_len_max>
+  size_t max = m_ri->m_spoke_len_max;
   LOG_INFO(wxT("$$$ range_start= %u, range_end=%u"), range_start, range_end);
   bool in_guard_zone = false;
 
@@ -85,10 +82,9 @@ void GuardZone::ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, s
           if (range_end > len) {
             range_end = len;
           }
-          LOG_INFO(wxT("$$$1 degAngle= %i, m_start_bearing= %i, m_end_bearing= %i"), degAngle, m_start_bearing, m_end_bearing);
           for (size_t r = range_start; r <= range_end; r++) {
             if (data[r] >= m_pi->m_settings.threshold_blue) {
-              m_running_count++;
+              m_running_count[radar_index]++;
             }
 #ifdef TEST_GUARD_ZONE_LOCATION
             // Zap guard zone computation location to green so this is visible on screen
@@ -110,7 +106,7 @@ void GuardZone::ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, s
 
         for (size_t r = range_start; r <= range_end; r++) {
           if (data[r] >= m_pi->m_settings.threshold_blue) {
-            m_running_count++;
+            m_running_count[radar_index]++;
           }
 #ifdef TEST_GUARD_ZONE_LOCATION
           // Zap guard zone computation location to green so this is visible on screen
@@ -119,7 +115,7 @@ void GuardZone::ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, s
           }
 #endif
         }
-        if (angle > m_last_angle) {
+        if (angle > m_last_angle[radar_index]) {
           in_guard_zone = true;
         }
       }
@@ -129,13 +125,13 @@ void GuardZone::ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, s
       in_guard_zone = false;
       break;
   }
-  LOG_INFO(wxT("$$$ m_running_count=%i"), m_running_count);
-  if (m_last_in_guard_zone && !in_guard_zone) {
+  if (m_last_in_guard_zone[radar_index] && !in_guard_zone) {
     // last bearing that could add to m_running_count, so store as bogey_count;
-    m_bogey_count = m_running_count;
-    m_running_count = 0;
-    LOG_GUARD(wxT("%s angle=%d last_angle=%d guardzone=%d..%d (%d - %d) bogey_count=%d"), m_log_name.c_str(), angle, m_last_angle,
-              range_start, range_end, m_inner_range, m_outer_range, m_bogey_count);
+    m_bogey_count[radar_index] = m_running_count[radar_index];
+    m_running_count[radar_index] = 0;
+    LOG_GUARD(wxT("%s angle=%d last_angle=%d guardzone=%d..%d (%d - %d) bogey_count=%d, radar_index=%d"), m_log_name.c_str(), angle,
+              m_last_angle[radar_index],
+              range_start, range_end, m_inner_range, m_outer_range, m_bogey_count[radar_index], radar_index);
 
     // When debugging with a static ship it is hard to find moving targets, so move
     // the guard zone instead. This slowly rotates the guard zone.
@@ -146,9 +142,18 @@ void GuardZone::ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, s
       m_end_bearing %= DEGREES_PER_ROTATION;
     }
   }
-  m_last_in_guard_zone = in_guard_zone;
-  m_last_angle = angle;
+  m_last_in_guard_zone[radar_index] = in_guard_zone;
+  m_last_angle[radar_index] = angle;
 }
+
+  void GuardZone::ResetBogeys() {
+    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+      m_bogey_count[r] = -1;
+      m_running_count[r] = 0;
+      m_last_in_guard_zone[r] = false;
+      m_last_angle[r] = 0;
+    }
+  }
 
 // Search guard zone for ARPA targets
 void GuardZone::SearchTargets() { // $$$ pass m_ri
