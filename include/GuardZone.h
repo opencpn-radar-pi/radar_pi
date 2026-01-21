@@ -102,15 +102,12 @@ public:
 
 private:
   radar_pi* m_pi;
-  RadarInfo* m_ri;
 
     wxString m_log_name;
     bool m_last_in_guard_zone[RADARS];
     SpokeBearing m_last_angle[RADARS];
     int m_bogey_count[RADARS];    // complete cycle
     int m_running_count[RADARS];  // current swipe
-
-    void UpdateSettings();
 };
 
 } // namespace

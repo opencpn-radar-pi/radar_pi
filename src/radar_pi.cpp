@@ -678,7 +678,6 @@ void radar_pi::SetRadarWindowViz(bool reparent) {
  * @param canvasIndex      Canvas #
  */
 void radar_pi::PrepareContextMenu(int canvasIndex) {
-  LOG_INFO(wxT("$$$ menu"));
   int arpa_targets = GetArpaTargetCount();
   bool targets_tracked = arpa_targets > 0;
   bool show = m_settings.show;
@@ -696,7 +695,7 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   // SetCanvasContextMenuItemGrey(m_context_menu_delete_radar_target, arpa);
   // SetCanvasContextMenuItemGrey(m_context_menu_delete_all_radar_targets, arpa);
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-    LOG_INFO(wxT("$$$ overlay=%i, r=%u, settings.show=%i"), overlay, r, m_settings.show_radar_control[r]);
+    LOG_DIALOG(wxT(" overlay=%i, r=%u, settings.show=%i"), overlay, r, m_settings.show_radar_control[r]);
     if (m_settings.show_radar_control[r] == 0) {
       // SetCanvasContextMenuItemGrey(m_context_menu_control_id[r], enableShowRadarControl);
       SetCanvasContextMenuItemViz(m_context_menu_control_id[r], show);
@@ -1291,7 +1290,6 @@ void radar_pi::SortTxRadars() {
   // Fill fixed-size array, pad with nullptr
   size_t i = 0;
   double last_overlay_pix_per_m = 0.;
-  if (tx[0]) LOG_INFO(wxT("$$$ \n start sort with radar %s"), tx[0]->m_name);
   for (; i < tx.size() && i < radar_count; ++i) {
     m_sorted_tx_radars[i] = tx[i];
     if (i == 0) {
@@ -1315,14 +1313,10 @@ void radar_pi::SortTxRadars() {
         m_sorted_tx_radars[i]->m_start_overlay_r = 0;
       }
     }
-    LOG_INFO(wxT("$$$ sorted tx radars i=%i, found %s, overlay=%i, start_r=%u, startoverlay=%u"), i, m_sorted_tx_radars[i]->m_name,
-             m_sorted_tx_radars[i]->m_overlay_canvas[0].GetValue(), m_sorted_tx_radars[i]->m_start_r,
-             m_sorted_tx_radars[i]->m_start_overlay_r);
 
     // If this is an overlay radar, save the pix/m for next i
     if (m_sorted_tx_radars[i] && m_sorted_tx_radars[i]->m_overlay_canvas[m_current_canvas_index].GetValue()) {
       last_overlay_pix_per_m = m_sorted_tx_radars[i]->m_pixels_per_meter;
-      LOG_INFO(wxT("$$$ set pix/m %f"), last_overlay_pix_per_m);
     }
   }
   for (; i < RADARS; ++i) {
@@ -1391,13 +1385,6 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   // int doppler = false;  // $$$?
   // int autotrack = false;
 
-  /*if (long_range_radar) { // remove autotrack Doppler $$$
-    autotrack = long_range_radar->m_autotrack_doppler.GetValue();
-    doppler = long_range_radar->m_doppler.GetValue();
-  }
-  if (doppler && autotrack && long_range_radar) {
-    m_arpa->SearchDopplerTargets(long_range_radar);
-  }*/
 
   UpdateHeadingPositionState();
   // Check the age of "radar_seen", if too old radar_seen = false
@@ -1420,11 +1407,12 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
   bool transmitting_radar_present;
   {
     wxCriticalSectionLocker lock(m_sort_tx_radars);
-    transmitting_radar_present = !m_sorted_tx_radars[0];
+    transmitting_radar_present = m_sorted_tx_radars[0];
   }
  
   if (!transmitting_radar_present || !m_bpos_set) {
     m_arpa->RadarLost();  // conditions for target tracking not set, delete all targets
+    LOG_ARPA(wxT("$$$ RadarLost delete all targets"));
   }
   if (any_data_seen && m_settings.show) {
     CheckGuardZoneBogeys();
@@ -1522,7 +1510,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
 
   m_vp = vp;
 
-  LOG_DIALOG(wxT("$$$RenderGLOverlayMultiCanvas context=%p canvas=%d"), pcontext, canvasIndex);
+  LOG_DIALOG(wxT("RenderGLOverlayMultiCanvas context=%p canvas=%d"), pcontext, canvasIndex);
   m_opencpn_gl_context = pcontext;
   if (!m_opencpn_gl_context && !m_opencpn_gl_context_broken) {
     LOG_INFO(wxT("OpenCPN does not pass OpenGL context. Resize of OpenCPN window may be broken!"));
