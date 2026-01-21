@@ -559,6 +559,7 @@ public:
   int GetPlugInVersionPost();
   const char* GetPlugInVersionPre();
   const char* GetPlugInVersionBuild();
+  wxCriticalSection m_sort_tx_radars;  // protects the m_sorted_tx_radars array
 
   wxBitmap* GetPlugInBitmap();
   wxString GetCommonName();
@@ -587,8 +588,13 @@ public:
 
   // Other public methods
 
+
   bool EnsureRadarSelectionComplete(bool force);
   bool MakeRadarSelection();
+    
+  void SortTxRadars();
+  void NotifyRadarWindowViz();
+  void NotifyControlDialog();
 
   RadarInfo* m_sorted_tx_radars[RADARS];  // contains transmitting radars small range first
   void SortTxRadars();
@@ -660,7 +666,8 @@ public:
   wxLongLong GetBootMillis() { return m_boot_time; }
   bool IsOpenGLEnabled() { return m_opengl_mode == OPENGL_ON; }
   wxGLContext* GetChartOpenGLContext();
-
+  RadarInfo* m_sorted_tx_radars[RADARS];  // contains transmitting radars small
+                                          // range first
   bool m_guard_bogey_confirmed;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   int m_max_canvas;  // Number of canvasses in OCPN -1, 0 == single canvas, > 0
