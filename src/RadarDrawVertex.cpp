@@ -133,7 +133,10 @@ void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
     return;
   }
   size_t start_radius = 0;
-  start_radius = m_ri->m_start_overlay_r;
+  {
+    wxCriticalSectionLocker lock(m_pi->m_sort_tx_radars);
+    start_radius = m_ri->m_start_overlay_r;
+  }
   VertexLine* line = &m_vertices[angle];
 
   if (!line->points) {
