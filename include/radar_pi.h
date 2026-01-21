@@ -575,6 +575,7 @@ public:
     int GetAPIVersionMinor();
     int GetPlugInVersionMajor();
     int GetPlugInVersionMinor();
+    wxCriticalSection m_sort_tx_radars;  // protects the m_sorted_tx_radars array
 
     wxBitmap* GetPlugInBitmap();
     wxString GetCommonName();
@@ -603,8 +604,6 @@ public:
     bool EnsureRadarSelectionComplete(bool force);
     bool MakeRadarSelection();
 
-    //RadarInfo* GetLongRangeRadar();
-    //RadarInfo* GetShortRangeRadar();
     RadarInfo* m_sorted_tx_radars[RADARS];  // contains transmitting radars small range first
     void SortTxRadars();
     void NotifyRadarWindowViz();

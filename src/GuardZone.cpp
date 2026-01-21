@@ -56,7 +56,11 @@ void GuardZone::ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, s
   m_ri = ri;
   if (!m_ri) return;
   size_t radar_index = m_ri->m_radar;
-  size_t start_radius = ri->m_start_r;
+  size_t start_radius;
+  {
+    wxCriticalSection m_sort_tx_radars;  // protects the m_sorted_tx_radars array
+    start_radius = ri->m_start_r;
+  }
   AngleDegrees degAngle = SCALE_SPOKES_TO_DEGREES(ri, angle);
   
   LOG_INFO(wxT("$$$ current_radar= %s"), m_ri->m_name);
