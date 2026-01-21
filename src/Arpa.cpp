@@ -40,7 +40,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 #define LAST_PASS (2)              // adapt this when more passes added
 #define MAX_DETECTION_SPEED (20.)  // in meters/second
-#define STATUS_TO_OCPN (5)         // First status to be send to OCPN
+#define STATUS_TO_OCPN (6)         // First status to be send to OCPN
 
 class LocalPosition;
 class Polar;
