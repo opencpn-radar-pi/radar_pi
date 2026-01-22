@@ -520,7 +520,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   Ext2Local(m_position, &predicted_local);
   ExtendedPosition predicted_pos;
   m_kalman.Predict(&predicted_local, delta_t);  // predicted_local is now new predicted local position of the target
-  m_kalman.Predict(&predicted_local, delta_t);  // predicted_local is now new predicted local position of the target
   Local2Ext(predicted_local, &predicted_pos);
   // Check if radar is still the best radar
   m_ri = CheckBestRadar(predicted_pos);
@@ -1134,7 +1133,7 @@ int Arpa::MakeNewTargetId() {  // should be in class Arpa? $$$
   }
 
 #define SHADOW_MARGIN 5
-#define TARGET_DISTANCE_FOR_BLANKING_SHADOW 4000.  // meters. For targets closer shadow will be suppressed
+#define TARGET_DISTANCE_FOR_BLANKING_SHADOW 3000.  // meters. For targets closer shadow will be suppressed
 
   void ArpaTarget::ResetPixels(RadarInfo* ri) {
     // resets the pixels of the current blob (plus DISTANCE_BETWEEN_TARGETS) so that blob will not be found again in the same sweep
