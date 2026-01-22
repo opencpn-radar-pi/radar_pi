@@ -201,7 +201,7 @@ void GuardZone::SearchTargets() {
     if (range_start < start_r) {
       range_start = start_r;
       // Increase starting range to avoid 2 radars finding same target
-      range_start = range_start + 20; 
+      range_start = range_start + 0; // $$$
     }
     if (range_end > rc->m_spoke_len_max) {
       range_end = rc->m_spoke_len_max - 20;
