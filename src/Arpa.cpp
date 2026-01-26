@@ -568,43 +568,24 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
            measured_pol.r);
   if (found) {
     PixelCounter(m_ri);
-    //StateTransition(m_ri ,&measured_pol);   // $$$
-    
-    if (m_average_contour_length != 0 && pass < LAST_PASS &&
-        (m_contour_length < m_average_contour_length / 2 || m_contour_length > m_average_contour_length * 2)) {
+    ResetPixels(m_ri);  // don't find these pixels again
+    // StateTransition(m_ri ,&measured_pol);   // $$$
+
+    if (m_average_contour_length != 0 && m_contour_length > 30 &&
+        (m_contour_length < m_average_contour_length / 3 || m_contour_length > m_average_contour_length * 3)) {
       // Don't accept this hit
-      if (m_status < 5) {  // new target should not behave strange
-        SetStatusLost();
-        LOG_ARPA(wxT(" %s, setlost id=%i, status=%i, reject weightedcontourlength=%i, m_contour_length=%i"), m_ri->m_name,
-                 m_target_id, m_status, m_average_contour_length, m_contour_length);
-        found = false;
-      }
-      // Search again in next pass
-      LOG_ARPA(wxT(" %s, id=%i, reject weightedcontourlength=%i, m_contour_length=%i"), m_ri->m_name, m_target_id,
-               m_average_contour_length, m_contour_length);
-      found = false;
-    }
-    if (m_average_contour_length != 0 && m_status < 8 &&
-        (m_contour_length < m_average_contour_length / 4 || m_contour_length > m_average_contour_length * 4)) {
-      // this difference is too large, delete target
+      LOG_ARPA(wxT(" %s, contourlength setlost id=%i, status=%i, reject weightedcontourlength=%i, m_contour_length=%i"),
+               m_ri->m_name, m_target_id, m_status, m_average_contour_length, m_contour_length);
       SetStatusLost();
       found = false;
-      LOG_ARPA(wxT(" %s, setlost id=%i, status=%i, reject weightedcontourlength=%i, m_contour_length=%i"), m_ri->m_name,
-               m_target_id, m_status, m_average_contour_length, m_contour_length);
-    }
-    if (found) {
-      LOG_ARPA(wxT(" %s, id=%i, accept weightedcontourlength=%i, m_contour_length=%i"), m_ri->m_name, m_target_id,
-               m_average_contour_length, m_contour_length);
     }
   }
-
+  
   if (found) {
     m_refresh_time = m_ri->m_history[MOD_SPOKES(m_ri, measured_pol.angle)].time;
     m_position.time = m_refresh_time;
     LOG_ARPA(wxT("set refresh time %u"), m_position.time.GetLo());
-    
-    ResetPixels(m_ri);
-    LOG_ARPA(wxT(" target Found ResetPixels m_target_id=%i, angle=%i, r= %i, contour=%i, radar=%s, pass=%i, doppler=%i"),
+    LOG_ARPA(wxT(" target Found m_target_id=%i, angle=%i, r= %i, contour=%i, radar=%s, pass=%i, doppler=%i"),
              m_target_id, measured_pol.angle, measured_pol.r, m_contour_length, m_ri->m_name.c_str(), pass, m_target_doppler);
     int max = MAX_CONTOUR_LENGTH_USED;
     //  target too large? (land masses?) get rid of it
