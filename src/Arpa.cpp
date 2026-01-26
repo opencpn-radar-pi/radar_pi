@@ -667,7 +667,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       }
     }
     
-    if (m_status >= 1) {
+    if (m_status > 1) {
       double s1 = m_position.dlat_dt;                                   // m per second
       double s2 = m_position.dlon_dt;                                   // m  per second
       double speed_m_sec = sqrt(s1 * s1 + s2 * s2);
@@ -726,16 +726,10 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   else {  // target not found
     // not found in pass 0 or 1 (An other chance will follow)
     // try again later in next pass with a larger distance
-    if (pass < LAST_PASS) {
-      // reset what we have done
-      m_refresh_time = prev_refresh;
-      m_position = previous_position;
-    }
     // delete low status targets immediately when not found
     if ((m_status <= 3 && pass == LAST_PASS) || m_status == 0) {
       SetStatusLost();
       LOG_ARPA(wxT("%s: Lost, m_target_id=%i"), m_ri->m_name, m_target_id);
-      m_refreshed = OUT_OF_SCOPE;
       return;
     }
     if (pass == LAST_PASS) {
@@ -746,7 +740,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     if (m_lost_count > MAX_LOST_COUNT) {
       SetStatusLost();
       LOG_ARPA(wxT("%s: Lost, m_target_id=%i"), m_ri->m_name, m_target_id);
-      m_refreshed = OUT_OF_SCOPE;
       return;
     }
     m_refreshed = NOT_FOUND;
