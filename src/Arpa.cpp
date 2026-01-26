@@ -474,7 +474,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   double delta_t;
   wxLongLong prev_refresh = m_refresh_time;
   wxLongLong now = wxGetUTCTimeMillis();  // millis
-  if (m_refreshed == FOUND || m_refreshed == OUT_OF_SCOPE) {
+  if (m_refreshed == FOUND || m_refreshed == OUT_OF_SCOPE || m_status == LOST) {
     return;
   }
   if (!CheckRefreshTiming()) return;   // also sets m_radar_position
@@ -483,7 +483,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
 
   
   // Following positions are used:
-  // m_position:         original target extended position, later updated to newly found position
+  // m_position:         original target extended position, if target found updated to newly found position
   // previous_position:  original target extended position, not updated
   // predicted_local:    predicted position in local coordinates (meters)
   // predicted_pos:      predicted extended position of target
@@ -552,9 +552,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   }
   LOG_ARPA(wxT("$$$0 m_target_id=%i , m_status=%i, pass=%i, dist1=%i"), m_target_id, m_status, pass, dist1);
   bool found = false;
-  LOG_ARPA(wxT("%s: MEASUREMENT m_target_id=%i, pass=%i, status=%i, pred-angle=%i, pred-r= %i, contour=%i, average contour=%i, speed=%f, "
-               "sd_speed_kn=%f, "
-               "Doppler=%i, lostcount=%i"),
+  LOG_ARPA(wxT("%s: MEASUREMENT m_target_id=%i, pass=%i, status=%i, pred-angle=%i, pred-r= %i, contour=%i, average contour=%i, speed=%f, sd_speed_kn=%f, Doppler=%i, lostcount=%i"),
            m_ri->m_name, m_target_id, pass, m_status, predicted_pol.angle, predicted_pol.r, m_contour_length,
            m_average_contour_length, m_position.speed_kn, m_position.sd_speed_kn, m_target_doppler, m_lost_count);
   
@@ -571,17 +569,16 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     ResetPixels(m_ri);  // don't find these pixels again
     // StateTransition(m_ri ,&measured_pol);   // $$$
 
+    // Check targets for strange change in contour length
     if (m_average_contour_length != 0 && m_contour_length > 30 &&
         (m_contour_length < m_average_contour_length / 3 || m_contour_length > m_average_contour_length * 3)) {
       // Don't accept this hit
       LOG_ARPA(wxT(" %s, contourlength setlost id=%i, status=%i, reject weightedcontourlength=%i, m_contour_length=%i"),
                m_ri->m_name, m_target_id, m_status, m_average_contour_length, m_contour_length);
       SetStatusLost();
-      found = false;
+      return;
     }
-  }
-  
-  if (found) {
+
     m_refresh_time = m_ri->m_history[MOD_SPOKES(m_ri, measured_pol.angle)].time;
     m_position.time = m_refresh_time;
     LOG_ARPA(wxT("set refresh time %u"), m_position.time.GetLo());
@@ -592,11 +589,12 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     if (m_contour_length >= max - 1) {
       // Don't use this blob, could be radar interference
       // The pixels of the blob have been reset, so you won't find it again
-      found = false;
+      SetStatusLost();
+      return;
     }
-  }
+  
 
-  if (found) {
+   // Reset lost count
     m_lost_count = 0;
     if (m_status == ACQUIRE0) {
       // as this is the first measurement, move target to measured position
@@ -619,7 +617,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       m_kalman.Update_P();
       m_kalman.SetMeasurement(m_ri, &measured_pol, &apos_position_local, &predicted_pol);
       // pol is measured position in polar coordinates, 
-                                                // result in apos_position_local
+      // result in apos_position_local
     }
     measured_pol.time = m_ri->m_history[MOD_SPOKES(m_ri, measured_pol.angle)].time;
     m_position.time = m_ri->m_history[MOD_SPOKES(m_ri, measured_pol.angle)].time;
@@ -691,8 +689,8 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       turn = abs(turn);
       if (turn > 130. && speed_m_sec > 5. && m_status < 5 && m_course != 0.) {
       // a real target can not turn at this speed
-        SetStatusLost();
         LOG_ARPA(wxT("$$$ Too fast turning, speed_m_sec=%f, turn=%f"), speed_m_sec, turn);
+        SetStatusLost();
         return;
       }
       m_course = course;
@@ -726,11 +724,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   }
 
   else {  // target not found
-    Polar polar_position;
-    polar_position = Pos2Polar(m_ri, m_position.pos, m_radar_position);
-    LOG_ARPA(wxT("%s: Not found m_target_id=%i, angle=%i, r= %i, pass=%i, lost_count=%i, status=%i"), 
-      m_ri->m_name, m_target_id,
-             polar_position.angle, polar_position.r, pass, m_lost_count, m_status);
     // not found in pass 0 or 1 (An other chance will follow)
     // try again later in next pass with a larger distance
     if (pass < LAST_PASS) {
@@ -738,7 +731,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       m_refresh_time = prev_refresh;
       m_position = previous_position;
     }
-
     // delete low status targets immediately when not found
     if ((m_status <= 3 && pass == LAST_PASS) || m_status == 0) {
       SetStatusLost();
