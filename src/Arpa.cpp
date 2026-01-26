@@ -87,7 +87,7 @@ ArpaTarget::ArpaTarget(radar_pi* pi, Arpa* arpa, size_t uid) : m_kalman(KalmanFi
 ArpaTarget::~ArpaTarget() {}
 
 
-GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position) {  // also copy time $$$
+GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position) {
   // converts in a radar image angular data r ( 0 - max_spoke_len ) and angle (0 - max_spokes) to position (lat, lon)
  // check on r < 2048 $$$
   GeoPosition pos;
@@ -106,15 +106,18 @@ GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position
   return pos;  // $$$ initialize other vars of pos
 }
 
-Polar ArpaTarget::Pos2Polar(RadarInfo* ri, GeoPosition pos, GeoPosition position) {  // also copy time $$$
-  // converts in a radar image a lat-lon position to angular data relative to position own_ship
+  // Returns a polar position from a radar position pos and target position position
+  // Pos2Polar may return a value polar.r >  ri->m_spoke_len_max - 1
+  Polar ArpaTarget::Pos2Polar(RadarInfo* ri, GeoPosition pos, GeoPosition position) {
   Polar pol;
   double dif_lat = pos.lat;
   dif_lat -= position.lat;
   double dif_lon = (pos.lon - position.lon) * cos(deg2rad(position.lat));
   pol.r = std::lround(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * ri->m_pixels_per_meter );
-  LOG_ARPA(wxT("$$$Pos2Polar radar=%s, pix/m=%f, r=%i"), ri->m_name, ri->m_pixels_per_meter, pol.r);
+  LOG_ARPA(wxT("$$$Pos2Polar radar=%s, pix/m=%f, r=%i, radarlat=%f"), ri->m_name, ri->m_pixels_per_meter, pol.r,
+           m_radar_position.lat);
   pol.angle = std::lround((atan2(dif_lon, dif_lat)) * (double)ri->m_spokes / (2. * PI));
+
   if (pol.angle < 0) pol.angle += ri->m_spokes;
   while (pol.angle >= (int) ri->m_spokes){
     pol.angle -= ri->m_spokes;
@@ -122,10 +125,6 @@ Polar ArpaTarget::Pos2Polar(RadarInfo* ri, GeoPosition pos, GeoPosition position
   if (pol.r < 0) {
     LOG_INFO(wxT("$$$ error spokelength pol.r"), pol.r);
     pol.r = 0;
-  }
-  if (pol.r >= (int)ri->m_spoke_len_max) {
-    LOG_INFO(wxT("$$$ error spokelength pol.r"), pol.r);
-    //pol.r = ri->m_spoke_len_max - 1;
   }
   LOG_ARPA(wxT("$$$Pos2Polar pol.r=%i"), pol.r);
   return pol;
@@ -230,7 +229,7 @@ bool Arpa::FindContourFromInside(RadarInfo* ri, Polar* pol, Doppler doppler) {  
   if (MultiPix(radar, ang, rad, doppl)) {
     return true;
   } else {
-    LOG_ARPA(wxT("$$$ not contourlength"));
+    LOG_ARPA(wxT("$$$ not min_contourlength=%i, "), ri->m_min_contour_length);
     return false;
   }
 }
@@ -526,7 +525,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   if (!m_ri) return;
   Polar predicted_pol;
   predicted_pol = Pos2Polar(m_ri, predicted_pos.pos, m_radar_position);
-  // Delete following check, it is already implicit in BestRadar $$$
   if (predicted_pol.r > m_ri->m_spoke_len_max) {
     m_refreshed = OUT_OF_SCOPE;
     LOG_ARPA(wxT("$$$ %s, Target out of range target_id=%i, r= %i"), m_ri->m_name, m_target_id, m_ri->m_spoke_len_max);
