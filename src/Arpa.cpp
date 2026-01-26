@@ -638,14 +638,31 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
 #define FORCED_POSITION_STATUS 8
     // Here we bypass the Kalman filter to predict the speed of the target
     // Kalman filter is too slow to adjust to the speed of (fast) new targets
-   
-    if (m_status >= 2 && m_status < FORCED_POSITION_STATUS /*&& (m_status < 5 || m_position.speed_kn > 10.)*/) {
-     
+    
+
+    // This method however only works for targets where the accuracy of the position is high,
+    // that is small targets in relation to the size of the target.
+    bool small_fast = false;
+    Polar previous_position_pol = Pos2Polar(m_ri, previous_position.pos, m_radar_position);
+    if (m_status == 2) {  // determine if this is a small and fast target
+      int dist_angle = measured_pol.angle - previous_position_pol.angle;
+      int dist_r = measured_pol.r - previous_position_pol.r;
+      int size_angle = MOD_SPOKES(m_ri, m_max_angle.angle - m_min_angle.angle);
+      int size_r = m_max_r.r - m_min_r.r;
+      if (size_r == 0) size_r = 1;
+      if (size_angle == 0) size_angle = 1;
+      double test = abs((double)dist_r / (double)size_r) + abs((double)dist_angle / (double)size_angle);
+      LOG_ARPA(wxT("%s smallandfast, id=%i, status=%i, test=%f, dist_r=%i, size_r=%i, dist_angle=%i, size_angle=%i"), m_ri->m_name,
+               m_target_id, m_status, test, dist_r, size_r, dist_angle, size_angle);
+      if (test > 1.) {
+        small_fast = true;
+      }
+    }
+    if (small_fast && m_status >= 2 && m_status < FORCED_POSITION_STATUS) {
       // measured_pos is the position found by GetTarget()
       GeoPosition measured_pos = Polar2Pos(m_ri, measured_pol, m_radar_position);
       double delta_lat = measured_pos.lat - m_position.pos.lat;
       double delta_lon = measured_pos.lon - m_position.pos.lon;
-      
       LOG_ARPA(wxT("Forced = %u, measd= %u, previous= %u, delta_lat=%f, delta_lon=%f, measured_pos.lat=%f, prev_pos.lat=%f"), now.GetLo(), measured_pol.time.GetLo(), previous_position.time.GetLo(), delta_lat, delta_lon, 
         measured_pos.lat, m_position.pos.lat);
       int delta_t = (measured_pol.time - previous_position.time).GetLo();
