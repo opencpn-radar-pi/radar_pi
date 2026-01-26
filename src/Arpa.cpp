@@ -796,35 +796,49 @@ int Arpa::MakeNewTargetId() {  // should be in class Arpa? $$$
 }
 
   void ArpaTarget::PixelCounter(RadarInfo* ri) {
-    LOG_ARPA(wxT("PixelCounter called, m_contour_length=%i"), m_contour_length);
-    //  Counts total number of the various pixels in a blob
-    m_total_pix = 0;
-    m_approaching_pix = 0;
-    m_receding_pix = 0;
-    for (uint16_t i = 0; i < m_contour_length; i++) {
-      bool bit0 = false;
-      // bool bit1 = false;
-      bool bit2 = false;
-      bool bit3 = false;
+  LOG_ARPA(wxT("PixelCounter called, m_contour_length=%i"), m_contour_length);
+  //  Counts total number of the various pixels in a blob
+  m_total_pix = 0;
+  m_approaching_pix = 0;
+  m_receding_pix = 0;
+  for (uint16_t i = 0; i < m_contour_length; i++) {
+    bool bit0 = false;
+    // bool bit1 = false;
+    bool bit2 = false;
+    bool bit3 = false;
 
-      uint16_t radius = m_contour[i].r;
-      uint8_t byte = 0;
-      do {
-        byte = ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius];
-        bit0 = (byte & 0x80) >> 7;  // above threshold bit
-                                    // bit1 = (byte & 0x40) >> 6;  // backup bit does not get cleared when target is refreshed
-        bit2 = (byte & 0x20) >> 5;  // this is Doppler approaching bit
-        bit3 = (byte & 0x10) >> 4;  // this is Doppler receding bit
-        m_total_pix += bit0;
-        m_approaching_pix += bit2;
-        m_receding_pix += bit3;
-        radius++;
-        if (radius >= 1023) continue;
-      } while (ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius] >> 7);
-    }
-    LOG_ARPA(wxT("PixelCounter m_total_pix=%i, m_approaching_pix=%i, m_receiding_pix=%i"), m_total_pix, m_approaching_pix,
-             m_receding_pix);
+    uint16_t radius = m_contour[i].r;
+    uint16_t radius_start = radius;
+    int angle = m_contour[i].angle;
+    uint8_t byte = 0;
+    // LOG_INFO(wxT("$$$ loop  i=%i, radius=%i, angle=%i"), i, radius, angle);
+    do {
+      if (radius <= 1022 && radius == radius_start && !ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius + 1]) {
+        // looking from the contour, next (radial) pixel is off, we are looking in the wrong direction
+        break;
+      }
+      if (radius <= 1022 && radius == radius_start && ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius + 1] &&
+          radius >= 2 && ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius - 1]) {
+        // looking from the contour, next (radial) and previous (radial) pixels are on,
+        // this is a vertical bit of the contour, skip
+        break;
+      }
+      byte = ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius];
+      bit0 = (byte & 0x80) >> 7;  // above threshold bit
+                                  // bit1 = (byte & 0x40) >> 6;  // backup bit does not get cleared when target is refreshed
+      bit2 = (byte & 0x20) >> 5;  // this is Doppler approaching bit
+      bit3 = (byte & 0x10) >> 4;  // this is Doppler receding bit
+      m_total_pix += bit0;
+      m_approaching_pix += bit2;
+      m_receding_pix += bit3;
+      // LOG_INFO(wxT("$$$ i=%i, radius=%i, m_total_pix=%i"), i, radius, m_total_pix);
+      radius++;
+      if (radius >= 1023) continue;
+    } while (ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius] >> 7);
   }
+  LOG_ARPA(wxT("PixelCounter m_total_pix=%i, m_approaching_pix=%i, m_receiding_pix=%i"), m_total_pix, m_approaching_pix,
+           m_receding_pix);
+}
 
   // Check doppler state of targets if Doppler is on
   void ArpaTarget::StateTransition(RadarInfo* ri, Polar * polar) {
