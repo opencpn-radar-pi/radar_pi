@@ -246,8 +246,6 @@ void GuardZone::SearchTargets() {
 
         // check if this angle has been refreshed since last time
         // and if the beam has passed the target location with SCAN_MARGIN spokes
-        /*if ((time1 > (m_arpa_update_time[angle] + SCAN_MARGIN2) &&
-             time2 >= time1)) */
 
         int diff = rc->m_last_received_spoke - angle;
         if (diff > (int)rc->m_spokes / 2) diff -= (int)rc->m_spokes;
