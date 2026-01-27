@@ -114,8 +114,6 @@ GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position
   dif_lat -= position.lat;
   double dif_lon = (pos.lon - position.lon) * cos(deg2rad(position.lat));
   pol.r = std::lround(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * ri->m_pixels_per_meter );
-  LOG_ARPA(wxT("$$$Pos2Polar radar=%s, pix/m=%f, r=%i, radarlat=%f"), ri->m_name, ri->m_pixels_per_meter, pol.r,
-           m_radar_position.lat);
   pol.angle = std::lround((atan2(dif_lon, dif_lat)) * (double)ri->m_spokes / (2. * PI));
 
   if (pol.angle < 0) pol.angle += ri->m_spokes;
@@ -123,10 +121,8 @@ GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position
     pol.angle -= ri->m_spokes;
   }
   if (pol.r < 0) {
-    LOG_INFO(wxT("$$$ error spokelength pol.r"), pol.r);
     pol.r = 0;
   }
-  LOG_ARPA(wxT("$$$Pos2Polar pol.r=%i"), pol.r);
   return pol;
 }
 
@@ -209,14 +205,14 @@ bool Arpa::FindContourFromInside(RadarInfo* ri, Polar* pol, Doppler doppler) {  
   Doppler doppl = doppler;
 
   int ang = pol->angle;
-  int rad = pol->r;
+  size_t rad = pol->r;
   int limit = radar->m_spokes;
 
   if (rad >= (int)radar->m_spoke_len_max || rad < 3) {
     return false;
   }
   if (!(Pix(radar, ang, rad, doppl))) {
-    LOG_ARPA(wxT("$$$q not inside ang=%i, rad=%i"), ang, rad);
+    LOG_ARPA(wxT("$$$a not inside ang=%i, rad=%u"), ang, rad);
     return false;
   }
   while (limit >= 0 && Pix(radar, ang, rad, doppler)) {
@@ -225,11 +221,10 @@ bool Arpa::FindContourFromInside(RadarInfo* ri, Polar* pol, Doppler doppler) {  
   }
   ang++;
   pol->angle = ang;
-  // check if the blob has the required min contour length
-  if (MultiPix(radar, ang, rad, doppl)) {
-    return true;
+  if (Pix(radar, ang, rad, doppler)) {
+  return true;
   } else {
-    LOG_ARPA(wxT("$$$ not min_contourlength=%i, "), ri->m_min_contour_length);
+    LOG_ARPA(wxT("$$$ contour not found ang=%i, rad=%u"), ang, rad);
     return false;
   }
 }
@@ -403,7 +398,6 @@ bool ArpaTarget::CheckRefreshTiming() {
   int angle_dist = m_ri->m_last_received_spoke - pol.angle;
   if (angle_dist > (int) m_ri->m_spokes / 2) angle_dist -= (int) m_ri->m_spokes;
   if (angle_dist < - (int) m_ri->m_spokes / 2) angle_dist += m_ri->m_spokes;
-  LOG_ARPA(wxT(" %s, id=%i, xangle=%i, r= %i, last_spoke=%i, angle_dist=%i "), m_ri->m_name, m_target_id, pol.angle, pol.r, m_ri->m_last_received_spoke, angle_dist);
   // 50 is a margin on the rotation period 
   if (((now > m_refresh_time + rotation_period * (m_lost_count + 1)) || m_status == 0) && abs(angle_dist) > 50) {
     m_radar_position = m_ri->m_history[MOD_SPOKES(m_ri, pol.angle)].pos;
@@ -478,7 +472,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     return;
   }
   if (!CheckRefreshTiming()) return;   // also sets m_radar_position
-  LOG_ARPA(wxT("\n\n $$$ Start with next target, id=%i, status=%i, pass=%i, last_spoke=%i"), m_target_id, m_status, pass, 
+ LOG_ARPA(wxT("\n\n $$$ Start with next target, id=%i, status=%i, pass=%i, last_spoke=%i"), m_target_id, m_status, pass, 
     m_ri->m_last_received_spoke);
 
   
