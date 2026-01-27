@@ -871,7 +871,7 @@ int Arpa::MakeNewTargetId() {  // should be in class Arpa? $$$
 
 #define PIX(aa, rr)                                       \
   if (rr >= (int)ri->m_spoke_len_max - 1) continue;       \
-  if (m_arpa->MultiPix(ri, aa, rr, m_target_doppler)) {   \
+  if (m_arpa->Pix(ri, aa, rr, m_target_doppler)) {   \
     pol->angle = aa;                                      \
     pol->r = rr;                                          \
     return true;                                          \
