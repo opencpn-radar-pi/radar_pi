@@ -118,7 +118,6 @@ public:
     bool Pix(RadarInfo* ri, int ang, int rad);
     void Local2Ext(LocalPosition local_pos, ExtendedPosition* ext_pos);
     void Ext2Local(ExtendedPosition ext_pos, LocalPosition* local_pos);
-    //bool MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler);
     wxString EncodeAIVDM(
         int mmsi, double speed, double lon, double lat, double course);
     int m_status;
@@ -200,6 +199,7 @@ public:
     bool FindContourFromInside(RadarInfo* ri, Polar* p, Doppler doppler);
     int m_target_id_count;  // counter for issueing new target UID's
     int MakeNewTargetId();
+    bool Pix(RadarInfo* ri, int ang, int rad, Doppler doppler);
 
 private:
     std::deque<std::unique_ptr<ArpaTarget>> m_targets;
@@ -215,7 +215,6 @@ private:
     void AcquireOrDeleteMarpaTarget(ExtendedPosition p, int status);
     void CalculateCentroid(ArpaTarget* t);
     void DrawContour(ArpaTarget* t);
-    bool Pix(RadarInfo* ri, int ang, int rad, Doppler doppler);
     bool IsAtLeastOneRadarTransmitting();
     void CleanUpLostTargets();
     DynamicTargetData* GetIncomingRemoteTarget();
