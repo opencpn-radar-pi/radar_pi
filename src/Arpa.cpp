@@ -575,7 +575,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     LOG_ARPA(wxT("set refresh time %u"), m_position.time.GetLo());
     LOG_ARPA(wxT(" target Found m_target_id=%i, angle=%i, r= %i, contour=%i, radar=%s, pass=%i, doppler=%i"), m_target_id,
              measured_pol.angle, measured_pol.r, m_contour_length, m_ri->m_name.c_str(), pass, m_target_doppler);
-    int max = MAX_CONTOUR_LENGTH_USED;
+    int max = MAX_CONTOUR_LENGTH;
     //  target too large? (land masses?) get rid of it
     if (m_contour_length >= max - 1) {
       // Don't use this blob, could be radar interference

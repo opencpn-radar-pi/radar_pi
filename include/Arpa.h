@@ -58,16 +58,13 @@ class KalmanFilter;
 // next sweep
 
 #define MAX_CONTOUR_LENGTH                                                     \
-    (2000) // defines maximal size of target contour in pixels
-#define MAX_CONTOUR_LENGTH_USED (500);
+    (400) // defines maximal size of target contour in pixels
 #define MAX_TARGET_DIAMETER                                                    \
     (200) // target will be set lost if diameter in pixels is larger than this
           // value
 #define MAX_LOST_COUNT                                                         \
     (12) // number of sweeps that target can be missed before it is set to lost
 
-#define FOR_DELETION                                                           \
-    (-2) // status of a duplicate target used to delete a target
 #define LOST (-1)
 #define ACQUIRE0 (0) // 0 under acquisition, first seen, no contour yet
 #define ACQUIRE1 (1) // 1 under acquisition, contour found, first position FOUND
