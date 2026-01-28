@@ -99,11 +99,6 @@ public:
             // are correct, these don't really change in the wild according to
             // our data, so write them into the RadarLocationInfo object.
             m_ri->SetRadarLocationInfo(m_info);
-            LOG_INFO(wxT("$$$3 test location info"));
-            LOG_INFO(wxT("$$$%s info van constuctor RadarReceive "
-                         "SetRadarLocationInfo m_info= %s "),
-                m_ri->m_name, m_info.to_string());
-            LOG_INFO(wxT("$$$3 test location info"));
         } else if (!info.report_addr.IsNull() && ri->m_radar_type != RT_BR24) {
             // Restart, when ini file contains multicast addresses, that are
             // hopefully still correct. This will also overwrite the initial
