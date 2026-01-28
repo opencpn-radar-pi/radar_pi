@@ -418,9 +418,7 @@ void ArpaTarget::Local2Ext(LocalPosition local_pos, ExtendedPosition* ext_pos) {
 
 void ArpaTarget::Ext2Local(ExtendedPosition ext_pos, LocalPosition* local_pos) {
   local_pos->lat = (ext_pos.pos.lat - local_pos->radar_pos.lat) * 60. * 1852.;
-  LOG_INFO(wxT("$$$ ext_pos.pos.lat=%f, local_pos->radar_pos.lat=%f"), ext_pos.pos.lat, local_pos->radar_pos.lat);
   local_pos->lon = (ext_pos.pos.lon - local_pos->radar_pos.lon) * 60. * 1852. * cos(deg2rad(local_pos->radar_pos.lat));
-  LOG_INFO(wxT("$$$ ext_pos.pos.lon=%f, local_pos->radar_pos.lon=%f"), ext_pos.pos.lon, local_pos->radar_pos.lon);
   local_pos->dlat_dt = ext_pos.dlat_dt;  // m per second
   local_pos->dlon_dt = ext_pos.dlon_dt;  // m per second
   local_pos->sd_speed_m_s = ext_pos.sd_speed_kn / 3600. * 1852.;
@@ -434,8 +432,7 @@ LocalPosition::LocalPosition(GeoPosition radar_position) {
   speed = 0.;
   sd_speed_m_s = 0.;
   radar_pos = radar_position;
-  LOG_INFO(wxT("$$$ radar_position.lat=%f, radar_position.lon=%f"), radar_position.lat, radar_position.lon);
-}
+  }
 
 RadarInfo* ArpaTarget::CheckBestRadar(ExtendedPosition predicted_pos) {
   RadarInfo* ri = m_pi->FindBestRadarForTarget(predicted_pos.pos);
@@ -725,6 +722,24 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
         Polar polar_position;
         polar_position = Pos2Polar(m_ri, m_position.pos, m_radar_position);
         PassTTMtoOCPN(&polar_position, T);  // T indicates status Active
+
+        //// send target data to OCPN
+        //pol = Pos2Polar(m_position, own_pos);
+        //if (m_status >= STATUS_TO_OCPN) {
+        //  OCPN_target_status s;
+        //  if (m_status >= Q_NUM) s = Q;
+        //  if (m_status > T_NUM) s = T;
+        //  if (m_lost_count > 0) {
+        //    // if target was not seen last sweep, color yellow
+        //    s = Q;
+        //  }
+        //  // Check for AIS target at (M)ARPA position
+        //  double dist2target = pol.r / m_ri->m_pixels_per_meter;
+        //  if (m_pi->FindAIS_at_arpaPos(m_position.pos, dist2target)) s = L;
+        //  PassARPAtoOCPN(&pol, s);
+        //}
+
+
       }
     }
     m_refreshed = FOUND;
@@ -783,13 +798,13 @@ void ArpaTarget::PixelCounter(RadarInfo* ri) {
     uint16_t radius_start = radius;
     int angle = m_contour[i].angle;
     uint8_t byte = 0;
-    // LOG_INFO(wxT("$$$ loop  i=%i, radius=%i, angle=%i"), i, radius, angle);
     do {
-      if (radius <= 1022 && radius == radius_start && !ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius + 1]) {
+      if (radius <= m_ri->m_spoke_len_max - 2 && radius == radius_start && !ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius + 1]) {
         // looking from the contour, next (radial) pixel is off, we are looking in the wrong direction
         break;
       }
-      if (radius <= 1022 && radius == radius_start && ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius + 1] &&
+      if (radius <= m_ri->m_spoke_len_max - 2 && radius == radius_start &&
+          ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius + 1] &&
           radius >= 2 && ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius - 1]) {
         // looking from the contour, next (radial) and previous (radial) pixels are on,
         // this is a vertical bit of the contour, skip
@@ -803,9 +818,8 @@ void ArpaTarget::PixelCounter(RadarInfo* ri) {
       m_total_pix += bit0;
       m_approaching_pix += bit2;
       m_receding_pix += bit3;
-      // LOG_INFO(wxT("$$$ i=%i, radius=%i, m_total_pix=%i"), i, radius, m_total_pix);
       radius++;
-      if (radius >= 1023) continue;
+      if (radius >= m_ri->m_spoke_len_max - 1) continue;
     } while (ri->m_history[MOD_SPOKES(ri, m_contour[i].angle)].line[radius] >> 7);
   }
   LOG_ARPA(wxT("PixelCounter m_total_pix=%i, m_approaching_pix=%i, m_receiding_pix=%i"), m_total_pix, m_approaching_pix,
