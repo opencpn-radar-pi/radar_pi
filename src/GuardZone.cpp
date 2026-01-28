@@ -63,11 +63,9 @@ void GuardZone::ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, s
   }
   AngleDegrees degAngle = SCALE_SPOKES_TO_DEGREES(ri, angle);
   
-  LOG_INFO(wxT("$$$ current_radar= %s"), rc->m_name);
   size_t range_start = m_inner_range * rc->m_pixels_per_meter;  // Convert from meters to [0..spoke_len_max>
   size_t range_end = m_outer_range * rc->m_pixels_per_meter;    // Convert from meters to [0..spoke_len_max>
   size_t max = rc->m_spoke_len_max;
-  LOG_INFO(wxT("$$$ range_start= %u, range_end=%u"), range_start, range_end);
   bool in_guard_zone = false;
 
   if (range_start < start_radius) {
@@ -76,11 +74,9 @@ void GuardZone::ProcessSpoke(RadarInfo* ri, SpokeBearing angle, uint8_t* data, s
   if (range_end > len) {
     range_end = len;
   }
-  LOG_INFO(wxT("$$$1 range_start= %u, range_end=%u, len=%u, max=%u"), range_start, range_end, len, max);
   switch (m_type) {
     case GZ_ARC:
-      LOG_INFO(wxT("$$$ degAngle= %i, m_start_bearing= %i, m_end_bearing= %i"), degAngle, m_start_bearing, m_end_bearing);
-      if ((degAngle >= m_start_bearing && degAngle < m_end_bearing) ||
+       if ((degAngle >= m_start_bearing && degAngle < m_end_bearing) ||
           (m_start_bearing >= m_end_bearing && (degAngle >= m_start_bearing || degAngle < m_end_bearing))) {
         if (range_start < len) {
           if (range_end > len) {
@@ -201,7 +197,7 @@ void GuardZone::SearchTargets() {
     if (range_start < start_r) {
       range_start = start_r;
       // Increase starting range to avoid 2 radars finding same target
-      range_start += 20;
+      range_start += 10;
     }
     if (range_end > rc->m_spoke_len_max) {
       range_end = rc->m_spoke_len_max - 20;

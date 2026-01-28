@@ -413,7 +413,7 @@ void RadarInfo::ResetSpokes() {
     }
   }
 
-  for (size_t z = 0; z < GUARD_ZONES; z++) {  // $$$ ?
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
     // Zap them anyway just to be sure
     m_pi->m_guard_zone[z]->ResetBogeys();
   }
@@ -626,16 +626,6 @@ void RadarInfo::RequestRadarState(RadarState state) {
       time_t now = time(0);
       if (state == RADAR_TRANSMIT) {
         m_control->RadarTxOn();
-        // Refresh radar immediately so that we generate draw mechanisms  // $$$ immediate action please?
-        /*for (int i = 0; i < wxMax(MAX_CHART_CANVAS, GetCanvasCount()); i++) {
-          if (m_pi->m_chart_overlay[i] == (int)m_radar) {
-            LOG_INFO(wxT("$$$ overlay i=$i, radar=%i"), i, (int)m_radar);
-            wxWindow *canvas = GetCanvasByIndex(i);
-            if (canvas) {
-              canvas->Refresh(false);
-            }
-          }
-        }*/
       } else if (state == RADAR_STANDBY) {
         m_control->RadarTxOff();
       } else {
@@ -880,9 +870,6 @@ void RadarInfo::UpdateControlState(bool all) {
 void RadarInfo::ResetRadarImage() {
   ResetSpokes();
   ClearTrails();
-  /*if (m_arpa) {  // $$$ move to radar_pi
-    m_arpa->ClearContours();
-  }*/
 }
 
 /**
@@ -1148,9 +1135,7 @@ wxString RadarInfo::GetCanvasTextBottomLeft() {
   GeoPosition radar_pos;
   wxString s = GetTimedIdleText();
 
- //$$$ LOG_VERBOSE(wxT("%s BottomLeft = %s"), m_name.c_str(), s.c_str());
-
-  for (int z = 0; z < GUARD_ZONES; z++) {  // move to radar-pi   $$$
+  for (int z = 0; z < GUARD_ZONES; z++) {
     int bogeys = m_pi->m_guard_zone[z]->GetBogeyCount(this->m_radar);
     if (bogeys > 0 || (m_pi->m_guard_bogey_confirmed && bogeys == 0)) {
       if (s.length() > 0) {
@@ -1639,7 +1624,7 @@ void RadarInfo::CheckTimedTransmit() {
 }
 
 bool RadarInfo::GetRadarPosition(GeoPosition *pos) {
- // wxCriticalSectionLocker lock(m_exclusive);  // $$$ crash
+ // wxCriticalSectionLocker lock(m_exclusive);  //  crashing
 
   if (m_pi->IsBoatPositionValid() && VALID_GEO(m_radar_position.lat) && VALID_GEO(m_radar_position.lon)) {
     *pos = m_radar_position;

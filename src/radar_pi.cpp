@@ -1712,8 +1712,8 @@ bool radar_pi::LoadConfig(void) {
 
       pConf->Read(wxString::Format(wxT("Radar%dTransmit"), r), &v, 0);
       ri->m_boot_state.Update(v);
-      pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 6);
-      if (ri->m_min_contour_length > 10) ri->m_min_contour_length = 6;  // Prevent user and system error
+      pConf->Read(wxString::Format(wxT("Radar%dMinContourLength"), r), &ri->m_min_contour_length, 4);
+      if (ri->m_min_contour_length > 10) ri->m_min_contour_length = 5;  // Prevent user and system error
       pConf->Read(wxString::Format(wxT("Radar%dDopplerAutoTrack"), r), &v, 0);
       ri->m_autotrack_doppler.Update(v);
       pConf->Read(wxString::Format(wxT("Radar%dThreshold"), r), &v, 0);
