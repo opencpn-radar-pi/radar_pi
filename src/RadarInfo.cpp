@@ -636,51 +636,50 @@ void RadarInfo::RequestRadarState(RadarState state) {
   }
 }
 
-void RadarInfo::RenderGuardZone() {
+void RadarInfo::RenderNoTransmitZones() {
   int start_bearing = 0, end_bearing = 0;
-  GLubyte red = 0, green = 200, blue = 0, alpha = 10;  // alpha sets transparancy of guard zones on overlay
+  GLubyte red = 0, green = 200, blue = 0, alpha = 30;  // alpha sets transparancy of guard zones on overlay
 
-  for (size_t z = 0; z < GUARD_ZONES; z++) {
-    if (m_pi->m_guard_zone[z]->m_alarm_on || m_pi->m_guard_zone[z]->m_arpa_on || m_pi->m_guard_zone[z]->m_show_time + 5 > time(0)) {
-      if (m_pi->m_guard_zone[z]->m_type == GZ_CIRCLE) {
-        start_bearing = 0;
-        end_bearing = 359;
-      } else {
-        start_bearing = m_pi->m_guard_zone[z]->m_start_bearing;
-        end_bearing = m_pi->m_guard_zone[z]->m_end_bearing;
-      }
-      switch (m_pi->m_settings.guard_zone_render_style) {
-        case 1:
-          glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
-          DrawOutlineArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing,
-                         true);
-          break;
-        case 2:
-          glColor4ub(red, green, blue, alpha);
-          DrawOutlineArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing,
-                         false);
-        // fall thru
-        default:
-          glColor4ub(red, green, blue, alpha);
-          DrawFilledArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
-      }
-    }
+  //for (size_t z = 0; z < GUARD_ZONES; z++) {
+  //  LOG_INFO(wxT("$$$ render guardzone=%i"), z);
+  //  if (m_pi->m_guard_zone[z]->m_alarm_on || m_pi->m_guard_zone[z]->m_arpa_on || m_pi->m_guard_zone[z]->m_show_time + 5 > time(0)) {
+  //    LOG_INFO(wxT("$$$2 render guardzone=%i"), z);
+  //    if (m_pi->m_guard_zone[z]->m_type == GZ_CIRCLE) {
+  //      start_bearing = 0;
+  //      end_bearing = 359;
+  //    } else {
+  //      start_bearing = m_pi->m_guard_zone[z]->m_start_bearing;
+  //      end_bearing = m_pi->m_guard_zone[z]->m_end_bearing;
+  //    }
+  //    switch (m_pi->m_settings.guard_zone_render_style) {
+  //      case 1:
+  //        glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
+  //        DrawOutlineArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing,
+  //                       true);
+  //        break;
+  //      case 2:
+  //        glColor4ub(red, green, blue, alpha);
+  //        DrawOutlineArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing,
+  //                       false);
+  //      // fall thru
+  //      default:
+  //        glColor4ub(red, green, blue, alpha);
+  //        DrawFilledArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
+  //    }
+  //  }
 
-    red = 0;
-    green = 0;
-    blue = 200;
-  }
+  //  red = 0;
+  //  green = 0;
+  //  blue = 200;
+  //}
 
   int range = m_range.GetValue();
-  if (range == 0) {
-    range = 4000;
-  }
-
+  range = 12000;
+  
   for (size_t z = 0; z < m_no_transmit_zones; z++) {
     if (m_no_transmit_start[z].GetState() != RCS_OFF) {
       start_bearing = m_no_transmit_start[z].GetValue();
       end_bearing = m_no_transmit_end[z].GetValue();
-
       if (start_bearing != end_bearing && start_bearing >= -180 && end_bearing >= -180) {
         start_bearing = MOD_DEGREES(start_bearing);
         end_bearing = MOD_DEGREES(end_bearing);
@@ -1003,13 +1002,13 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
   }
 
   wxLongLong now = wxGetUTCTimeMillis();
-  // Render the guard zone
+   //Render the guard zone, handled in radar_pi
   if (!overlay || (M_SETTINGS.guard_zone_on_overlay && (M_SETTINGS.overlay_on_standby || m_state.GetValue() == RADAR_TRANSMIT))) {
     glPushMatrix();
     glTranslated(center.x, center.y, 0);
     glRotated(guard_rotate, 0.0, 0.0, 1.0);
     glScaled(scale, scale, 1.);
-    RenderGuardZone();
+    RenderNoTransmitZones();
     glPopMatrix();
   }
 

@@ -248,7 +248,7 @@ public:
     void ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing,
         uint8_t* data, size_t len, int range_meters, wxLongLong time);
     void RefreshDisplay();
-    void RenderGuardZone();
+    void RenderNoTransmitZones();
     void ResetRadarImage();
     void ShiftImageLonToCenter();
     void ShiftImageLatToCenter();
