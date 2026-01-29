@@ -719,7 +719,7 @@ public:
   PI_ColorScheme m_color_scheme;  // Current OpenCPN color scheme
 
 private:
-
+    void RenderGuardZone();
     void RadarSendState(void);
     void UpdateState(void);
     void UpdateHeadingPositionState(void);
