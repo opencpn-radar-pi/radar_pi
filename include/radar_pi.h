@@ -715,6 +715,7 @@ public:
     bool m_ais_drawgl_broken;
 
 private:
+    void RenderGuardZone();
     void RadarSendState(void);
     void UpdateState(void);
     void UpdateHeadingPositionState(void);

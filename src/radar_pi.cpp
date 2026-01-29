@@ -1562,8 +1562,23 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     }
     double rotation = MOD_DEGREES_FLOAT(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
 
-    LOG_DIALOG(wxT("RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat, vp->clon,
+    LOG_INFO(wxT("$$$dialog RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat, vp->clon,
                vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
+
+
+    glPushAttrib(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_HINT_BIT);  // Save state
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+     // Render the guard zone
+    double guard_rotate = rotation + GetHeadingTrue() + OPENGL_ROTATION;
+    glPushMatrix();
+    glTranslated(boat_center.x, boat_center.y, 0);
+    glRotated(guard_rotate, 0.0, 0.0, 1.0);
+    glScaled(v_scale_ppm, v_scale_ppm, 1.);
+    LOG_INFO(wxT("$$$ render guardzone heading=%f"), GetHeadingTrue());
+    RenderGuardZone();
+    glPopMatrix();
+
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       // if radar is transmitting and has overlay on current canvas
       // No wxCriticalSectionLocker here will hang_up
@@ -1588,6 +1603,62 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
   m_render_busy = false;
   return true;
 }
+
+void radar_pi::RenderGuardZone() {
+  int start_bearing = 0, end_bearing = 0;
+  GLubyte red = 0, green = 200, blue = 0, alpha = 50;  // alpha sets transparancy of guard zones on overlay
+
+  for (size_t z = 0; z < GUARD_ZONES; z++) {
+    LOG_INFO(wxT("$$$ render guardzone=%i"), z);
+    if (m_guard_zone[z]->m_alarm_on || m_guard_zone[z]->m_arpa_on || m_guard_zone[z]->m_show_time + 5 > time(0)) {
+      LOG_INFO(wxT("$$$2 render guardzone=%i"), z);
+      if (m_guard_zone[z]->m_type == GZ_CIRCLE) {
+        start_bearing = 0;
+        end_bearing = 359;
+      } else {
+        start_bearing = m_guard_zone[z]->m_start_bearing;
+        end_bearing = m_guard_zone[z]->m_end_bearing;
+      }
+      switch (m_settings.guard_zone_render_style) {
+        case 1:
+          glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
+          DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing,
+                         true);
+          break;
+        case 2:
+          glColor4ub(red, green, blue, alpha);
+          DrawOutlineArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing,
+                         false);
+        // fall thru
+        default:
+          LOG_INFO(wxT("$$$ render default"));
+          glColor4ub(red, green, blue, alpha);
+          DrawFilledArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
+      }
+    }
+    red = 0;
+    green = 0;
+    blue = 200;
+  }
+
+  /*int range = 20000;*/
+  
+
+  /*for (size_t z = 0; z < m_no_transmit_zones; z++) {   $$$ to do
+    if (m_no_transmit_start[z].GetState() != RCS_OFF) {
+      start_bearing = m_no_transmit_start[z].GetValue();
+      end_bearing = m_no_transmit_end[z].GetValue();
+
+      if (start_bearing != end_bearing && start_bearing >= -180 && end_bearing >= -180) {
+        start_bearing = MOD_DEGREES(start_bearing);
+        end_bearing = MOD_DEGREES(end_bearing);
+        glColor4ub(250, 255, 255, alpha);
+        DrawFilledArc(range, 0, start_bearing, end_bearing);
+      }
+    }
+  }*/
+}
+
 
 // Will return true if at least one radar is transmitting and 
 // has an overlay on canvas canvas_index
