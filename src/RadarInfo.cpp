@@ -640,8 +640,8 @@ void RadarInfo::RenderNoTransmitZones() {
   int start_bearing = 0, end_bearing = 0;
   GLubyte red = 0, green = 200, blue = 0, alpha = 30;  // alpha sets transparancy of guard zones on overlay
 
-  int range = m_range.GetValue();
-  range = 40000;
+  int range = 40000;
+  
   
   for (size_t z = 0; z < m_no_transmit_zones; z++) {
     if (m_no_transmit_start[z].GetState() != RCS_OFF) {
@@ -915,7 +915,6 @@ int RadarInfo::GetOrientation() {
 
 void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_rotate, bool overlay) {
   bool arpa_on = false;
-  LOG_INFO(wxT("$$$ RenderRadarImage1 overlay=%i"), overlay);
   if (m_pi->m_arpa) {
     if (m_pi->m_arpa->GetTargetCount() > 0) {
       arpa_on = true;
@@ -938,7 +937,6 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
   int orientation = GetOrientation();
 
   if (!overlay) {
-    LOG_INFO(wxT("$$$2 RenderRadarImage1 overlay=%i"), overlay);
     arpa_rotate = 0.;
     switch (orientation) {
       case ORIENTATION_STABILIZED_UP:
@@ -999,7 +997,6 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
     if (overlay) {
       m_pi->m_arpa->DrawArpaTargetsOverlay(this, scale, arpa_rotate);
     } else {
-      LOG_INFO(wxT("$$$3a RenderRadarImage1 overlay=%i"), overlay);
       m_pi->m_arpa->DrawArpaTargetsPanel(this, scale, arpa_rotate);
     }
   }

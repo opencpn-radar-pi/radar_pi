@@ -1562,7 +1562,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     }
     double rotation = MOD_DEGREES_FLOAT(rad2deg(vp->rotation + vp->skew * m_settings.skew_factor));
 
-    LOG_INFO(wxT("$$$dialog RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat, vp->clon,
+    LOG_DIALOG(wxT("dialog RenderRadarOverlay lat=%g lon=%g v_scale_ppm=%g vp_rotation=%g skew=%g scale=%f rot=%g"), vp->clat, vp->clon,
                vp->view_scale_ppm, vp->rotation, vp->skew, v_scale_ppm, rotation);
 
 
@@ -1575,7 +1575,6 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     glTranslated(boat_center.x, boat_center.y, 0);
     glRotated(guard_rotate, 0.0, 0.0, 1.0);
     glScaled(v_scale_ppm, v_scale_ppm, 1.);
-    LOG_INFO(wxT("$$$ render guardzone heading=%f"), GetHeadingTrue());
     RenderGuardZone();
     glPopMatrix();
 
@@ -1609,9 +1608,7 @@ void radar_pi::RenderGuardZone() {
   GLubyte red = 0, green = 200, blue = 0, alpha = 50;  // alpha sets transparancy of guard zones on overlay
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
-    LOG_INFO(wxT("$$$ render guardzone=%i"), z);
     if (m_guard_zone[z]->m_alarm_on || m_guard_zone[z]->m_arpa_on || m_guard_zone[z]->m_show_time + 5 > time(0)) {
-      LOG_INFO(wxT("$$$2 render guardzone=%i"), z);
       if (m_guard_zone[z]->m_type == GZ_CIRCLE) {
         start_bearing = 0;
         end_bearing = 359;
@@ -1631,7 +1628,6 @@ void radar_pi::RenderGuardZone() {
                          false);
         // fall thru
         default:
-          LOG_INFO(wxT("$$$ render default"));
           glColor4ub(red, green, blue, alpha);
           DrawFilledArc(m_guard_zone[z]->m_outer_range, m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
       }
