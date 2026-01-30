@@ -88,7 +88,6 @@ ArpaTarget::~ArpaTarget() {}
 
 GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position) {
   // converts in a radar image angular data r ( 0 - max_spoke_len ) and angle (0 - max_spokes) to position (lat, lon)
-  // check on r < 2048 $$$
   GeoPosition pos;
   // should be revised, use Mercator formula PositionBearingDistanceMercator()  TODO
 
@@ -96,13 +95,7 @@ GeoPosition ArpaTarget::Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition position
 
   pos.lon = position.lon +
             ri->m_polar_lookup->GetPoint(pol.angle, pol.r).y / ri->m_pixels_per_meter / cos(deg2rad(position.lat)) / 60. / 1852.;
-
-  // pos.pos.lat = position.lat + ((double)pol.r / ri->m_pixels_per_meter)  // Scale to fraction of distance from radar
-  //                                      * cos(deg2rad(SCALE_SPOKES_TO_DEGREES(ri, pol.angle))) / 60. / 1852.;
-  // pos.pos.lon = position.lon + ((double)pol.r / ri->m_pixels_per_meter)  // Scale to fraction of distance to radar
-  //                                      * sin(deg2rad(SCALE_SPOKES_TO_DEGREES(ri, pol.angle))) / cos(deg2rad(position.lat)) / 60.
-  //                                      / 1852.;
-  return pos;  // $$$ initialize other vars of pos
+  return pos; 
 }
 
 // Returns a polar position from a radar position pos and target position position
@@ -114,7 +107,6 @@ Polar ArpaTarget::Pos2Polar(RadarInfo* ri, GeoPosition pos, GeoPosition position
   double dif_lon = (pos.lon - position.lon) * cos(deg2rad(position.lat));
   pol.r = std::lround(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * ri->m_pixels_per_meter);
   pol.angle = std::lround((atan2(dif_lon, dif_lat)) * (double)ri->m_spokes / (2. * PI));
-
   if (pol.angle < 0) pol.angle += ri->m_spokes;
   while (pol.angle >= (int)ri->m_spokes) {
     pol.angle -= ri->m_spokes;
@@ -211,7 +203,6 @@ bool Arpa::FindContourFromInside(RadarInfo* ri, Polar* pol, Doppler doppler) {  
     return false;
   }
   if (!(Pix(radar, ang, rad, doppl))) {
-    LOG_ARPA(wxT("$$$a not inside ang=%i, rad=%u"), ang, rad);
     return false;
   }
   while (limit >= 0 && Pix(radar, ang, rad, doppler)) {
@@ -223,7 +214,6 @@ bool Arpa::FindContourFromInside(RadarInfo* ri, Polar* pol, Doppler doppler) {  
   if (Pix(radar, ang, rad, doppler)) {
     return true;
   } else {
-    LOG_ARPA(wxT("$$$ contour not found ang=%i, rad=%u"), ang, rad);
     return false;
   }
 }
@@ -338,9 +328,7 @@ int ArpaTarget::GetContour(RadarInfo* ri, Polar* pol) {
     m_min_angle.angle += ri->m_spokes;
     m_max_angle.angle += ri->m_spokes;  // attention, could be > m_spokes
   }
-  if (m_min_angle.angle > m_max_angle.angle)
-    wxLogMessage(wxT("$$$$$ m_min_angle.angle=%i, m_max_angle.angle=%i"), m_min_angle.angle, m_max_angle.angle);
-
+  
   pol->angle = (m_max_angle.angle + m_min_angle.angle) / 2;
   if (m_max_r.r >= (int)ri->m_spoke_len_max || m_min_r.r >= (int)ri->m_spoke_len_max) {
     return 10;  // return code 10 r too large
@@ -466,8 +454,8 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     return;
   }
   if (!CheckRefreshTiming()) return;  // also sets m_radar_position
-  LOG_ARPA(wxT("\n\n $$$ Start with next target, id=%i, status=%i, pass=%i, last_spoke=%i"), m_target_id, m_status, pass,
-           m_ri->m_last_received_spoke);
+  LOG_ARPA(wxT("\n\n  Start with next target, id=%i, status=%i, pass=%i, last_spoke=%i, lat=%f, lon=%f"), m_target_id, m_status, pass,
+           m_ri->m_last_received_spoke, m_position.pos.lat, m_position.pos.lon);
 
   // Following positions are used:
   // m_position:         original target extended position, if target found updated to newly found position
@@ -490,12 +478,10 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   if (m_status == 0) {                                               // no previous position known
     delta_t = 0.;
   }
-  LOG_ARPA(wxT("$$$ rotation_period= %i, m_lost_count=%i, delta_t=%f"), rotation_period, m_lost_count, delta_t);
   LOG_ARPA(wxT("%s: target begin prediction cycle m_target_id=%i, delta time=%f, m_refresh_time=%u, previous_position.time=%u, "
                "now=%u, m_state= %i"),
            m_ri->m_name, m_target_id, delta_t, m_refresh_time.GetLo(), previous_position.time.GetLo(), now.GetLo(), m_status);
-  LOG_ARPA(wxT("$$$ target position.lat=%f, position.lon=%f"), m_position.pos.lat, m_position.pos.lon);
-
+  
   if (m_position.pos.lat > 90. || m_position.pos.lat < -90.) {
     SetStatusLost();
     LOG_ARPA(wxT("%s: Lost, m_target_id=%i"), m_ri->m_name, m_target_id);
@@ -507,6 +493,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   ExtendedPosition predicted_pos;
   m_kalman.Predict(&predicted_local, delta_t);  // predicted_local is now new predicted local position of the target
   Local2Ext(predicted_local, &predicted_pos);
+  LOG_ARPA(wxT(" predicted pos lat=%f, lon=%f"), predicted_pos.pos.lat, predicted_pos.pos.lon);
   // Check if radar is still the best radar
   m_ri = CheckBestRadar(predicted_pos);
   if (!m_ri) return;
@@ -514,7 +501,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   predicted_pol = Pos2Polar(m_ri, predicted_pos.pos, m_radar_position);
   if (predicted_pol.r > m_ri->m_spoke_len_max) {
     m_refreshed = OUT_OF_SCOPE;
-    LOG_ARPA(wxT("$$$ %s, Target out of range target_id=%i, r= %i"), m_ri->m_name, m_target_id, m_ri->m_spoke_len_max);
+    LOG_ARPA(wxT(" %s, Target out of range target_id=%i, r= %i"), m_ri->m_name, m_target_id, predicted_pol.r);
     SetStatusLost();
     return;
   }
@@ -537,7 +524,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
 
     m_target_doppler = ANY;  // in the last pass accept enything within reach
   }
-  LOG_ARPA(wxT("$$$0 m_target_id=%i , m_status=%i, pass=%i, dist1=%i"), m_target_id, m_status, pass, dist1);
   bool found = false;
   LOG_ARPA(wxT("%s: MEASUREMENT m_target_id=%i, pass=%i, status=%i, pred-angle=%i, pred-r= %i, contour=%i, average contour=%i, "
                "speed=%f, sd_speed_kn=%f, Doppler=%i, lostcount=%i"),
@@ -678,10 +664,10 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       double s2 = m_position.dlon_dt;  // m  per second
       double speed_m_sec = sqrt(s1 * s1 + s2 * s2);
       m_position.speed_kn = speed_m_sec * 3600. / 1852.;  // and convert to nautical miles per hour
-      if (speed_m_sec > 200.) LOG_ARPA(wxT("$$$ far too fast speed_m_sec=%f, square=%f"), speed_m_sec, s1 * s1 + s2 * s2);
+      if (speed_m_sec > 200.) LOG_ARPA(wxT(" far too fast speed_m_sec=%f, square=%f"), speed_m_sec, s1 * s1 + s2 * s2);
       if (speed_m_sec > MAX_DETECTION_SPEED * 1.5) {
         SetStatusLost();
-        LOG_ARPA(wxT("$$$ too fast lost speed-m/sec=%f"), speed_m_sec);
+        LOG_ARPA(wxT(" too fast lost speed-m/sec=%f"), speed_m_sec);
         return;
       }
       double course = rad2deg(atan2(s2, s1));
@@ -695,7 +681,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       turn = abs(turn);
       if (turn > 130. && speed_m_sec > 5. && m_status < 5 && m_course != 0.) {
         // a real target can not turn at this speed
-        LOG_ARPA(wxT("$$$ Too fast turning, speed_m_sec=%f, turn=%f"), speed_m_sec, turn);
+        LOG_ARPA(wxT(" Too fast turning, speed_m_sec=%f, turn=%f"), speed_m_sec, turn);
         SetStatusLost();
         return;
       }
@@ -770,7 +756,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   return;
 }  // end of target not found
 
-int Arpa::MakeNewTargetId() {  // should be in class Arpa? $$$
+int Arpa::MakeNewTargetId() {
   wxString str, str1;
   int target_id = m_target_id_count + MAX_TARGET_ID;
   m_target_id_count++;
@@ -937,7 +923,7 @@ bool ArpaTarget::GetTarget(RadarInfo* ri, Polar predicted_pol, Polar* measured_p
   if (Pix(ri, a, r)) {
     contour_found = m_arpa->FindContourFromInside(ri, &pol, ANY);
   } else {
-    LOG_ARPA(wxT("$$$q not inside a=%i, r=%i"), a, r);
+    LOG_ARPA(wxT(" not inside a=%i, r=%i"), a, r);
     contour_found = FindNearestContour(ri, &pol, dist);
   }
   if (!contour_found) {
@@ -1188,10 +1174,8 @@ bool Arpa::MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler) {
   start.r = rad;
 
   if (!Pix(ri, start.angle, start.r, doppler)) {
-    // LOG_ARPA(wxT("$$$ multipix not on contour ang=%i, rad=%i"), ang, rad);
     return false;
   }
-  // LOG_ARPA(wxT("$$$ Multipix on contour ang=%i, rad=%i"), ang, rad);
   Polar current = start;  // the 4 possible translations to move from a point on the contour to the next
   Polar max_angle;
   Polar min_angle;
@@ -1275,9 +1259,7 @@ bool Arpa::MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler) {
     min_angle.angle += ri->m_spokes;
     max_angle.angle += ri->m_spokes;
   }
-  LOG_ARPA(wxT("$$$ multipix erase min_angle.angle=%i, max_angle.angle=%i, min_r.r=%i, max_r.r=%i, %s"), min_angle.angle,
-           max_angle.angle, min_r.r, max_r.r, ri->m_name);
-  for (int a = min_angle.angle; a <= max_angle.angle; a++) {
+    for (int a = min_angle.angle; a <= max_angle.angle; a++) {
     for (size_t r = min_r.r; r <= max_r.r; r++) {
       {
         ri->m_history[MOD_SPOKES(ri, a)].line[r] &= 63;  // 0x3F
@@ -1368,7 +1350,6 @@ void Arpa::DrawContour(ArpaTarget* target) {
 
 void Arpa::DrawArpaTargetsOverlay(RadarInfo* ri, double scale, double arpa_rotate) {
   wxPoint boat_center;
-  RadarInfo* radar;
   // Will only draw contours of targets that were found on this radar
   // Here we assume all radars have the same location and number of spokes
   // this is not the case for Raymarine, there number of spokes varies with range
@@ -1417,10 +1398,6 @@ void Arpa::DrawArpaTargetsOverlay(RadarInfo* ri, double scale, double arpa_rotat
 void Arpa::DrawArpaTargetsPanel(RadarInfo* ri, double scale, double arpa_rotate) {
   // Will only draw contours of targets that were found on this radar
   wxPoint boat_center;
-  GeoPosition radar_pos, target_pos;
-  double offset_lat = 0.;
-  double offset_lon = 0.;
-
   if (!m_pi->m_settings.drawing_method) {  // this is Vertex drawing method
     for (auto target = m_targets.cbegin(); target != m_targets.cend(); target++) {
       if ((*target)->m_status == LOST) {
@@ -1469,10 +1446,7 @@ void Arpa::RefreshAllArpaTargets() {
   sort(m_targets.begin(), m_targets.end(), SortTargetStatus);
   // main target refresh loop
 
-  // pass 0 of target refresh  Only search for moving targets faster than 2 knots (? $$$)
-
   double speed = MAX_DETECTION_SPEED;
-
   LOG_ARPA(wxT("Search speed =%f"), speed);
   // First refresh the moving targets
   for (auto target = m_targets.begin(); target != m_targets.end(); ++target) {
@@ -1500,7 +1474,7 @@ void Arpa::CalculateCentroid(ArpaTarget* target) {
 
 void Arpa::DeleteAllTargets() { m_targets.clear(); }
 
-bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler doppler) {  // $$$ todo improve, without radar?
+bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler doppler) {
   // acquires new target at polar position pol
   // no contour taken yet
   // target status status, normally 0, if dummy target to delete a target -2
@@ -1536,7 +1510,7 @@ bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler do
   target->m_refreshed = NOT_FOUND;
   target->m_automatic = true;
   target->RefreshTarget(MAX_DETECTION_SPEED, 1);  // speed, pass
-  target->m_target_id = MakeNewTargetId();        // only for test $$$$
+  target->m_target_id = 0;   //  MakeNewTargetId();  // only for test
   m_targets.push_back(std::move(target));
   return true;
 }
