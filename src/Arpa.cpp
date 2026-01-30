@@ -1429,18 +1429,9 @@ void Arpa::DrawArpaTargetsPanel(RadarInfo* ri, double scale, double arpa_rotate)
       if (ri != (*target)->m_ri) {  // target does not fit this radar, last refresh with other radar
         continue;
       }
-      LOG_INFO(wxT("$$$6 radar=%s, r=%u, angle=%i, scale=%f"), 
-        (*target)->m_ri->m_name, (*target)->m_contour[0].r, (*target)->m_contour[0].angle, scale);
-      radar_pos = (*target)->m_radar_position;
-      target_pos = (*target)->m_position.pos;
-      offset_lat = (radar_pos.lat - target_pos.lat) * 60. * 1852. * ri->m_panel_zoom / ri->m_range.GetValue();
-      offset_lon =
-          (radar_pos.lon - target_pos.lon) * 60. * 1852. * cos(deg2rad(target_pos.lat)) * ri->m_panel_zoom / ri->m_range.GetValue();
       glPushMatrix();
       glRotated(arpa_rotate, 0.0, 0.0, 1.0);
-      glTranslated(-offset_lon, offset_lat, 0);
       glScaled(scale, scale, 1.);
-      LOG_INFO(wxT("$$$5 RenderRadarImage1 "));
       DrawContour(target->get());
       glPopMatrix();
     }
