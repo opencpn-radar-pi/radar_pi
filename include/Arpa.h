@@ -173,7 +173,7 @@ public:
 
     Arpa(radar_pi* pi); // THR(M)
     ~Arpa(); // THR(M)
-    void DrawArpaTargetsOverlay(double scale, double arpa_rotate); // THR(M)
+    void DrawArpaTargetsOverlay(RadarInfo* ri, double scale, double arpa_rotate);  // THR(M)
     void DrawArpaTargetsPanel(RadarInfo* ri, double scale, double arpa_rotate); // THR(M)
     void RefreshAllArpaTargets(); // THR(M LCK(ri))
     bool AcquireNewARPATarget(
