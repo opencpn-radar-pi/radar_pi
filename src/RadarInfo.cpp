@@ -640,41 +640,8 @@ void RadarInfo::RenderNoTransmitZones() {
   int start_bearing = 0, end_bearing = 0;
   GLubyte red = 0, green = 200, blue = 0, alpha = 30;  // alpha sets transparancy of guard zones on overlay
 
-  //for (size_t z = 0; z < GUARD_ZONES; z++) {
-  //  LOG_INFO(wxT("$$$ render guardzone=%i"), z);
-  //  if (m_pi->m_guard_zone[z]->m_alarm_on || m_pi->m_guard_zone[z]->m_arpa_on || m_pi->m_guard_zone[z]->m_show_time + 5 > time(0)) {
-  //    LOG_INFO(wxT("$$$2 render guardzone=%i"), z);
-  //    if (m_pi->m_guard_zone[z]->m_type == GZ_CIRCLE) {
-  //      start_bearing = 0;
-  //      end_bearing = 359;
-  //    } else {
-  //      start_bearing = m_pi->m_guard_zone[z]->m_start_bearing;
-  //      end_bearing = m_pi->m_guard_zone[z]->m_end_bearing;
-  //    }
-  //    switch (m_pi->m_settings.guard_zone_render_style) {
-  //      case 1:
-  //        glColor4ub((GLubyte)255, (GLubyte)0, (GLubyte)0, (GLubyte)255);
-  //        DrawOutlineArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing,
-  //                       true);
-  //        break;
-  //      case 2:
-  //        glColor4ub(red, green, blue, alpha);
-  //        DrawOutlineArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing,
-  //                       false);
-  //      // fall thru
-  //      default:
-  //        glColor4ub(red, green, blue, alpha);
-  //        DrawFilledArc(m_pi->m_guard_zone[z]->m_outer_range, m_pi->m_guard_zone[z]->m_inner_range, start_bearing, end_bearing);
-  //    }
-  //  }
-
-  //  red = 0;
-  //  green = 0;
-  //  blue = 200;
-  //}
-
   int range = m_range.GetValue();
-  range = 12000;
+  range = 40000;
   
   for (size_t z = 0; z < m_no_transmit_zones; z++) {
     if (m_no_transmit_start[z].GetState() != RCS_OFF) {
@@ -948,6 +915,7 @@ int RadarInfo::GetOrientation() {
 
 void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_rotate, bool overlay) {
   bool arpa_on = false;
+  LOG_INFO(wxT("$$$ RenderRadarImage1 overlay=%i"), overlay);
   if (m_pi->m_arpa) {
     if (m_pi->m_arpa->GetTargetCount() > 0) {
       arpa_on = true;
@@ -970,6 +938,7 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
   int orientation = GetOrientation();
 
   if (!overlay) {
+    LOG_INFO(wxT("$$$2 RenderRadarImage1 overlay=%i"), overlay);
     arpa_rotate = 0.;
     switch (orientation) {
       case ORIENTATION_STABILIZED_UP:
@@ -1025,11 +994,12 @@ void RadarInfo::RenderRadarImage1(wxPoint center, double scale, double overlay_r
       glPopMatrix();
     }
   }
-
+  
   if (arpa_on) {
     if (overlay) {
-      m_pi->m_arpa->DrawArpaTargetsOverlay(scale, arpa_rotate);
+      m_pi->m_arpa->DrawArpaTargetsOverlay(this, scale, arpa_rotate);
     } else {
+      LOG_INFO(wxT("$$$3a RenderRadarImage1 overlay=%i"), overlay);
       m_pi->m_arpa->DrawArpaTargetsPanel(this, scale, arpa_rotate);
     }
   }
