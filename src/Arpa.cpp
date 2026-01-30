@@ -1366,25 +1366,18 @@ void Arpa::DrawContour(ArpaTarget* target) {
   glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
 }
 
-void Arpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
+void Arpa::DrawArpaTargetsOverlay(RadarInfo* ri, double scale, double arpa_rotate) {
   wxPoint boat_center;
   RadarInfo* radar;
-  if (m_pi->m_radar[0] != NULL && m_pi->m_radar[0]->m_state.GetValue() == RADAR_TRANSMIT) {
-    radar = m_pi->m_radar[0];
-  } else {
-    if (m_pi->m_radar[1] != NULL && m_pi->m_radar[1]->m_state.GetValue() == RADAR_TRANSMIT) {
-      radar = m_pi->m_radar[1];
-    } else {
-      return;
-    }
-  }
+  // Will only draw contours of targets that were found on this radar
   // Here we assume all radars have the same location and number of spokes
   // this is not the case for Raymarine, there number of spokes varies with range
   // TODO: make contours independent of radar, replace polar coordinates with cartesian coordinates
 
   if (!m_pi->m_settings.drawing_method) {  // Vertex drawing method
     for (auto target = m_targets.cbegin(); target != m_targets.cend(); target++) {
-      if ((*target)->m_status == LOST || (*target)->m_contour_length == 0) {
+      if ((*target)->m_status == LOST || (*target)->m_contour_length == 0 ||
+        (*target)->m_ri != ri) {
         continue;
       }
       double poslat = (*target)->m_radar_position.lat;
@@ -1406,14 +1399,14 @@ void Arpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
     }
   } else {  // Shader drawing method
     GeoPosition radar_pos;
-    radar->GetRadarPosition(&radar_pos);
+    ri->GetRadarPosition(&radar_pos);
     GetCanvasPixLL(m_pi->m_vp, &boat_center, radar_pos.lat, radar_pos.lon);
     glPushMatrix();
     glTranslated(boat_center.x, boat_center.y, 0);
     glRotated(arpa_rotate, 0.0, 0.0, 1.0);
     glScaled(scale, scale, 1.);
     for (auto target = m_targets.cbegin(); target != m_targets.cend(); target++) {
-      if ((*target)->m_status != LOST) {
+      if ((*target)->m_status != LOST && (*target)->m_ri == ri) {
         DrawContour(target->get());
       }
     }
@@ -1422,6 +1415,7 @@ void Arpa::DrawArpaTargetsOverlay(double scale, double arpa_rotate) {
 }
 
 void Arpa::DrawArpaTargetsPanel(RadarInfo* ri, double scale, double arpa_rotate) {
+  // Will only draw contours of targets that were found on this radar
   wxPoint boat_center;
   GeoPosition radar_pos, target_pos;
   double offset_lat = 0.;
@@ -1435,6 +1429,8 @@ void Arpa::DrawArpaTargetsPanel(RadarInfo* ri, double scale, double arpa_rotate)
       if (ri != (*target)->m_ri) {  // target does not fit this radar, last refresh with other radar
         continue;
       }
+      LOG_INFO(wxT("$$$6 radar=%s, r=%u, angle=%i, scale=%f"), 
+        (*target)->m_ri->m_name, (*target)->m_contour[0].r, (*target)->m_contour[0].angle, scale);
       radar_pos = (*target)->m_radar_position;
       target_pos = (*target)->m_position.pos;
       offset_lat = (radar_pos.lat - target_pos.lat) * 60. * 1852. * ri->m_panel_zoom / ri->m_range.GetValue();
@@ -1444,6 +1440,7 @@ void Arpa::DrawArpaTargetsPanel(RadarInfo* ri, double scale, double arpa_rotate)
       glRotated(arpa_rotate, 0.0, 0.0, 1.0);
       glTranslated(-offset_lon, offset_lat, 0);
       glScaled(scale, scale, 1.);
+      LOG_INFO(wxT("$$$5 RenderRadarImage1 "));
       DrawContour(target->get());
       glPopMatrix();
     }
@@ -1455,7 +1452,7 @@ void Arpa::DrawArpaTargetsPanel(RadarInfo* ri, double scale, double arpa_rotate)
     glRotated(arpa_rotate, 0.0, 0.0, 1.0);
     glScaled(scale, scale, 1.);
     for (auto target = m_targets.cbegin(); target != m_targets.cend(); target++) {
-      if ((*target)->m_status != LOST) {
+      if ((*target)->m_status != LOST && (*target)->m_ri == ri) {
         DrawContour(target->get());
       }
     }
