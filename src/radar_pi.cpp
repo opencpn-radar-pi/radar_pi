@@ -2388,7 +2388,7 @@ RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
         ((range = m_radar[r]->m_actual_range_meters) < best_range) &&  // Best range in meters
         m_radar[r]->GetRadarPosition(&radar_position) &&             // Get position
                       // allow some room for target size, convert to meters
-        local_distance(radar_position, position) * 1852. < (double)range * 0.99) {  // Is in range
+        local_distance(radar_position, position) * 1852. < (double)range * 0.98) {  // Is in range
       best_range = (int) range;
       best_radar = m_radar[r];
     }
