@@ -535,13 +535,12 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
   found = GetTarget(m_ri, predicted_pol, &measured_pol, dist1);  // main target search
   int delta_r = (int)predicted_pol.r - (int)measured_pol.r;
   int delta_angle = predicted_pol.angle - measured_pol.angle;
-  LOG_ARPA(wxT("$$$0 delta_r=%i,  delta_angle=%i"), delta_r, delta_angle);
   LOG_ARPA(wxT("%s: found= %i, id=%i, meas_angle=%i, meas_r= %i"), m_ri->m_name, found, m_target_id, measured_pol.angle,
            measured_pol.r);
   if (found) {
     PixelCounter(m_ri);
     ResetPixels(m_ri);  // don't find these pixels again
-    // StateTransition(m_ri ,&measured_pol);   // $$$
+    // StateTransition(m_ri ,&measured_pol);   // todo, Doppler not yet used for tracking
 
     // Check targets for strange change in contour length
     if (m_average_contour_length != 0 && m_contour_length > 30 &&
@@ -1167,7 +1166,7 @@ bool Arpa::MultiPix(RadarInfo* ri, int ang, int rad, Doppler doppler) {
   // ang and rad must start on the contour of the blob
   // false if not
   // if false clears out pixels of the blob in hist
-  //    wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive);  // $$$ ??
+  //    wxCriticalSectionLocker lock(ArpaTarget::m_ri->m_exclusive); // blocking
   int length = ri->m_min_contour_length;
   Polar start;
   start.angle = ang;
@@ -1319,7 +1318,7 @@ void Arpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int status) {
 
 void Arpa::DrawContour(ArpaTarget* target) {
   wxCriticalSectionLocker lock(target->m_protect_target_data);
-  if (target->m_lost_count > 0) {  // $$$ is dit goed?
+  if (target->m_lost_count > 0) {
     return;                        // don't draw targets that were not seen last sweep
   }
   RadarInfo* radar = target->m_ri;

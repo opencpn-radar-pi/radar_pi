@@ -133,7 +133,7 @@ private:
     int m_target_id;
     
     RefresState m_refreshed;
-    ExtendedPosition m_position; // holds actual position of target, after last SetMeasurement() // $$$ to do verify!! 
+    ExtendedPosition m_position; // holds actual position of target, after last SetMeasurement() 
     // double m_speed_kn; // Average speed of target. TODO: Merge with
     //                    // m_position.speed?
     wxLongLong m_refresh_time; // time of last refresh
@@ -154,8 +154,8 @@ private:
     uint32_t m_approaching_pix;
     uint32_t m_receding_pix;
 
-    GeoPosition Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition own_ship);  // $$$ should be radar position
-    Polar Pos2Polar(RadarInfo* ri, GeoPosition p, GeoPosition own_ship);
+    GeoPosition Polar2Pos(RadarInfo* ri, Polar pol, GeoPosition radar_position);
+    Polar Pos2Polar(RadarInfo* ri, GeoPosition p, GeoPosition radar_position);
     RadarInfo* CheckBestRadar(ExtendedPosition xx);
 };
 
