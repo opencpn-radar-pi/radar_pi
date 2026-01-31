@@ -483,7 +483,7 @@ void RadarInfo::ProcessRadarSpoke(SpokeBearing angle, SpokeBearing bearing, uint
                 pixels_per_meter, range_meters);
     m_pixels_per_meter = pixels_per_meter;
     ResetSpokes();
-    if (m_pi->m_arpa) {  // $$$ move to radar_pi? check all arpa in this
+    if (m_pi->m_arpa) {
       m_pi->m_arpa->ClearContours();
     }
   }

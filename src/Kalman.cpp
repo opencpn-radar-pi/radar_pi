@@ -49,8 +49,6 @@ static Matrix<double, 4> ZeroMatrix4;
 static Matrix<double, 2> ZeroMatrix2;
 
 KalmanFilter::KalmanFilter() {
-  //m_spokes = spokes; $$$
-
   // as the measurement to state transformation is non-linear, the extended Kalman filter is used
   // as the state transformation is linear, the state transformation matrix F is equal to the jacobian A
   // f is the state transformation function Xk <- Xk-1
