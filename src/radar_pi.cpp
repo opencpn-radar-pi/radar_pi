@@ -706,7 +706,7 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   SetCanvasContextMenuItemViz(m_context_menu_show_id, !show);
   SetCanvasContextMenuItemViz(m_context_menu_hide_id, show);
 
-  SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, overlay); // $$$ forced to show, not longer working?
+  SetCanvasContextMenuItemViz(m_context_menu_acquire_radar_target, overlay);
   SetCanvasContextMenuItemViz(m_context_menu_delete_radar_target, show_acq_delete);
   SetCanvasContextMenuItemViz(m_context_menu_delete_all_radar_targets, targets_tracked);
 }
@@ -849,7 +849,6 @@ void radar_pi::OnContextMenuItemCallback(int id) {
         target_pos.sd_speed_kn = 0.;
         target_pos.speed_kn = 0.;
         target_pos.time = 0;
-        LOG_ARPA(wxT("$$$ acquire new target"));
         m_arpa->AcquireNewMARPATarget(best_radar, target_pos);
       } else {
         LOG_INFO(wxT(" **error right click pos lat=%f, lon=%f"), m_right_click_pos.lat, m_right_click_pos.lon);
@@ -1382,7 +1381,7 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
     }
   }
 
-  // int doppler = false;  // $$$?
+  // int doppler = false;  // todo activate Doppler in target tracking?
   // int autotrack = false;
 
 
@@ -1412,7 +1411,6 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
  
   if (!transmitting_radar_present || !m_bpos_set) {
     m_arpa->RadarLost();  // conditions for target tracking not set, delete all targets
-    LOG_ARPA(wxT("$$$ RadarLost delete all targets"));
   }
   if (any_data_seen && m_settings.show) {
     CheckGuardZoneBogeys();
@@ -1591,10 +1589,8 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
       }
     }
   }
-  
-
+ 
   m_draw_time_overlay_ms[canvasIndex] = (wxGetUTCTimeMillis() - now).GetLo();
-
   if (canvasIndex == 0) {
     ScheduleWindowRefresh();
   }
@@ -1636,23 +1632,6 @@ void radar_pi::RenderGuardZone() {
     green = 0;
     blue = 200;
   }
-
-  /*int range = 20000;*/
-  
-
-  /*for (size_t z = 0; z < m_no_transmit_zones; z++) {   $$$ to do
-    if (m_no_transmit_start[z].GetState() != RCS_OFF) {
-      start_bearing = m_no_transmit_start[z].GetValue();
-      end_bearing = m_no_transmit_end[z].GetValue();
-
-      if (start_bearing != end_bearing && start_bearing >= -180 && end_bearing >= -180) {
-        start_bearing = MOD_DEGREES(start_bearing);
-        end_bearing = MOD_DEGREES(end_bearing);
-        glColor4ub(250, 255, 255, alpha);
-        DrawFilledArc(range, 0, start_bearing, end_bearing);
-      }
-    }
-  }*/
 }
 
 
@@ -2388,7 +2367,7 @@ RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
         ((range = m_radar[r]->m_actual_range_meters) < best_range) &&  // Best range in meters
         m_radar[r]->GetRadarPosition(&radar_position) &&             // Get position
                       // allow some room for target size, convert to meters
-        local_distance(radar_position, position) * 1852. < (double)range * 0.98) {  // Is in range
+        local_distance(radar_position, position) * 1852. < (double)range * 0.985) {  // Is in range
       best_range = (int) range;
       best_radar = m_radar[r];
     }

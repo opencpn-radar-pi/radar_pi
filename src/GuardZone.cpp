@@ -216,7 +216,7 @@ void GuardZone::SearchTargets() {
       end_bearing += rc->m_spokes;
     }
     if (m_type == GZ_CIRCLE) {
-      start_bearing = rc->m_last_received_spoke - 1100;  // forward of the beam  // $$$ this is all empty! before mod
+      start_bearing = rc->m_last_received_spoke - 1100;  // forward of the beam
       end_bearing = rc->m_last_received_spoke;
     }
 

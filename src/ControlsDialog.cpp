@@ -339,8 +339,8 @@ bool RadarRangeControlButton::ToggleState() {
 
   LOG_VERBOSE(wxT("%s Button '%s' toggle Auto %d"), m_parent->m_log_name.c_str(), GetName(), state);
 
-  // If any of the canvases has this as overlay we allow auto range  // $$$ check autorange
-  bool allowManual = false;
+  // If any of the canvases has this as overlay we allow auto range
+  bool allowManual = false;   // todo check this in relation to multiple overlays
   for (int i = 0; i < CANVAS_COUNT; i++) {
     if (m_parent->m_ri->m_overlay_canvas[i].GetValue() > 0) {
       allowManual = true;
@@ -1481,7 +1481,7 @@ void ControlsDialog::EnterEditMode(RadarControlButton* button) {
     hasAuto = false;
     for (int i = 0; i < CANVAS_COUNT; i++) {
       if (m_ri->m_overlay_canvas[i].GetValue() > 0) {
-        hasAuto = true;  // $$$ check auto needed here?
+        hasAuto = true;
         break;
       }
     }

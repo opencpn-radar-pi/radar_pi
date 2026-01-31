@@ -90,7 +90,6 @@ public:
     Matrix<double, 4> I;
 
 private:
-   // size_t m_spokes;  $$$
 };
 
 class GPSKalmanFilter {
