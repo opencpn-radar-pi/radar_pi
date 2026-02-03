@@ -107,7 +107,7 @@ public:
     bool GetTarget(RadarInfo* ri, Polar expected_pol, Polar* target_pol, size_t dist);
     void RefreshTarget(double speed, int pass);
     void PassAIVDMtoOCPN();
-    void PassTTMtoOCPN(Polar* p, OCPN_target_status s);
+    void PassTTMtoOCPN();
     void SetStatusLost();
     void ResetPixels(RadarInfo* ri);
     void PixelCounter(RadarInfo* ri);

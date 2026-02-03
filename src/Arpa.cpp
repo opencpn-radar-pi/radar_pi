@@ -699,32 +699,18 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
       }
 
       if (m_status >= STATUS_TO_OCPN) {
-        //  double dist2target = pol.r / m_ri->m_pixels_per_meter;
         if (m_target_id == 0) {
           m_target_id = m_arpa->MakeNewTargetId();
         }
-        PassAIVDMtoOCPN();  // status s not used
-        Polar polar_position;
-        polar_position = Pos2Polar(m_ri, m_position.pos, m_radar_position);
-        PassTTMtoOCPN(&polar_position, T);  // T indicates status Active
-
-        //// send target data to OCPN
-        //pol = Pos2Polar(m_position, own_pos);
-        //if (m_status >= STATUS_TO_OCPN) {
-        //  OCPN_target_status s;
-        //  if (m_status >= Q_NUM) s = Q;
-        //  if (m_status > T_NUM) s = T;
-        //  if (m_lost_count > 0) {
-        //    // if target was not seen last sweep, color yellow
-        //    s = Q;
-        //  }
-        //  // Check for AIS target at (M)ARPA position
-        //  double dist2target = pol.r / m_ri->m_pixels_per_meter;
-        //  if (m_pi->FindAIS_at_arpaPos(m_position.pos, dist2target)) s = L;
-        //  PassARPAtoOCPN(&pol, s);
-        //}
-
-
+        if (m_pi->m_settings.AIVDMtoO) {
+          PassAIVDMtoOCPN();
+        }
+        // send TTM target data to OCPN
+        if (m_pi->m_settings.TTMtoO) {
+          
+          //  if (m_pi->FindAIS_at_arpaPos(m_position.pos, dist2target)) s = L;  // activate later after testing target speed
+          PassTTMtoOCPN();
+        }
       }
     }
     m_refreshed = FOUND;
@@ -943,7 +929,6 @@ bool ArpaTarget::GetTarget(RadarInfo* ri, Polar predicted_pol, Polar* measured_p
 
 void ArpaTarget::PassAIVDMtoOCPN() {
   wxCriticalSectionLocker lock(m_protect_target_data);
-  if (!m_pi->m_settings.AIVDMtoO) return;
   wxString s_TargID, s_Bear_Unit, s_Course_Unit;
   wxString s_speed, s_course, s_Dist_Unit, s_status;
   wxString s_target_name;
@@ -959,10 +944,14 @@ void ArpaTarget::PassAIVDMtoOCPN() {
   PushNMEABuffer(result);
 }
 
-void ArpaTarget::PassTTMtoOCPN(Polar* pol, OCPN_target_status status) {
+void ArpaTarget::PassTTMtoOCPN() {
   wxCriticalSectionLocker lock(m_protect_target_data);
-  if (!m_pi->m_settings.TTMtoO) return;
-  LOG_ARPA(wxT("Sending TTM to O, target_id= %i, status=%i"), m_target_id, status);
+  if (!m_ri) {
+    LOG_ARPA(wxT("Error sending TTM to O, originating radar not known"));
+    return;
+  }
+  Polar pol = Pos2Polar(m_ri, m_position.pos, m_radar_position);
+  LOG_ARPA(wxT("Sending TTM to O, target_id= %i, status=%i"), m_target_id, m_status);
   wxString s_TargID, s_Bear_Unit, s_Course_Unit;
   wxString s_speed, s_course, s_Dist_Unit, s_status;
   wxString s_bearing;
@@ -975,40 +964,34 @@ void ArpaTarget::PassTTMtoOCPN(Polar* pol, OCPN_target_status status) {
   s_Bear_Unit = wxEmptyString;  // Bearing Units  R or empty
   s_Course_Unit = wxT("T");     // Course type R; Realtive T; true
   s_Dist_Unit = wxT("N");       // Speed/Distance Unit K, N, S N= NM/h = Knots
-   switch (status) {
-   case Q:
-     s_status = wxT("Q");  // yellow
-     break;
-   case T:
-     s_status = wxT("T");  // green
-     break;
-   case L:
-     LOG_ARPA(wxT(" id=%i, status == lost"), m_target_id);
-     s_status = wxT("L");  // ?
-     break;
-   }
 
-  if (m_target_doppler == ANY) {
+  if (m_lost_count > 0) {  // target was not seen last sweep, color yellow
+    s_status = wxT("Q");
+  } else if (m_status > T_NUM) {
+    s_status = wxT("T");  // green
+  } else if (m_status >= Q_NUM) {
     s_status = wxT("Q");  // yellow
   } else {
-    s_status = wxT("T");
+    s_status = wxT("L");  // Lost
   }
-
-  if (!m_ri) {
-    LOG_ARPA(wxT("Error sending TTM to O, originating radar not known"));
-    return;
+  if (m_status == LOST) {
+    s_status = wxT("L");  // Lost
   }
-  double dist = pol->r / m_ri->m_pixels_per_meter / 1852.;
-  double bearing = pol->angle * 360. / m_ri->m_spokes;
-
+  // Check for AIS target at (M)ARPA position
+  double dist2target = pol.r / m_ri->m_pixels_per_meter;
+  if (m_pi->FindAIS_at_arpaPos(m_position.pos, dist2target)) {
+    s_status = wxT("L");
+  } 
+  double dist = pol.r / m_ri->m_pixels_per_meter / 1852.;
+  double bearing = pol.angle * 360. / m_ri->m_spokes;
   if (bearing < 0) bearing += 360;
   s_TargID = wxString::Format(wxT("%2i"), m_target_id);
   s_speed = wxString::Format(wxT("%4.2f"), m_position.speed_kn);
   s_course = wxString::Format(wxT("%3.1f"), m_course);
   if (m_automatic) {
-    s_target_name = wxString::Format(wxT("ARPA%2i"), m_target_id);
+    s_target_name = wxString::Format(wxT("ARPA%5i"), m_target_id);
   } else {
-    s_target_name = wxString::Format(wxT("MARPA%2i"), m_target_id);
+    s_target_name = wxString::Format(wxT("MARPA%5i"), m_target_id);
   }
   s_distance = wxString::Format(wxT("%f"), dist);
   s_bearing = wxString::Format(wxT("%f"), bearing);
@@ -1102,11 +1085,15 @@ wxString ArpaTarget::EncodeAIVDM(int mmsi, double speed, double lon, double lat,
 }
 
 void ArpaTarget::SetStatusLost() {
+  if (m_status >= STATUS_TO_OCPN && m_pi->m_settings.TTMtoO) {
+    m_status = LOST;
+    PassTTMtoOCPN();
+  }
   m_contour_length = 0;
   m_previous_contour_length = 0;
   m_lost_count = 0;
   m_kalman.ResetFilter();
-  m_status = LOST;
+  
   m_automatic = false;
   m_refresh_time = 0;
   m_position.speed_kn = 0.;
@@ -1114,6 +1101,7 @@ void ArpaTarget::SetStatusLost() {
   m_stationary = 0;
   m_position.dlat_dt = 0.;
   m_position.dlon_dt = 0.;
+  m_status = LOST;
 }
 
 #define SHADOW_MARGIN 5
@@ -1287,9 +1275,10 @@ void Arpa::DeleteTarget(const GeoPosition& pos) {
   }
 
   if (del_target > -1) {
+    m_targets[del_target]->SetStatusLost(); // handles the deletion of the target, also sends TTM to O if needed.
     LOG_ARPA(wxT(" Deleting (M)ARPA target at position (%f,%f) which is %f meters from (%f,%f)"),
              m_targets[del_target]->m_position.pos.lat, m_targets[del_target]->m_position.pos.lon, min_dist, pos.lat, pos.lon);
-    m_targets.erase(m_targets.begin() + del_target);
+    //m_targets.erase(m_targets.begin() + del_target);
   } else {
     LOG_ARPA(wxT(" Could not find (M)ARPA target to delete within %f meters from (%f,%f)"), min_dist, pos.lat, pos.lon);
   }
@@ -1471,7 +1460,12 @@ void Arpa::CalculateCentroid(ArpaTarget* target) {
   // real calculation still to be done
 }
 
-void Arpa::DeleteAllTargets() { m_targets.clear(); }
+void Arpa::DeleteAllTargets() { 
+ // m_targets.clear(); // following will also delete TTM targets
+  for (auto target = m_targets.begin(); target != m_targets.end(); ++target) {
+   (*target)->SetStatusLost();
+ }
+}
 
 bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler doppler) {
   // acquires new target at polar position pol
