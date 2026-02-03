@@ -962,7 +962,7 @@ void ArpaTarget::PassAIVDMtoOCPN() {
 void ArpaTarget::PassTTMtoOCPN(Polar* pol, OCPN_target_status status) {
   wxCriticalSectionLocker lock(m_protect_target_data);
   if (!m_pi->m_settings.TTMtoO) return;
-  LOG_ARPA(wxT("Sending TTM to O, target_id= %i"), m_target_id);
+  LOG_ARPA(wxT("Sending TTM to O, target_id= %i, status=%i"), m_target_id, status);
   wxString s_TargID, s_Bear_Unit, s_Course_Unit;
   wxString s_speed, s_course, s_Dist_Unit, s_status;
   wxString s_bearing;
@@ -975,18 +975,18 @@ void ArpaTarget::PassTTMtoOCPN(Polar* pol, OCPN_target_status status) {
   s_Bear_Unit = wxEmptyString;  // Bearing Units  R or empty
   s_Course_Unit = wxT("T");     // Course type R; Realtive T; true
   s_Dist_Unit = wxT("N");       // Speed/Distance Unit K, N, S N= NM/h = Knots
-  // switch (status) {
-  // case Q:
-  //   s_status = wxT("Q");  // yellow
-  //   break;
-  // case T:
-  //   s_status = wxT("T");  // green
-  //   break;
-  // case L:
-  //   LOG_ARPA(wxT(" id=%i, status == lost"), m_target_id);
-  //   s_status = wxT("L");  // ?
-  //   break;
-  // }
+   switch (status) {
+   case Q:
+     s_status = wxT("Q");  // yellow
+     break;
+   case T:
+     s_status = wxT("T");  // green
+     break;
+   case L:
+     LOG_ARPA(wxT(" id=%i, status == lost"), m_target_id);
+     s_status = wxT("L");  // ?
+     break;
+   }
 
   if (m_target_doppler == ANY) {
     s_status = wxT("Q");  // yellow
