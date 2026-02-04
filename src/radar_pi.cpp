@@ -1601,7 +1601,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
 
 void radar_pi::RenderGuardZone() {
   int start_bearing = 0, end_bearing = 0;
-  GLubyte red = 0, green = 200, blue = 0, alpha = 50;  // alpha sets transparancy of guard zones on overlay
+  GLubyte red = 0, green = 200, blue = 0, alpha = 20;  // alpha sets transparancy of guard zones on overlay
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]->m_alarm_on || m_guard_zone[z]->m_arpa_on || m_guard_zone[z]->m_show_time + 5 > time(0)) {
@@ -1829,7 +1829,7 @@ bool radar_pi::IsThereTxOverlayRadar(int canvas_index) {
     pConf->Read(wxT("ColourDopplerReceding"), &s, "cyan");
     m_settings.doppler_receding_colour = wxColour(s);
     pConf->Read(wxT("DeveloperMode"), &m_settings.developer_mode, false);
-    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 0);
+    pConf->Read(wxT("DrawingMethod"), &m_settings.drawing_method, 1);
     pConf->Read(wxT("GuardZoneDebugInc"), &m_settings.guard_zone_debug_inc, 0);
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
     pConf->Read(wxT("OverlayStandby"), &m_settings.overlay_on_standby, true);
