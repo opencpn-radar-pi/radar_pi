@@ -707,8 +707,6 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
         }
         // send TTM target data to OCPN
         if (m_pi->m_settings.TTMtoO) {
-          
-          //  if (m_pi->FindAIS_at_arpaPos(m_position.pos, dist2target)) s = L;  // activate later after testing target speed
           PassTTMtoOCPN();
         }
       }
@@ -728,6 +726,9 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
     }
     if (pass == LAST_PASS) {
       m_lost_count++;
+      if (m_pi->m_settings.TTMtoO) {
+        PassTTMtoOCPN();
+      }
     }
 
     // delete if not found too often
