@@ -243,7 +243,13 @@ void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, ui
 
   size_t start_r = m_ri->m_start_overlay_r;
   if (m_channels == SHADER_COLOR_CHANNELS) {
-    unsigned char *d = m_data + (angle * m_spoke_len_max + start_r) * m_channels;
+    unsigned char *d = m_data + (angle * m_spoke_len_max) * m_channels;
+    for (size_t r = 0; r < start_r; r++) {
+      *d++ = 0;
+      *d++ = 0;
+      *d++ = 0;
+      *d++ = 0;
+    }
     for (size_t r = start_r; r < len; r++) {
       GLubyte strength = data[r];
       BlobColour colour = m_ri->m_colour_map[strength];
