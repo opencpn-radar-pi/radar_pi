@@ -1524,15 +1524,15 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
     m_cog = m_COGAvg;
     m_vp_rotation = vp->rotation;
   }
-  RadarInfo *ri_0;
+  RadarInfo *ri;
   {
     wxCriticalSectionLocker lock(m_sort_tx_radars);
-    ri_0 = m_sorted_tx_radars[0];
+    ri = m_sorted_tx_radars[0];
   }
   if (M_SETTINGS.show                                   // Radar shown
       && IsThereTxOverlayRadar(m_current_canvas_index)  // Overlay desired
       && m_heading_source != HEADING_NONE               // Heading is valid
-      && ri_0 && ri_0->GetRadarPosition(&radar_pos)) {  // Boat position known
+      && ri && ri->GetRadarPosition(&radar_pos)) {  // Boat position known
 
     GeoPosition pos_min = {vp->lat_min, vp->lon_min};
     GeoPosition pos_max = {vp->lat_max, vp->lon_max};
@@ -1547,6 +1547,28 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
 
     wxPoint boat_center;
     GetCanvasPixLL(vp, &boat_center, radar_pos.lat, radar_pos.lon);
+
+    // if this radar is overlayed on multiple canvases only adjust auto range on one of them.
+    // we choose the highest canvas, which is just an arbitrary choice by us.
+    // When there are more radar overlays on a canvas autorange is disabled
+    int canvas = CANVAS_COUNT;
+    int overlay_count = 0;
+    ri = NULL;
+    for (; canvas >= 0; canvas--) {
+      for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+        if (!m_sorted_tx_radars[r]) continue;
+        ri = m_sorted_tx_radars[r];
+        if (m_sorted_tx_radars[r]->m_overlay_canvas[canvas].GetValue()) {
+          ri = m_sorted_tx_radars[r];
+          overlay_count++;
+        }
+      }
+      if (overlay_count == 1) break; // highest canvas with 1 overlay -> autorange
+    } 
+          
+    if (overlay_count == 1 && canvasIndex == canvas) {
+      ri->SetAutoRangeMeters(auto_range_meters);
+    }
 
     //    Calculate image scale factor
     double dist_y, v_scale_ppm;
