@@ -83,8 +83,6 @@ endif()
 # pkg_build_info: Info about build host (link to log if available).
 set(pkg_build_info ${_pkg_build_info})
 
-message(STATUS "Metadata.cmake: git_hash=${_git_hash} git_tag=${_git_tag}")
-
 # pkg_repo: Repository to use for upload
 if ("${_git_tag}" STREQUAL "")
   set(pkg_repo "$ENV{CLOUDSMITH_UNSTABLE_REPO}")

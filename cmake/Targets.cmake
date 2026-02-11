@@ -115,10 +115,10 @@ function (android_target)
   )
   add_custom_target(android-build DEPENDS android-conf-stamp)
   add_custom_command(
-    TARGET android-build COMMAND ${_build_target_cmd} ${PKG_NAME}
+    TARGET android-build COMMAND ${_build_target_cmd} ${PKG_NAME} POST_BUILD
   )
   add_custom_target(android-install)
-  add_custom_command(TARGET android-install COMMAND ${_install_cmd})
+  add_custom_command(TARGET android-install COMMAND ${_install_cmd} POST_BUILD)
 
   create_finish_script()
   add_custom_target(android-finish)
@@ -126,6 +126,7 @@ function (android_target)
     TARGET android-finish
     COMMAND cmake -P ${CMAKE_BINARY_DIR}/finish_tarball.cmake
     VERBATIM
+    POST_BUILD
   )
   add_custom_target(android)
   add_dependencies(android android-finish)
@@ -149,11 +150,11 @@ function (tarball_target)
 
   add_custom_target(tarball-build DEPENDS tarball-conf-stamp)
   add_custom_command(
-    TARGET tarball-build COMMAND ${_build_target_cmd} ${PKG_NAME}
+    TARGET tarball-build COMMAND ${_build_target_cmd} ${PKG_NAME} POST_BUILD
   )
 
   add_custom_target(tarball-install)
-  add_custom_command(TARGET tarball-install COMMAND ${_install_cmd})
+  add_custom_command(TARGET tarball-install COMMAND ${_install_cmd} POST_BUILD)
 
   create_finish_script()
   add_custom_target(tarball-finish)
@@ -161,6 +162,7 @@ function (tarball_target)
     TARGET tarball-finish      # Compute checksum
     COMMAND cmake -P ${CMAKE_BINARY_DIR}/finish_tarball.cmake
     VERBATIM
+    POST_BUILD
   )
   add_dependencies(tarball-install tarball-build)
   add_dependencies(tarball-finish tarball-install)
@@ -179,6 +181,7 @@ function (flatpak_target manifest)
       -Uplugin_target
       $ENV{CMAKE_BUILD_OPTS}
       ${CMAKE_BINARY_DIR}
+    POST_BUILD
   )
 
   # Script used to copy out files from the flatpak sandbox
@@ -238,6 +241,7 @@ function (flatpak_target manifest)
     TARGET flatpak
     COMMAND cmake -P ${CMAKE_BINARY_DIR}/build_flatpak.cmake
     VERBATIM
+    POST_BUILD
   )
   add_dependencies(flatpak flatpak-conf)
 endfunction ()
