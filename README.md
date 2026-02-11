@@ -10,7 +10,7 @@ It supports the following yacht radars:
 * Garmin xHD
 * Navico Broadband Radar BR24, 3G and 4G
 * Navico HALO (20, 20+, 24, 4, 6, 8)
-* Various Raymarine radars
+* Various Raymarine radars including Quantum Q24C and Q24D.
 * A simple emulator
 
 _WARNING_ Newer Garmin radars like xHD2 and Fantom are NOT supported. Furuno radars and all others not in the above list are not supported.
