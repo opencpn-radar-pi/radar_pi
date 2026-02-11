@@ -31,3 +31,55 @@ modules:
       - type: git
         url: ..
         branch: HEAD
+# diff --git a/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml b/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+# index 99ff7323..d43f757c 100644
+# --- a/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+# +++ b/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+# @@ -1,8 +1,8 @@
+#  #
+#  # Branches and runtime-version:
+#  #   - master     Nigthly builds, 22.08 runtime
+# -#   - beta       Flathub beta branch with 24.08 runtime.
+# -#   - stable     Flathub main branch x86_64 with 22.08 runtime.
+# +#   - beta       Flathub beta branch with 22.08 runtime.
+# +#   - stable     Flathub main branch x86_64 with 20.08 runtime.
+#  #
+#  # This is a template used to create a complete manifest in the build
+#  # directory. Doing so, it handles three tokens:
+# @@ -20,7 +20,7 @@ id: org.opencpn.OpenCPN.Plugin.@plugin_name
+#  
+#  runtime: org.opencpn.OpenCPN
+#  runtime-version: stable
+# -sdk: org.freedesktop.Sdk//22.08
+# +sdk: org.freedesktop.Sdk//24.08
+#  build-extension: true
+#  separate-locales: false
+#  appstream-compose: false
+# @@ -50,3 +50,27 @@ modules:
+#            - type: git
+#              url: ..
+#              branch: HEAD
+# +# diff --git a/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml b/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+# +# index d36ebc8..99ff732 100644
+# +# --- a/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+# +# +++ b/flatpak/org.opencpn.OpenCPN.Plugin.shipdriver.yaml
+# +# @@ -1,8 +1,8 @@
+# +#  #
+# +#  # Branches and runtime-version:
+# +#  #   - master     Nigthly builds, 22.08 runtime
+# +# -#   - beta       Flathub beta branch with 22.08 runtime.
+# +# -#   - stable     Flathub main branch x86_64 with 20.08 runtime.
+# +# +#   - beta       Flathub beta branch with 24.08 runtime.
+# +# +#   - stable     Flathub main branch x86_64 with 22.08 runtime.
+# +#  #
+# +#  # This is a template used to create a complete manifest in the build
+# +#  # directory. Doing so, it handles three tokens:
+# +# @@ -19,7 +19,7 @@
+# +#  id: org.opencpn.OpenCPN.Plugin.@plugin_name
+# +#  
+# +#  runtime: org.opencpn.OpenCPN
+# +# -runtime-version: beta   # FIXME(alec) Revert to stable when updated to 22.08
+# +# +runtime-version: stable
+# +#  sdk: org.freedesktop.Sdk//22.08
+# +#  build-extension: true
+# +#  separate-locales: false

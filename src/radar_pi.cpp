@@ -55,9 +55,9 @@ int g_verbose;
 
 // the class factories, used to create and destroy instances of the PlugIn
 
-extern "C" DECL_EXP opencpn_plugin *create_pi(void *ppimgr) { return new radar_pi(ppimgr); }
+extern "C" DECL_EXP opencpn_plugin* create_pi(void* ppimgr) { return new radar_pi(ppimgr); }
 
-extern "C" DECL_EXP void destroy_pi(opencpn_plugin *p) { delete p; }
+extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) { delete p; }
 
 /********************************************************************************************************/
 //   Distance measurement for simple sphere
@@ -116,7 +116,7 @@ static double radar_distance(GeoPosition pos1, GeoPosition pos2, char unit) {
  *
  * Distance in m, bearing in radians
  */
-GeoPosition local_position(GeoPosition &pos, double distance, double bearing) {
+GeoPosition local_position(GeoPosition& pos, double distance, double bearing) {
   const double R = 6378100.;  // Radius of the Earth
   double lat = deg2rad(pos.lat);
   double lon = deg2rad(pos.lon);
@@ -152,7 +152,7 @@ END_EVENT_TABLE()
 //
 //---------------------------------------------------------------------------------------------------------
 
-radar_pi::radar_pi(void *ppimgr) : opencpn_plugin_116(ppimgr), m_raymarine_locator(0) {
+radar_pi::radar_pi(void* ppimgr) : opencpn_plugin_118(ppimgr), m_raymarine_locator(0) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
   m_predicted_position_initialised = false;
@@ -354,15 +354,15 @@ int radar_pi::Init(void) {
 
   wxMenu dummy_menu;
 
-  wxMenuItem *mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
-  wxMenuItem *mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
+  wxMenuItem* mi1 = new wxMenuItem(&dummy_menu, -1, _("Show radar"));
+  wxMenuItem* mi2 = new wxMenuItem(&dummy_menu, -1, _("Hide radar"));
 
-  wxMenuItem *mi4 = new wxMenuItem(&dummy_menu, -1, _("Acquire radar target"));
-  wxMenuItem *mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete radar target"));
-  wxMenuItem *mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all radar targets"));
+  wxMenuItem* mi4 = new wxMenuItem(&dummy_menu, -1, _("Acquire radar target"));
+  wxMenuItem* mi5 = new wxMenuItem(&dummy_menu, -1, _("Delete radar target"));
+  wxMenuItem* mi6 = new wxMenuItem(&dummy_menu, -1, _("Delete all radar targets"));
 
 #ifdef __WXMSW__
-  wxFont *qFont = OCPNGetFont(_("Menu"), 10);
+  wxFont* qFont = OCPNGetFont(_("Menu"), 10);
   mi1->SetFont(*qFont);
   mi2->SetFont(*qFont);
   mi4->SetFont(*qFont);
@@ -499,14 +499,15 @@ bool radar_pi::DeInit(void) {
 }
 
 int radar_pi::GetAPIVersionMajor() { return MY_API_VERSION_MAJOR; }
-
 int radar_pi::GetAPIVersionMinor() { return MY_API_VERSION_MINOR; }
-
 int radar_pi::GetPlugInVersionMajor() { return PLUGIN_VERSION_MAJOR; }
-
 int radar_pi::GetPlugInVersionMinor() { return PLUGIN_VERSION_MINOR; }
+int radar_pi::GetPlugInVersionPatch() { return PLUGIN_VERSION_PATCH; }
+int radar_pi::GetPlugInVersionPost() { return PLUGIN_VERSION_TWEAK; }
+const char* radar_pi::GetPlugInVersionPre() { return PKG_PRERELEASE; }
+const char* radar_pi::GetPlugInVersionBuild() { return PKG_BUILD_INFO; }
 
-wxBitmap *radar_pi::GetPlugInBitmap() { return m_pdeficon; }
+wxBitmap* radar_pi::GetPlugInBitmap() { return m_pdeficon; }
 
 wxString radar_pi::GetCommonName() { return wxT("Radar"); }
 
@@ -599,7 +600,7 @@ bool radar_pi::MakeRadarSelection() {
   return ret;
 }
 
-void radar_pi::ShowPreferencesDialog(wxWindow *parent) {
+void radar_pi::ShowPreferencesDialog(wxWindow* parent) {
   LOG_DIALOG(wxT("ShowPreferencesDialog"));
 
   bool oldShow = M_SETTINGS.show;
@@ -706,7 +707,7 @@ void radar_pi::ShowRadarControl(int radar, bool show, bool reparent) {
   m_radar[radar]->ShowControlDialog(show, reparent);
 }
 
-void radar_pi::OnControlDialogClose(RadarInfo *ri) {
+void radar_pi::OnControlDialogClose(RadarInfo* ri) {
   if (ri->m_control_dialog) {
     m_settings.control_pos[ri->m_radar] = ri->m_control_dialog->GetPosition();
   }
@@ -850,7 +851,7 @@ void radar_pi::PassHeadingToOpenCPN() {
   wxString nmea;
   char sentence[40];
   char checksum = 0;
-  char *p;
+  char* p;
 
   snprintf(sentence, sizeof(sentence), "RAHDT,%.1f,T", m_hdt);
 
@@ -1064,7 +1065,7 @@ void radar_pi::ScheduleWindowRefresh() {
   }
 }
 
-void radar_pi::OnTimerNotify(wxTimerEvent &event) {
+void radar_pi::OnTimerNotify(wxTimerEvent& event) {
   if (!EnsureRadarSelectionComplete(false)) {
     return;
   }
@@ -1080,7 +1081,7 @@ void radar_pi::OnTimerNotify(wxTimerEvent &event) {
     // always refresh canvas0 if radar window is visible
     // and refresh canvas with overlay
     for (int r = 0; r < CANVAS_COUNT; r++) {
-      wxWindow *canvas = GetCanvasByIndex(r);
+      wxWindow* canvas = GetCanvasByIndex(r);
       if (m_chart_overlay[r] >= 0 || (r == 0 && ppi_visible)) {
         if (canvas) {
           canvas->Refresh(false);
@@ -1224,7 +1225,7 @@ void radar_pi::TimedControlUpdate() {
   UpdateState();
 }
 
-void radar_pi::TimedUpdate(wxTimerEvent &event) {
+void radar_pi::TimedUpdate(wxTimerEvent& event) {
   // Started in Init(), running every 500 ms
   // No screen output in this thread
 
@@ -1341,13 +1342,13 @@ void radar_pi::SetOpenGLMode(OpenGLMode mode) {
   }
 }
 
-wxGLContext *radar_pi::GetChartOpenGLContext() { return m_opencpn_gl_context; }
+wxGLContext* radar_pi::GetChartOpenGLContext() { return m_opencpn_gl_context; }
 
 //**************************************************************************************************
 // Radar Image Graphic Display Processes
 //**************************************************************************************************
 
-bool radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
+bool radar_pi::RenderOverlay(wxDC& dc, PlugIn_ViewPort* vp) {
   if (!m_initialized) {
     return true;
   }
@@ -1360,7 +1361,7 @@ bool radar_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp) {
 
 // Called by Plugin Manager on main system process cycle
 
-bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int canvasIndex) {
+bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort* vp, int canvasIndex) {
   GeoPosition radar_pos;
   // prevent this being called recursively
   // no critical section locker (will wait), better to return immediately
@@ -1483,7 +1484,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort
 //****************************************************************************
 
 bool radar_pi::LoadConfig(void) {
-  wxFileConfig *pConf = m_pconfig;
+  wxFileConfig* pConf = m_pconfig;
   int v, x, y, state;
   wxString s;
 
@@ -1533,7 +1534,7 @@ bool radar_pi::LoadConfig(void) {
 
     size_t n = 0;
     for (int r = 0; r < RADARS; r++) {
-      RadarInfo *ri = m_radar[n];
+      RadarInfo* ri = m_radar[n];
       if (ri == NULL) {
         wxLogError(wxT("Cannot load radar %d as the object is not initialised"), r + 1);
         continue;
@@ -1690,7 +1691,7 @@ bool radar_pi::LoadConfig(void) {
 }
 
 bool radar_pi::SaveConfig(void) {
-  wxFileConfig *pConf = m_pconfig;
+  wxFileConfig* pConf = m_pconfig;
   if (pConf) {
     pConf->DeleteGroup(wxT("/Plugins/Radar"));
     pConf->SetPath(wxT("/Plugins/Radar"));
@@ -1804,9 +1805,9 @@ bool radar_pi::SaveConfig(void) {
 }
 
 // Positional Data passed from NMEA to plugin
-void radar_pi::SetPositionFix(PlugIn_Position_Fix &pfix) {}
+void radar_pi::SetPositionFix(PlugIn_Position_Fix& pfix) {}
 
-void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
+void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex& pfix) {
   wxCriticalSectionLocker lock(m_exclusive);
 
   time_t now = time(0);
@@ -1828,8 +1829,8 @@ void radar_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix) {
   LOG_VERBOSE(wxT("SetPositionFixEx var=%f var_wd=%d"), pfix.Var, NOT_TIMED_OUT(now, m_var_timeout));
 
   if (!wxIsNaN(pfix.Sog)) {
-   m_sog=pfix.Sog;
-   LOG_VERBOSE(wxT("SOG from OpenCPN (%d)"), m_sog);
+    m_sog = pfix.Sog;
+    LOG_VERBOSE(wxT("SOG from OpenCPN (%d)"), m_sog);
   }
 
   if (!wxIsNaN(pfix.Hdt)) {
@@ -1959,7 +1960,7 @@ void radar_pi::UpdateCOGAvg(double cog) {
   }
 }
 
-void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
+void radar_pi::SetPluginMessage(wxString& message_id, wxString& message_body) {
   static const wxString WMM_VARIATION_BOAT = wxString(_T("WMM_VARIATION_BOAT"));
   wxString info;
   if (message_id.Cmp(WMM_VARIATION_BOAT) == 0) {
@@ -2042,7 +2043,7 @@ void radar_pi::SetPluginMessage(wxString &message_id, wxString &message_body) {
   }
 }
 
-bool radar_pi::FindAIS_at_arpaPos(const GeoPosition &pos, const double &arpa_dist) {
+bool radar_pi::FindAIS_at_arpaPos(const GeoPosition& pos, const double& arpa_dist) {
   m_arpa_max_range = MAX(arpa_dist + 200, m_arpa_max_range);  // For AIS search area
   if (m_ais_in_arpa_zone.size() < 1) return false;
   bool hit = false;
@@ -2105,7 +2106,7 @@ void radar_pi::CacheSetToolbarToolBitmaps() {
    but only a 1 Hz GPS update.
 */
 
-void radar_pi::SetNMEASentence(wxString &sentence) {
+void radar_pi::SetNMEASentence(wxString& sentence) {
   m_NMEA0183 << sentence;
   time_t now = time(0);
   double hdm = nan("");
@@ -2176,7 +2177,7 @@ void radar_pi::SetCursorLatLon(double lat, double lon) {
   m_cursor_pos.lon = lon;
 }
 
-bool radar_pi::MouseEventHook(wxMouseEvent &event) {
+bool radar_pi::MouseEventHook(wxMouseEvent& event) {
   if (event.LeftDown()) {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       m_radar[r]->SetMousePosition(m_cursor_pos);
@@ -2188,7 +2189,7 @@ bool radar_pi::MouseEventHook(wxMouseEvent &event) {
   return false;
 }
 
-void radar_pi::logBinaryData(const wxString &what, const uint8_t *data, int size) {
+void radar_pi::logBinaryData(const wxString& what, const uint8_t* data, int size) {
   wxString explain;
   int i = 0;
   explain.Alloc(size * 3 + 50);
