@@ -204,6 +204,7 @@ for f in  \
     build-conf.rc \
     libs \
     build-deps/macos-cache-stamp \
+    build-deps/control \
     build-deps/0001-matrix.h-Patch-attributes-handling-wxwidgets-22790.patch \
     UPDATE_PLUGIN_API.md
 do
@@ -248,6 +249,16 @@ if [ -e update-ignored ]; then
     done
 fi
 
+if git grep -q libunarr-dev build-deps/control; then
+    $SED_I -e '/libunarr/s/^.*$/libarchive-dev (>= 3.7.4) | libunarr-dev,/' \
+      build-deps/control
+fi
+git diff --quiet build-deps/control || {
+    echo "Updating libunarr-dev dependency in  build-deps/control"
+    git add build-deps/control
+    git commit -m "build-deps/control: Updating libunarr-dev dependency"
+}
+
 for f in buildosx buildwin/NSIS* libs/AndroidLibs.cmake mingw .drone.yml; do
     if test -e $f; then git rm -rf $f; fi
 done
@@ -273,7 +284,7 @@ echo "# Created by update-templates" > cmake/TemplateVersion
 echo "date: $(date -u +'%Y-%m-%d %H:%M UTC')" >> cmake/TemplateVersion
 commit=$(git rev-parse --short $source_treeish)
 echo "commit: $commit" >> cmake/TemplateVersion
-tags=$(git tag --contains $commit)
+tags=$(git tag --points-at $commit | tr '\n' ' ')
 echo "tags: $tags" >> cmake/TemplateVersion
 git add cmake/TemplateVersion
 git commit -m "cmake: Update TemplateVersion to $commit"
