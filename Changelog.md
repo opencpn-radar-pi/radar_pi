@@ -1,6 +1,76 @@
-3.3.1 Nov 29, 2024
+3.4.4 Feb 06, 2026
+* Add new Flatpak build using runtime 25.08 for OpenCPN 5.14 - #631
+* update-templates: bugfixes and clean up - #637
+* Use segment 13 from APB sentence - #639
+
+3.4.3 Dec 28, 2025
+* update-templates: syntax bugfix
+
+3.4.2 Nov 13, 2025
+* .circleci/config: Formatting bugfix
+
+3.4.1 Nov 13, 2025
+* CI: update macos to build intel legacy and universal.
+* build-deps/control: Handle outdated libunarr-dev dependency
+* opencpn-libs: Update, fixes annoying cmake warnings - #605
+
+3.4.0 Sep13, 2025
+
+* Updating opencpn-libs to latest version.#0559aae
+* appveyor.bat: remove call to not existing wx-config.bat
+* buildwin: wxwidgets version 3.2.2.1 -> 3.2.6
+* build: appveyor: Install pathman.exe from buildwin (#617)
+* buildwin: Add pathman.exe
+* build: Trixie builds (#614)
+* build-deps/control: Use modern libarchive i s f linunarr
+* fix time interval calculation
+
+3.4.0-beta2 Aug 06, 2025
+
+* Remove bullseye-armhf, wx32-armhf, wx32-arm64 , wx32-armhf
+* flatpak - build with 24.08 (#612)
+
+3.4.0-beta1 Apr 17, 2025
+
+* Revert to API118
+* Update fbp, Add MDBT sentence
+* Targets.cmake: Fix missing POST_BUILD configi warning
+* AndroidLibs: Fix outdated cmale version requirement
+* Add NMEA file recording
 * ci: Handle changed bullseye container permissions (#602)
-* ci: flatpak: bugfix
+The need to restore the build dir permissions is actually only on
+non-CI builds. Avoid problems which occurred after the Bullseye
+containers updated default permissions by leaving the CI build dir
+open on CI builds.
+* Correct error in GPRMC sentence
+* Flatpak: Add new 24.08 beta builds (#598)
+The default runtime used when building Flatpak is as of
+flatpak/org.opencpn*.yaml. Hence, building with 24.08 must use something
+like -DOCPN_TARGET_TUPLE="flatpak-x86_64;24.08;x86_64"
+* Flatpak: Add new 24.08 beta builds - part 2 (#598)
+The default runtime used when building Flatpak is as of
+flatpak/org.opencpn*.yaml. Hence, building with 24.08 must use something
+like -DOCPN_TARGET_TUPLE="flatpak-x86_64;24.08;x86_64"
+* Plugin.cmake: MAcos FTBGS fix
+* GetPluginDataDir() path generic handling
+gitignore: Add Clion's default build dirs
+* src: run clang-format
+* ShipDriverPi: Refactor icon loading
+Drop all globals holding various icons, add generic methods for
+locating and loading icons.
+Instead of using #ifdef to determine to use svg or png, always use
+svg if such icons are found, otherwise fall back to use png icons.
+* Plugin.cmake: Use new std_filesystem lib
+* libs: New library std_filesystem
+* macos bugfix
+* gitignore: Add .idea
+* shipdriver: Fix broken ctor, clean up
+* Aismaker.h: no using namespace std in header!
+* shipdriver: Normalize identifiers (Google GL)
+* shipdriver.cpp: Handle some clang-tidy warnings
+* Implement missing API 18 methods
+* Fix hardcoded build path (#593)
+Closes: #593
 
 3.3.0 Aug 15, 2024
 * New release to complete the v3.3 work
