@@ -953,14 +953,6 @@ void *NavicoReceive::Entry(void) {
   return 0;
 }
 
-/**
- * TODO: This function should really be removed, it is undesired to set RadarType on the fly, will create inconsistencies, (DF)
- */
-void NavicoReceive::SetRadarType(RadarType t) {
-  m_ri->m_radar_type = t;
-  // m_pi->m_pMessageBox->SetRadarType(t);
-}
-
 void NavicoReceive::DetectedRadar(NetworkAddress &radar_address) {
   m_ri->DetectedRadar(m_interface_addr, radar_address);  // enables transmit data
 
@@ -1250,44 +1242,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
         LOG_RECEIVE(wxT("%s RadarReport_03C4_129 radar_type=%u hours=%u"), m_ri->m_name.c_str(), s->radar_type, s->hours);
 
-        switch (s->radar_type) {
-          case REPORT_TYPE_BR24:
-            if (m_ri->m_radar_type != RT_BR24) {
-              LOG_INFO(wxT("%s radar report tells us this a Navico BR24"), m_ri->m_name.c_str());
-              SetRadarType(RT_BR24);
-            }
-            break;
-          case REPORT_TYPE_3G:
-            if (m_ri->m_radar_type != RT_3G && m_ri->m_radar_type != RT_BR24) {
-              LOG_INFO(wxT("%s radar report tells us this an old Navico 3G, use BR24 instead"), m_ri->m_name.c_str());
-              SetRadarType(RT_BR24);
-            }
-            break;
-          case REPORT_TYPE_4G:
-            if (m_ri->m_radar_type != RT_4GA && m_ri->m_radar_type != RT_4GB && m_ri->m_radar_type != RT_3G) {
-              LOG_INFO(wxT("%s radar report tells us this a Navico 4G or a modern 3G"), m_ri->m_name.c_str());
-              if (m_ri->m_radar_type == RT_HaloB) {
-                SetRadarType(RT_4GB);
-              } else {
-                SetRadarType(RT_4GA);
-              }
-            }
-            break;
-          case REPORT_TYPE_HALO:
-            if (!IS_HALO) {
-              LOG_INFO(wxT("%s radar report tells us this a Navico HALO"), m_ri->m_name.c_str());
-              if (m_ri->m_radar_type == RT_4GB) {
-                SetRadarType(RT_HaloB);
-              } else {
-                SetRadarType(RT_HaloA);
-              }
-            }
-            break;
-          default:
-            LOG_INFO(wxT("%s: Unknown radar_type %u"), m_ri->m_name.c_str(), s->radar_type);
-            return false;
-        }
-
         wxString ts;
 
         ts << wxT("Firmware ");
@@ -1329,11 +1283,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         // Content unknown, but we know that BR24 radomes send this
         LOG_RECEIVE(wxT("%s received familiar BR24 report"), m_ri->m_name.c_str());
 
-        if (m_ri->m_radar_type == RT_UNKNOWN) {
-          LOG_INFO(wxT("%s radar report tells us this a Navico BR24"), m_ri->m_name.c_str());
-          m_ri->m_radar_type = RT_BR24;
-          m_pi->m_pMessageBox->SetRadarType(RT_BR24);
-        }
         break;
       }
 #endif
@@ -1445,11 +1394,6 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
     // Looks like a radar report. Is it a known one?
     switch ((len << 8) + report[0]) {
       case (16 << 8) + 0x0f:
-        if (m_ri->m_radar_type == RT_UNKNOWN) {
-          LOG_INFO(wxT("%s radar report tells us this a Navico BR24"), m_ri->m_name.c_str());
-          m_ri->m_radar_type = RT_BR24;
-          m_pi->m_pMessageBox->SetRadarType(RT_BR24);
-        }
 
         break;
 

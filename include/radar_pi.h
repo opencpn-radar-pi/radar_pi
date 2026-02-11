@@ -148,7 +148,6 @@ extern int g_verbose;
 #define LOGLEVEL_GUARD 16
 #define LOGLEVEL_ARPA 32
 #define LOGLEVEL_REPORTS 64
-#define LOGLEVEL_INTER 128
 #define IF_LOG_AT_LEVEL(x) if ((g_verbose & (x)) != 0)
 
 #define IF_LOG_AT(x, y)       \
@@ -163,7 +162,6 @@ extern int g_verbose;
 #define LOG_GUARD IF_LOG_AT_LEVEL(LOGLEVEL_GUARD) wxLogMessage
 #define LOG_ARPA IF_LOG_AT_LEVEL(LOGLEVEL_ARPA) wxLogMessage
 #define LOG_REPORTS IF_LOG_AT_LEVEL(LOGLEVEL_REPORTS) wxLogMessage
-#define LOG_INTER IF_LOG_AT_LEVEL(LOGLEVEL_INTER) wxLogMessage
 #define LOG_BINARY_VERBOSE(what, data, size)  \
   IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE) {         \
     M_PLUGIN logBinaryData(what, data, size); \
@@ -186,8 +184,6 @@ extern int g_verbose;
   IF_LOG_AT_LEVEL(LOGLEVEL_REPORTS) {         \
     M_PLUGIN logBinaryData(what, data, size); \
   }
-#define LOG_BINARY_INTER(what, data, size) \
-  IF_LOG_AT_LEVEL(LOGLEVEL_INTER) { M_PLUGIN logBinaryData(what, data, size); }
 
 enum {
   BM_ID_RED,

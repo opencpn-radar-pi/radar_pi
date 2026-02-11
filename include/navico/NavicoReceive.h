@@ -143,7 +143,6 @@ private:
     void SendHeadingPacket();
     void SendNavigationPacket();
     void SendSpeedPacket();
-    void SetRadarType(RadarType t);
 
     SOCKET m_receive_socket; // Where we listen for message from m_send_socket
     SOCKET m_send_socket; // A message to this socket will interrupt select()

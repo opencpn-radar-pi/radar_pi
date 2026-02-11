@@ -36,7 +36,7 @@
 
 PLUGIN_BEGIN_NAMESPACE
 
-OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings &settings, RadarType radar_type)
+OptionsDialog::OptionsDialog(wxWindow* parent, radar_pi* pi, PersistentSettings& settings, RadarType radar_type)
     : wxDialog(parent, wxID_ANY, _("Radar Display Preferences") + wxT(" ") + wxT(PLUGIN_VERSION), wxDefaultPosition, wxDefaultSize,
                wxDEFAULT_DIALOG_STYLE) {
   wxString m_temp;
@@ -50,10 +50,10 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   wxSize small_button_size(-1, (int)(1.4 * (font_size_y + font_descent + font_lead)));
 
   int border_size = 4;
-  wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
+  wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
   SetSizer(topSizer);
 
-  wxFlexGridSizer *DisplayOptionsBox = new wxFlexGridSizer(4);
+  wxFlexGridSizer* DisplayOptionsBox = new wxFlexGridSizer(4);
   topSizer->Add(DisplayOptionsBox, 0, wxALL | wxEXPAND, 2);
 
   //  Range Units options
@@ -85,18 +85,18 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   // Guard Zone Alarm
 
-  wxStaticBox *guardZoneBox = new wxStaticBox(this, wxID_ANY, _("Guard Zone Sound"));
-  wxStaticBoxSizer *guardZoneSizer = new wxStaticBoxSizer(guardZoneBox, wxVERTICAL);
+  wxStaticBox* guardZoneBox = new wxStaticBox(this, wxID_ANY, _("Guard Zone Sound"));
+  wxStaticBoxSizer* guardZoneSizer = new wxStaticBoxSizer(guardZoneBox, wxVERTICAL);
 
-  wxButton *select_sound = new wxButton(this, wxID_ANY, _("Select Alert Sound"), wxDefaultPosition, small_button_size, 0);
+  wxButton* select_sound = new wxButton(this, wxID_ANY, _("Select Alert Sound"), wxDefaultPosition, small_button_size, 0);
   select_sound->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(OptionsDialog::OnSelectSoundClick), NULL, this);
   guardZoneSizer->Add(select_sound, 0, wxALL, border_size);
 
-  wxButton *test_sound = new wxButton(this, wxID_ANY, _("Test Alert Sound"), wxDefaultPosition, small_button_size, 0);
+  wxButton* test_sound = new wxButton(this, wxID_ANY, _("Test Alert Sound"), wxDefaultPosition, small_button_size, 0);
   test_sound->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(OptionsDialog::OnTestSoundClick), NULL, this);
   guardZoneSizer->Add(test_sound, 0, wxALL, border_size);
 
-  wxStaticText *guardZoneTimeout =
+  wxStaticText* guardZoneTimeout =
       new wxStaticText(this, wxID_ANY, _("Repeat alarm after (sec)"), wxDefaultPosition, wxDefaultSize, 0);
   guardZoneSizer->Add(guardZoneTimeout, 0, wxALL, border_size);
 
@@ -108,8 +108,8 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   // Fixed heading and position
 
-  wxStaticBox *FixedHeadingBox = new wxStaticBox(this, wxID_ANY, _("Fixed radar / for testing"));
-  wxStaticBoxSizer *fixedHeadingSizer = new wxStaticBoxSizer(FixedHeadingBox, wxVERTICAL);
+  wxStaticBox* FixedHeadingBox = new wxStaticBox(this, wxID_ANY, _("Fixed radar / for testing"));
+  wxStaticBoxSizer* fixedHeadingSizer = new wxStaticBoxSizer(FixedHeadingBox, wxVERTICAL);
 
   m_FixedHeading = new wxCheckBox(this, wxID_ANY, _("Fixed radar heading"), wxDefaultPosition, wxDefaultSize,
                                   wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
@@ -135,7 +135,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   m_CopyOCPNPosition->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(OptionsDialog::OnCopyOCPNPositionClick), NULL,
                               this);
 
-  wxStaticText *FixedLatText = new wxStaticText(this, wxID_ANY, _("Fixed lat / lon"), wxDefaultPosition, wxDefaultSize, 0);
+  wxStaticText* FixedLatText = new wxStaticText(this, wxID_ANY, _("Fixed lat / lon"), wxDefaultPosition, wxDefaultSize, 0);
   fixedHeadingSizer->Add(FixedLatText, 0, wxALL, border_size);
 
   m_FixedLatValue = new wxTextCtrl(this, wxID_ANY);
@@ -161,8 +161,8 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   // Logging
 
-  wxStaticBox *LoggingBox = new wxStaticBox(this, wxID_ANY, _("Logging"));
-  wxStaticBoxSizer *LoggingSizer = new wxStaticBoxSizer(LoggingBox, wxVERTICAL);
+  wxStaticBox* LoggingBox = new wxStaticBox(this, wxID_ANY, _("Logging"));
+  wxStaticBoxSizer* LoggingSizer = new wxStaticBoxSizer(LoggingBox, wxVERTICAL);
 
   uint8_t verbose = 0;
   uint8_t dialog = 0;
@@ -171,7 +171,6 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   uint8_t guard = 0;
   uint8_t arpa = 0;
   uint8_t reports = 0;
-  uint8_t inter = 0;
   IF_LOG_AT_LEVEL(LOGLEVEL_VERBOSE) verbose = 1;
   IF_LOG_AT_LEVEL(LOGLEVEL_DIALOG) dialog = 1;
   IF_LOG_AT_LEVEL(LOGLEVEL_TRANSMIT) transmit = 1;
@@ -179,7 +178,6 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   IF_LOG_AT_LEVEL(LOGLEVEL_GUARD) guard = 1;
   IF_LOG_AT_LEVEL(LOGLEVEL_ARPA) arpa = 1;
   IF_LOG_AT_LEVEL(LOGLEVEL_REPORTS) reports = 1;
-  IF_LOG_AT_LEVEL(LOGLEVEL_INTER) inter = 1;
 
   m_Verbose = new wxCheckBox(this, wxID_ANY, _("Verbose"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
   LoggingSizer->Add(m_Verbose, 0, wxALL, border_size);
@@ -218,8 +216,8 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   // Drawing Method
 
-  wxStaticBox *drawingMethodBox = new wxStaticBox(this, wxID_ANY, _("GPU drawing method"));
-  wxStaticBoxSizer *drawingMethodSizer = new wxStaticBoxSizer(drawingMethodBox, wxVERTICAL);
+  wxStaticBox* drawingMethodBox = new wxStaticBox(this, wxID_ANY, _("GPU drawing method"));
+  wxStaticBoxSizer* drawingMethodSizer = new wxStaticBoxSizer(drawingMethodBox, wxVERTICAL);
 
   wxArrayString DrawingMethods;
   RadarDraw::GetDrawingMethods(DrawingMethods);
@@ -230,8 +228,8 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   // Menu options
 
-  wxStaticBox *menuOptionsBox = new wxStaticBox(this, wxID_ANY, _("Control Menu Auto Hide"));
-  wxStaticBoxSizer *menuOptionsSizer = new wxStaticBoxSizer(menuOptionsBox, wxVERTICAL);
+  wxStaticBox* menuOptionsBox = new wxStaticBox(this, wxID_ANY, _("Control Menu Auto Hide"));
+  wxStaticBoxSizer* menuOptionsSizer = new wxStaticBoxSizer(menuOptionsBox, wxVERTICAL);
 
   wxString MenuAutoHideStrings[] = {_("Never"), _("10 sec"), _("30 sec")};
   m_MenuAutoHide = new wxComboBox(this, wxID_ANY, MenuAutoHideStrings[m_settings.menu_auto_hide], wxDefaultPosition, wxDefaultSize,
@@ -242,23 +240,23 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   // Target trails colours
 
-  wxStaticBox *trailBox = new wxStaticBox(this, wxID_ANY, _("Target trails"));
-  wxStaticBoxSizer *trailSizer = new wxStaticBoxSizer(trailBox, wxVERTICAL);
+  wxStaticBox* trailBox = new wxStaticBox(this, wxID_ANY, _("Target trails"));
+  wxStaticBoxSizer* trailSizer = new wxStaticBoxSizer(trailBox, wxVERTICAL);
 
-  wxStaticText *trailStartText = new wxStaticText(this, wxID_ANY, _("Trail start color"));
+  wxStaticText* trailStartText = new wxStaticText(this, wxID_ANY, _("Trail start color"));
   trailSizer->Add(trailStartText, 0, wxALL, border_size);
   m_TrailStartColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.trail_start_colour, wxDefaultPosition, wxSize(150, 30));
   m_TrailStartColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(OptionsDialog::OnTrailStartColourClick), NULL,
                               this);
   trailSizer->Add(m_TrailStartColour);
 
-  wxStaticText *trailEndText = new wxStaticText(this, wxID_ANY, _("Trail end color"));
+  wxStaticText* trailEndText = new wxStaticText(this, wxID_ANY, _("Trail end color"));
   trailSizer->Add(trailEndText, 0, wxALL, border_size);
   m_TrailEndColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.trail_end_colour, wxDefaultPosition, wxSize(150, 30));
   m_TrailEndColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(OptionsDialog::OnTrailEndColourClick), NULL, this);
   trailSizer->Add(m_TrailEndColour);
 
-  wxStaticText *dopplerApproachingText = new wxStaticText(this, wxID_ANY, _("Doppler Approaching color"));
+  wxStaticText* dopplerApproachingText = new wxStaticText(this, wxID_ANY, _("Doppler Approaching color"));
   trailSizer->Add(dopplerApproachingText, 0, wxALL, border_size);
   m_DopplerApproachingColour =
       new wxColourPickerCtrl(this, wxID_ANY, m_settings.doppler_approaching_colour, wxDefaultPosition, wxSize(150, 30));
@@ -266,7 +264,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
                                       wxCommandEventHandler(OptionsDialog::OnDopplerApproachingColourClick), NULL, this);
   trailSizer->Add(m_DopplerApproachingColour);
 
-  wxStaticText *dopplerRecedingText = new wxStaticText(this, wxID_ANY, _("Doppler Receding color"));
+  wxStaticText* dopplerRecedingText = new wxStaticText(this, wxID_ANY, _("Doppler Receding color"));
   trailSizer->Add(dopplerRecedingText, 0, wxALL, border_size);
   m_DopplerRecedingColour =
       new wxColourPickerCtrl(this, wxID_ANY, m_settings.doppler_receding_colour, wxDefaultPosition, wxSize(150, 30));
@@ -276,29 +274,29 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   // Target colours
 
-  wxStaticBox *colourBox = new wxStaticBox(this, wxID_ANY, _("Target colors"));
-  wxStaticBoxSizer *colourSizer = new wxStaticBoxSizer(colourBox, wxVERTICAL);
+  wxStaticBox* colourBox = new wxStaticBox(this, wxID_ANY, _("Target colors"));
+  wxStaticBoxSizer* colourSizer = new wxStaticBoxSizer(colourBox, wxVERTICAL);
 
-  wxStaticText *weakText = new wxStaticText(this, wxID_ANY, _("Weak return color"));
+  wxStaticText* weakText = new wxStaticText(this, wxID_ANY, _("Weak return color"));
   colourSizer->Add(weakText, 0, wxALL, border_size);
   m_WeakColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.weak_colour, wxDefaultPosition, wxSize(150, 30));
   m_WeakColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(OptionsDialog::OnWeakColourClick), NULL, this);
   colourSizer->Add(m_WeakColour);
 
-  wxStaticText *intermediateText = new wxStaticText(this, wxID_ANY, _("Intermediate return color"));
+  wxStaticText* intermediateText = new wxStaticText(this, wxID_ANY, _("Intermediate return color"));
   colourSizer->Add(intermediateText, 0, wxALL, border_size);
   m_IntermediateColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.intermediate_colour, wxDefaultPosition, wxSize(150, 30));
   m_IntermediateColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(OptionsDialog::OnIntermediateColourClick), NULL,
                                 this);
   colourSizer->Add(m_IntermediateColour);
 
-  wxStaticText *strongText = new wxStaticText(this, wxID_ANY, _("Strong return color"));
+  wxStaticText* strongText = new wxStaticText(this, wxID_ANY, _("Strong return color"));
   colourSizer->Add(strongText, 0, wxALL, border_size);
   m_StrongColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.strong_colour, wxDefaultPosition, wxSize(150, 30));
   m_StrongColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(OptionsDialog::OnStrongColourClick), NULL, this);
   colourSizer->Add(m_StrongColour);
 
-  wxStaticText *arpaText = new wxStaticText(this, wxID_ANY, _("ARPA edge color"));
+  wxStaticText* arpaText = new wxStaticText(this, wxID_ANY, _("ARPA edge color"));
   colourSizer->Add(arpaText, 0, wxALL, border_size);
   m_ArpaColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.arpa_colour, wxDefaultPosition, wxSize(150, 30));
   m_ArpaColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(OptionsDialog::OnArpaColourClick), NULL, this);
@@ -306,10 +304,10 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   // Other colours
 
-  wxStaticBox *PPIColourBox = new wxStaticBox(this, wxID_ANY, _("Radar window colors"));
-  wxStaticBoxSizer *PPIColourSizer = new wxStaticBoxSizer(PPIColourBox, wxVERTICAL);
+  wxStaticBox* PPIColourBox = new wxStaticBox(this, wxID_ANY, _("Radar window colors"));
+  wxStaticBoxSizer* PPIColourSizer = new wxStaticBoxSizer(PPIColourBox, wxVERTICAL);
 
-  wxStaticText *backgroundText = new wxStaticText(this, wxID_ANY, _("Background color"));
+  wxStaticText* backgroundText = new wxStaticText(this, wxID_ANY, _("Background color"));
   PPIColourSizer->Add(backgroundText, 0, wxALL, border_size);
   m_PPIBackgroundColour =
       new wxColourPickerCtrl(this, wxID_ANY, m_settings.ppi_background_colour, wxDefaultPosition, wxSize(150, 30));
@@ -317,7 +315,7 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
                                  this);
   PPIColourSizer->Add(m_PPIBackgroundColour);
 
-  wxStaticText *aisText = new wxStaticText(this, wxID_ANY, _("AIS text color"));
+  wxStaticText* aisText = new wxStaticText(this, wxID_ANY, _("AIS text color"));
   PPIColourSizer->Add(aisText, 0, wxALL, border_size);
   m_AisTextColour = new wxColourPickerCtrl(this, wxID_ANY, m_settings.ais_text_colour, wxDefaultPosition, wxSize(150, 30));
   m_AisTextColour->Connect(wxEVT_COLOURPICKER_CHANGED, wxCommandEventHandler(OptionsDialog::OnAisTextColourClick), NULL, this);
@@ -337,11 +335,11 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   //  Options
 
-  wxFlexGridSizer *OptionsGrid = new wxFlexGridSizer(3, 1, 5);
+  wxFlexGridSizer* OptionsGrid = new wxFlexGridSizer(3, 1, 5);
   topSizer->Add(OptionsGrid, 0, wxALL | wxEXPAND, 2);
 
-  wxStaticBox *itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
-  wxStaticBoxSizer *itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
+  wxStaticBox* itemStaticBoxOptions = new wxStaticBox(this, wxID_ANY, _("Options"));
+  wxStaticBoxSizer* itemStaticBoxSizerOptions = new wxStaticBoxSizer(itemStaticBoxOptions, wxVERTICAL);
   OptionsGrid->Add(itemStaticBoxSizerOptions, 0, wxEXPAND | wxALL, border_size);
 
   m_IgnoreHeading = new wxCheckBox(this, wxID_ANY, _("Ignore radar heading"), wxDefaultPosition, wxDefaultSize,
@@ -370,8 +368,8 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
 
   //  Display options
 
-  wxStaticBox *itemStaticBoxDisplayOptions = new wxStaticBox(this, wxID_ANY, _("Display options"));
-  wxStaticBoxSizer *itemStaticBoxSizerDisplayOptions = new wxStaticBoxSizer(itemStaticBoxDisplayOptions, wxVERTICAL);
+  wxStaticBox* itemStaticBoxDisplayOptions = new wxStaticBox(this, wxID_ANY, _("Display options"));
+  wxStaticBoxSizer* itemStaticBoxSizerDisplayOptions = new wxStaticBoxSizer(itemStaticBoxDisplayOptions, wxVERTICAL);
   OptionsGrid->Add(itemStaticBoxSizerDisplayOptions, 0, wxEXPAND | wxALL, border_size);
 
   m_ShowExtremeRange = new wxCheckBox(this, wxID_ANY, _("Show ring at extreme range"));
@@ -399,16 +397,16 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   m_OverlayStandby->SetValue(m_settings.overlay_on_standby);
 
   // Reset radars button
-  wxStaticBox *itemStaticBoxReset = new wxStaticBox(this, wxID_ANY, _("Radar types"));
-  wxStaticBoxSizer *itemStaticBoxSizerReset = new wxStaticBoxSizer(itemStaticBoxReset, wxVERTICAL);
+  wxStaticBox* itemStaticBoxReset = new wxStaticBox(this, wxID_ANY, _("Radar types"));
+  wxStaticBoxSizer* itemStaticBoxSizerReset = new wxStaticBoxSizer(itemStaticBoxReset, wxVERTICAL);
   OptionsGrid->Add(itemStaticBoxSizerReset, 0, wxEXPAND | wxALL, border_size);
 
-  wxButton *resetButton = new wxButton(this, wxID_ANY, _("Select radar types"), wxDefaultPosition, small_button_size, 0);
+  wxButton* resetButton = new wxButton(this, wxID_ANY, _("Select radar types"), wxDefaultPosition, small_button_size, 0);
   resetButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(OptionsDialog::OnResetButtonClick), NULL, this);
   itemStaticBoxSizerReset->Add(resetButton, 0, wxALL, border_size);
 
   // Accept/Reject button
-  wxStdDialogButtonSizer *DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
+  wxStdDialogButtonSizer* DialogButtonSizer = wxDialog::CreateStdDialogButtonSizer(wxOK | wxCANCEL);
   topSizer->Add(DialogButtonSizer, 0, wxALIGN_RIGHT | wxALL, border_size);
 
   Fit();
@@ -416,62 +414,62 @@ OptionsDialog::OptionsDialog(wxWindow *parent, radar_pi *pi, PersistentSettings 
   SetLayoutAdaptationMode(wxDIALOG_ADAPTATION_MODE_ENABLED);
 }
 
-void OptionsDialog::OnRangeUnitsClick(wxCommandEvent &event) { m_settings.range_units = (RangeUnits)m_RangeUnits->GetSelection(); }
+void OptionsDialog::OnRangeUnitsClick(wxCommandEvent& event) { m_settings.range_units = (RangeUnits)m_RangeUnits->GetSelection(); }
 
-void OptionsDialog::OnGuardZoneStyleClick(wxCommandEvent &event) {
+void OptionsDialog::OnGuardZoneStyleClick(wxCommandEvent& event) {
   m_settings.guard_zone_render_style = m_GuardZoneStyle->GetSelection();
 }
 
-void OptionsDialog::OnGuardZoneOnOverlayClick(wxCommandEvent &event) {
+void OptionsDialog::OnGuardZoneOnOverlayClick(wxCommandEvent& event) {
   m_settings.guard_zone_on_overlay = m_GuardZoneOnOverlay->GetValue();
 }
 
-void OptionsDialog::OnShowExtremeRangeClick(wxCommandEvent &event) {
+void OptionsDialog::OnShowExtremeRangeClick(wxCommandEvent& event) {
   m_settings.show_extreme_range = m_ShowExtremeRange->GetValue();
 }
 
-void OptionsDialog::OnOverlayOnStandbyClick(wxCommandEvent &event) { m_settings.overlay_on_standby = m_OverlayStandby->GetValue(); }
+void OptionsDialog::OnOverlayOnStandbyClick(wxCommandEvent& event) { m_settings.overlay_on_standby = m_OverlayStandby->GetValue(); }
 
-void OptionsDialog::OnTrailsOnOverlayClick(wxCommandEvent &event) { m_settings.trails_on_overlay = m_TrailsOnOverlay->GetValue(); }
+void OptionsDialog::OnTrailsOnOverlayClick(wxCommandEvent& event) { m_settings.trails_on_overlay = m_TrailsOnOverlay->GetValue(); }
 
-void OptionsDialog::OnTrailStartColourClick(wxCommandEvent &event) {
+void OptionsDialog::OnTrailStartColourClick(wxCommandEvent& event) {
   m_settings.trail_start_colour = m_TrailStartColour->GetColour();
 }
 
-void OptionsDialog::OnTrailEndColourClick(wxCommandEvent &event) { m_settings.trail_end_colour = m_TrailEndColour->GetColour(); }
+void OptionsDialog::OnTrailEndColourClick(wxCommandEvent& event) { m_settings.trail_end_colour = m_TrailEndColour->GetColour(); }
 
-void OptionsDialog::OnWeakColourClick(wxCommandEvent &event) { m_settings.weak_colour = m_WeakColour->GetColour(); }
+void OptionsDialog::OnWeakColourClick(wxCommandEvent& event) { m_settings.weak_colour = m_WeakColour->GetColour(); }
 
-void OptionsDialog::OnArpaColourClick(wxCommandEvent &event) { m_settings.arpa_colour = m_ArpaColour->GetColour(); }
+void OptionsDialog::OnArpaColourClick(wxCommandEvent& event) { m_settings.arpa_colour = m_ArpaColour->GetColour(); }
 
-void OptionsDialog::OnAisTextColourClick(wxCommandEvent &event) { m_settings.ais_text_colour = m_AisTextColour->GetColour(); }
+void OptionsDialog::OnAisTextColourClick(wxCommandEvent& event) { m_settings.ais_text_colour = m_AisTextColour->GetColour(); }
 
-void OptionsDialog::OnPPIBackgroundColourClick(wxCommandEvent &event) {
+void OptionsDialog::OnPPIBackgroundColourClick(wxCommandEvent& event) {
   m_settings.ppi_background_colour = m_PPIBackgroundColour->GetColour();
 }
 
-void OptionsDialog::OnIntermediateColourClick(wxCommandEvent &event) {
+void OptionsDialog::OnIntermediateColourClick(wxCommandEvent& event) {
   m_settings.intermediate_colour = m_IntermediateColour->GetColour();
 }
 
-void OptionsDialog::OnDopplerApproachingColourClick(wxCommandEvent &event) {
+void OptionsDialog::OnDopplerApproachingColourClick(wxCommandEvent& event) {
   m_settings.doppler_approaching_colour = m_DopplerApproachingColour->GetColour();
 }
 
-void OptionsDialog::OnDopplerRecedingColourClick(wxCommandEvent &event) {
+void OptionsDialog::OnDopplerRecedingColourClick(wxCommandEvent& event) {
   m_settings.doppler_receding_colour = m_DopplerRecedingColour->GetColour();
 }
 
-void OptionsDialog::OnStrongColourClick(wxCommandEvent &event) { m_settings.strong_colour = m_StrongColour->GetColour(); }
+void OptionsDialog::OnStrongColourClick(wxCommandEvent& event) { m_settings.strong_colour = m_StrongColour->GetColour(); }
 
-void OptionsDialog::OnSelectSoundClick(wxCommandEvent &event) {
-  wxString *sharedData = GetpSharedDataLocation();
+void OptionsDialog::OnSelectSoundClick(wxCommandEvent& event) {
+  wxString* sharedData = GetpSharedDataLocation();
   wxString sound_dir;
 
   sound_dir.Append(*sharedData);
   sound_dir.Append(wxT("sounds"));
 
-  wxFileDialog *openDialog = new wxFileDialog(NULL, _("Select Sound File"), sound_dir, wxT(""),
+  wxFileDialog* openDialog = new wxFileDialog(NULL, _("Select Sound File"), sound_dir, wxT(""),
                                               _("WAV files (*.wav)|*.wav|All files (*.*)|*.*"), wxFD_OPEN);
   int response = openDialog->ShowModal();
   if (response == wxID_OK) {
@@ -479,28 +477,28 @@ void OptionsDialog::OnSelectSoundClick(wxCommandEvent &event) {
   }
 }
 
-void OptionsDialog::OnGuardZoneTimeoutClick(wxCommandEvent &event) {
+void OptionsDialog::OnGuardZoneTimeoutClick(wxCommandEvent& event) {
   wxString temp = m_GuardZoneTimeout->GetValue();
 
   m_settings.guard_zone_timeout = strtol(temp.c_str(), 0, 0);
 }
 
-void OptionsDialog::OnEnableCOGHeadingClick(wxCommandEvent &event) { m_settings.enable_cog_heading = m_COGHeading->GetValue(); }
+void OptionsDialog::OnEnableCOGHeadingClick(wxCommandEvent& event) { m_settings.enable_cog_heading = m_COGHeading->GetValue(); }
 
-void OptionsDialog::OnTestSoundClick(wxCommandEvent &event) {
+void OptionsDialog::OnTestSoundClick(wxCommandEvent& event) {
   if (!m_settings.alert_audio_file.IsEmpty()) {
     PlugInPlaySound(m_settings.alert_audio_file);
   }
 }
 
-void OptionsDialog::OnFixedHeadingValueClick(wxCommandEvent &event) {
+void OptionsDialog::OnFixedHeadingValueClick(wxCommandEvent& event) {
   wxString temp = m_FixedHeadingValue->GetValue();
   double t;
   temp.ToDouble(&t);
   m_settings.fixed_heading_value = t;
 }
 
-void OptionsDialog::OnFixedHeadingClick(wxCommandEvent &event) {
+void OptionsDialog::OnFixedHeadingClick(wxCommandEvent& event) {
   m_settings.fixed_heading = m_FixedHeading->GetValue();
   if (m_FixedHeading->GetValue()) {
     m_pi->m_heading_source = HEADING_FIXED;
@@ -509,7 +507,7 @@ void OptionsDialog::OnFixedHeadingClick(wxCommandEvent &event) {
   }
 }
 
-void OptionsDialog::OnFixedPositionClick(wxCommandEvent &event) {
+void OptionsDialog::OnFixedPositionClick(wxCommandEvent& event) {
   // Activate fixed position at the position shown in the lat lon fields
   m_settings.pos_is_fixed = m_FixedPosition->GetValue();
   if (m_settings.pos_is_fixed) {
@@ -532,7 +530,7 @@ void OptionsDialog::OnFixedPositionClick(wxCommandEvent &event) {
   }
 }
 
-void OptionsDialog::OnCopyOCPNPositionClick(wxCommandEvent &event) {
+void OptionsDialog::OnCopyOCPNPositionClick(wxCommandEvent& event) {
   // Copy current OCPN position to the lat lon fields
   m_FixedLatValue->SetValue(wxString::Format(wxT("%f"), m_pi->m_last_fixed.pos.lat));
   m_FixedLonValue->SetValue(wxString::Format(wxT("%f"), m_pi->m_last_fixed.pos.lon));
@@ -544,7 +542,7 @@ void OptionsDialog::OnCopyOCPNPositionClick(wxCommandEvent &event) {
   m_FixedLonValue->Update();
 }
 
-void OptionsDialog::OnFixedLatTextClick(wxCommandEvent &event) {
+void OptionsDialog::OnFixedLatTextClick(wxCommandEvent& event) {
   wxString temp = m_FixedLatValue->GetValue();
   double t;
   temp.ToDouble(&t);
@@ -553,7 +551,7 @@ void OptionsDialog::OnFixedLatTextClick(wxCommandEvent &event) {
   }
 }
 
-void OptionsDialog::OnFixedLonTextClick(wxCommandEvent &event) {
+void OptionsDialog::OnFixedLonTextClick(wxCommandEvent& event) {
   wxString temp = m_FixedLonValue->GetValue();
   double t;
   temp.ToDouble(&t);
@@ -562,27 +560,27 @@ void OptionsDialog::OnFixedLonTextClick(wxCommandEvent &event) {
   }
 }
 
-void OptionsDialog::OnRadarDescriptionTextClick(wxCommandEvent &event) {
+void OptionsDialog::OnRadarDescriptionTextClick(wxCommandEvent& event) {
   wxString temp = m_RadarDescriptionText->GetValue();
   m_settings.radar_description_text = temp;
 }
 
-void OptionsDialog::OnIgnoreHeadingClick(wxCommandEvent &event) { m_settings.ignore_radar_heading = m_IgnoreHeading->GetValue(); }
+void OptionsDialog::OnIgnoreHeadingClick(wxCommandEvent& event) { m_settings.ignore_radar_heading = m_IgnoreHeading->GetValue(); }
 
-void OptionsDialog::OnPassHeadingClick(wxCommandEvent &event) { m_settings.pass_heading_to_opencpn = m_PassHeading->GetValue(); }
+void OptionsDialog::OnPassHeadingClick(wxCommandEvent& event) { m_settings.pass_heading_to_opencpn = m_PassHeading->GetValue(); }
 
-void OptionsDialog::OnMenuAutoHideClick(wxCommandEvent &event) { m_settings.menu_auto_hide = m_MenuAutoHide->GetSelection(); }
+void OptionsDialog::OnMenuAutoHideClick(wxCommandEvent& event) { m_settings.menu_auto_hide = m_MenuAutoHide->GetSelection(); }
 
-void OptionsDialog::OnDrawingMethodClick(wxCommandEvent &event) { m_settings.drawing_method = m_DrawingMethod->GetSelection(); }
+void OptionsDialog::OnDrawingMethodClick(wxCommandEvent& event) { m_settings.drawing_method = m_DrawingMethod->GetSelection(); }
 
-void OptionsDialog::OnReverseZoomClick(wxCommandEvent &event) { m_settings.reverse_zoom = m_ReverseZoom->GetValue(); }
+void OptionsDialog::OnReverseZoomClick(wxCommandEvent& event) { m_settings.reverse_zoom = m_ReverseZoom->GetValue(); }
 
-void OptionsDialog::OnResetButtonClick(wxCommandEvent &event) {
+void OptionsDialog::OnResetButtonClick(wxCommandEvent& event) {
   m_settings.reset_radars = true;
   EndModal(wxID_OK);
 }
 
-void OptionsDialog::OnLoggingClick(wxCommandEvent &event) {
+void OptionsDialog::OnLoggingClick(wxCommandEvent& event) {
   g_verbose = m_Verbose->GetValue() * LOGLEVEL_VERBOSE + m_Dialog->GetValue() * LOGLEVEL_DIALOG +
               m_Transmit->GetValue() * LOGLEVEL_TRANSMIT + m_Receive->GetValue() * LOGLEVEL_RECEIVE +
               m_Guard->GetValue() * LOGLEVEL_GUARD + m_ARPA->GetValue() * LOGLEVEL_ARPA + m_Reports->GetValue() * LOGLEVEL_REPORTS;
