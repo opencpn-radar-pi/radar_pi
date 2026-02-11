@@ -11,7 +11,6 @@ set "GIT_HOME=C:\Program Files\Git"
 if "%CONFIGURATION%" == "" set "CONFIGURATION=RelWithDebInfo"
 
 call %SCRIPTDIR%..\buildwin\win_deps.bat
-call %SCRIPTDIR%..\cache\wx-config.bat
 echo USING wxWidgets_LIB_DIR: !wxWidgets_LIB_DIR!
 echo USING wxWidgets_ROOT_DIR: !wxWidgets_ROOT_DIR!
 

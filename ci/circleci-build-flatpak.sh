@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 #
-# Build the flatpak artifacts.
+# Build the Flatpak artifacts.
 #
 
-# Copyright (c) 2021 Alec Leamas
+# Copyright (c) 2021-2026 Alec Leamas
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,12 +16,21 @@ MANIFEST=$(cd flatpak; ls org.opencpn.OpenCPN.Plugin*yaml)
 echo "Using manifest file: $MANIFEST"
 set -x
 
-if [[ "$BRANCH" == beta ]]; then
-  export SDK=24.08
-  export FLATHUB_REPO=flathub-beta
-else
+if [[ "$BRANCH" == 2208 ]]; then
+  export SDK=22.08
+  export FLATHUB_REPO=flathub
+  export FLATHUB_BRANCH=stable
+elif [[ "$BRANCH" == 2408 ]]; then
   export SDK=24.08
   export FLATHUB_REPO=flathub
+  export FLATHUB_BRANCH=stable
+elif [[  "$BRANCH" == 2508 ]]; then
+  export SDK=25.08
+  export FLATHUB_REPO=flathub-beta
+  export FLATHUB_BRANCH=beta
+else
+  echo "Wrong branch: \"$BRANCH\""
+  exit 1
 fi
 
 
@@ -81,8 +90,8 @@ cd $builddir
 
 # Patch the manifest to use correct branch and runtime unconditionally
 manifest=$(ls ../flatpak/org.opencpn.OpenCPN.Plugin*yaml)
-sed -i  '/^runtime-version/s/:.*/:'" ${BRANCH:-stable}/"  $manifest
-sed -i  '/^sdk:/s|//.*|//'"${SDK:-22.08}|"  $manifest
+sed -i  '/^runtime-version/s/:.*/:'" ${FLATHUB_BRANCH:-stable}/"  $manifest
+sed -i  '/^sdk:/s|//.*|//'"${SDK:-24.08}|"  $manifest
 
 flatpak install --user -y --or-update --noninteractive \
     ${FLATHUB_REPO:-flathub}  org.opencpn.OpenCPN
