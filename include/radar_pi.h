@@ -557,7 +557,7 @@ public:
 
   //    The required override PlugIn Methods
   bool RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort* vp,
-                                  int max_canvas);
+                                  int max_canvas, int priority);
   bool RenderOverlay(wxDC& dc, PlugIn_ViewPort* vp);
   void SetPositionFix(PlugIn_Position_Fix& pfix);
   void SetPositionFixEx(PlugIn_Position_Fix_Ex& pfix);

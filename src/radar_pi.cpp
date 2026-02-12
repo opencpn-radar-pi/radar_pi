@@ -1361,7 +1361,7 @@ bool radar_pi::RenderOverlay(wxDC& dc, PlugIn_ViewPort* vp) {
 
 // Called by Plugin Manager on main system process cycle
 
-bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort* vp, int canvasIndex) {
+bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort* vp, int canvasIndex, int priority) {
   GeoPosition radar_pos;
   // prevent this being called recursively
   // no critical section locker (will wait), better to return immediately
