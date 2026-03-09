@@ -113,11 +113,11 @@ typedef int AngleDegrees;  // An angle relative to North or HeadUp. Generally
 //(((raw) + 2 * SPOKES) % SPOKES)
 
 // NEW GENERIC
-#define SCALE_DEGREES_TO_SPOKES(angle) \
-  ((angle) * (m_ri->m_spokes) / DEGREES_PER_ROTATION)
-#define SCALE_SPOKES_TO_DEGREES(raw) \
-  ((raw) * (double)DEGREES_PER_ROTATION / m_ri->m_spokes)
-#define MOD_SPOKES(raw) (((raw) + 2 * m_ri->m_spokes) % m_ri->m_spokes)
+#define SCALE_DEGREES_TO_SPOKES(ri, angle) \
+  ((angle) * (ri->m_spokes) / DEGREES_PER_ROTATION)
+#define SCALE_SPOKES_TO_DEGREES(ri, raw) \
+  ((raw) * (double)DEGREES_PER_ROTATION / ri->m_spokes)
+#define MOD_SPOKES(ri, raw) (((raw) + 2 * ri->m_spokes) % ri->m_spokes)
 // #define MOD_SPOKES(raw) ((raw)&0x7ff) // only for 2024 spokes
 #define MOD_DEGREES(angle) \
   (((angle) + 2 * DEGREES_PER_ROTATION) % DEGREES_PER_ROTATION)
@@ -588,17 +588,11 @@ public:
 
   bool EnsureRadarSelectionComplete(bool force);
   bool MakeRadarSelection();
-    
-  void SortTxRadars();
-  void NotifyRadarWindowViz();
   void NotifyControlDialog();
 
-  RadarInfo* m_sorted_tx_radars[RADARS];  // contains transmitting radars small range first
+  
   void SortTxRadars();
   void NotifyRadarWindowViz();
-  void NotifyControlDialog();
-  void NotifyRadarWindowViz();
-  void NotifyControlDialog();
 
   void OnControlDialogClose(RadarInfo* ri);
   void SetDisplayMode(DisplayModeType mode);
@@ -663,8 +657,7 @@ public:
   wxLongLong GetBootMillis() { return m_boot_time; }
   bool IsOpenGLEnabled() { return m_opengl_mode == OPENGL_ON; }
   wxGLContext* GetChartOpenGLContext();
-  RadarInfo* m_sorted_tx_radars[RADARS];  // contains transmitting radars small
-                                          // range first
+  
   bool m_guard_bogey_confirmed;
   bool m_guard_bogey_seen;  // Saw guardzone bogeys on last check
   int m_max_canvas;  // Number of canvasses in OCPN -1, 0 == single canvas, > 0
@@ -672,6 +665,7 @@ public:
   int m_current_canvas_index;
   wxMenuItem* m_mi3[RADARS];
   PlugIn_ViewPort* m_vp;
+  RadarInfo* m_sorted_tx_radars[RADARS];  // contains transmitting radars small range first
 
   wxFont m_font;        // The dialog font at a normal size
   wxFont m_fat_font;    // The dialog font at a bigger size, bold
@@ -692,13 +686,6 @@ public:
         }
         return false;
     }
-  bool m_guard_bogey_confirmed;
-  bool m_guard_bogey_seen; // Saw guardzone bogeys on last check
-  int m_max_canvas; // Number of canvasses in OCPN -1, 0 == single canvas, > 0
-                    // multi
-  int m_current_canvas_index;
-  wxMenuItem* m_mi3[RADARS];
-  PlugIn_ViewPort* m_vp;
 
   MessageBox* m_pMessageBox;
   wxWindow* m_parent_window;

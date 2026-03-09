@@ -1684,8 +1684,6 @@ bool radar_pi::IsThereTxOverlayRadar(int canvas_index) {
 
 bool radar_pi::LoadConfig(void) {
   wxFileConfig* pConf = m_pconfig;
-  bool radar_pi::LoadConfig(void) {
-  wxFileConfig *pConf = m_pconfig;
   int v, x, y, state;
   wxString s;
   if (pConf) {
