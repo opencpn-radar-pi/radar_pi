@@ -744,7 +744,7 @@ void ArpaTarget::RefreshTarget(double speed, int pass) {
 
 int Arpa::MakeNewTargetId() {
   wxString str, str1;
-  int target_id = m_target_id_count + MAX_TARGET_ID;
+  int target_id = m_target_id_count;
   m_target_id_count++;
   if (m_target_id_count >= MAX_TARGET_ID) {
     m_target_id_count = 1;
