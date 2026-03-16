@@ -1486,8 +1486,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
 
   if (!m_late_init_done) { // Wait with GL stuff until OpenCPN is done with init of it.
     return true;
-  }
-
+  if (priority != 0) return true;
   // prevent this being called recursively
   // no critical section locker (will wait), better to return immediately
   if (m_render_busy) {
@@ -2416,9 +2415,6 @@ void radar_pi::SetColorScheme(PI_ColorScheme cs) {
 RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
   int best_range = INT_MAX;
   RadarInfo *best_radar = NULL;
-
-  LOG_ARPA(wxT("$$$FindBestRadarForTargett"));
-  LOG_ARPA(wxT("$$$FindBestRadarForTarget, pos= %f, %f"), position.lat, position.lon);
 
   int range;
   GeoPosition radar_position;
