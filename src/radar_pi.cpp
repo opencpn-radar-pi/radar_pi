@@ -1475,6 +1475,7 @@ bool radar_pi::RenderOverlay(wxDC& dc, PlugIn_ViewPort* vp) {
 
 bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort* vp, int canvasIndex, int priority) {
   GeoPosition radar_pos;
+  if (priority != 0) return true;
   // prevent this being called recursively
   // no critical section locker (will wait), better to return immediately
   if (m_render_busy) {
@@ -2381,9 +2382,6 @@ void radar_pi::SetCursorLatLon(double lat, double lon) {
 RadarInfo *radar_pi::FindBestRadarForTarget(const GeoPosition &position) {
   int best_range = INT_MAX;
   RadarInfo *best_radar = NULL;
-
-  LOG_ARPA(wxT("$$$FindBestRadarForTargett"));
-  LOG_ARPA(wxT("$$$FindBestRadarForTarget, pos= %f, %f"), position.lat, position.lon);
 
   int range;
   GeoPosition radar_position;
