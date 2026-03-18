@@ -91,6 +91,8 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_last_rotation_time = 0;
   m_last_angle = 0;
   m_no_transmit_zones = 0;
+  m_start_overlay_r = 0;
+  m_start_r = 0;
 
   m_mouse_pos.lat = NAN;
   m_mouse_pos.lon = NAN;
@@ -669,9 +671,7 @@ void RadarInfo::SetAutoRangeMeters(int autorange_to_set) {
     }
     // Don't adjust auto range meters continuously when it is oscillating a little bit (< 10%)
     int test = 100 * m_previous_auto_range_meters / meters;
-    LOG_VERBOSE(wxT("Automatic range changed 2 from %d to %d meters, m_range.GetValue()=%i"), m_previous_auto_range_meters, meters,
-                m_range.GetValue());
-
+    LOG_VERBOSE(wxT("Automatic range changed 2 from %d to %d meters, m_range.GetValue()=%i"), m_previous_auto_range_meters, meters, m_range.GetValue());
     if (test < 90 || test > 110) {  //   range change required
       if (meters != m_range.GetValue()) {
         LOG_VERBOSE(wxT("Automatic range changed from %d to %d meters"), m_previous_auto_range_meters, meters);

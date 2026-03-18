@@ -1557,9 +1557,10 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
     int overlay_count = 0;
     ri = NULL;
     for (; canvas >= 0; canvas--) {
+      wxCriticalSectionLocker lock(m_sort_tx_radars);
+      overlay_count = 0;
       for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
         if (!m_sorted_tx_radars[r]) continue;
-        ri = m_sorted_tx_radars[r];
         if (m_sorted_tx_radars[r]->m_overlay_canvas[canvas].GetValue()) {
           ri = m_sorted_tx_radars[r];
           overlay_count++;
@@ -1568,7 +1569,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
       if (overlay_count == 1) break; // highest canvas with 1 overlay -> autorange
     } 
           
-    if (overlay_count == 1 && canvasIndex == canvas) {
+    if (ri && overlay_count == 1 && canvasIndex == canvas) {
       ri->SetAutoRangeMeters(auto_range_meters);
     }
 
