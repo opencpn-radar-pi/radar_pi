@@ -11,10 +11,13 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ## [Unreleased]
 
+## [5.6.0]
+
 ### Fixed
 
 - #295: Icon does not toggle in toolbar when status changed
-- Work on night/dusk mode
+- #239: Menu buttons text are disturbed when O's Dark/dusk color scheme have been used
+- #129: Radar windows don't follow O's color scheme, dusk , night
 - Bump opencpn-libs for running against O 5.12
 - Raymarine documentation
 - Allow override of HeadingTimeout in config file; normal is 5s.
