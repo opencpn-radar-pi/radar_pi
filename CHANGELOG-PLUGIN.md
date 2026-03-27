@@ -13,6 +13,7 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ### Fixed
 
+- #295: Icon does not toggle in toolbar when status changed
 - Work on night/dusk mode
 - Bump opencpn-libs for running against O 5.12
 - Raymarine documentation

@@ -2097,6 +2097,7 @@ void radar_pi::CacheSetToolbarToolBitmaps() {
       break;
   }
   SetToolbarToolBitmapsSVG(m_tool_id, icon, icon, icon);
+  SetToolbarItemState(m_tool_id, true);
   m_sent_toolbar_button = m_toolbar_button;
 }
 
