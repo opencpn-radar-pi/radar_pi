@@ -1,3 +1,6 @@
+3.4.5 Mar 06, 2026
+* Stick to poedit version 2.4.6 - #642
+
 3.4.4 Feb 06, 2026
 * Add new Flatpak build using runtime 25.08 for OpenCPN 5.14 - #631
 * update-templates: bugfixes and clean up - #637

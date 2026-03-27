@@ -1,7 +1,6 @@
 .idea
 build
 build-*
-rel-*
 !build-conf.rc
 !build-deps
 po/*.pot
