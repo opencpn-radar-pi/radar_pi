@@ -109,6 +109,7 @@ void RadarCanvas::RenderTexts(const wxSize &loc) {
   int menu_x;
   wxString s;
   RadarState state = (RadarState)m_ri->m_state.GetValue();
+  double brightness = m_ri->GetBrightness();
 
 #define MENU_ROUNDING 4
 #define MENU_BORDER 8
@@ -128,11 +129,11 @@ void RadarCanvas::RenderTexts(const wxSize &loc) {
   m_menu_size.y = y + 2 * (MENU_BORDER);
 
   if (state != RADAR_OFF) {
-    glColor4ub(40, 40, 100, 128);
+    glColor4ub(40 * brightness, 40 * brightness, 100 * brightness, 128);
 
     DrawRoundRect(loc.GetWidth() - m_menu_size.x, 0, m_menu_size.x, m_menu_size.y, 4);
 
-    glColor4ub(100, 255, 255, 255);
+    glColor4ub(100 * brightness, 255 * brightness, 255 * brightness, 255);
     // The Menu text is slightly inside the rect
     m_FontMenu.RenderString(s, loc.GetWidth() - m_menu_size.x + MENU_BORDER + MENU_EXTRA_WIDTH, MENU_BORDER);
 
@@ -145,18 +146,18 @@ void RadarCanvas::RenderTexts(const wxSize &loc) {
     m_zoom_size.x = x + 2 * (MENU_BORDER);
     m_zoom_size.y = y + 2 * (MENU_BORDER);
 
-    glColor4ub(80, 80, 80, 128);
+    glColor4ub(80 * brightness, 80 * brightness, 80 * brightness, 128);
 
     DrawRoundRect(loc.GetWidth() / 2 - m_zoom_size.x / 2, loc.GetHeight() - m_zoom_size.y + MENU_ROUNDING, m_zoom_size.x,
                   m_zoom_size.y, MENU_ROUNDING);
 
-    glColor4ub(200, 200, 200, 255);
+    glColor4ub(200 * brightness, 200 * brightness, 200 * brightness, 255);
     // The -+ text is slightly inside the rect
     m_FontMenuBold.RenderString(s, loc.GetWidth() / 2 - m_zoom_size.x / 2 + MENU_BORDER,
                                 loc.GetHeight() - m_zoom_size.y + MENU_BORDER);
   }
 
-  glColor4ub(200, 255, 200, 255);
+  glColor4ub(200 * brightness, 255 * brightness, 200 * brightness, 255);
   s = m_ri->GetCanvasTextTopLeft();
   m_FontBig.RenderString(s, 0, 0);
 
@@ -198,21 +199,22 @@ wxSize RadarCanvas::RenderControlItem(const wxSize &loc, RadarControlItem &item,
   int state = item.GetState();
   int value = item.GetValue();
   wxString label;
+  double brightness = m_ri->GetBrightness();
 
   switch (item.GetState()) {
     case RCS_OFF:
-      glColor4ub(100, 100, 100, 255);  // Grey
+      glColor4ub(100 * brightness, 100 * brightness, 100 * brightness, 255);  // Grey
       label << _("Off");
       value = -1;
       break;
 
     case RCS_MANUAL:
-      glColor4ub(255, 100, 100, 255);  // Reddish
+      glColor4ub(255 * brightness, 100 * brightness, 100 * brightness, 255);  // Reddish
       label.Printf(wxT("%d"), value);
       break;
 
     default:
-      glColor4ub(200, 255, 200, 255);  // Greenish
+      glColor4ub(200 * brightness, 255 * brightness, 200 * brightness, 255);  // Greenish
       if (ci.autoNames && state > RCS_MANUAL && state <= RCS_MANUAL + ci.autoValues) {
         label
             << ci.autoNames[state - RCS_AUTO_1];  // A little shorter than in the control, but here we have colour to indicate Auto.
@@ -576,7 +578,8 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
   m_FontMenuBold.Build(font);
 
   wxColour bg = M_SETTINGS.ppi_background_colour;
-  glClearColor(bg.Red() / 256.0, bg.Green() / 256.0, bg.Blue() / 256.0, bg.Alpha() / 256.0);
+  double brightness = m_ri->GetBrightness();
+  glClearColor(bg.Red() / 256.0 * brightness, bg.Green() / 256.0 * brightness, bg.Blue() / 256.0 * brightness, bg.Alpha() / 256.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clear the canvas
   glEnable(GL_TEXTURE_2D);                             // Enable textures
   glEnable(GL_COLOR_MATERIAL);

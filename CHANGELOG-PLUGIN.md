@@ -13,6 +13,7 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ### Fixed
 
+- Work on night/dusk mode
 - Bump opencpn-libs for running against O 5.12
 - Raymarine documentation
 - Allow override of HeadingTimeout in config file; normal is 5s.

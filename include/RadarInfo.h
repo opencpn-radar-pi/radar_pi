@@ -278,6 +278,7 @@ public:
 
     void UpdateControlState(bool all);
     void ComputeColourMap();
+    double GetBrightness();  // Returns brightness factor for current color scheme
     void ComputeTargetTrails();
     void CheckTimedTransmit();
     void SetTimedNextStateTimer(int ms);

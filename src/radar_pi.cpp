@@ -40,6 +40,7 @@
 #include "Kalman.h"
 #include "MessageBox.h"
 #include "OptionsDialog.h"
+#include "RadarPanel.h"
 #include "SelectDialog.h"
 #include "icons.h"
 #include "navico/NavicoLocate.h"
@@ -175,6 +176,7 @@ radar_pi::radar_pi(void* ppimgr) : opencpn_plugin_118(ppimgr), m_raymarine_locat
   }
 
   m_first_init = true;
+  m_color_scheme = PI_GLOBAL_COLOR_SCHEME_DAY;
 }
 
 radar_pi::~radar_pi() {}
@@ -2175,6 +2177,27 @@ void radar_pi::SetCursorPosition(GeoPosition pos) { m_cursor_pos = pos; }
 void radar_pi::SetCursorLatLon(double lat, double lon) {
   m_cursor_pos.lat = lat;
   m_cursor_pos.lon = lon;
+}
+
+void radar_pi::SetColorScheme(PI_ColorScheme cs) {
+  m_color_scheme = cs;
+
+  for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
+    if (m_radar[r]) {
+      if (m_radar[r]->m_control_dialog) {
+        DimeWindow(m_radar[r]->m_control_dialog);
+      }
+      if (m_radar[r]->m_radar_panel) {
+        DimeWindow(m_radar[r]->m_radar_panel);
+      }
+      // Recompute radar colors with new brightness for color scheme
+      m_radar[r]->ComputeColourMap();
+    }
+  }
+
+  if (m_pMessageBox) {
+    DimeWindow(m_pMessageBox);
+  }
 }
 
 bool radar_pi::MouseEventHook(wxMouseEvent& event) {

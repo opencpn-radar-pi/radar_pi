@@ -563,6 +563,7 @@ public:
   void SetPositionFixEx(PlugIn_Position_Fix_Ex& pfix);
   void SetPluginMessage(wxString& message_id, wxString& message_body);
   void SetNMEASentence(wxString& sentence);
+  void SetColorScheme(PI_ColorScheme cs);
   void SetDefaults(void);
   int GetToolbarToolCount(void);
   void OnToolbarToolCallback(int id);
@@ -684,6 +685,7 @@ public:
                             //  AIS targets.
 
   bool m_ais_drawgl_broken;
+  PI_ColorScheme m_color_scheme;  // Current OpenCPN color scheme
 
 private:
   void RadarSendState(void);

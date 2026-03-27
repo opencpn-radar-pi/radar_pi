@@ -350,10 +350,32 @@ void RadarInfo::SetName(wxString name) {
   }
 }
 
+// Dim a color based on the current color scheme to match OpenCPN's brightness
+// DAY = 1.0 (no dimming), DUSK = 0.8, NIGHT = 0.5
+static PixelColour DimColor(const wxColour& color, double brightness) {
+  return PixelColour(color.Red() * brightness, color.Green() * brightness, color.Blue() * brightness);
+}
+
+// Returns brightness factor for current color scheme (matches OpenCPN's dimming)
+// DAY = 1.0 (no dimming), DUSK = 0.8, NIGHT = 0.5
+double RadarInfo::GetBrightness() {
+  switch (m_pi->m_color_scheme) {
+    case PI_GLOBAL_COLOR_SCHEME_DUSK:
+      return 0.8;
+    case PI_GLOBAL_COLOR_SCHEME_NIGHT:
+      return 0.5;
+    default:
+      return 1.0;
+  }
+}
+
 void RadarInfo::ComputeColourMap() {
   int doppler_states = m_doppler.GetValue();
 
-  LOG_VERBOSE(wxT("%s computing colour map, doppler=%d"), m_name.c_str(), doppler_states);
+  // Get brightness factor based on color scheme
+  double brightness = GetBrightness();
+
+  LOG_VERBOSE(wxT("%s computing colour map, doppler=%d, brightness=%.1f"), m_name.c_str(), doppler_states, brightness);
   for (int i = 0; i <= UINT8_MAX; i++) {
     if (i == UINT8_MAX && doppler_states > 0) {
       m_colour_map[i] = BLOB_DOPPLER_APPROACHING;
@@ -373,12 +395,12 @@ void RadarInfo::ComputeColourMap() {
   for (int i = 0; i < BLOB_COLOURS; i++) {
     m_colour_map_rgb[i] = PixelColour(0, 0, 0);
   }
-  float r1 = M_SETTINGS.trail_start_colour.Red();
-  float g1 = M_SETTINGS.trail_start_colour.Green();
-  float b1 = M_SETTINGS.trail_start_colour.Blue();
-  float r2 = M_SETTINGS.trail_end_colour.Red();
-  float g2 = M_SETTINGS.trail_end_colour.Green();
-  float b2 = M_SETTINGS.trail_end_colour.Blue();
+  float r1 = M_SETTINGS.trail_start_colour.Red() * brightness;
+  float g1 = M_SETTINGS.trail_start_colour.Green() * brightness;
+  float b1 = M_SETTINGS.trail_start_colour.Blue() * brightness;
+  float r2 = M_SETTINGS.trail_end_colour.Red() * brightness;
+  float g2 = M_SETTINGS.trail_end_colour.Green() * brightness;
+  float b2 = M_SETTINGS.trail_end_colour.Blue() * brightness;
   float delta_r = (r2 - r1) / BLOB_HISTORY_COLOURS;
   float delta_g = (g2 - g1) / BLOB_HISTORY_COLOURS;
   float delta_b = (b2 - b1) / BLOB_HISTORY_COLOURS;
@@ -394,11 +416,11 @@ void RadarInfo::ComputeColourMap() {
   }
   // }
 
-  m_colour_map_rgb[BLOB_DOPPLER_APPROACHING] = M_SETTINGS.doppler_approaching_colour;
-  m_colour_map_rgb[BLOB_DOPPLER_RECEDING] = M_SETTINGS.doppler_receding_colour;
-  m_colour_map_rgb[BLOB_STRONG] = M_SETTINGS.strong_colour;
-  m_colour_map_rgb[BLOB_INTERMEDIATE] = M_SETTINGS.intermediate_colour;
-  m_colour_map_rgb[BLOB_WEAK] = M_SETTINGS.weak_colour;
+  m_colour_map_rgb[BLOB_DOPPLER_APPROACHING] = DimColor(M_SETTINGS.doppler_approaching_colour, brightness);
+  m_colour_map_rgb[BLOB_DOPPLER_RECEDING] = DimColor(M_SETTINGS.doppler_receding_colour, brightness);
+  m_colour_map_rgb[BLOB_STRONG] = DimColor(M_SETTINGS.strong_colour, brightness);
+  m_colour_map_rgb[BLOB_INTERMEDIATE] = DimColor(M_SETTINGS.intermediate_colour, brightness);
+  m_colour_map_rgb[BLOB_WEAK] = DimColor(M_SETTINGS.weak_colour, brightness);
 }
 
 void RadarInfo::ResetSpokes() {

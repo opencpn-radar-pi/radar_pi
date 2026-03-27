@@ -667,12 +667,10 @@ void ControlsDialog::CreateControls() {
   m_value_text = new wxStaticText(this, ID_VALUE, _("Value"), wxDefaultPosition, valueSize, wxALIGN_CENTRE_HORIZONTAL);
   m_edit_sizer->Add(m_value_text, 0, wxALL, BORDER);
   m_value_text->SetFont(m_pi->m_fat_font);
-  m_value_text->SetBackgroundColour(*wxLIGHT_GREY);
 
   // The COMMENT text
   m_comment_text = new DynamicStaticText(this, ID_VALUE, wxT(""), wxDefaultPosition, g_buttonSize, wxALIGN_CENTRE_HORIZONTAL);
   m_edit_sizer->Add(m_comment_text, 0, wxALL, BORDER);
-  m_comment_text->SetBackgroundColour(*wxLIGHT_GREY);
 
   // The - button
   m_minus_button = new RadarButton(this, ID_MINUS, g_buttonSize, wxT("-"));
