@@ -1674,7 +1674,6 @@ NetworkAddress RadarInfo::GetRadarInterfaceAddress() {
 int RadarInfo::GetOverlayCanvasIndex() {
   for (int i = 0; i < CANVAS_COUNT; i++) {
     if (m_overlay_canvas[i].GetValue() > 0) {
-      LOG_INFO(wxT("$$$w canvas overlay=%i, value=%i"), i, m_overlay_canvas[i].GetValue());
       return i;
     }
   }
