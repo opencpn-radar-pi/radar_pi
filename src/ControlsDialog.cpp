@@ -1626,9 +1626,11 @@ void ControlsDialog::OnRadarOverlayButtonClick(wxCommandEvent& event) {
     // flip overlay to on
     button->m_item->Update(1);
     m_ri->m_overlay_canvas[canvasIndex].Update(1);
+    LOG_INFO(wxT("$$$ overlay button canvas=%i, updated to 1"), canvasIndex);
     m_ri->UpdateControlState(false);
   } else {
     // flip overlay to off
+    LOG_INFO(wxT("$$$ overlay button canvas=%i, updated to 0"), canvasIndex);
     button->m_item->Update(0);
   }
   UpdateControlValues(true);

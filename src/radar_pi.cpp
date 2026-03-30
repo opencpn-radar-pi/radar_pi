@@ -693,7 +693,7 @@ void radar_pi::PrepareContextMenu(int canvasIndex) {
   bool enableShowRadarControl = false;
   bool arpa = arpa_targets == 0;
   bool overlay = m_settings.show                                                                 // radar shown
-                 && IsThereTxOverlayRadar(canvasIndex)                                                          // overlay desired
+                 && NumberOfTxOverlayRadars(canvasIndex)                                           // overlay desired
                  && !isnan(m_cursor_pos.lat) && !isnan(m_cursor_pos.lon);                        // position available
 
   bool show_acq_delete = overlay && targets_tracked;
@@ -791,7 +791,6 @@ void radar_pi::OnToolbarToolCallback(int id) {
     LOG_DIALOG(wxT("OnToolbarToolCallback show"));
     // Show the control dialogs of all overlay radars
     for (int i = 0; i < CANVAS_COUNT; i++) {
-      //wxCriticalSectionLocker lock(m_exclusive);
       RadarInfo *ri_r;
       for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
         {
@@ -1124,7 +1123,7 @@ void radar_pi::OnTimerNotify(wxTimerEvent& event) {
     // and refresh canvas with overlay
     for (int r = 0; r < CANVAS_COUNT; r++) {
       wxWindow* canvas = GetCanvasByIndex(r);
-      if (IsThereTxOverlayRadar(r) || (r == 0 && ppi_visible)) {
+      if (NumberOfTxOverlayRadars(r) || (r == 0 && ppi_visible)) {
         if (canvas) {
           canvas->Refresh(false);
         } else {
@@ -1295,15 +1294,19 @@ void radar_pi::SortTxRadars() {
     return;
   }
 
-  // Fill fixed-size array, pad with nullptr
+  // Get starting r for searches and overlays
   size_t i = 0;
-  double last_overlay_pix_per_m = 0.;
+  double last_overlay_pix_per_m[MAX_CHART_CANVAS];
+
   for (; i < tx.size() && i < radar_count; ++i) {
     m_sorted_tx_radars[i] = tx[i];
     if (i == 0) {
       if (m_sorted_tx_radars[0]) {
         m_sorted_tx_radars[0]->m_start_r = 0;
-        m_sorted_tx_radars[0]->m_start_overlay_r = 0;
+        for (int j = 0; j < CANVAS_COUNT; j++) {
+          last_overlay_pix_per_m[j] = 0.;
+          m_sorted_tx_radars[0]->m_start_overlay_r[j] = 0;
+        }
       }
     } else {
       // Set starting r for searches
@@ -1314,19 +1317,23 @@ void radar_pi::SortTxRadars() {
       } else {
         m_sorted_tx_radars[i]->m_start_r = 0;
       }
-      if (last_overlay_pix_per_m != 0.) {
-        m_sorted_tx_radars[i]->m_start_overlay_r =
-            (int)(tx[i]->m_spoke_len_max * m_sorted_tx_radars[i]->m_pixels_per_meter / last_overlay_pix_per_m);
-      } else {
-        m_sorted_tx_radars[i]->m_start_overlay_r = 0;
+      for (int j = 0; j < CANVAS_COUNT; j++) {
+        if (last_overlay_pix_per_m[j] != 0.) {
+          m_sorted_tx_radars[i]->m_start_overlay_r[j] =
+              (int)(tx[i]->m_spoke_len_max * m_sorted_tx_radars[i]->m_pixels_per_meter / last_overlay_pix_per_m[j]);
+        } else {
+          m_sorted_tx_radars[i]->m_start_overlay_r[j] = 0;
+        }
       }
     }
-
-    // If this is an overlay radar, save the pix/m for next i
-    if (m_sorted_tx_radars[i] && m_sorted_tx_radars[i]->m_overlay_canvas[m_current_canvas_index].GetValue()) {
-      last_overlay_pix_per_m = m_sorted_tx_radars[i]->m_pixels_per_meter;
+    for (int j = 0; j < CANVAS_COUNT; j++) {
+      // If this is an overlay radar, save the pix/m for next i
+      if (m_sorted_tx_radars[i] && m_sorted_tx_radars[i]->m_overlay_canvas[j].GetValue()) {
+        last_overlay_pix_per_m[j] = m_sorted_tx_radars[i]->m_pixels_per_meter;
+      }
     }
   }
+  // Fill fixed-size array, pad with nullptr
   for (; i < RADARS; ++i) {
     m_sorted_tx_radars[i] = nullptr;
   }
@@ -1510,6 +1517,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
   wxLongLong now = wxGetUTCTimeMillis();
   m_current_canvas_index = canvasIndex;
   m_max_canvas = GetCanvasCount();
+  
   if (m_max_canvas <= 0 || m_current_canvas_index >= m_max_canvas) {
     m_render_busy = false;
     return true;
@@ -1543,7 +1551,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
     ri = m_sorted_tx_radars[0];
   }
   if (M_SETTINGS.show                                   // Radar shown
-      && IsThereTxOverlayRadar(m_current_canvas_index)  // Overlay desired
+      && NumberOfTxOverlayRadars(m_current_canvas_index)  // Overlay desired
       && m_heading_source != HEADING_NONE               // Heading is valid
       && ri && ri->GetRadarPosition(&radar_pos)) {  // Boat position known
 
@@ -1564,10 +1572,11 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
     // if this radar is overlayed on multiple canvases only adjust auto range on one of them.
     // we choose the highest canvas, which is just an arbitrary choice by us.
     // When there are more radar overlays on a canvas autorange is disabled
-    int canvas = CANVAS_COUNT;
+    int canvas = CANVAS_COUNT - 1;
     int overlay_count = 0;
     ri = NULL;
     for (; canvas >= 0; canvas--) {
+      LOG_INFO(wxT("$$$ autorange canvas=%i"), canvas);
       wxCriticalSectionLocker lock(m_sort_tx_radars);
       overlay_count = 0;
       for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
@@ -1575,12 +1584,15 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
         if (m_sorted_tx_radars[r]->m_overlay_canvas[canvas].GetValue()) {
           ri = m_sorted_tx_radars[r];
           overlay_count++;
+          LOG_INFO(wxT("$$$ overlaycount=%i, radar=%s, canvas=%i, canvasIndex=%i"), overlay_count, ri->m_name, canvas, canvasIndex);
+          break;
         }
       }
       if (overlay_count == 1) break; // highest canvas with 1 overlay -> autorange
     } 
-          
+     LOG_INFO(wxT("$$$a overlaycount=%i, radar=%s, canvas=%i, canvasIndex=%i"), overlay_count, ri->m_name, canvas, canvasIndex);     
     if (ri && overlay_count == 1 && canvasIndex == canvas) {
+      LOG_INFO(wxT("$$$1 set autorange"));
       ri->SetAutoRangeMeters(auto_range_meters);
     }
 
@@ -1620,7 +1632,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
         wxCriticalSectionLocker lock(m_sort_tx_radars);
         ri_r = m_sorted_tx_radars[r];
       }
-      if (ri_r && ri_r->m_overlay_canvas[canvasIndex].GetValue()) {
+      if (ri_r && ri_r->m_overlay_canvas[m_current_canvas_index].GetValue()) {
         ri_r->RenderRadarImage1(boat_center, v_scale_ppm, rotation, true);
       }
     }
@@ -1671,13 +1683,13 @@ void radar_pi::RenderGuardZone() {
 }
 
 
-// Will return true if at least one radar is transmitting and 
-// has an overlay on canvas canvas_index
-bool radar_pi::IsThereTxOverlayRadar(int canvas_index) {
+// Will return number of transmitting overlay radars on canvas
+int radar_pi::NumberOfTxOverlayRadars(int canvas_index) {
   // Validate canvas index
   if (canvas_index < 0 || canvas_index >= CANVAS_COUNT) {
-    return false;
+    return 0;
   }
+  int count = 0;
   // Check tx radars only
   for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
     RadarInfo *ri_r;
@@ -1686,13 +1698,13 @@ bool radar_pi::IsThereTxOverlayRadar(int canvas_index) {
       ri_r = m_sorted_tx_radars[r];
     }
     if (!ri_r) {
-      return false;
+      break;
     }
-    if (ri_r->m_overlay_canvas[canvas_index].GetValue() == 1) {
-      return true;
+    if (ri_r->m_overlay_canvas[canvas_index].GetValue()) {
+      count++;
     }
   }
-  return false;
+  return count;
 }
 
 bool radar_pi::LoadConfig(void) {

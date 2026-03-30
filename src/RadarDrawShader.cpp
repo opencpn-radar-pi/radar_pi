@@ -98,13 +98,15 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len_max) {
     return false;
   }
 
-  glGenTextures(1, &m_texture);
-  glBindTexture(GL_TEXTURE_2D, m_texture);
+  for (int i = 0; i <= m_ri->m_pi->m_max_canvas; i++) {
+    glGenTextures(1, &m_texture[i]);
+    glBindTexture(GL_TEXTURE_2D, m_texture[i]);
 
-  if (m_data) {
-    free(m_data);
-  }
-  m_data = (unsigned char *)calloc(SHADER_COLOR_CHANNELS, m_spoke_len_max * m_spokes);
+    if (m_data[i]) {
+      free(m_data[i]);
+    }
+    m_data[i] = (unsigned char *)calloc(SHADER_COLOR_CHANNELS, m_spoke_len_max * m_spokes);
+  
   // Tell the GPU the size of the texture:
   glTexImage2D(/* target          = */ GL_TEXTURE_2D,
                /* level           = */ 0,
@@ -114,13 +116,13 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len_max) {
                /* border          = */ 0,
                /* format          = */ m_format,
                /* type            = */ GL_UNSIGNED_BYTE,
-               /* data            = */ m_data);
+               /* data            = */ m_data[i]);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  m_start_line = -1;
-  m_lines = 0;
-
+    m_start_line[i] = -1;
+    m_lines[i] = 0;
+  }
   return true;
 }
 
@@ -137,14 +139,16 @@ void RadarDrawShader::Reset() {
     DeleteProgram(m_program);
     m_program = 0;
   }
-  if (m_texture) {
-    glDeleteTextures(1, &m_texture);
-    m_texture = 0;
-  }
-
-  if (m_data) {
-    free(m_data);
-    m_data = 0;
+  
+  for (int canvas = 0; canvas <= m_ri->m_pi->m_max_canvas; canvas++) {
+    if (m_data[canvas]) {
+      free(m_data[canvas]);
+      m_data[canvas] = 0;
+    }
+    if (m_texture[canvas]) {
+      glDeleteTextures(1, &m_texture[canvas]);
+      m_texture[canvas] = 0;
+    }
   }
 }
 
@@ -154,10 +158,17 @@ RadarDrawShader::~RadarDrawShader() {
   Reset();
 }
 
-void RadarDrawShader::DrawRadarOverlayImage(double radar_scale, double panel_rotate) {
+void RadarDrawShader::DrawRadarOverlayImage(int canv,double radar_scale, double panel_rotate) {
   wxCriticalSectionLocker lock(m_exclusive);
 
-  if (!m_program || !m_texture || !m_data) {
+  int canvas = canv;
+  int start_radius = m_ri->m_start_overlay_r[canv];
+  if (start_radius == 0) {
+    // this radar starts at 0, there is no second vertex array
+    canvas = m_ri->m_pi->m_max_canvas;  // here a full image is stored
+  }
+
+  if (!m_program || !m_texture[canvas] || !m_data[canvas]) {
     return;
   }
 
@@ -165,13 +176,13 @@ void RadarDrawShader::DrawRadarOverlayImage(double radar_scale, double panel_rot
 
   UseProgram(m_program);
 
-  glBindTexture(GL_TEXTURE_2D, m_texture);
+  glBindTexture(GL_TEXTURE_2D, m_texture[canvas]);
 
-  if (m_start_line > -1) {
+  if (m_start_line[canvas] > -1) {
     // Since the last time we have received data from [m_start_line, m_end_line>
     // so we only need to update the texture for those data lines.
-    if (m_start_line + m_lines > (int)m_spokes) {
-      int end_line = (m_start_line + m_lines) % m_spokes;
+    if (m_start_line[canvas] + m_lines[canvas] > (int)m_spokes) {
+      int end_line = (m_start_line[canvas] + m_lines[canvas]) % m_spokes;
       // if the new data partly wraps past the end of the texture
       // tell it the two parts separately
       // First remap [0, m_end_line>
@@ -183,31 +194,31 @@ void RadarDrawShader::DrawRadarOverlayImage(double radar_scale, double panel_rot
                       /* height =   */ end_line,
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
-                      /* pixels =   */ m_data);
+                      /* pixels =   */ m_data[canvas]);
       // And then remap [m_start_line, m_spokes>
       glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
                       /* level =    */ 0,
                       /* x-offset = */ 0,
-                      /* y-offset = */ m_start_line,
+                      /* y-offset = */ m_start_line[canvas],
                       /* width =    */ m_spoke_len_max,
-                      /* height =   */ m_spokes - m_start_line,
+                      /* height =   */ m_spokes - m_start_line[canvas],
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
-                      /* pixels =   */ m_data + m_start_line * m_spoke_len_max * m_channels);
+                      /* pixels =   */ m_data[canvas] + m_start_line[canvas] * m_spoke_len_max * m_channels);
     } else {
       // Map [m_start_line, m_end_line>
       glTexSubImage2D(/* target =   */ GL_TEXTURE_2D,
                       /* level =    */ 0,
                       /* x-offset = */ 0,
-                      /* y-offset = */ m_start_line,
+                      /* y-offset = */ m_start_line[canvas],
                       /* width =    */ m_spoke_len_max,
-                      /* height =   */ m_lines,
+                      /* height =   */ m_lines[canvas],
                       /* format =   */ m_format,
                       /* type =     */ GL_UNSIGNED_BYTE,
-                      /* pixels =   */ m_data + m_start_line * m_spoke_len_max * m_channels);
+                      /* pixels =   */ m_data[canvas] + m_start_line[canvas] * m_spoke_len_max * m_channels);
     }
-    m_start_line = -1;
-    m_lines = 0;
+    m_start_line[canvas] = -1;
+    m_lines[canvas] = 0;
   }
 
   // We tell the GPU to draw a square from (-512,-512) to (+512,+512).
@@ -228,52 +239,70 @@ void RadarDrawShader::DrawRadarOverlayImage(double radar_scale, double panel_rot
   glPopAttrib();
 }
 
-void RadarDrawShader::DrawRadarPanelImage(double panel_scale, double panel_rotate) { DrawRadarOverlayImage(1., 0.); }
+void RadarDrawShader::DrawRadarPanelImage(double panel_scale, double panel_rotate) { 
+  DrawRadarOverlayImage(m_ri->m_pi->m_max_canvas, 1., 0.);
+} 
 
-void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t *data, size_t len, GeoPosition spoke_pos, bool overlay) {
+void RadarDrawShader::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t *data, size_t len, GeoPosition spoke_pos,
+                                        bool overlay) {
   GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
   wxCriticalSectionLocker lock(m_exclusive);
+  for (int canv = 0; canv <= m_ri->m_pi->m_max_canvas; canv++) {
+    int canvas = canv;
 
-  if (m_start_line == -1) {
-    m_start_line = angle;  // Note that this only runs once after each draw,
-  }
-  if (m_lines < (int)m_spokes) {
-    m_lines++;
-  }
+    size_t start_r = 0;
+    {
+      wxCriticalSectionLocker lock(m_ri->m_pi->m_sort_tx_radars);
+      if (canvas == m_ri->m_pi->m_max_canvas) {
+        start_r = 0;  // make one full image for panel or overlay
+      } else {
+        start_r = m_ri->m_start_overlay_r[canvas];
+        if (start_r == 0) {
+          continue;  // no need to make a second full imagem, this is done at canvas == m_pi->m_max_canvas
+        }
+      }
+    }
 
-  size_t start_r = m_ri->m_start_overlay_r;
-  if (m_channels == SHADER_COLOR_CHANNELS) {
-    unsigned char *d = m_data + (angle * m_spoke_len_max) * m_channels;
-    for (size_t r = 0; r < start_r; r++) {
-      *d++ = 0;
-      *d++ = 0;
-      *d++ = 0;
-      *d++ = 0;
+    if (m_start_line[canvas] == -1) {
+      m_start_line[canvas] = angle;  // Note that this only runs once after each draw,
     }
-    for (size_t r = start_r; r < len; r++) {
-      GLubyte strength = data[r];
-      BlobColour colour = m_ri->m_colour_map[strength];
-      d[0] = m_ri->m_colour_map_rgb[colour].Red();
-      d[1] = m_ri->m_colour_map_rgb[colour].Green();
-      d[2] = m_ri->m_colour_map_rgb[colour].Blue();
-      d[3] = colour != BLOB_NONE ? alpha : 0;
-      d += m_channels;
+    if (m_lines[canvas] < (int)m_spokes) {
+      m_lines[canvas]++;
     }
-    for (size_t r = len; r < m_spoke_len_max; r++) {
-      *d++ = 0;
-      *d++ = 0;
-      *d++ = 0;
-      *d++ = 0;
-    }
-  } else {
-    unsigned char *d = m_data + (angle * m_spoke_len_max) + start_r;
-    for (size_t r = start_r; r < len; r++) {
-      GLubyte strength = data[r];
-      BlobColour colour = m_ri->m_colour_map[strength];
-      *d++ = (m_ri->m_colour_map_rgb[colour].Red() * alpha) >> 8;
-    }
-    for (size_t r = len; r < m_spoke_len_max; r++) {
-      *d++ = 0;
+
+    if (m_channels == SHADER_COLOR_CHANNELS) {
+      unsigned char *d = m_data[canvas] + (angle * m_spoke_len_max) * m_channels;
+      for (size_t r = 0; r < start_r; r++) {
+        *d++ = 0;
+        *d++ = 0;
+        *d++ = 0;
+        *d++ = 0;
+      }
+      for (size_t r = start_r; r < len; r++) {
+        GLubyte strength = data[r];
+        BlobColour colour = m_ri->m_colour_map[strength];
+        d[0] = m_ri->m_colour_map_rgb[colour].Red();
+        d[1] = m_ri->m_colour_map_rgb[colour].Green();
+        d[2] = m_ri->m_colour_map_rgb[colour].Blue();
+        d[3] = colour != BLOB_NONE ? alpha : 0;
+        d += m_channels;
+      }
+      for (size_t r = len; r < m_spoke_len_max; r++) {
+        *d++ = 0;
+        *d++ = 0;
+        *d++ = 0;
+        *d++ = 0;
+      }
+    } else {
+      unsigned char *d = m_data[canvas] + (angle * m_spoke_len_max) + start_r;
+      for (size_t r = start_r; r < len; r++) {
+        GLubyte strength = data[r];
+        BlobColour colour = m_ri->m_colour_map[strength];
+        *d++ = (m_ri->m_colour_map_rgb[colour].Red() * alpha) >> 8;
+      }
+      for (size_t r = len; r < m_spoke_len_max; r++) {
+        *d++ = 0;
+      }
     }
   }
 }

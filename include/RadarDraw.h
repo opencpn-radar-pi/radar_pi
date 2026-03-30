@@ -42,7 +42,7 @@ public:
     static RadarDraw* make_Draw(radar_pi* pi, RadarInfo* ri, int draw_method);
 
     virtual bool Init(size_t spokes, size_t max_spoke_len) = 0;
-    virtual void DrawRadarOverlayImage(double radar_scale, double panel_rotate)
+    virtual void DrawRadarOverlayImage(int canvas, double radar_scale, double panel_rotate)
         = 0;
     virtual void DrawRadarPanelImage(double panel_scale, double panel_rotate)
         = 0;

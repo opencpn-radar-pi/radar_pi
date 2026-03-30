@@ -43,15 +43,18 @@ public:
     RadarDrawShader(RadarInfo* ri)
     {
         m_ri = ri;
-        m_start_line = -1; // No spokes received since last draw
-        m_lines = 0;
-        m_texture = 0;
+        
         m_fragment = 0;
         m_vertex = 0;
         m_program = 0;
         m_format = GL_RGBA;
         m_channels = SHADER_COLOR_CHANNELS;
-        m_data = 0;
+        for (int i = 0; i <= MAX_CHART_CANVAS; i++) {
+          m_start_line[i] = -1;  // No spokes received since last draw
+          m_lines[i] = 0;
+          m_data[i] = 0;
+          m_texture[i] = 0;
+        }
         m_spokes = 0;
         m_spoke_len_max = 0;
     }
@@ -59,7 +62,7 @@ public:
     ~RadarDrawShader();
 
     bool Init(size_t spokes, size_t spoke_len_max);
-    void DrawRadarOverlayImage(double radar_scale, double panel_rotate);
+    void DrawRadarOverlayImage(int canvas, double radar_scale, double panel_rotate);
     void DrawRadarPanelImage(double panel_scale, double panel_rotate);
     void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data,
         size_t len, GeoPosition spoke_pos, bool overlay);
@@ -69,17 +72,17 @@ private:
 
     wxCriticalSection m_exclusive; // protects the following data structures
     unsigned char*
-        m_data; // [SHADER_COLOR_CHANNELS * m_spokes * m_spoke_len_max];
+        m_data[MAX_CHART_CANVAS + 1];  // [SHADER_COLOR_CHANNELS * m_spokes * m_spoke_len_max];
     size_t m_spokes;
     size_t m_spoke_len_max;
 
-    int m_start_line; // First line received since last draw, or -1
-    int m_lines; // # of lines received since last draw
+    int m_start_line[MAX_CHART_CANVAS + 1];  // First line received since last draw, or -1
+    int m_lines[MAX_CHART_CANVAS + 1];  // # of lines received since last draw
 
     int m_format;
     int m_channels;
 
-    GLuint m_texture;
+    GLuint m_texture[MAX_CHART_CANVAS + 1];
     GLuint m_fragment;
     GLuint m_vertex;
     GLuint m_program;

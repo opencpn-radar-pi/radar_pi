@@ -43,6 +43,7 @@
 #include "RadarReceive.h"
 #include "TrailBuffer.h"
 #include "drawutil.h"
+#include "radar_pi.h"
 
 PLUGIN_BEGIN_NAMESPACE
 
@@ -91,7 +92,9 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_last_rotation_time = 0;
   m_last_angle = 0;
   m_no_transmit_zones = 0;
-  m_start_overlay_r = 0;
+  for (int i = 0; i < MAX_CHART_CANVAS; i++) {
+      m_start_overlay_r[i] = 0;
+    }
   m_start_r = 0;
 
   m_mouse_pos.lat = NAN;
@@ -760,12 +763,13 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item,
 
     case CT_OVERLAY_CANVAS: {
       int canvas = button->GetId() - ID_RADAR_OVERLAY0;
-      int radar = item.GetValue() > 0 ? (int)m_radar : -1;
-
-      LOG_DIALOG(wxT("%s SetControlValue %s canvas=%d radar=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(), canvas,
+      int radar = item.GetValue() > 0 ? /*(int)m_radar*/  1 : -1; // $$$?
+      LOG_INFO(wxT("$$$ww m_radar=%i, radar=%i"), m_radar, radar);
+      LOG_INFO/*DIALOG$$$*/(wxT("%s SetControlValue %s canvas=%d radar=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(), canvas,
                  radar);
 
       m_overlay_canvas[canvas] = radar;
+      LOG_INFO(wxT("$$$ww radar=%i"), radar);
       return true;
     }
 
@@ -909,7 +913,7 @@ void RadarInfo::RenderRadarImage2(DrawInfo *di, double radar_scale, double panel
   }
 
   if (di == &m_draw_overlay) {
-    di->draw->DrawRadarOverlayImage(radar_scale, panel_rotate);
+    di->draw->DrawRadarOverlayImage(m_pi->m_current_canvas_index, radar_scale, panel_rotate);
   } else {
     double panel_scale = (m_panel_zoom / m_range.GetValue()) / m_pixels_per_meter;  // typical value 0.001
     di->draw->DrawRadarPanelImage(panel_scale, panel_rotate);
@@ -1665,6 +1669,16 @@ NetworkAddress RadarInfo::GetRadarAddress() {
 NetworkAddress RadarInfo::GetRadarInterfaceAddress() {
   wxCriticalSectionLocker lock(m_exclusive);
   return m_radar_interface_address;
+}
+
+int RadarInfo::GetOverlayCanvasIndex() {
+  for (int i = 0; i < CANVAS_COUNT; i++) {
+    if (m_overlay_canvas[i].GetValue() > 0) {
+      LOG_INFO(wxT("$$$w canvas overlay=%i, value=%i"), i, m_overlay_canvas[i].GetValue());
+      return i;
+    }
+  }
+  return -1;
 }
 
 PLUGIN_END_NAMESPACE

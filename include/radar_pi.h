@@ -599,7 +599,7 @@ public:
 
   void OnControlDialogClose(RadarInfo* ri);
   void SetDisplayMode(DisplayModeType mode);
-  bool IsThereTxOverlayRadar(int canvas_index);
+  int NumberOfTxOverlayRadars(int canvas_index);
   void ShowRadarControl(int radar, bool show = true, bool reparent = true);
   void ShowGuardZoneDialog(int radar, int zone);
   void OnGuardZoneDialogClose(RadarInfo* ri);
@@ -683,7 +683,7 @@ public:
   bool HaveOverlay()
     {
         for (int i = 0; i < CANVAS_COUNT; i++) {
-        if (IsThereTxOverlayRadar(i) ) {
+        if (NumberOfTxOverlayRadars(i) ) {
                 return true;
             }
         }
@@ -727,7 +727,6 @@ private:
     int GetArpaTargetCount(void);
     
     wxCriticalSection m_exclusive; // protects callbacks that come from multiple radars
-
   double m_hdt;  // this is the heading that the pi is using for all heading
                  // operations, in degrees. m_hdt will come from the radar if
                  // available else from the NMEA stream.

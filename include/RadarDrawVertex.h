@@ -42,13 +42,14 @@ PLUGIN_BEGIN_NAMESPACE
 
 class RadarDrawVertex : public RadarDraw {
 public:
-    RadarDrawVertex(radar_pi* pi, RadarInfo* ri)
-    {
-        wxCriticalSectionLocker lock(m_exclusive);
+  RadarDrawVertex(radar_pi* pi, RadarInfo* ri) {
+    wxCriticalSectionLocker lock(m_exclusive);
 
-        m_ri = ri;
-        m_pi = pi;
-        m_vertices = 0;
+    m_ri = ri;
+    m_pi = pi;
+    for (int i = 0; i <= MAX_CHART_CANVAS; i++) {
+      m_vertices[i] = 0;
+    }
         m_count = 0;
         m_oom = false;
         m_spokes = 0;
@@ -56,7 +57,7 @@ public:
     }
 
     bool Init(size_t spokes, size_t spoke_len_max);
-    void DrawRadarOverlayImage(double radar_scale, double panel_rotate);
+    void DrawRadarOverlayImage(int canvas, double radar_scale, double panel_rotate);
     void DrawRadarPanelImage(double panel_scale, double panel_rotate);
     void ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data,
         size_t len, GeoPosition spoke_pos, bool overlay);
@@ -99,7 +100,7 @@ private:
 
     void Reset();
     wxCriticalSection m_exclusive; // protects the following
-    VertexLine* m_vertices;
+    VertexLine* m_vertices[MAX_CHART_CANVAS + 1];  // for canvas 0 and 1
     unsigned int m_count;
     bool m_oom;
 };

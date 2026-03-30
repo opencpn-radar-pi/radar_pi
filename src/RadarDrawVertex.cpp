@@ -44,16 +44,17 @@ bool RadarDrawVertex::Init(size_t spokes, size_t spoke_len_max) {
   }
   m_spokes = spokes;                // How many spokes form a circle
   m_spoke_len_max = spoke_len_max;  // How long each spoke is (max)
-
-  if (!m_vertices) {
-    m_vertices = (VertexLine*)calloc(sizeof(VertexLine), m_spokes);
-  }
-  if (!m_vertices) {
-    if (!m_oom) {
-      wxLogError(wxT("Out of memory"));
-      m_oom = true;
+  for (int canvas = 0; canvas <= m_pi->m_max_canvas; canvas++) {
+    if (!m_vertices[canvas]) {
+      m_vertices[canvas] = (VertexLine*)calloc(sizeof(VertexLine), m_spokes);
     }
-    return false;
+    if (!m_vertices[canvas]) {
+      if (!m_oom) {
+        wxLogError(wxT("Out of memory"));
+        m_oom = true;
+      }
+      return false;
+    }
   }
 
   return true;
@@ -61,13 +62,15 @@ bool RadarDrawVertex::Init(size_t spokes, size_t spoke_len_max) {
 
 void RadarDrawVertex::Reset() {
   if (m_vertices) {
-    for (size_t i = 0; i < m_spokes; i++) {
-      if (m_vertices[i].points) {
-        free(m_vertices[i].points);
+    for (int canvas = 0; canvas <= m_pi->m_max_canvas; canvas++) {
+      for (size_t i = 0; i < m_spokes; i++) {
+        if (m_vertices[canvas][i].points) {
+          free(m_vertices[canvas][i].points);
+        }
       }
+      free(m_vertices[canvas]);
+      m_vertices[canvas] = 0;
     }
-    free(m_vertices);
-    m_vertices = 0;
   }
 }
 
@@ -118,80 +121,96 @@ void RadarDrawVertex::SetBlob(VertexLine* line, int angle_begin, int angle_end, 
   line->count = count;
 }
 
+// ProcessRadarSpoke is called by the receive thread. It prepares the m_vertices array ready for OpenGL drawing.
 void RadarDrawVertex::ProcessRadarSpoke(int transparency, SpokeBearing angle, uint8_t* data, size_t len, 
   GeoPosition spoke_pos, bool overlay) {
-  GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
-  BlobColour previous_colour = BLOB_NONE;
-  GLubyte strength = 0;
-  time_t now = time(0);
-  uint8_t red, green, blue;
-  wxCriticalSectionLocker lock(m_exclusive);
-  int r_begin = 0;
-  int r_end = 0;
+  for (int canv = 0; canv <= m_pi->m_max_canvas; canv++) {
+    int canvas = canv;
+    GLubyte alpha = 255 * (MAX_OVERLAY_TRANSPARENCY - transparency) / MAX_OVERLAY_TRANSPARENCY;
+    BlobColour previous_colour = BLOB_NONE;
+    GLubyte strength = 0;
+    time_t now = time(0);
+    uint8_t red, green, blue;
+    wxCriticalSectionLocker lock(m_exclusive);
+    int r_begin = 0;
+    int r_end = 0;
 
-  if (angle < 0 || angle >= (int)m_spokes || len > m_spoke_len_max || !m_vertices) {
-    return;
-  }
-  size_t start_radius = 0;
-  {
-    wxCriticalSectionLocker lock(m_pi->m_sort_tx_radars);
-    start_radius = m_ri->m_start_overlay_r;
-  }
-  VertexLine* line = &m_vertices[angle];
-
-  if (!line->points) {
-    static size_t INITIAL_ALLOCATION = 600;  // Empirically found to be enough for a complicated picture
-    line->allocated = INITIAL_ALLOCATION;
-    m_count += INITIAL_ALLOCATION;
-    line->points = (VertexPoint*)malloc(line->allocated * sizeof(VertexPoint));
-    if (!line->points) {
-      if (!m_oom) {
-        wxLogError(wxT("Out of memory"));
-        m_oom = true;
-      }
-      line->allocated = 0;
-      line->count = 0;
+    if (angle < 0 || angle >= (int)m_spokes || len > m_spoke_len_max || !m_vertices || !m_vertices[0]) {
       return;
     }
-  }
-  line->count = 0;
-  line->timeout = now + m_ri->m_pi->m_settings.max_age;
-  line->spoke_pos = spoke_pos;
-  for (size_t radius = start_radius; radius < len; radius++) {
-    strength = data[radius];
-    BlobColour actual_colour = m_ri->m_colour_map[strength];
+    size_t start_radius = 0;
+    {
+      wxCriticalSectionLocker lock(m_pi->m_sort_tx_radars);
+      if (canvas == m_pi->m_max_canvas) {
+        start_radius = 0;    // make one full image for panel or overlay
+      } else {
+        start_radius = m_ri->m_start_overlay_r[canvas];
+        if (start_radius == 0) {
+          continue;     // no need to make a second full imagem, this is done at canvas == m_pi->m_max_canvas
+        }
+      }
+    }
+    VertexLine* line = &m_vertices[canvas][angle];
+    if (!line->points) {
+      static size_t INITIAL_ALLOCATION = 600;  // Empirically found to be enough for a complicated picture
+      line->allocated = INITIAL_ALLOCATION;
+      m_count += INITIAL_ALLOCATION;
+      line->points = (VertexPoint*)malloc(line->allocated * sizeof(VertexPoint));
+      if (!line->points) {
+        if (!m_oom) {
+          wxLogError(wxT("Out of memory"));
+          m_oom = true;
+        }
+        line->allocated = 0;
+        line->count = 0;
+        return;
+      }
+    }
+    line->count = 0;
+    line->timeout = now + m_ri->m_pi->m_settings.max_age;
+    line->spoke_pos = spoke_pos;
+    for (size_t radius = start_radius; radius < len; radius++) {
+      strength = data[radius];
+      BlobColour actual_colour = m_ri->m_colour_map[strength];
 
-    if (actual_colour == previous_colour) {
-      // continue with same color, just register it
-      r_end++;
-    } else if (previous_colour == BLOB_NONE && actual_colour != BLOB_NONE) {
-      // blob starts, no display, just register
-      r_begin = radius;
-      r_end = r_begin + 1;
-      previous_colour = actual_colour;  // new color
-    } else if (previous_colour != BLOB_NONE && (previous_colour != actual_colour)) {
+      if (actual_colour == previous_colour) {
+        // continue with same color, just register it
+        r_end++;
+      } else if (previous_colour == BLOB_NONE && actual_colour != BLOB_NONE) {
+        // blob starts, no display, just register
+        r_begin = radius;
+        r_end = r_begin + 1;
+        previous_colour = actual_colour;  // new color
+      } else if (previous_colour != BLOB_NONE && (previous_colour != actual_colour)) {
+        red = m_ri->m_colour_map_rgb[previous_colour].Red();
+        green = m_ri->m_colour_map_rgb[previous_colour].Green();
+        blue = m_ri->m_colour_map_rgb[previous_colour].Blue();
+        SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
+        previous_colour = actual_colour;
+        if (actual_colour != BLOB_NONE) {  // change of color, start new blob
+          r_begin = radius;
+          r_end = r_begin + 1;
+        }
+      }
+    }
+    if (previous_colour != BLOB_NONE) {  // Draw final blob
       red = m_ri->m_colour_map_rgb[previous_colour].Red();
       green = m_ri->m_colour_map_rgb[previous_colour].Green();
       blue = m_ri->m_colour_map_rgb[previous_colour].Blue();
       SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
-      previous_colour = actual_colour;
-      if (actual_colour != BLOB_NONE) {  // change of color, start new blob
-        r_begin = radius;
-        r_end = r_begin + 1;
-      }
     }
-  }
-  if (previous_colour != BLOB_NONE) {  // Draw final blob
-    red = m_ri->m_colour_map_rgb[previous_colour].Red();
-    green = m_ri->m_colour_map_rgb[previous_colour].Green();
-    blue = m_ri->m_colour_map_rgb[previous_colour].Blue();
-    SetBlob(line, angle, angle + 1, r_begin, r_end, red, green, blue, alpha);
-  }
+  } // canvas
 }
 
-void RadarDrawVertex::DrawRadarOverlayImage(double radar_scale, double panel_rotate) {
+void RadarDrawVertex::DrawRadarOverlayImage(int canv, double radar_scale, double panel_rotate) {
   wxPoint boat_center;
   GeoPosition posi;
+  int canvas = canv;
+  int start_radius = m_ri->m_start_overlay_r[canv];
+  if (start_radius == 0) {
+    // this radar starts at 0, there is no second vertex array
+    canvas = m_pi->m_max_canvas;   // here a full image is stored
+  }
   if (!m_ri->GetRadarPosition(&posi)) {
     return;  // no position, no overlay
   }
@@ -210,7 +229,7 @@ void RadarDrawVertex::DrawRadarOverlayImage(double radar_scale, double panel_rot
     glRotated(panel_rotate, 0.0, 0.0, 1.0);
     glScaled(radar_scale, radar_scale, 1.);
     for (size_t i = 0; i < m_spokes; i++) {
-      VertexLine* line = &m_vertices[i];
+      VertexLine* line = &m_vertices[canvas][i];
       if (!line->count || TIMED_OUT(now, line->timeout)) {
         continue;
       }
@@ -250,7 +269,7 @@ void RadarDrawVertex::DrawRadarPanelImage(double panel_scale, double panel_rotat
     glRotated(panel_rotate, 0.0, 0.0, 1.0);
     glScaled(panel_scale, panel_scale, 1.);
     for (size_t i = 0; i < m_spokes; i++) {
-      VertexLine* line = &m_vertices[i];
+      VertexLine* line = &m_vertices[m_pi->m_max_canvas][i];
       if (!line->count || TIMED_OUT(now, line->timeout)) {
         continue;
       }

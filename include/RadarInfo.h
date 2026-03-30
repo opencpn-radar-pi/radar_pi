@@ -179,7 +179,10 @@ public:
     bool m_timed_idle_hardware; // Does radar handle timed idle itself?
     bool m_quantum2type;
     size_t m_start_r;           // Starting radius for search in case of multiple radars, set by TimedUpdate()
-    size_t m_start_overlay_r;   // Starting radius for overlay display in case of multiple overlays, set
+    size_t
+        m_start_overlay_r[MAX_CHART_CANVAS];  // Starting radius for overlay
+                                              // display in case of multiple
+                                              // overlays, set
                                 // by TimedUpdate()
 
     /* Per radar objects */
@@ -352,15 +355,7 @@ public:
     void AdjustRange(int adjustment, int current_range_meters);
     int GetNearestRange(int range_meters, int units);
 
-    int GetOverlayCanvasIndex()
-    {
-        for (int i = 0; i < CANVAS_COUNT; i++) {
-            if (m_overlay_canvas[i].GetValue() > 0) {
-                return i;
-            }
-        }
-        return -1;
-    }
+    int GetOverlayCanvasIndex();
 
 private:
     void ResetSpokes();
