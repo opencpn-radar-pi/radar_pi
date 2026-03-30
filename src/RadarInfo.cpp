@@ -763,9 +763,8 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item,
 
     case CT_OVERLAY_CANVAS: {
       int canvas = button->GetId() - ID_RADAR_OVERLAY0;
-      int radar = item.GetValue() > 0 ? /*(int)m_radar*/  1 : -1; // $$$?
-      LOG_INFO(wxT("$$$ww m_radar=%i, radar=%i"), m_radar, radar);
-      LOG_INFO/*DIALOG$$$*/(wxT("%s SetControlValue %s canvas=%d radar=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(), canvas,
+      int radar = item.GetValue() > 0 ? (int)m_radar : -1;
+      LOG_DIALOG(wxT("%s SetControlValue %s canvas=%d radar=%d"), m_name.c_str(), ControlTypeNames[controlType].c_str(), canvas,
                  radar);
 
       m_overlay_canvas[canvas] = radar;
