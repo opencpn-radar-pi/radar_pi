@@ -98,7 +98,7 @@ bool RadarDrawShader::Init(size_t spokes, size_t spoke_len_max) {
     return false;
   }
 
-  for (int i = 0; i <= m_ri->m_pi->m_max_canvas; i++) {
+  for (int i = 0; i <= MAX_CHART_CANVAS; i++) {
     glGenTextures(1, &m_texture[i]);
     glBindTexture(GL_TEXTURE_2D, m_texture[i]);
 
@@ -140,7 +140,7 @@ void RadarDrawShader::Reset() {
     m_program = 0;
   }
   
-  for (int canvas = 0; canvas <= m_ri->m_pi->m_max_canvas; canvas++) {
+  for (int canvas = 0; canvas <= MAX_CHART_CANVAS; canvas++) {
     if (m_data[canvas]) {
       free(m_data[canvas]);
       m_data[canvas] = 0;
