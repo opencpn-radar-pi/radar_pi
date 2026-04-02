@@ -1570,8 +1570,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
     GetCanvasPixLL(vp, &boat_center, radar_pos.lat, radar_pos.lon);
 
     // if this radar is overlayed on multiple canvases only adjust auto range on one of them.
-    // we choose the highest canvas, which is just an arbitrary choice by us.
-    // When there are more radar overlays on a canvas autorange is disabled on this canvas
+    // Autorange is active for any radar on the highest canvas where it is the only radar
     int canvas = CANVAS_COUNT - 1;
     int overlay_radar_count = 0;
     ri = NULL;
@@ -1582,7 +1581,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
       for (; canvas >= 0; canvas--) {
         wxCriticalSectionLocker lock(m_sort_tx_radars);
         overlay_radar_count = NumberOfTxOverlayRadars(canvas);
-        if (overlay_radar_count == 1) break;  // highest canvas with 1 overlay -> autorange
+        if (overlay_radar_count == 1) break;  // highest canvas with 1 overlay -> autorange for this radar
       }
       if (ri && overlay_radar_count == 1 && canvasIndex == canvas) {
         ri->SetAutoRangeMeters(auto_range_meters);
