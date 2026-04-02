@@ -1571,19 +1571,30 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
 
     // if this radar is overlayed on multiple canvases only adjust auto range on one of them.
     // Autorange is active for any radar on the highest canvas where it is the only radar
-    int canvas = CANVAS_COUNT - 1;
+    
     int overlay_radar_count = 0;
     ri = NULL;
   
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       ri = m_sorted_tx_radars[r];
-      if (!ri) continue;
-      for (; canvas >= 0; canvas--) {
-        wxCriticalSectionLocker lock(m_sort_tx_radars);
-        overlay_radar_count = NumberOfTxOverlayRadars(canvas);
-        if (overlay_radar_count == 1) break;  // highest canvas with 1 overlay -> autorange for this radar
+      overlay_radar_count = 0;
+      if (!ri) {
+        continue;
       }
-      if (ri && overlay_radar_count == 1 && canvasIndex == canvas) {
+      int canvas = CANVAS_COUNT - 1;
+      for (; canvas >= 0; canvas--) {
+        if (ri->m_overlay_canvas[canvas].GetValue()) {  // is this radar overlayd on this canvas?
+          wxCriticalSectionLocker lock(m_sort_tx_radars);
+          overlay_radar_count = NumberOfTxOverlayRadars(canvas);
+          LOG_INFO(wxT("$$$ count=%i, canvas=%i, r=%i"), overlay_radar_count, canvas, r);
+          if (overlay_radar_count == 1) {
+            LOG_INFO(wxT("$$$ =one, r=%i, name=%s"), r, ri->m_name);
+            break;  // highest canvas with 1 overlay -> autorange for this radar
+          }
+        }
+      }
+      if (ri && overlay_radar_count == 1 /*&& canvasIndex == canvas*/) {
+        LOG_INFO(wxT("$$$ calling autorange radar= %s"), ri->m_name);
         ri->SetAutoRangeMeters(auto_range_meters);
       }
     }
