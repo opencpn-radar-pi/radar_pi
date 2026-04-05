@@ -1593,7 +1593,7 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
           }
         }
       }
-      if (ri && overlay_radar_count == 1 /*&& canvasIndex == canvas*/) {
+      if (ri && overlay_radar_count == 1 && canvasIndex == canvas) {
         LOG_INFO(wxT("$$$ calling autorange radar= %s"), ri->m_name);
         ri->SetAutoRangeMeters(auto_range_meters);
       }
