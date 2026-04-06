@@ -156,6 +156,7 @@ END_EVENT_TABLE()
 radar_pi::radar_pi(void* ppimgr) : opencpn_plugin_118(ppimgr), m_raymarine_locator(0) {
   m_boot_time = wxGetUTCTimeMillis();
   m_initialized = false;
+  m_late_init_done = false;
   m_predicted_position_initialised = false;
 
   M_SETTINGS = {0};
@@ -389,6 +390,11 @@ int radar_pi::Init(void) {
   m_update_timer->Start(UPDATE_INTERVAL);
 
   return PLUGIN_OPTIONS;
+}
+
+void radar_pi::LateInit(void) {
+  m_late_init_done = true;
+  LOG_VERBOSE(wxT("LateInit done, AIS drawing enabled"));
 }
 
 void radar_pi::StartRadarLocators(size_t r) {

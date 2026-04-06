@@ -15,6 +15,7 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ### Fixed
 
+- #297: Do not call PlugInAISDrawGL before OpenCPN initialisation is complete
 - #295: Icon does not toggle in toolbar when status changed
 - #239: Menu buttons text are disturbed when O's Dark/dusk color scheme have been used
 - #129: Radar windows don't follow O's color scheme, dusk , night

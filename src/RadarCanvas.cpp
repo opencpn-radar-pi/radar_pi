@@ -668,7 +668,9 @@ void RadarCanvas::Render(wxPaintEvent &evt) {
       PlugInSetFontColor(aisTextFont, newFontColor);
       newFontColor = GetFontColour_PlugIn(aisTextFont);
     }
-    PlugInAISDrawGL(this, vp);
+    if (m_pi->m_late_init_done) {
+      PlugInAISDrawGL(this, vp);
+    }
     if (aisFont) {
       PlugInSetFontColor(aisTextFont, aisFontColor);
     }

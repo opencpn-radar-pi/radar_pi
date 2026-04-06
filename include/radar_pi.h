@@ -530,7 +530,8 @@ struct AisArpa {
    WANTS_OVERLAY_CALLBACK | WANTS_TOOLBAR_CALLBACK | INSTALLS_TOOLBAR_TOOL | \
    USES_AUI_MANAGER | WANTS_CONFIG | WANTS_NMEA_EVENTS |                     \
    WANTS_NMEA_SENTENCES | WANTS_PREFERENCES | WANTS_PLUGIN_MESSAGING |       \
-   WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS | INSTALLS_CONTEXTMENU_ITEMS)
+   WANTS_CURSOR_LATLON | WANTS_MOUSE_EVENTS | INSTALLS_CONTEXTMENU_ITEMS |   \
+   WANTS_LATE_INIT)
 
 class radar_pi : public opencpn_plugin_118, public wxEvtHandler {
 public:
@@ -539,6 +540,7 @@ public:
   // void PrepareRadarImage(int angle); remove?
   //    The required PlugIn Methods
   int Init(void);
+  void LateInit(void);
   bool DeInit(void);
 
   int GetAPIVersionMajor();
@@ -685,6 +687,7 @@ public:
                             //  AIS targets.
 
   bool m_ais_drawgl_broken;
+  bool m_late_init_done;    // True after LateInit() called, safe to call PlugInAISDrawGL.
   PI_ColorScheme m_color_scheme;  // Current OpenCPN color scheme
 
 private:
@@ -803,8 +806,8 @@ public:
       m_expected_position;  // updated own position at time of last GPS update
   ExtendedPosition m_last_fixed;  // best estimate position at last measurement
 private:
-  bool m_initialized;  // True if Init() succeeded and DeInit() not called yet.
-  bool m_first_init;   // True in first Init() call.
+  bool m_initialized;       // True if Init() succeeded and DeInit() not called yet.
+  bool m_first_init;        // True in first Init() call.
   wxLongLong m_boot_time;  // millis when started
 
   OpenGLMode m_opengl_mode;
