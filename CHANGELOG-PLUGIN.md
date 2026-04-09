@@ -11,7 +11,7 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ## [Unreleased]
 
-## [5.6.0]
+## [5.6.1]
 
 ### Fixed
 
