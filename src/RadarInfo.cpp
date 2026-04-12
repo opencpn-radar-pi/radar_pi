@@ -768,7 +768,6 @@ bool RadarInfo::SetControlValue(ControlType controlType, RadarControlItem &item,
                  radar);
 
       m_overlay_canvas[canvas] = radar;
-      LOG_INFO(wxT("$$$ww radar=%i"), radar);
       return true;
     }
 

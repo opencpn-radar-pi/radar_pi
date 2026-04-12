@@ -948,7 +948,7 @@ void ArpaTarget::PassAIVDMtoOCPN() {
 void ArpaTarget::PassTTMtoOCPN() {
   wxCriticalSectionLocker lock(m_protect_target_data);
   if (!m_ri) {
-    LOG_ARPA(wxT("Error sending TTM to O, originating radar not known"));
+    LOG_ARPA(wxT(" returning no radar"));
     return;
   }
   Polar pol = Pos2Polar(m_ri, m_position.pos, m_radar_position);

@@ -1368,6 +1368,16 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
     wxCriticalSectionLocker lock(m_exclusive);
     SortTxRadars();
   }
+   // Delete all ARPA targets when there is no radar transmitting
+  if (m_arpa && m_arpa->GetTargetCount() > 0) {
+    wxCriticalSectionLocker lock(m_sort_tx_radars);
+    if (!m_sorted_tx_radars[0]) {   // no radar transmitting
+      m_arpa->DeleteAllTargets();
+      LOG_INFO(wxT("$$$ delete targets no tx"));
+    }
+  }
+
+  
   // Refresh ARPA targets
   // Refresh radar with smallest range first
   bool arpa_on = false;
@@ -1586,15 +1596,12 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
         if (ri->m_overlay_canvas[canvas].GetValue()) {  // is this radar overlayd on this canvas?
           wxCriticalSectionLocker lock(m_sort_tx_radars);
           overlay_radar_count = NumberOfTxOverlayRadars(canvas);
-          LOG_INFO(wxT("$$$ count=%i, canvas=%i, r=%i"), overlay_radar_count, canvas, r);
           if (overlay_radar_count == 1) {
-            LOG_INFO(wxT("$$$ =one, r=%i, name=%s"), r, ri->m_name);
             break;  // highest canvas with 1 overlay -> autorange for this radar
           }
         }
       }
       if (ri && overlay_radar_count == 1 && canvasIndex == canvas) {
-        LOG_INFO(wxT("$$$ calling autorange radar= %s"), ri->m_name);
         ri->SetAutoRangeMeters(auto_range_meters);
       }
     }
