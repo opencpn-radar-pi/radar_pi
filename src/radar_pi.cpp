@@ -1501,8 +1501,9 @@ bool radar_pi::RenderOverlay(wxDC& dc, PlugIn_ViewPort* vp) {
 bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort* vp, int canvasIndex, int priority) {
   GeoPosition radar_pos;
 
-  if (!m_late_init_done) { // Wait with GL stuff until OpenCPN is done with init of it.
+  if (!m_late_init_done) {  // Wait with GL stuff until OpenCPN is done with init of it.
     return true;
+  }
   if (priority != 0) return true;
   // prevent this being called recursively
   // no critical section locker (will wait), better to return immediately
