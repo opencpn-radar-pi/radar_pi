@@ -199,7 +199,7 @@ void GuardZone::SearchTargets() {
       // Increase starting range to avoid 2 radars finding same target
       range_start += 10;
     }
-    if (range_end > rc->m_spoke_len_max) {
+    if (range_end > rc->m_spoke_len_max - 20) {  // avoid target being found by 2 radars
       range_end = rc->m_spoke_len_max - 20;
     }
     if (range_end <= range_start) continue;
@@ -235,22 +235,14 @@ void GuardZone::SearchTargets() {
       // loop with +2 increments as target must be larger than 2 pixels in width
       for (int angleIter = start_bearing; angleIter < end_bearing; angleIter += 2) {
         SpokeBearing angle = MOD_SPOKES(rc, angleIter);
-        // LOG_ARPA(wxT("Found blob continue angle=%i, end_bearing=%i"), angle, end_bearing);
-        wxLongLong time1 = rc->m_history[angle].time;
-        // time2 must be timed later than the pass 2 in refresh, otherwise target may be found multiple times
-        wxLongLong time2 = rc->m_history[MOD_SPOKES(rc, angle + 3 * SCAN_MARGIN)].time;
 
         // check if this angle has been refreshed since last time
-        // and if the beam has passed the target location with SCAN_MARGIN spokes
+        // and if the beam has passed the target location with 2 * SCAN_MARGIN spokes
 
         int diff = rc->m_last_received_spoke - angle;
         if (diff > (int)rc->m_spokes / 2) diff -= (int)rc->m_spokes;
         if (diff < -(int)rc->m_spokes / 2) diff += rc->m_spokes;
-        if (diff > 50)
-
-        {  // the beam should have passed our "angle" AND a
-           // point SCANMARGIN further set new refresh time
-           // m_arpa_update_time[angle] = time1;
+        if (abs(diff) > 2 * SCAN_MARGIN){  // the beam should have passed our "angle" 
           for (int rrr = (int)range_start; rrr < (int)range_end; rrr++) {
             if (m_pi->m_arpa->MultiPix(rc, angle, rrr, doppler)) {
               // pixel found that does not belong to a known target

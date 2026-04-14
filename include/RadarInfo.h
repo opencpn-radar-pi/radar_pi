@@ -199,6 +199,7 @@ public:
     ControlsDialog* m_control_dialog;
     RadarPanel* m_radar_panel;
     RadarCanvas* m_radar_canvas;
+    wxCriticalSection m_lock_last_spoke;
 
     /* Abstractions of our own. Some filled by RadarReceive. */
 

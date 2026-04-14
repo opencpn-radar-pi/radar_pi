@@ -1373,7 +1373,6 @@ void radar_pi::TimedUpdate(wxTimerEvent &event) {
     wxCriticalSectionLocker lock(m_sort_tx_radars);
     if (!m_sorted_tx_radars[0]) {   // no radar transmitting
       m_arpa->DeleteAllTargets();
-      LOG_INFO(wxT("$$$ delete targets no tx"));
     }
   }
 

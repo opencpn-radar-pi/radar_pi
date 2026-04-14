@@ -40,7 +40,7 @@ PLUGIN_BEGIN_NAMESPACE
 
 #define LAST_PASS (2)              // adapt this when more passes added
 #define MAX_DETECTION_SPEED (20.)  // in meters/second
-#define STATUS_TO_OCPN (6)         // First status to be send to OCPN
+#define STATUS_TO_OCPN (6)        // First status to be send to OCPN
 
 class LocalPosition;
 class Polar;
@@ -348,8 +348,6 @@ int ArpaTarget::GetContour(RadarInfo* ri, Polar* pol) {
   double poslat = radar_pos.lat;
   double poslon = radar_pos.lon;
   if (poslat > 90. || poslat < -90. || poslon > 180. || poslon < -180.) {
-    // some additional logging, to be removed later
-    LOG_INFO(wxT("**error wrong target pos, poslat = %f, poslon = %f"), poslat, poslon);
   }
   return 0;  //  success, blob found
 }
@@ -378,13 +376,15 @@ bool ArpaTarget::CheckRefreshTiming() {
   if (rotation_period == 0) {
     rotation_period = 3000;  // default value, milli seconds
   }
+  wxCriticalSectionLocker lock(m_ri->m_lock_last_spoke);
   wxLongLong now = wxGetUTCTimeMillis();  // millis
   Polar pol = Pos2Polar(m_ri, m_position.pos, m_radar_position);
   int angle_dist = m_ri->m_last_received_spoke - pol.angle;
   if (angle_dist > (int)m_ri->m_spokes / 2) angle_dist -= (int)m_ri->m_spokes;
   if (angle_dist < -(int)m_ri->m_spokes / 2) angle_dist += m_ri->m_spokes;
   // 50 is a margin on the rotation period
-  if (((now > m_refresh_time + rotation_period * (m_lost_count + 1)) || m_status == 0) && abs(angle_dist) > 50) {
+  if (((now > m_refresh_time + rotation_period * (m_lost_count + 1)) || m_status == 0) &&
+      abs(angle_dist) > SCAN_MARGIN) {
     m_radar_position = m_ri->m_history[MOD_SPOKES(m_ri, pol.angle)].pos;
     return true;  // timing is OK to refresh target
   } else {
@@ -914,7 +914,7 @@ bool ArpaTarget::GetTarget(RadarInfo* ri, Polar predicted_pol, Polar* measured_p
   }
   if (!contour_found) {
     m_contour_length = backup_contour_length;
-    LOG_ARPA(wxT("contour not found, pol.angle=%i, pol.r=%i"), pol.angle, pol.r);
+    LOG_ARPA(wxT("contour not found, pol.angle=%i, pol.r=%i, dist=%u"), pol.angle, pol.r, dist);
     return false;
   }
   int cont = GetContour(ri, &pol);
@@ -1504,7 +1504,7 @@ bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler do
   target->m_refreshed = NOT_FOUND;
   target->m_automatic = true;
   target->RefreshTarget(MAX_DETECTION_SPEED, 1);  // speed, pass
-  target->m_target_id = 0;   //  MakeNewTargetId();  // only for test
+  target->m_target_id = 0;     //MakeNewTargetId();   only for test, then every target gets an id from start
   m_targets.push_back(std::move(target));
   return true;
 }
