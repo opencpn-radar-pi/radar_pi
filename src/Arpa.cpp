@@ -1144,7 +1144,7 @@ void ArpaTarget::ResetPixels(RadarInfo* ri) {
 Arpa::Arpa(radar_pi* pi) {
   m_pi = pi;
   m_clear_contours = false;
-  m_target_id_count = 0;
+  m_target_id_count = 1;
   CLEAR_STRUCT(m_doppler_arpa_update_time);
 }
 

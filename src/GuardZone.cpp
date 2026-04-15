@@ -173,6 +173,7 @@ void GuardZone::SearchTargets() {
       if (!rc) continue;
       start_r = rc->m_start_r;
     }
+    wxCriticalSectionLocker lock(rc->m_lock_last_spoke);
     if (!rc->GetRadarPosition(&own_pos.pos)          // No position // radar will also track targets in background (not shown)
         || m_pi->GetHeadingSource() == HEADING_NONE  // No heading
         || (m_pi->GetHeadingSource() == HEADING_FIX_HDM && m_pi->m_var_source == VARIATION_SOURCE_NONE)) {
@@ -212,12 +213,13 @@ void GuardZone::SearchTargets() {
     int end_bearing = SCALE_DEGREES_TO_SPOKES(rc, m_end_bearing) + hdt_spokes;
     start_bearing = MOD_SPOKES(rc, start_bearing);
     end_bearing = MOD_SPOKES(rc, end_bearing);
+    
     if (start_bearing > end_bearing) {
       end_bearing += rc->m_spokes;
     }
     if (m_type == GZ_CIRCLE) {
-      start_bearing = rc->m_last_received_spoke - 1100;  // forward of the beam
-      end_bearing = rc->m_last_received_spoke;
+      start_bearing = rc->m_last_received_spoke + 2 * SCAN_MARGIN; // forward of the beam
+      end_bearing = rc->m_last_received_spoke - 2 * SCAN_MARGIN;   // don't scan spokes that still have targets to be refreshed
     }
 
     if (start_bearing > end_bearing) {
@@ -235,7 +237,7 @@ void GuardZone::SearchTargets() {
       // loop with +2 increments as target must be larger than 2 pixels in width
       for (int angleIter = start_bearing; angleIter < end_bearing; angleIter += 2) {
         SpokeBearing angle = MOD_SPOKES(rc, angleIter);
-
+                     
         // check if this angle has been refreshed since last time
         // and if the beam has passed the target location with 2 * SCAN_MARGIN spokes
 
