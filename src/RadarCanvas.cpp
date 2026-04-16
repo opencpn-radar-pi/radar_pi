@@ -840,6 +840,7 @@ void RadarCanvas::OnMouseWheel(wxMouseEvent &event) {
       m_last_mousewheel_zoom_out = now;
     }
   }
+  event.Skip();
 }
 
 PLUGIN_END_NAMESPACE
