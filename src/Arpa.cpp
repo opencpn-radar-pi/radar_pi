@@ -1094,7 +1094,6 @@ void ArpaTarget::SetStatusLost() {
   m_previous_contour_length = 0;
   m_lost_count = 0;
   m_kalman.ResetFilter();
-  
   m_automatic = false;
   m_refresh_time = 0;
   m_position.speed_kn = 0.;
@@ -1462,7 +1461,6 @@ void Arpa::CalculateCentroid(ArpaTarget* target) {
 }
 
 void Arpa::DeleteAllTargets() { 
- // m_targets.clear(); // following will also delete TTM targets
   for (auto target = m_targets.begin(); target != m_targets.end(); ++target) {
    (*target)->SetStatusLost();
  }

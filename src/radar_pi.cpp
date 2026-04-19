@@ -871,10 +871,8 @@ void radar_pi::OnContextMenuItemCallback(int id) {
       }
     }
   } else if (id == m_context_menu_delete_all_radar_targets) {
-    for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
-      if (m_arpa) {
-        m_arpa->DeleteAllTargets();
-      }
+    if (m_arpa) {
+      m_arpa->DeleteAllTargets();
     }
   } else {
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
