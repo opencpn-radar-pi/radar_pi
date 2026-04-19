@@ -107,6 +107,16 @@ OptionsDialog::OptionsDialog(wxWindow* parent, radar_pi* pi, PersistentSettings&
                               this);
   m_GuardZoneTimeout->SetValue(wxString::Format(wxT("%d"), m_settings.guard_zone_timeout));
 
+  wxStaticText* guardZoneTransparency =
+      new wxStaticText(this, wxID_ANY, _("Guard Zone Transparency"), wxDefaultPosition, wxDefaultSize, 0);
+  guardZoneSizer->Add(guardZoneTransparency, 0, wxALL, border_size);
+
+  m_GuardZoneTransparency = new wxTextCtrl(this, wxID_ANY);
+  guardZoneSizer->Add(m_GuardZoneTransparency, 1, wxALL, border_size);
+  m_GuardZoneTransparency->Connect(wxEVT_COMMAND_TEXT_UPDATED, 
+    wxCommandEventHandler(OptionsDialog::OnGuardZoneTransparencyClick), NULL, this);
+  m_GuardZoneTransparency->SetValue(wxString::Format("%d", m_settings.guard_zone_transparency));
+
   // Fixed heading and position
 
   wxStaticBox* FixedHeadingBox = new wxStaticBox(this, wxID_ANY, _("Fixed radar / for testing"));
@@ -482,6 +492,11 @@ void OptionsDialog::OnGuardZoneTimeoutClick(wxCommandEvent& event) {
   wxString temp = m_GuardZoneTimeout->GetValue();
 
   m_settings.guard_zone_timeout = strtol(temp.c_str(), 0, 0);
+}
+
+void OptionsDialog::OnGuardZoneTransparencyClick(wxCommandEvent& event) {
+  wxString temp = m_GuardZoneTransparency->GetValue();
+  m_settings.guard_zone_transparency = strtol(temp.c_str(), 0, 0);
 }
 
 void OptionsDialog::OnEnableCOGHeadingClick(wxCommandEvent& event) { m_settings.enable_cog_heading = m_COGHeading->GetValue(); }

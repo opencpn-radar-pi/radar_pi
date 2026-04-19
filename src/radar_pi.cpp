@@ -1657,7 +1657,8 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
 
 void radar_pi::RenderGuardZone() {
   int start_bearing = 0, end_bearing = 0;
-  GLubyte red = 0, green = 200, blue = 0, alpha = 20;  // alpha sets transparancy of guard zones on overlay
+  GLubyte red = 0, green = 200, blue = 0,
+    alpha = m_settings.guard_zone_transparency;  // alpha sets transparancy of guard zones on overlay
 
   for (size_t z = 0; z < GUARD_ZONES; z++) {
     if (m_guard_zone[z]->m_alarm_on || m_guard_zone[z]->m_arpa_on || m_guard_zone[z]->m_show_time + 5 > time(0)) {
@@ -1889,6 +1890,7 @@ bool radar_pi::LoadConfig(void) {
     pConf->Read(wxT("GuardZoneOnOverlay"), &m_settings.guard_zone_on_overlay, true);
     pConf->Read(wxT("OverlayStandby"), &m_settings.overlay_on_standby, true);
     pConf->Read(wxT("GuardZoneTimeout"), &m_settings.guard_zone_timeout, 30);
+    pConf->Read(wxT("GuardZoneTransparency"), &m_settings.guard_zone_transparency, 40);
     pConf->Read(wxT("GuardZonesRenderStyle"), &m_settings.guard_zone_render_style, 0);
     pConf->Read(wxT("GuardZonesThreshold"), &m_settings.guard_zone_threshold, 5L);
     pConf->Read(wxT("IgnoreRadarHeading"), &m_settings.ignore_radar_heading, 0);
@@ -1939,6 +1941,7 @@ bool radar_pi::SaveConfig(void) {
     pConf->Write(wxT("GuardZoneOnOverlay"), m_settings.guard_zone_on_overlay);
     pConf->Write(wxT("OverlayStandby"), m_settings.overlay_on_standby);
     pConf->Write(wxT("GuardZoneTimeout"), m_settings.guard_zone_timeout);
+    pConf->Write(wxT("GuardZoneTransparency"), m_settings.guard_zone_transparency);
     pConf->Write(wxT("GuardZonesRenderStyle"), m_settings.guard_zone_render_style);
     pConf->Write(wxT("GuardZonesThreshold"), m_settings.guard_zone_threshold);
     pConf->Write(wxT("IgnoreRadarHeading"), m_settings.ignore_radar_heading);

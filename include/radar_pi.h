@@ -448,6 +448,7 @@ struct PersistentSettings {
                                 // Outline
   int guard_zone_timeout;       // How long before we warn again when bogeys are
                                 // found
+  int guard_zone_transparency;  // Value for guard zone transparency
   bool guard_zone_on_overlay;   // Show the guard zone on chart overlay?
   bool trails_on_overlay;       // Show radar trails on chart overlay?
   bool overlay_on_standby;      // Show guard zone when radar is in standby?

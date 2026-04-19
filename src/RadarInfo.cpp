@@ -666,7 +666,8 @@ void RadarInfo::RequestRadarState(RadarState state) {
 
 void RadarInfo::RenderNoTransmitZones() {
   int start_bearing = 0, end_bearing = 0;
-  GLubyte red = 0, green = 200, blue = 0, alpha = 30;  // alpha sets transparancy of guard zones on overlay
+  GLubyte red = 0, green = 200, blue = 0,
+          alpha = M_SETTINGS.guard_zone_transparency;  // alpha sets transparancy of guard zones on overlay
 
   int range = 40000;
   

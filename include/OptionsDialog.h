@@ -54,6 +54,7 @@ private:
     void OnGuardZoneOnOverlayClick(wxCommandEvent& event);
     void OnOverlayOnStandbyClick(wxCommandEvent& event);
     void OnGuardZoneTimeoutClick(wxCommandEvent& event);
+    void OnGuardZoneTransparencyClick(wxCommandEvent& event);
     void OnFixedHeadingClick(wxCommandEvent& event);
     void OnFixedPositionClick(wxCommandEvent& event);
     void OnFixedLonTextClick(wxCommandEvent& event);
@@ -92,6 +93,7 @@ private:
     wxRadioBox* m_DisplayMode;
     wxRadioBox* m_GuardZoneStyle;
     wxTextCtrl* m_GuardZoneTimeout;
+    wxTextCtrl* m_GuardZoneTransparency;
     wxTextCtrl* m_FixedHeadingValue;
     wxTextCtrl* m_FixedLatValue;
     wxTextCtrl* m_FixedLonValue;
