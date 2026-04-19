@@ -990,9 +990,9 @@ void ArpaTarget::PassTTMtoOCPN() {
   s_speed = wxString::Format(wxT("%4.2f"), m_position.speed_kn);
   s_course = wxString::Format(wxT("%3.1f"), m_course);
   if (m_automatic) {
-    s_target_name = wxString::Format(wxT("ARPA%5i"), m_target_id);
+    s_target_name = wxString::Format(wxT("ARPA %i"), m_target_id);
   } else {
-    s_target_name = wxString::Format(wxT("MARPA%5i"), m_target_id);
+    s_target_name = wxString::Format(wxT("MARPA %i"), m_target_id);
   }
   s_distance = wxString::Format(wxT("%f"), dist);
   s_bearing = wxString::Format(wxT("%f"), bearing);
