@@ -98,7 +98,7 @@ class ArpaTarget {
     friend class Arpa; // Allow Arpa access to private members
 
 public:
-    ArpaTarget(radar_pi* pi, Arpa* arpa, size_t uid);
+    ArpaTarget(radar_pi* pi, Arpa* arpa);
     ~ArpaTarget();
 
     bool CheckRefreshTiming();

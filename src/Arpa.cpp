@@ -49,7 +49,7 @@ static bool SortTargetStatus(const std::unique_ptr<ArpaTarget>& one, const std::
   return one->m_status > two->m_status;
 }
 
-ArpaTarget::ArpaTarget(radar_pi* pi, Arpa* arpa, size_t uid) : m_kalman(KalmanFilter()) {
+ArpaTarget::ArpaTarget(radar_pi* pi, Arpa* arpa) : m_kalman(KalmanFilter()) {
   // makes new target with an existing id
   m_approaching_pix = 0;
   m_receding_pix = 0;
@@ -75,7 +75,7 @@ ArpaTarget::ArpaTarget(radar_pi* pi, Arpa* arpa, size_t uid) : m_kalman(KalmanFi
   m_position.time = wxGetUTCTimeMillis();  // millis
   m_target_doppler = ANY;
   m_refreshed = NOT_FOUND;
-  m_target_id = uid;
+  m_target_id = 0;
   m_polar_pos.r = 0;
   m_max_angle.angle = 0;
   m_max_angle.r = 0;
@@ -988,13 +988,17 @@ void ArpaTarget::PassTTMtoOCPN() {
   if (m_status == LOST) {
     s_status = wxT("L");  // Lost
   }
-  // Check for AIS target at (M)ARPA position
-  double dist2target = pol.r / m_ri->m_pixels_per_meter;
-  if (m_pi->FindAIS_at_arpaPos(m_position.pos, dist2target)) {
-    s_status = wxT("L");
-  } 
-  double dist = pol.r / m_ri->m_pixels_per_meter / 1852.;
-  double bearing = pol.angle * 360. / m_ri->m_spokes;
+  double dist = 0.;
+  double bearing = 0;
+  if (m_status != LOST && m_ri) {
+    // Check for AIS target at (M)ARPA position
+    double dist2target = pol.r / m_ri->m_pixels_per_meter;
+    if (m_pi->FindAIS_at_arpaPos(m_position.pos, dist2target)) {
+      s_status = wxT("L");
+    }
+    dist = pol.r / m_ri->m_pixels_per_meter / 1852.;
+    bearing = pol.angle * 360. / m_ri->m_spokes;
+  }
   if (bearing < 0) bearing += 360;
   s_TargID = wxString::Format(wxT("%2i"), m_target_id);
   s_speed = wxString::Format(wxT("%4.2f"), m_position.speed_kn);
@@ -1024,7 +1028,7 @@ void ArpaTarget::PassTTMtoOCPN() {
     checksum ^= *p;
   }
   nmea.Printf(wxT("$%s*%02X\r\n"), sentence, (unsigned)checksum);
-  LOG_ARPA(wxT("%s: send TTM, target=%i string=%s"), m_ri->m_name, m_target_id, nmea);
+  LOG_ARPA(wxT(" send TTM, target=%i string=%s"), m_target_id, nmea);
   PushNMEABuffer(nmea);
 }
 
@@ -1304,9 +1308,9 @@ void Arpa::AcquireOrDeleteMarpaTarget(ExtendedPosition target_pos, int status) {
 
   LOG_ARPA(wxT(" Adding (M)ARPA target at position %f / %f"), target_pos.pos.lat, target_pos.pos.lon);
 #ifdef __WXMSW__
-  std::unique_ptr<ArpaTarget> target = std::make_unique<ArpaTarget>(m_pi, this, 0);
+  std::unique_ptr<ArpaTarget> target = std::make_unique<ArpaTarget>(m_pi, this);
 #else
-  std::unique_ptr<ArpaTarget> target = make_unique<ArpaTarget>(m_pi, this, 0);
+  std::unique_ptr<ArpaTarget> target = make_unique<ArpaTarget>(m_pi, this);
 #endif
   target->m_position = target_pos;  // Expected position
   target->m_status = status;
@@ -1491,9 +1495,9 @@ bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler do
   // make new target
 
 #ifdef __WXMSW__
-  std::unique_ptr<ArpaTarget> target = std::make_unique<ArpaTarget>(m_pi, m_pi->m_arpa, 0);
+  std::unique_ptr<ArpaTarget> target = std::make_unique<ArpaTarget>(m_pi, m_pi->m_arpa);
 #else
-  std::unique_ptr<ArpaTarget> target = make_unique<ArpaTarget>(m_pi, m_pi->m_arpa, 0);
+  std::unique_ptr<ArpaTarget> target = make_unique<ArpaTarget>(m_pi, m_pi->m_arpa);
 #endif
   target->m_ri = ri;
   target->m_polar_pos = pol;
