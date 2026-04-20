@@ -946,12 +946,22 @@ void ArpaTarget::PassAIVDMtoOCPN() {
 }
 
 void ArpaTarget::PassTTMtoOCPN() {
-  wxCriticalSectionLocker lock(m_protect_target_data);
-  if (!m_ri) {
-    LOG_ARPA(wxT(" returning no radar"));
+  // don't send targets that don't have an id yet
+  if (m_target_id == 0) {
     return;
   }
-  Polar pol = Pos2Polar(m_ri, m_position.pos, m_radar_position);
+  wxCriticalSectionLocker lock(m_protect_target_data);
+  Polar pol;
+  if (m_ri) {
+    pol = Pos2Polar(m_ri, m_position.pos, m_radar_position);
+  } else if (m_status == LOST) {
+    // Lost target, proceed with dummy position to delete target
+    pol.r = 1;
+    pol.angle = 0;
+  } else {
+    LOG_ARPA(wxT(" Returning no radar"));
+    return;
+  }
   LOG_ARPA(wxT("Sending TTM to O, target_id= %i, status=%i"), m_target_id, m_status);
   wxString s_TargID, s_Bear_Unit, s_Course_Unit;
   wxString s_speed, s_course, s_Dist_Unit, s_status;
