@@ -1134,6 +1134,9 @@ void radar_pi::OnTimerNotify(wxTimerEvent& event) {
 
 // Called between 1 and 10 times per second by RenderGLOverlay call
 void radar_pi::TimedControlUpdate() {
+  if (!m_initialized) {
+    return;
+  }
   if (m_heading_source == HEADING_FIXED) {
     while (m_settings.fixed_heading_value >= 360.) m_settings.fixed_heading_value -= 360;
     while (m_settings.fixed_heading_value < -180.) m_settings.fixed_heading_value += 360;
@@ -1498,7 +1501,7 @@ bool radar_pi::RenderOverlay(wxDC& dc, PlugIn_ViewPort* vp) {
 bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort* vp, int canvasIndex, int priority) {
   GeoPosition radar_pos;
 
-  if (!m_late_init_done) {  // Wait with GL stuff until OpenCPN is done with init of it.
+  if (!m_late_init_done || !m_initialized) {  // Wait with GL stuff until OpenCPN is done with init of it.
     return true;
   }
   if (priority != 0) return true;
@@ -1553,6 +1556,10 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
     m_cog = m_COGAvg;
     m_vp_rotation = vp->rotation;
   }
+  if (!m_initialized) {
+    m_render_busy = false;
+    return true;
+  }
   RadarInfo* ri;
   {
     wxCriticalSectionLocker lock(m_sort_tx_radars);
@@ -1583,6 +1590,10 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
     int overlay_radar_count = 0;
     ri = NULL;
   
+    if (!m_initialized) {
+      m_render_busy = false;
+      return true;
+    }
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       ri = m_sorted_tx_radars[r];
       overlay_radar_count = 0;
@@ -1632,6 +1643,10 @@ bool radar_pi::RenderGLOverlayMultiCanvas(wxGLContext* pcontext, PlugIn_ViewPort
     RenderGuardZone();
     glPopMatrix();
 
+    if (!m_initialized) {
+      m_render_busy = false;
+      return true;
+    }
     for (size_t r = 0; r < M_SETTINGS.radar_count; r++) {
       // if radar is transmitting and has overlay on current canvas
       // No wxCriticalSectionLocker here will hang_up

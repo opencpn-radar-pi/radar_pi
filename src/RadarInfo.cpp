@@ -689,7 +689,7 @@ void RadarInfo::RenderNoTransmitZones() {
 void RadarInfo::SetAutoRangeMeters(int autorange_to_set) {
   m_previous_auto_range_meters = m_range.GetValue();
   int meters = autorange_to_set;
-  LOG_VERBOSE(wxT("%s, Automatic range changed 1 from %d to %d meters"), m_name, m_previous_auto_range_meters, meters);
+  LOG_VERBOSE(wxT(" Automatic range changed 1 from %d to %d meters"), m_previous_auto_range_meters, meters);
   if (m_state.GetValue() == RADAR_TRANSMIT && m_range.GetState() == RCS_AUTO_1 && m_control) {
     // Compute a 'standard' distance. This will be slightly smaller.
     meters = GetNearestRange(meters, m_pi->m_settings.range_units);
