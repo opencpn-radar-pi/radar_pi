@@ -365,11 +365,13 @@ bool ArpaTarget::CheckRefreshTiming() {
       m_position.pos);  // priliminary radar selection, choice of radar can change based on predicted position
   if (!m_ri) {
     m_refreshed = OUT_OF_SCOPE;
+    SetStatusLost();
     return false;
   }
   m_ri->GetRadarPosition(&m_radar_position);
   if (!m_ri) {  // target may be out of range
     m_refreshed = OUT_OF_SCOPE;
+    SetStatusLost();
     return false;
   }
   int rotation_period = m_ri->m_rotation_period.GetValue();
@@ -1491,7 +1493,6 @@ bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler do
   if (!ri->GetRadarPosition(&own_pos.pos)) {
     return false;
   }
-
   // make new target
 
 #ifdef __WXMSW__
@@ -1517,7 +1518,10 @@ bool Arpa::AcquireNewARPATarget(RadarInfo* ri, Polar pol, int status, Doppler do
   target->m_automatic = true;
   target->RefreshTarget(MAX_DETECTION_SPEED, 1);  // speed, pass
   target->m_target_id = 0;     //MakeNewTargetId();   only for test, then every target gets an id from start
-  m_targets.push_back(std::move(target));
+  if (target->m_status != LOST) {
+    //Targets that were not found in RefreshTarget deleted immediately
+    m_targets.push_back(std::move(target));
+  }
   return true;
 }
 
