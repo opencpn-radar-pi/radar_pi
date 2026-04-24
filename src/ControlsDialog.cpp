@@ -1182,12 +1182,12 @@ void ControlsDialog::CreateControls() {
     m_view_sizer->Add(m_doppler_threshold_button, 0, wxALL, BORDER);
   }
 
-  // The DOPPLERAUTOTRACK button
-  if (m_ctrl[CT_AUTOTTRACKDOPPLER].type) {
-    m_autotrack_doppler_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("DopplerAutoTrack"),
-                                                        m_ctrl[CT_AUTOTTRACKDOPPLER], &m_ri->m_autotrack_doppler);
-    m_view_sizer->Add(m_autotrack_doppler_button, 0, wxALL, BORDER);
-  }
+  //// The DOPPLERAUTOTRACK button
+  //if (m_ctrl[CT_AUTOTTRACKDOPPLER].type) {
+  //  m_autotrack_doppler_button = new RadarControlButton(this, ID_CONTROL_BUTTON, _("DopplerAutoTrack"),
+  //                                                      m_ctrl[CT_AUTOTTRACKDOPPLER], &m_ri->m_autotrack_doppler);
+  //  m_view_sizer->Add(m_autotrack_doppler_button, 0, wxALL, BORDER);
+  //}
 
   // The TARGET_TRAIL button
   if (m_ctrl[CT_TARGET_TRAILS].type) {
