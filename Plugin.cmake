@@ -33,7 +33,7 @@ set(OCPN_RELEASE_REPO
 # -------  Plugin setup --------
 #
 set(PKG_NAME radar_pi)
-set(PKG_VERSION 5.6.2)
+set(PKG_VERSION 5.7.0)
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
