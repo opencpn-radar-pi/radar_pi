@@ -86,7 +86,7 @@ OptionsDialog::OptionsDialog(wxWindow* parent, radar_pi* pi, PersistentSettings&
 
   // Guard Zone Alarm
 
-  wxStaticBox* guardZoneBox = new wxStaticBox(this, wxID_ANY, _("Guard Zone Sound"));
+  wxStaticBox* guardZoneBox = new wxStaticBox(this, wxID_ANY, _("Guard Zone"));
   wxStaticBoxSizer* guardZoneSizer = new wxStaticBoxSizer(guardZoneBox, wxVERTICAL);
 
   wxButton* select_sound = new wxButton(this, wxID_ANY, _("Select Alert Sound"), wxDefaultPosition, small_button_size, 0);
