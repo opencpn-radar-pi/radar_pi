@@ -11,6 +11,20 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ## [Unreleased]
 
+## [5.7.0]
+
+### Added
+
+- Multiple radar overlays on a each canvas.
+The overlay with the shortest range, will be in the center. The second overlay will start at the range where the first overlay ends. This way two (or more) radar are integrated into a single radar image with a higher resolution than the individual radars. This feature is particularly interesting for owners of radars that contain more logical radars such as the Navico Halo range. But the feature can b used also with physically separate radars.
+
+- Improved ARPA
+Target tracking has been improved. Additional filters remove many spurious targets. In the target recognition process a linear filter is used besides the Kalman filter. This enables the recognition of faster moving targets. Even low flying airplanes can be picked up. Earlier the number of targets was limited to 100. Now there is no limit anymore (besides memory restrictions). Target tracking performance is better also. The system will easily follow 800 simultaneous targets.
+In previous releases, ARPA targets were maintained per radar. Each logical radar had its own set of targets. A target would get lost when it moved outside the range of its radar and might exist with multiple radars. In the new release targets and radars are disconnected, a target will be handled by the radar with the highest resolution for the target and move smoothly to the region of another radar.
+
+- Adjustable transparency of the guardzone shading
+The shading of the guardzone often tended to be too heavy or too light. Now the user can adjust the transparency of the shading in Preferences in the "Guard Zone" box.
+
 ## [5.6.1]
 
 ### Fixed
