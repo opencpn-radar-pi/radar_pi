@@ -34,8 +34,6 @@ set(OCPN_RELEASE_REPO
 #
 set(PKG_NAME radar_pi)
 set(PKG_VERSION 5.7.0)
-set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
-
 set(PKG_PRERELEASE "beta")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME radar)    # Dialogs, installer artifacts, ...
