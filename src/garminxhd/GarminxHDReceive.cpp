@@ -52,19 +52,20 @@ PLUGIN_BEGIN_NAMESPACE
 #pragma pack(push, 1)
 
 struct radar_line {
-  uint32_t packet_type;
-  uint32_t len1;
-  uint16_t fill_1;
-  uint16_t scan_length;
-  uint16_t angle;
-  uint16_t fill_2;
-  uint32_t range_meters;
-  uint32_t display_meters;
-  uint16_t fill_3;
-  uint16_t scan_length_bytes_s;  // Number of video bytes in the packet, Short
-  uint16_t fills_4;
-  uint32_t scan_length_bytes_i;  // Number of video bytes in the packet, Integer
-  uint16_t fills_5;
+  uint32_t packet_type; // 0
+  uint32_t len1;        // 4
+  uint16_t fill_1;      // 8
+  uint16_t scan_length;// 10
+  uint16_t angle;//       12
+  uint16_t fill_2;//      14
+  uint32_t range_meters;//16
+  uint32_t display_meters;//20
+  uint8_t a_b_range;//            24
+  uint8_t dual_range;//           25
+  uint16_t scan_length_bytes_s;// 26  // Number of video bytes in the packet, Short
+  uint16_t fills_4;//          // 28
+  uint32_t scan_length_bytes_i;// 30  // Number of video bytes in the packet, Integer
+  uint16_t fills_5;//             34
   uint8_t line_data[GARMIN_XHD_MAX_SPOKE_LEN];
 };
 
@@ -79,9 +80,9 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, size_t len) {
   // log_line.time_rec = wxGetUTCTimeMillis();
   wxLongLong time_rec = wxGetUTCTimeMillis();
   time_t now = (time_t)(time_rec.GetValue() / MILLISECONDS_PER_SECOND);
-
+  
   radar_line *packet = (radar_line *)data;
-
+  if (packet->dual_range == 1 && packet->a_b_range == 1) return;  // this is a dual range radar B packet
   wxCriticalSectionLocker lock(m_ri->m_exclusive);
 
   m_ri->m_radar_timeout = now + WATCHDOG_TIMEOUT;
@@ -96,7 +97,6 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, size_t len) {
     return;
   }
   len -= packet_header_length;
-
   if (m_first_receive) {
     m_first_receive = false;
     wxLongLong startup_elapsed = wxGetUTCTimeMillis() - m_pi->GetBootMillis();
@@ -113,7 +113,6 @@ void GarminxHDReceive::ProcessFrame(const uint8_t *data, size_t len) {
       m_ri->m_statistics.missing_spokes += GARMIN_XHD_SPOKES + spoke - m_next_spoke;
     }
   }
-
   m_next_spoke = (spoke + 1) % GARMIN_XHD_SPOKES;
 
   short int heading_raw = 0;
