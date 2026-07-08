@@ -11,6 +11,10 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ## [Unreleased]
 
+### Fixed
+
+- Navico and Raymarine radar locator threads failed to start on some Linux systems (64 KB stack too small for glibc's static TLS); use a 1 MB stack like the receive threads (#298)
+
 ## [5.7.0]
 
 ### Added

@@ -56,7 +56,7 @@ public:
     NavicoLocate(radar_pi* pi)
         : wxThread(wxTHREAD_JOINABLE)
     {
-        Create(64 * 1024); // Stack size
+        Create(1024 * 1024); // Stack size, be liberal
         m_pi = pi; // This allows you to access the main plugin stuff
         m_shutdown = false;
         m_is_shutdown = true;
