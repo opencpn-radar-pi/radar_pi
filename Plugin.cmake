@@ -174,6 +174,7 @@ set(SRC
   src/garminxhd/GarminxHDControl.cpp
   src/garminxhd/GarminxHDControlsDialog.cpp
   src/garminxhd/GarminxHDReceive.cpp
+  src/navico/NavicoCapabilities.cpp
   src/navico/NavicoControl.cpp
   src/navico/NavicoControlsDialog.cpp
   src/navico/NavicoLocate.cpp

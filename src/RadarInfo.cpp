@@ -92,6 +92,9 @@ RadarInfo::RadarInfo(radar_pi *pi, int radar) {
   m_last_rotation_time = 0;
   m_last_angle = 0;
   m_no_transmit_zones = 0;
+  m_doppler_supported = true;
+  m_max_range_meters = 0;
+  m_supported_modes = 0;
   for (int i = 0; i < MAX_CHART_CANVAS; i++) {
       m_start_overlay_r[i] = 0;
     }

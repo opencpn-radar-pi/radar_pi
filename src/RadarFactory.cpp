@@ -212,6 +212,14 @@ size_t RadarFactory::GetRadarRanges(RadarInfo* ri, RangeUnits units, const int**
                (int)units);
     wxAbort();
   }
+
+  // Some radars, such as the HALO 20, see less far than the largest range in
+  // the table for their type. Once the radar has told us how far it reaches
+  // we drop the ranges that it cannot do.
+  while (n > 1 && ri->m_max_range_meters > 0 && (*ranges)[n - 1] > ri->m_max_range_meters) {
+    n--;
+  }
+
   return n;
 }
 

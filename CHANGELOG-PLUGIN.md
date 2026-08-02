@@ -11,6 +11,10 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ## [Unreleased]
 
+### Added
+
+- Recognize the exact Navico model and read its capability report, so that Doppler, use modes and ranges that the radar does not have are no longer offered, as on the HALO 20 (#238, #203)
+
 ## [5.7.2]
 
 ### Fixed

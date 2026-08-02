@@ -1034,9 +1034,10 @@ struct RadarReport_02C4_99 {       // length 99
 struct RadarReport_03C4_129 {
   uint8_t what;
   uint8_t command;
-  uint8_t radar_type;  // I hope! 01 = 4G and new 3G, 08 = 3G, 0F = BR24, 00 = HALO
-  uint8_t u00[31];     // Lots of unknown
-  uint32_t hours;      // Hours of operation
+  uint8_t radar_type;     // I hope! 01 = 4G and new 3G, 08 = 3G, 0F = BR24, 00 = HALO
+  uint8_t u00[27];        // Lots of unknown
+  uint32_t scanner_type;  // 30-33 The exact model, see NavicoScannerType
+  uint32_t hours;         // Hours of operation
   uint8_t u01[20];     // Lots of unknown
   uint16_t firmware_date[16];
   uint16_t firmware_time[16];
@@ -1174,6 +1175,13 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
   LOG_BINARY_REPORTS(wxString::Format(wxT("%s report"), m_ri->m_name.c_str()), report, len);
 
   if (report[1] == 0xC4) {
+    if (report[0] == 0x09 && len > 2) {
+      // The capability report grows with every firmware version, so it cannot
+      // be part of the length based switch below.
+      ProcessCapabilities(report + 2, len - 2);
+      return true;
+    }
+
     // Looks like a radar report. Is it a known one?
     switch ((len << 8) + report[0]) {
       case (18 << 8) + 0x01: {  //  length 18, 01 C4
@@ -1241,7 +1249,22 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
 
       case (129 << 8) + 0x03: {  // 129 bytes starting with 03 C4
         RadarReport_03C4_129 *s = (RadarReport_03C4_129 *)report;
-        LOG_RECEIVE(wxT("%s RadarReport_03C4_129 radar_type=%u hours=%u"), m_ri->m_name.c_str(), s->radar_type, s->hours);
+        LOG_RECEIVE(wxT("%s RadarReport_03C4_129 radar_type=%u scanner_type=%u hours=%u"), m_ri->m_name.c_str(), s->radar_type,
+                    s->scanner_type, s->hours);
+
+        if (s->scanner_type != m_scanner_type) {
+          m_scanner_type = s->scanner_type;
+          LOG_INFO(wxT("%s is a %s (scanner type %u)"), m_ri->m_name.c_str(), NavicoScannerTypeName(m_scanner_type).c_str(),
+                   m_scanner_type);
+
+          m_ri->m_doppler_supported = NavicoScannerHasDoppler(m_scanner_type);
+          if (!m_ri->m_doppler_supported) {
+            m_ri->m_doppler.Update(0);
+            if (m_ri->m_doppler.IsModified()) {
+              m_ri->ComputeColourMap();
+            }
+          }
+        }
 
         wxString ts;
 
@@ -1438,6 +1461,22 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
     LOG_BINARY_RECEIVE(wxT("received unknown message"), report, len);
   }
   return false;
+}
+
+//
+// A HALO tells us which use modes it has and how far it can see.
+//
+void NavicoReceive::ProcessCapabilities(const uint8_t *report, size_t len) {
+  NavicoCapabilities capabilities;
+
+  if (!capabilities.Parse(report, len) || capabilities == m_capabilities) {
+    return;
+  }
+  m_capabilities = capabilities;
+  LOG_INFO(wxT("%s capabilities: %s"), m_ri->m_name.c_str(), capabilities.to_string().c_str());
+
+  m_ri->m_max_range_meters = (int)capabilities.GetMaxRangeMeters();
+  m_ri->m_supported_modes = capabilities.GetSupportedModes();
 }
 
 // Called from the main thread to stop this thread.

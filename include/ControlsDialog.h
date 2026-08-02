@@ -460,6 +460,7 @@ protected:
     void SetMenuAutoHideTimeout();
     void SwitchTo(wxBoxSizer* to, const wxChar* name);
     bool UpdateSizersButtonsShown();
+    void LimitModesToSupported();
 
 public:
     void Resize(bool force);
