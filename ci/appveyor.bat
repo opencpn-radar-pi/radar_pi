@@ -11,6 +11,7 @@ set "GIT_HOME=C:\Program Files\Git"
 if "%CONFIGURATION%" == "" set "CONFIGURATION=RelWithDebInfo"
 
 call %SCRIPTDIR%..\buildwin\win_deps.bat
+if errorlevel 1 exit /b 1
 echo USING wxWidgets_LIB_DIR: !wxWidgets_LIB_DIR!
 echo USING wxWidgets_ROOT_DIR: !wxWidgets_ROOT_DIR!
 
@@ -41,7 +42,15 @@ python ldd.py
 
 echo Uploading artifact
 call upload.bat
+if errorlevel 1 (
+  echo Upload to cloudsmith failed
+  exit /b 1
+)
 
 echo Pushing updates to catalog
 python %SCRIPTDIR%..\ci\git-push
+if errorlevel 1 (
+  echo Push to catalog failed
+  exit /b 1
+)
 cd ..
