@@ -11,6 +11,8 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 ## [Unreleased]
 
+## [5.7.2]
+
 ### Fixed
 
 - Windows (msvc) builds silently failed to upload to cloudsmith and never reached the plugin catalog
