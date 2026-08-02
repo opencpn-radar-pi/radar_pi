@@ -46,8 +46,16 @@ python --version
 python -m ensurepip
 python -m pip install --upgrade pip
 python -m pip install -q setuptools wheel
-python -m pip install -q cloudsmith-cli
-python -m pip install -q cryptography
+
+:: cloudsmith-cli needs cryptography through PyJWT[crypto], ci\git-push imports
+:: it directly. cryptography stopped shipping 32 bit Windows wheels in 49.0.0
+:: and building it from source requires a Rust toolchain, so pin it below that
+:: as long as this is a Win32 build.
+python -m pip install -q cloudsmith-cli "cryptography<49"
+if errorlevel 1 (
+    echo Failed to install cloudsmith-cli / cryptography
+    exit /b 1
+)
 
 :: Install pre-compiled wxWidgets and other DLL; add required paths.
 ::
