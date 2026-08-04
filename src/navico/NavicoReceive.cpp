@@ -1347,6 +1347,7 @@ bool NavicoReceive::ProcessReport(const uint8_t *report, size_t len) {
         /* Over time we have seen this report with 3 various lengths!!
          */
 
+      case (32 << 8) + 0x08:    // FALLTHRU HALO 24 with 2025 firmware
       case (24 << 8) + 0x08:    // FALLTHRU HALO 2000
       case (22 << 8) + 0x08:    // FALLTHRU
       case (21 << 8) + 0x08: {  // length 21, 08 C4
