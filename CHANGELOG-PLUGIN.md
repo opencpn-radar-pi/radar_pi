@@ -15,6 +15,10 @@ Sections can be: Added Changed Deprecated Removed Fixed Security.
 
 - Recognize the exact Navico model and read its capability report, so that Doppler, use modes and ranges that the radar does not have are no longer offered, as on the HALO 20 (#238, #203)
 
+### Fixed
+
+- Doppler, sea state, scan speed and other settings stayed at their startup value on a HALO 24 with 2025 firmware, which sends a longer status report than we recognized (#300)
+
 ## [5.7.2]
 
 ### Fixed
