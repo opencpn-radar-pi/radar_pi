@@ -80,6 +80,11 @@ public:
     size_t m_spokes; // # of spokes per rotation
     size_t m_spoke_len_max; // Max # of bytes per spoke
     size_t m_no_transmit_zones;
+    bool m_doppler_supported; // Cleared when the radar says it has no Doppler
+    int m_max_range_meters; // Furthest range the radar says it can do, 0 =
+                            // unknown, then the table for its type is used
+    uint32_t m_supported_modes; // Bit n is set when the radar has mode n, see
+                                // CT_MODE. 0 = unknown, then all are offered
     int m_radar_ranges[21]; // Ranges actually in use (values displayed). Always
                             // in meters, also if units is NM. Currently only
                             // used for Raymarine.

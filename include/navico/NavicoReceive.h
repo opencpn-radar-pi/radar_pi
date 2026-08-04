@@ -35,6 +35,7 @@
 
 #include "NavicoCommon.h"
 #include "RadarReceive.h"
+#include "navico/NavicoCapabilities.h"
 #include "navico/NavicoLocate.h"
 #include "socketutil.h"
 
@@ -81,6 +82,7 @@ public:
         m_halo_sent_mystery = m_halo_received_info;
         m_halo_sent_speed = m_halo_received_info;
         m_hours = 0;
+        m_scanner_type = 0;
 
         m_receive_socket = GetLocalhostServerTCPSocket();
         m_send_socket = GetLocalhostSendTCPSocket(m_receive_socket);
@@ -135,6 +137,7 @@ private:
     SOCKET GetNewReportSocket();
     SOCKET PickNextEthernetCard();
     bool ProcessReport(const uint8_t* data, size_t len);
+    void ProcessCapabilities(const uint8_t* data, size_t len);
     void DetectedRadar(NetworkAddress& radar_address);
     void ProcessFrame(const uint8_t* data, size_t len);
     void ReleaseInfoSocket();
@@ -162,6 +165,8 @@ private:
     wxString m_status; // Userfriendly string
     wxString m_firmware; // Userfriendly string #2
     uint32_t m_hours; // Number of hours transmitted
+    uint32_t m_scanner_type; // Which exact model this is, see NavicoScannerType
+    NavicoCapabilities m_capabilities; // What the radar says it can do
 
     void SetInfoStatus(wxString status)
     {

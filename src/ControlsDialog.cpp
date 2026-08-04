@@ -1800,6 +1800,19 @@ bool ControlsDialog::UpdateSizersButtonsShown() {
     }
   }
 
+  // Radars such as the HALO 20 have Doppler buttons in their control set but
+  // report that they do not support it.
+  if (m_top_sizer->IsShown(m_view_sizer)) {
+    if (m_doppler_button && m_view_sizer->IsShown(m_doppler_button) != m_ri->m_doppler_supported) {
+      m_view_sizer->Show(m_doppler_button, m_ri->m_doppler_supported);
+      resize = true;
+    }
+    if (m_doppler_threshold_button && m_view_sizer->IsShown(m_doppler_threshold_button) != m_ri->m_doppler_supported) {
+      m_view_sizer->Show(m_doppler_threshold_button, m_ri->m_doppler_supported);
+      resize = true;
+    }
+  }
+
   for (int i = 0; i < CANVAS_COUNT; i++) {
     if (m_top_sizer->IsShown(m_window_sizer) && !m_window_sizer->IsShown(m_overlay_button[i])) {
       m_window_sizer->Show(m_overlay_button[i]);
@@ -2176,6 +2189,26 @@ void ControlsDialog::LimitRadarControls() {
   }
 }
 
+//
+// Drop the modes that the radar says it does not have. A blank name is how a
+// mode is left out of the button, the same way that Buoy always is.
+//
+void ControlsDialog::LimitModesToSupported() {
+  ControlInfo& ci = m_ctrl[CT_MODE];
+
+  if (m_ri->m_supported_modes == 0 || !ci.names) {
+    return;
+  }
+  for (int mode = ci.minValue; mode <= ci.maxValue; mode++) {
+    if ((m_ri->m_supported_modes & (1 << mode)) == 0) {
+      ci.names[mode] = wxT("");
+    }
+  }
+  while (ci.maxValue > ci.minValue && ci.names[ci.maxValue].length() == 0) {
+    ci.maxValue--;
+  }
+}
+
 void ControlsDialog::UpdateControlValues(bool refreshAll) {
   wxString o;
   bool updateEditDialog = false;
@@ -2282,6 +2315,7 @@ void ControlsDialog::UpdateControlValues(bool refreshAll) {
 
   //   mode (RM_Quantum)
   if (m_mode_button) {
+    LimitModesToSupported();
     m_mode_button->UpdateLabel();
   }
 
