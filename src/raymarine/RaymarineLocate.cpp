@@ -35,6 +35,8 @@
 
 #include "raymarine/RaymarineLocate.h"
 
+#include <cstring>
+
 #include "MessageBox.h"
 #include "RadarInfo.h"
 
@@ -49,6 +51,20 @@ static const NetworkAddress reportRaymarineQuantumWiFi(232, 1, 1, 1, 5800);
 #define SECONDS_PER_SELECT (1)
 #define PERIOD_UNTIL_CARD_REFRESH (60)
 #define PERIOD_UNTIL_WAKE_RADAR (30)
+
+// Virtual interfaces (VPN tunnels, containers) carry multicast traffic but
+// are not where a physical radar lives. The locator must ignore them, or it
+// may bind to e.g. tailscale0/docker0 and save that as the radar interface,
+// breaking reception. Radar hardware is always on a physical NIC.
+static bool IsVirtualInterface(const char* ifname) {
+  static const char* const virtual_prefixes[] = {
+      "tailscale", "docker", "br-", "veth", "tun", "tap", "wg", "virbr", "vmnet",
+  };
+  for (const char* prefix : virtual_prefixes) {
+    if (strncmp(ifname, prefix, strlen(prefix)) == 0) return true;
+  }
+  return false;
+}
 
 void RaymarineLocate::CleanupCards() {
   if (m_interface_addr) {
@@ -78,7 +94,7 @@ void RaymarineLocate::UpdateEthernetCards() {
   if (!getifaddrs(&addr_list)) {
     // Count the # of active IPv4 cards
     for (addr = addr_list; addr; addr = addr->ifa_next) {
-      if (VALID_IPV4_ADDRESS(addr)) {
+      if (VALID_IPV4_ADDRESS(addr) && !IsVirtualInterface(addr->ifa_name)) {
         m_interface_count++;
       }
     }
@@ -89,7 +105,7 @@ void RaymarineLocate::UpdateEthernetCards() {
       m_interface_addr = new NetworkAddress[m_interface_count * 2];
 
       for (addr = addr_list; addr; addr = addr->ifa_next) {
-        if (VALID_IPV4_ADDRESS(addr)) {
+        if (VALID_IPV4_ADDRESS(addr) && !IsVirtualInterface(addr->ifa_name)) {
           struct sockaddr_in *sa = (struct sockaddr_in *)addr->ifa_addr;
           m_interface_addr[i].addr = sa->sin_addr;
           m_interface_addr[i].port = 0;
